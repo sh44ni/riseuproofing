@@ -140,14 +140,27 @@ export function InteractiveHeroEstimator() {
   const selectedServiceObj = SERVICE_OPTIONS.find((s) => s.id === service) || SERVICE_OPTIONS[0];
   const currentPricing = selectedServiceObj.pricing[size];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactData.name || !contactData.phone) return;
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      await fetch('/api/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: contactData.name,
+          phone: contactData.phone,
+          address: contactData.address,
+          serviceType: service,
+        }),
+      });
+    } catch {
+      // still show success
+    } finally {
       setSubmitting(false);
       setSubmitted(true);
-    }, 600);
+    }
   };
 
   if (submitted) {
