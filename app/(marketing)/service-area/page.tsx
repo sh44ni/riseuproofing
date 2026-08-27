@@ -43,10 +43,10 @@ export default function ServiceAreaPage() {
 
       {/* Local Consultation Glass Banner */}
       <div className="glass-card-hero rounded-3xl p-8 sm:p-10 text-center max-w-3xl mx-auto border-white/20 shadow-2xl">
-        <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-2">
+        <h3 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-2">
           Don&apos;t See Your Community Listed?
         </h3>
-        <p className="text-xs sm:text-sm text-white/75 mb-6 max-w-md mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-6 max-w-md mx-auto leading-relaxed">
           We likely service your neighborhood too. Reach out to our 24/7 dispatch for rapid scheduling.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

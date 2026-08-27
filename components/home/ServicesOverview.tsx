@@ -79,7 +79,7 @@ export function ServicesOverview() {
             <Link
               key={service.slug}
               href={`/services/${service.slug}`}
-              className="group relative rounded-3xl overflow-hidden flex flex-col justify-end min-h-[450px] sm:min-h-[480px] border border-slate-200/60 dark:border-white/15 hover:border-brand-blue/70 transition-all duration-300 shadow-[0_16px_40px_-10px_rgba(11,30,51,0.10)] dark:shadow-2xl hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-10px_rgba(47,159,227,0.25)] cursor-pointer"
+              className="image-overlay-card group relative rounded-3xl overflow-hidden flex flex-col justify-end min-h-[450px] sm:min-h-[480px] border border-slate-200/60 dark:border-white/15 hover:border-brand-blue/70 transition-all duration-300 shadow-[0_16px_40px_-10px_rgba(11,30,51,0.10)] dark:shadow-2xl hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-10px_rgba(47,159,227,0.25)] cursor-pointer"
             >
               {/* Full Bleed Background Image */}
               <Image
@@ -145,7 +145,7 @@ export function ServicesOverview() {
         {/* 6th Card: Free 21-Point Inspection */}
         <Link
           href="/contact"
-          className="group relative rounded-3xl overflow-hidden flex flex-col justify-end min-h-[450px] sm:min-h-[480px] border border-amber-400/40 hover:border-amber-400 transition-all duration-300 shadow-[0_16px_40px_-10px_rgba(11,30,51,0.10)] dark:shadow-2xl hover:-translate-y-1.5 hover:shadow-amber-400/25 cursor-pointer"
+          className="image-overlay-card group relative rounded-3xl overflow-hidden flex flex-col justify-end min-h-[450px] sm:min-h-[480px] border border-amber-400/40 hover:border-amber-400 transition-all duration-300 shadow-[0_16px_40px_-10px_rgba(11,30,51,0.10)] dark:shadow-2xl hover:-translate-y-1.5 hover:shadow-amber-400/25 cursor-pointer"
         >
           {/* Full Bleed Background Image for 6th Card */}
           <Image

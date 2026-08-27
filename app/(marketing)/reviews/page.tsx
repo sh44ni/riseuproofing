@@ -33,7 +33,7 @@ export default function ReviewsPage() {
         {/* Aggregate Hero Dock */}
         <div className="flex items-center justify-center mb-12">
           <div className="glass-card-hero rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 border-white/20 shadow-2xl">
-            <div className="text-5xl font-extrabold text-white tracking-tight">
+            <div className="text-5xl font-extrabold text-[var(--text-primary)] tracking-tight">
               {avgRating}
             </div>
             <div className="sm:border-l sm:border-white/15 sm:pl-6 text-center sm:text-left">
@@ -42,10 +42,10 @@ export default function ReviewsPage() {
                   <Star key={s} className="w-5 h-5 text-amber-400 fill-amber-400" />
                 ))}
               </div>
-              <p className="text-xs sm:text-sm text-white/80 font-semibold">
-                Based on <span className="text-white font-bold">{count}+ Verified Homeowner Reviews</span>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-semibold">
+                Based on <span className="text-[var(--text-primary)] font-bold">{count}+ Verified Homeowner Reviews</span>
               </p>
-              <p className="text-[11px] text-white/50 mt-0.5">
+              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
                 Top rated across Google Local, Yelp &amp; BBB
               </p>
             </div>
@@ -80,8 +80,8 @@ export default function ReviewsPage() {
 
               <div className="pt-4 border-t border-white/10 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-white">{review.author}</p>
-                  <p className="text-[11px] text-white/60">
+                  <p className="text-xs font-bold text-[var(--text-primary)]">{review.author}</p>
+                  <p className="text-[11px] text-[var(--text-muted)]">
                     {review.location} • {review.serviceCategory}
                   </p>
                 </div>

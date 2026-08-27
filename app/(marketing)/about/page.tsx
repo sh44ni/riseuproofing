@@ -58,10 +58,10 @@ export default function AboutPage() {
           <div className="inline-flex items-center gap-2 glass-chip px-3.5 py-1 rounded-full mb-4 text-xs font-bold uppercase tracking-wider text-brand-blue">
             <span>Established 2000 • San Diego County</span>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-6">
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-6">
             Built on Honest Relationships &amp; Master Craftsmanship
           </h3>
-          <div className="space-y-4 text-xs sm:text-sm text-white/80 leading-relaxed">
+          <div className="space-y-4 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
             <p>
               Rise Up Roofing &amp; Construction was founded with a clear mission: every homeowner deserves honest, professional roofing service at a fair price. What started as a dedicated local crew has grown into one of San Diego County&apos;s most reputable roofing and construction companies.
             </p>
@@ -74,7 +74,7 @@ export default function AboutPage() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-white/90">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>CA License #{LICENSE_NUMBER} • Fully Bonded</span>
             </div>
@@ -96,7 +96,7 @@ export default function AboutPage() {
           <span className="glass-chip px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-brand-blue mb-3 inline-block">
             Our Principles
           </span>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)]">
             Core Values That Guide Every Roof We Build
           </h3>
         </div>
@@ -115,8 +115,8 @@ export default function AboutPage() {
                   <Icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-base font-bold text-white mb-1.5">{v.title}</h4>
-                  <p className="text-xs text-white/70 leading-relaxed">{v.desc}</p>
+                  <h4 className="text-base font-bold text-[var(--text-primary)] mb-1.5">{v.title}</h4>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{v.desc}</p>
                 </div>
               </div>
             );
@@ -137,7 +137,7 @@ export default function AboutPage() {
               <p className="text-3xl sm:text-4xl font-extrabold text-brand-blue mb-1">
                 {item.stat}
               </p>
-              <p className="text-xs font-semibold text-white/75 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                 {item.label}
               </p>
             </div>

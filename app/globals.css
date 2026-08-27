@@ -149,8 +149,8 @@ html[data-theme="light"] {
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  color: #112D49;
-  background-color: #FFFFFF;
+  color: var(--text-primary);
+  background-color: var(--surface-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -560,6 +560,7 @@ body {
   background: #FFFFFF;
   border: 1px solid rgba(17, 45, 73, 0.07);
   box-shadow: var(--shadow-card);
+  color: var(--text-primary);
 }
 
 [data-theme="light"] :not(.always-dark) .glass-card-interactive:hover {
@@ -569,15 +570,44 @@ body {
   transform: translateY(-3px);
 }
 
+/* --- Hero Cards in Light Mode --- */
+[data-theme="light"] :not(.always-dark) .glass-card-hero {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.10);
+  box-shadow: var(--shadow-elevated);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--text-primary);
+}
+
+/* --- Dark Panels in Light Mode --- */
+[data-theme="light"] :not(.always-dark) .glass-panel-dark {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.08);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--text-primary);
+}
+
 /* --- Primary Section (glass-section-dark → light mode) --- */
 [data-theme="light"] :not(.always-dark) .glass-section-dark {
   background: #FFFFFF;
+  color: var(--text-primary);
   position: relative;
+}
+
+/* image-overlay-card resets color to white inside any light-mode section.
+   This is the base anchor — explicit text-white/* classes on children
+   then work correctly against this white baseline. */
+[data-theme="light"] .image-overlay-card {
+  color: #FFFFFF;
 }
 
 /* --- Alternate Section --- */
 [data-theme="light"] .theme-section-alt {
   background: linear-gradient(180deg, #EEF5FC 0%, #F4F8FD 100%);
+  color: var(--text-primary);
 }
 
 /* --- Chips in Light Mode --- */
@@ -601,6 +631,144 @@ body {
   color: #FFFFFF !important;
   box-shadow: 0 4px 16px rgba(47, 159, 227, 0.30) !important;
 }
+
+/* --- Pills / Badges in Light Mode --- */
+[data-theme="light"] :not(.always-dark) .glass-pill-badge {
+  background: rgba(47, 159, 227, 0.08);
+  border: 1px solid rgba(47, 159, 227, 0.20);
+  color: #1878B8;
+}
+
+/* --- Inputs in Light Mode --- */
+[data-theme="light"] :not(.always-dark) .glass-input {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.14);
+  box-shadow: inset 0 1px 2px rgba(11, 30, 51, 0.04);
+  color: var(--text-primary);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-theme="light"] :not(.always-dark) .glass-input::placeholder {
+  color: rgba(11, 30, 51, 0.40);
+}
+
+[data-theme="light"] :not(.always-dark) .glass-input:focus {
+  background: #FFFFFF;
+  border-color: #2F9FE3;
+  box-shadow: 0 0 0 3px rgba(47, 159, 227, 0.15), inset 0 1px 2px rgba(11, 30, 51, 0.04);
+}
+
+/* ============================================================
+   LIGHT MODE — Targeted text-white override
+   Only applies inside containers known to become white in light mode.
+   image-overlay-card elements (ServicesOverview, FeaturedProjects,
+   project cards) keep their dark gradient + white text.
+   ============================================================ */
+
+/* Inside white glass interactive cards */
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white,
+[data-theme="light"] :not(.always-dark) .glass-panel-dark .text-white {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/80,
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/85,
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/75,
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/70,
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/65,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/80,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/75,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/70,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/65 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/60,
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/50,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/60,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/50 {
+  color: var(--text-muted) !important;
+}
+
+/* image-overlay-card: keeps white text (dark gradient over image, always legible).
+   Must outrank the glass-section-dark .text-white rule above — use higher specificity
+   by chaining the section/card parent with image-overlay-card. */
+[data-theme="light"] .image-overlay-card .text-white,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white,
+[data-theme="light"] .theme-section-alt .image-overlay-card .text-white,
+[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white {
+  color: #FFFFFF !important;
+}
+[data-theme="light"] .image-overlay-card .text-white\/90,
+[data-theme="light"] .image-overlay-card .text-white\/80,
+[data-theme="light"] .image-overlay-card .text-white\/85,
+[data-theme="light"] .image-overlay-card .text-white\/75,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/90,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/80,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/85,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/75,
+[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/80,
+[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/75 {
+  color: rgba(255,255,255,0.82) !important;
+}
+[data-theme="light"] .image-overlay-card .text-white\/70,
+[data-theme="light"] .image-overlay-card .text-white\/65,
+[data-theme="light"] .image-overlay-card .text-white\/60,
+[data-theme="light"] .image-overlay-card .text-white\/50,
+[data-theme="light"] .image-overlay-card .text-white\/45,
+[data-theme="light"] .image-overlay-card .text-white\/40,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/70,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/65,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/60,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/50,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/45,
+[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/40,
+[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/70,
+[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/60,
+[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/50 {
+  color: rgba(255,255,255,0.55) !important;
+}
+
+/* Re-allow white text on solid colored backgrounds (CTA buttons, dark banners) */
+[data-theme="light"] .bg-brand-blue .text-white,
+[data-theme="light"] .bg-brand-blue.text-white,
+[data-theme="light"] .bg-\[\#2E9BF0\] .text-white,
+[data-theme="light"] .bg-\[\#1C88DD\] .text-white,
+[data-theme="light"] .bg-\[\#07131F\] .text-white,
+[data-theme="light"] .bg-\[\#0B1B2B\] .text-white,
+[data-theme="light"] .bg-\[\#081B2E\] .text-white,
+[data-theme="light"] .bg-\[\#12365C\] .text-white,
+[data-theme="light"] .bg-\[\#0E2845\] .text-white,
+[data-theme="light"] .bg-brand-navy .text-white,
+[data-theme="light"] .bg-brand-dark .text-white {
+  color: #FFFFFF !important;
+}
+
+/* --- Ghost buttons (bg-white/10 text-white) in light mode ---
+   These use transparent white backgrounds that disappear on white sections.
+   Convert them to a solid light surface with dark text. */
+[data-theme="light"] :not(.always-dark) .bg-white\/10 {
+  background: rgba(17, 45, 73, 0.06) !important;
+}
+[data-theme="light"] :not(.always-dark) .bg-white\/10:hover,
+[data-theme="light"] :not(.always-dark) .hover\:bg-white\/20:hover {
+  background: rgba(17, 45, 73, 0.10) !important;
+}
+[data-theme="light"] :not(.always-dark) .glass-card-interactive .bg-white\/10,
+[data-theme="light"] :not(.always-dark) .glass-card-hero .bg-white\/10,
+[data-theme="light"] :not(.always-dark) .glass-section-dark .bg-white\/10,
+[data-theme="light"] :not(.always-dark) .theme-section-alt .bg-white\/10 {
+  border-color: rgba(17, 45, 73, 0.14) !important;
+}
+[data-theme="light"] :not(.always-dark) .bg-white\/10 .text-white,
+[data-theme="light"] :not(.always-dark) .bg-white\/10.text-white {
+  color: var(--text-primary) !important;
+}
+
+/* Direct section headings using text-white are fixed at component level.
+   See: about/page.tsx, reviews/page.tsx, service-area/[city]/page.tsx */
 
 /* ============================================================
    THEME-AWARE UTILITY CLASSES

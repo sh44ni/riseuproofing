@@ -155,7 +155,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {relatedProjects.map((project) => (
               <Link key={project.slug} href={`/projects/${project.slug}`} className="group flex">
-                <div className="glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border-white/15">
+                <div className="image-overlay-card glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border-white/15">
                   <div className="relative h-52 overflow-hidden">
                     <Image
                       src={project.afterImage}

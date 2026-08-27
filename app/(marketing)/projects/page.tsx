@@ -44,7 +44,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all inline-block border ${
                   isActive
                     ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/30 scale-105'
-                    : 'glass-chip text-white/80 hover:text-white hover:bg-white/15 border-white/15'
+                    : 'glass-chip text-[var(--text-secondary)] hover:text-brand-blue hover:bg-white/15 border-white/15'
                 }`}
               >
                 {cat.label}
@@ -59,7 +59,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         {filtered.map((project) => (
           <Link key={project.slug} href={`/projects/${project.slug}`} className="group flex">
             <div className="glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border border-white/15 hover:border-white/30 transition-all duration-300">
-              <div className="relative h-60 overflow-hidden">
+              <div className="image-overlay-card relative h-60 overflow-hidden">
                 <Image
                   src={project.afterImage}
                   alt={project.title}

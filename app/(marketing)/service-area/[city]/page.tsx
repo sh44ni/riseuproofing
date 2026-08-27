@@ -44,17 +44,17 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
           <span>Serving {area.name}, California</span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--text-primary)] mb-4 tracking-tight">
           Roofing &amp; Construction in {area.name}, CA
         </h1>
 
-        <p className="text-sm sm:text-base text-white/80 mb-10 leading-relaxed">
+        <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-10 leading-relaxed">
           {COMPANY_NAME} is proud to serve homeowners and commercial property managers in {area.name}, {area.county} County. 
           Whether you need a complete roof replacement, tile relay with 2-ply underlayment, emergency leak detection, or general construction repairs, our licensed team delivers master craftsmanship backed by 50-year manufacturer warranties.
         </p>
 
         {/* Local Services Grid */}
-        <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-6">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-6">
           Our Roofing Services in {area.name}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
@@ -82,10 +82,10 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
 
         {/* Why Choose Rise Up in This City */}
         <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 mb-12 border-white/15">
-          <h2 className="text-xl font-extrabold text-white mb-4">
+          <h2 className="text-xl font-extrabold text-[var(--text-primary)] mb-4">
             Why {area.name} Homeowners Choose Rise Up Roofing
           </h2>
-          <div className="space-y-4 text-xs sm:text-sm text-white/80 leading-relaxed">
+          <div className="space-y-4 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
             <p>
               As a local San Diego County contractor with over 25 years of experience, we understand the specific environmental factors affecting {area.name} properties — including coastal salt fog, morning moisture, UV exposure, and Santa Ana winds.
             </p>
@@ -97,10 +97,10 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
 
         {/* City CTA Banner */}
         <div className="glass-card-hero rounded-3xl p-8 sm:p-10 text-center border-white/20 shadow-2xl">
-          <h3 className="text-2xl font-extrabold text-white mb-2">
+          <h3 className="text-2xl font-extrabold text-[var(--text-primary)] mb-2">
             Get a Free Estimate in {area.name}
           </h3>
-          <p className="text-xs sm:text-sm text-white/75 mb-6 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-6 leading-relaxed">
             Contact our licensed specialists today for an itemized, no-obligation roof proposal.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
