@@ -1,0 +1,29 @@
+name: '✨ Feature Request'
+description: Suggest a new feature or improvement
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What would you like to see?
+      description: A clear description of the feature
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why is this needed?
+      description: What problem does it solve?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - UI / Design
+        - SEO
+        - Performance
+        - New page / section
+        - Bug fix
+        - Other

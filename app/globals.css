@@ -1,0 +1,696 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  /* Brand Colors from /updated_branding */
+  --color-brand-navy: #112D49;
+  --color-brand-blue: #2F9FE3;
+  --color-brand-gold: #EAA636;
+  --color-brand-terracotta: #C85A2A;
+  --color-brand-light: #F4F8F8;
+  --color-brand-dark: #0D2137;
+  --color-brand-muted: #64748B;
+  --color-brand-success: #16A34A;
+  --color-brand-error: #DC2626;
+}
+
+/* ============================================================
+   SEMANTIC THEME TOKENS — Dark Mode Defaults
+   ============================================================ */
+:root {
+  /* Layout tokens */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
+  --container-max: 1280px;
+
+  /* Surface tokens */
+  --surface-base: #07131F;
+  --surface-raised: #112D49;
+  --surface-sunken: #07131F;
+  --surface-overlay: rgba(11,27,43,0.65);
+
+  /* Text tokens */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.80);
+  --text-muted: rgba(255,255,255,0.55);
+  --text-on-dark: #FFFFFF;
+
+  /* Border tokens */
+  --border-default: rgba(255,255,255,0.18);
+  --border-emphasis: rgba(255,255,255,0.32);
+
+  /* Shadow tokens */
+  --shadow-card: 0 16px 36px rgba(0,0,0,0.4);
+  --shadow-elevated: 0 24px 50px rgba(0,0,0,0.55);
+
+  /* Color scheme */
+  --color-scheme: dark;
+}
+
+/* ============================================================
+   LIGHT MODE — "Coastal Architectural Daylight"
+   ============================================================ */
+[data-theme="light"] {
+  --surface-base: #F4F8FD;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #E8F0FA;
+  --surface-overlay: rgba(255,255,255,0.95);
+
+  --text-primary: #0B1E33;
+  --text-secondary: #1E3A52;
+  --text-muted: #4E6478;
+  --text-on-dark: #FFFFFF;
+
+  --border-default: rgba(17,45,73,0.09);
+  --border-emphasis: rgba(17,45,73,0.18);
+
+  /* Richer, more directional shadows for premium depth */
+  --shadow-card: 0 1px 3px rgba(11,30,51,0.04), 0 8px 24px -4px rgba(11,30,51,0.07), 0 24px 48px -8px rgba(11,30,51,0.05);
+  --shadow-elevated: 0 2px 6px rgba(11,30,51,0.04), 0 16px 40px -6px rgba(11,30,51,0.10), 0 32px 64px -10px rgba(11,30,51,0.07);
+  --shadow-card-blue: 0 8px 24px -4px rgba(47,159,227,0.12), 0 1px 3px rgba(11,30,51,0.04);
+
+  --color-scheme: light;
+}
+
+html, body {
+  background-color: var(--surface-base) !important;
+  color: var(--text-primary);
+  color-scheme: var(--color-scheme);
+  min-height: 100vh;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+   CUSTOM SCROLLBAR — Brand-matched, premium minimal
+   ============================================================ */
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #2F9FE3 rgba(11, 27, 43, 0.25);
+}
+
+[data-theme="light"] html,
+html[data-theme="light"] {
+  scrollbar-color: #2F9FE3 rgba(17, 45, 73, 0.08);
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(11, 27, 43, 0.20);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2F9FE3 0%, #1C7BC4 100%);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4FAFE8 0%, #2F9FE3 100%);
+  box-shadow: 0 0 8px rgba(47, 159, 227, 0.50);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Light mode scrollbar track */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: rgba(17, 45, 73, 0.06);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2F9FE3 0%, #1878B8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4FAFE8 0%, #2F9FE3 100%);
+  box-shadow: 0 0 8px rgba(47, 159, 227, 0.35);
+}
+
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  color: #112D49;
+  background-color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Light mode — Coastal Architectural Canvas */
+[data-theme="light"] body {
+  background-color: #F4F8FD;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 15% 0%, rgba(47,159,227,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 10%, rgba(234,166,54,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 50% 55%, rgba(47,159,227,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 10% 80%, rgba(99,102,241,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 90% 90%, rgba(47,159,227,0.06) 0%, transparent 55%);
+  background-attachment: fixed;
+}
+
+.hero-video-overlay {
+  background: linear-gradient(180deg, rgba(7, 19, 31, 0.92) 0%, rgba(10, 25, 45, 0.70) 50%, rgba(7, 19, 31, 0.95) 100%);
+}
+
+/* Glassmorphism System Classes (Dark Mode Base) */
+.glass-nav-surface {
+  background: rgba(7, 19, 31, 0.88) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.glass-card-hero {
+  background: rgba(11, 27, 43, 0.65);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.55), 0 8px 24px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.glass-card-interactive {
+  background: rgba(11, 27, 43, 0.60);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-4px);
+  background: rgba(11, 27, 43, 0.75);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 24px 50px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.glass-panel-dark {
+  background: rgba(11, 27, 43, 0.70);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.glass-section-dark {
+  background: radial-gradient(circle at 50% 0%, #112d49 0%, #0B1B2B 55%, #07131F 100%);
+  position: relative;
+  color: #FFFFFF;
+}
+
+.glass-pill-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.glass-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-chip:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.40);
+}
+
+.glass-chip-active {
+  background: rgba(46, 155, 240, 0.20) !important;
+  border-color: rgba(46, 155, 240, 0.85) !important;
+  box-shadow: 0 6px 20px rgba(46, 155, 240, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #2E9BF0;
+  box-shadow: 0 0 0 3px rgba(46, 155, 240, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Ambient Living Glow Keyframes */
+@keyframes ambientDrift1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -40px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 25px) scale(0.95);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes ambientDrift2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-35px, 30px) scale(1.08);
+  }
+  66% {
+    transform: translate(25px, -35px) scale(0.92);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes ambientPulse {
+  0%, 100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.animate-ambient-drift-1 {
+  animation: ambientDrift1 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-ambient-drift-2 {
+  animation: ambientDrift2 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-ambient-pulse {
+  animation: ambientPulse 12s ease-in-out infinite;
+}
+
+/* Staggered load-in sequence */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroBadgeStamp {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) rotate(-9deg) translateY(-8px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05) rotate(1.5deg) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg) translateY(0);
+  }
+}
+
+@keyframes heroAmbientZoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-hero-1 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0ms both; }
+.animate-hero-2 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 100ms both; }
+.animate-hero-3 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 200ms both; }
+.animate-hero-4 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 300ms both; }
+.animate-hero-5 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 400ms both; }
+.animate-hero-6 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 500ms both; }
+.animate-hero-7 { animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 600ms both; }
+
+.animate-hero-stamp {
+  animation: heroBadgeStamp 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 360ms both;
+  will-change: transform, opacity;
+}
+
+.animate-ambient-zoom {
+  animation: heroAmbientZoom 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Typography scale */
+.typo-display {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.typo-h1 {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.typo-h2 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.typo-h3 {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.typo-h4 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.typo-body-lg {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.typo-body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.typo-body-sm {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.typo-label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .typo-display { font-size: 36px; }
+  .typo-h1 { font-size: 28px; }
+  .typo-h2 { font-size: 24px; }
+  .typo-h3 { font-size: 18px; }
+  .typo-h4 { font-size: 16px; }
+  .typo-body-lg { font-size: 16px; }
+}
+
+.prose-width {
+  max-width: 65ch;
+}
+
+.section-padding {
+  padding-top: 96px;
+  padding-bottom: 96px;
+}
+
+@media (max-width: 768px) {
+  .section-padding {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Leaflet Interactive Map Custom Styling */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #07131f !important;
+  font-family: inherit;
+  z-index: 1;
+}
+
+[data-theme="light"] .leaflet-container {
+  background: #E5EEF5 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(11, 27, 43, 0.95) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(11, 27, 43, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.leaflet-popup-close-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+  padding: 6px !important;
+  z-index: 10 !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(11, 27, 43, 0.9) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+[data-theme="light"] .leaflet-control-zoom a {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #112D49 !important;
+  border-color: rgba(17, 45, 73, 0.15) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #2F9FE3 !important;
+  color: #ffffff !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(7, 19, 31, 0.75) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 10px !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+}
+
+[data-theme="light"] .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #64748B !important;
+}
+
+.leaflet-control-attribution a {
+  color: #2F9FE3 !important;
+}
+
+/* ============================================================
+   LIGHT MODE — Glass & Surface Overrides
+   ============================================================ */
+
+/* --- Nav Surface in Light Mode --- */
+[data-theme="light"] .glass-nav-surface {
+  background: rgba(255, 255, 255, 0.94) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  border-bottom: 1px solid rgba(17, 45, 73, 0.07) !important;
+  box-shadow: 0 1px 0 rgba(17,45,73,0.04), 0 4px 24px -4px rgba(11, 30, 51, 0.06) !important;
+}
+
+/* --- Interactive Cards in Light Mode --- */
+[data-theme="light"] :not(.always-dark) .glass-card-interactive {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.07);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="light"] :not(.always-dark) .glass-card-interactive:hover {
+  background: #FFFFFF;
+  border-color: rgba(47, 159, 227, 0.35);
+  box-shadow: var(--shadow-card-blue), 0 0 0 1px rgba(47,159,227,0.10);
+  transform: translateY(-3px);
+}
+
+/* --- Primary Section (glass-section-dark → light mode) --- */
+[data-theme="light"] :not(.always-dark) .glass-section-dark {
+  background: #FFFFFF;
+  position: relative;
+}
+
+/* --- Alternate Section --- */
+[data-theme="light"] .theme-section-alt {
+  background: linear-gradient(180deg, #EEF5FC 0%, #F4F8FD 100%);
+}
+
+/* --- Chips in Light Mode --- */
+[data-theme="light"] :not(.always-dark) .glass-chip {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.09);
+  box-shadow: 0 1px 4px rgba(11, 30, 51, 0.05);
+  color: #0B1E33;
+}
+
+[data-theme="light"] :not(.always-dark) .glass-chip:hover {
+  background: #FFFFFF;
+  border-color: rgba(47, 159, 227, 0.45);
+  box-shadow: 0 4px 16px rgba(47, 159, 227, 0.14);
+  color: #2F9FE3;
+}
+
+[data-theme="light"] :not(.always-dark) .glass-chip-active {
+  background: #2F9FE3 !important;
+  border-color: #2F9FE3 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(47, 159, 227, 0.30) !important;
+}
+
+/* ============================================================
+   THEME-AWARE UTILITY CLASSES
+   ============================================================ */
+
+.text-theme-primary { color: var(--text-primary); }
+.text-theme-secondary { color: var(--text-secondary); }
+.text-theme-muted { color: var(--text-muted); }
+
+.bg-theme-base { background-color: var(--surface-base); }
+.bg-theme-raised { background-color: var(--surface-raised); }
+.bg-theme-sunken { background-color: var(--surface-sunken); }
+
+.border-theme { border-color: var(--border-default); }
+.border-theme-emphasis { border-color: var(--border-emphasis); }
+
+/* ============================================================
+   LIGHT MODE — Premium Card Treatment
+   ============================================================ */
+
+/* White cards in light mode get richer depth */
+[data-theme="light"] .lm-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.07);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+
+[data-theme="light"] .lm-card:hover {
+  border-color: rgba(47, 159, 227, 0.30);
+  box-shadow: var(--shadow-card-blue);
+  transform: translateY(-2px);
+}
+
+/* Section Label pill — more refined in light mode */
+[data-theme="light"] .section-label-pill {
+  background: linear-gradient(135deg, rgba(47,159,227,0.10) 0%, rgba(47,159,227,0.06) 100%);
+  border: 1px solid rgba(47,159,227,0.22);
+  color: #1878B8;
+}
+
+/* ============================================================
+   ALWAYS-DARK ZONE (Hero, Footer)
+   ============================================================ */
+.always-dark {
+  --surface-base: #07131F;
+  --surface-raised: #112D49;
+  --surface-sunken: #07131F;
+  --surface-overlay: rgba(11,27,43,0.65);
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.80);
+  --text-muted: rgba(255,255,255,0.55);
+  --border-default: rgba(255,255,255,0.18);
+  --border-emphasis: rgba(255,255,255,0.32);
+  --shadow-card: 0 16px 36px rgba(0,0,0,0.4);
+  --shadow-elevated: 0 24px 50px rgba(0,0,0,0.55);
+}
+
+.always-dark .glass-card-hero {
+  background: rgba(11, 27, 43, 0.75);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* ============================================================
+   LIGHT MODE — Section Divider System
+   ============================================================ */
+
+/* Subtle section edge lines for visual rhythm */
+[data-theme="light"] section:not(.always-dark):not(:first-of-type)::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, 85%);
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(17,45,73,0.07) 20%, rgba(17,45,73,0.10) 50%, rgba(17,45,73,0.07) 80%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ambient section background orbs — stronger in light mode */
+[data-theme="light"] section:not(.always-dark) .ambient-orb-primary {
+  background: rgba(47, 159, 227, 0.10);
+}
+
+[data-theme="light"] section:not(.always-dark) .ambient-orb-secondary {
+  background: rgba(234, 166, 54, 0.07);
+}
