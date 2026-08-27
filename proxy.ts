@@ -4,7 +4,7 @@ const ADMIN_COOKIE = 'admin_session';
 const PUBLIC_ADMIN_PATHS = ['/admin/login', '/api/admin/auth', '/api/admin/migrate', '/api/track'];
 
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only protect /admin/* and /api/admin/* routes
