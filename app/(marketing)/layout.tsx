@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { StickyCTA } from '@/components/layout/StickyCTA';
+import { StormPromoModal } from '@/components/marketing/StormPromoModal';
 
 export default function MarketingLayout({
   children,
@@ -13,6 +14,7 @@ export default function MarketingLayout({
       <main className="relative min-h-screen">{children}</main>
       <Footer />
       <StickyCTA />
+      <StormPromoModal />
     </>
   );
 }
