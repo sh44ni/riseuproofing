@@ -17,6 +17,7 @@ import {
   Home,
   User,
 } from 'lucide-react';
+import { EstimatesSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface Estimate {
   id: number;
@@ -94,6 +95,10 @@ export default function EstimatesPage() {
   useEffect(() => {
     loadEstimates();
   }, [loadEstimates]);
+
+  if (loading && estimates.length === 0) {
+    return <EstimatesSkeleton />;
+  }
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">

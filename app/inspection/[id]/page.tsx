@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Info,
 } from 'lucide-react';
+import { InspectionReportSkeleton } from '@/components/shared/PortalSkeletons';
 
 interface InspectionPoint {
   id: string;
@@ -86,15 +87,7 @@ export default function PublicInspectionPage({
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-4 animate-spin">
-          <Sparkles size={32} />
-        </div>
-        <p className="text-white font-bold text-lg">Loading Roof Inspection Report...</p>
-        <p className="text-slate-400 text-xs mt-1">Verifying CSLB #1096492 official report</p>
-      </div>
-    );
+    return <InspectionReportSkeleton />;
   }
 
   if (error || !report) {

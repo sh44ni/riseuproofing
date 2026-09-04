@@ -19,6 +19,7 @@ import {
   Truck,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
+import { KanbanSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 export const STAGES = [
   { id: 'permit_pending', label: 'Permit Pending', color: 'border-blue-500/40 text-blue-400 bg-blue-500/10' },
@@ -159,6 +160,10 @@ export default function JobsPage() {
     } finally {
       setCreating(false);
     }
+  }
+
+  if (loading && jobs.length === 0) {
+    return <KanbanSkeleton />;
   }
 
   return (

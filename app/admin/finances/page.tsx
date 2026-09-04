@@ -18,6 +18,7 @@ import {
   Check,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
+import { FinancesSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface FinancialSummary {
   totalBilled: number;
@@ -159,6 +160,10 @@ export default function FinancesPage() {
       (inv.city && inv.city.toLowerCase().includes(q))
     );
   });
+
+  if (loading && invoices.length === 0) {
+    return <FinancesSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto">

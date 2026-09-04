@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 import { AuthUser, ROLE_CONFIG } from '@/lib/rbac';
+import { DashboardSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface StatsResponse {
   revenue: {
@@ -116,15 +117,7 @@ export default function DashboardPage() {
   }, [fetchStats]);
 
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-3 animate-spin">
-          <Sparkles size={28} />
-        </div>
-        <p className="text-white font-bold text-base">Loading Roofing Command Center...</p>
-        <p className="text-slate-400 text-xs mt-1">Aggregating live production, revenue &amp; operations</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!stats) {

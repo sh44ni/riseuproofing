@@ -7,6 +7,7 @@ import LeadsTable, { Lead } from '@/components/admin/LeadsTable';
 import MobileLeadCard from '@/components/admin/leads/MobileLeadCard';
 import AddLeadSheet from '@/components/admin/leads/AddLeadSheet';
 import { AdminAreaChart } from '@/components/admin/Charts';
+import { LeadsTableSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 const STATUSES = ['all', 'new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
 const PRIORITIES = ['all', 'hot', 'warm', 'cool'];
@@ -97,6 +98,10 @@ export default function LeadsPage() {
   }
 
   const totalPages = Math.ceil(total / 20);
+
+  if (loading && leads.length === 0) {
+    return <LeadsTableSkeleton />;
+  }
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
@@ -208,9 +213,21 @@ export default function LeadsPage() {
 
       {/* Main List Views */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading roofing leads...</p>
+        <div className="rounded-2xl border border-white/5 bg-slate-900/60 overflow-hidden divide-y divide-white/5">
+          {[1, 2, 3, 4, 5].map((row) => (
+            <div key={row} className="p-4 flex items-center justify-between gap-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20" />
+                <div className="space-y-1.5">
+                  <div className="w-36 h-4 rounded bg-slate-800" />
+                  <div className="w-24 h-3 rounded bg-slate-800" />
+                </div>
+              </div>
+              <div className="w-32 h-3.5 rounded bg-slate-800 hidden sm:block" />
+              <div className="w-20 h-5 rounded-full bg-slate-800" />
+              <div className="w-16 h-5 rounded-full bg-amber-500/20" />
+            </div>
+          ))}
         </div>
       ) : leads.length === 0 ? (
         <div className="text-center py-16 px-4 bg-slate-900/40 rounded-2xl border border-white/5 space-y-3">

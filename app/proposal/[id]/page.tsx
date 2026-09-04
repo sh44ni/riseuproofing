@@ -13,6 +13,7 @@ import {
   FileCheck,
   Zap,
 } from 'lucide-react';
+import { ProposalDocumentSkeleton } from '@/components/shared/PortalSkeletons';
 
 interface ProposalData {
   id: number;
@@ -105,11 +106,7 @@ export default function CustomerProposalPage({ params }: { params: Promise<{ id:
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <ProposalDocumentSkeleton />;
   }
 
   if (error || !proposal) {

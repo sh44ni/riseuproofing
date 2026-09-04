@@ -19,6 +19,7 @@ import {
   User,
 } from 'lucide-react';
 import QuickMessageModal from '@/components/admin/timeline/QuickMessageModal';
+import { WarrantiesSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface WarrantyItem {
   id: number;
@@ -124,6 +125,10 @@ export default function WarrantiesPage() {
       (w.job_number && w.job_number.toLowerCase().includes(q))
     );
   });
+
+  if (loading && warranties.length === 0) {
+    return <WarrantiesSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto">

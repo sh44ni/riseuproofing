@@ -16,6 +16,7 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react';
+import { WarrantyCertificateSkeleton } from '@/components/shared/PortalSkeletons';
 
 interface WarrantyData {
   id: number;
@@ -67,12 +68,7 @@ export default function WarrantyCertificatePage({
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm font-semibold">Verifying Warranty Certificate...</span>
-      </div>
-    );
+    return <WarrantyCertificateSkeleton />;
   }
 
   if (error || !warranty) {

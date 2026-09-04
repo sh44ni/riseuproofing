@@ -20,6 +20,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
+import { CrewRosterSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface CrewMember {
   id: number;
@@ -212,6 +213,10 @@ export default function CrewPage() {
       (m.job_number && m.job_number.toLowerCase().includes(q))
     );
   });
+
+  if (loading && crew.length === 0) {
+    return <CrewRosterSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto">

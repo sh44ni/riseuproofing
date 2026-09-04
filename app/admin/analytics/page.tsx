@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { AdminAreaChart, AdminBarChart, AdminPieChart } from '@/components/admin/Charts';
 import HeatmapCanvas from '@/components/admin/HeatmapCanvas';
+import { Skeleton } from '@/components/shared/Skeleton';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface AnalyticsData {
@@ -299,8 +300,22 @@ function AnalyticsContent() {
           </div>
 
           {loadingTraffic ? (
-            <div className="py-20 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RefreshCw size={16} className="animate-spin text-amber-400" /> Loading web analytics...
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+                    <Skeleton className="w-24 h-3" />
+                    <Skeleton className="w-20 h-7 rounded-lg" />
+                  </div>
+                ))}
+              </div>
+              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="w-48 h-5" />
+                  <Skeleton className="w-24 h-4" />
+                </div>
+                <Skeleton className="w-full h-72 rounded-2xl" />
+              </div>
             </div>
           ) : data ? (
             <>
@@ -441,8 +456,19 @@ function AnalyticsContent() {
           </div>
 
           {loadingCalls ? (
-            <div className="py-20 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RefreshCw size={16} className="animate-spin text-amber-400" /> Loading call logs...
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+                    <Skeleton className="w-24 h-3" />
+                    <Skeleton className="w-16 h-7 rounded-lg" />
+                  </div>
+                ))}
+              </div>
+              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+                <Skeleton className="w-48 h-5" />
+                <Skeleton className="w-full h-64 rounded-2xl" />
+              </div>
             </div>
           ) : callsData ? (
             <>
@@ -567,8 +593,24 @@ function AnalyticsContent() {
           </div>
 
           {loadingHeatmap ? (
-            <div className="py-20 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RefreshCw size={16} className="animate-spin text-amber-400" /> Rendering click density heatmap...
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2 p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="w-56 h-5" />
+                  <Skeleton className="w-24 h-4" />
+                </div>
+                <Skeleton className="w-full h-96 rounded-2xl" />
+              </div>
+              <div className="space-y-4">
+                <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+                  <Skeleton className="w-40 h-5" />
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <Skeleton key={i} className="w-full h-8 rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : heatmapData ? (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

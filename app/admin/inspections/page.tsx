@@ -16,6 +16,7 @@ import {
   Shield,
   FileText,
 } from 'lucide-react';
+import { InspectionsSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface InspectionItem {
   id: number;
@@ -86,6 +87,10 @@ export default function InspectionsPage() {
       (i.inspector_name && i.inspector_name.toLowerCase().includes(q))
     );
   });
+
+  if (loading && inspections.length === 0) {
+    return <InspectionsSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto">
