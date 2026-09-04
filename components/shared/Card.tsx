@@ -25,10 +25,10 @@ export function Card({
       className={cn(
         'rounded-2xl overflow-hidden p-6 md:p-8 transition-all duration-300',
         variant === 'glass' && [
-          'glass-card-interactive text-white',
+          'glass-card-interactive text-[var(--text-primary)]',
           interactive && 'hover:-translate-y-1.5'
         ],
-        variant === 'glass-hero' && 'glass-card-hero text-white',
+        variant === 'glass-hero' && 'glass-card-hero text-[var(--text-primary)]',
         variant === 'default' && [
           'bg-white rounded-2xl shadow-sm text-brand-navy border border-slate-100',
           interactive && 'hover:shadow-md hover:-translate-y-1'

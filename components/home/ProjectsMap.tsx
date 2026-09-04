@@ -278,13 +278,12 @@ export function ProjectsMap() {
   };
 
   return (
-    <Section id="map" dark={true} alternate={true}>
+    <Section id="map" alternate={true}>
       <SectionHeading
         label="Our Completed Work"
         title="Projects Across San Diego"
         subtitle="Trusted by homeowners and businesses throughout San Diego County. Click any pin to inspect real project specifications."
         centered={true}
-        dark={true}
       />
 
       {/* Filter Tabs */}
@@ -298,7 +297,7 @@ export function ProjectsMap() {
               'px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-2',
               filter === cat.key
                 ? 'bg-brand-blue text-white border-brand-blue shadow-xs'
-                : 'bg-white dark:bg-[#0B1B2B] text-[#475569] dark:text-white/80 border-slate-200/80 dark:border-white/10 hover:border-brand-blue/40 shadow-2xs'
+                : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/40 shadow-2xs'
             )}
           >
             {cat.key !== 'all' && (
@@ -329,7 +328,7 @@ export function ProjectsMap() {
             key={c.name}
             type="button"
             onClick={() => handleCityClick(c.lat, c.lng, c.name)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#0B1B2B] hover:bg-blue-50 dark:hover:bg-brand-blue/15 border border-slate-200/70 dark:border-white/10 hover:border-brand-blue/40 text-[11px] font-semibold text-[#475569] dark:text-white/80 hover:text-brand-blue transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-blue-50 border border-slate-200/70 hover:border-brand-blue/40 text-[11px] font-semibold text-[#475569] hover:text-brand-blue transition-all cursor-pointer shadow-2xs"
           >
             <MapPin className="w-3 h-3 text-brand-blue flex-shrink-0" />
             <span>{c.name}</span>
@@ -340,7 +339,7 @@ export function ProjectsMap() {
       {/* Main Map + Project Details Showcase Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Map Container (8 cols) */}
-        <div className="lg:col-span-8 bg-white dark:bg-[#0B1B2B] rounded-3xl overflow-hidden border border-slate-100 dark:border-white/10 p-2 shadow-[0_20px_50px_-12px_rgba(11,30,51,0.08)] dark:shadow-2xl relative min-h-[460px] lg:min-h-[540px] flex flex-col">
+        <div className="lg:col-span-8 bg-white rounded-3xl overflow-hidden border border-slate-100 p-2 shadow-[0_20px_50px_-12px_rgba(11,30,51,0.08)] relative min-h-[460px] lg:min-h-[540px] flex flex-col">
           {/* Map Surface */}
           <div ref={mapContainerRef} className="w-full h-full min-h-[440px] lg:min-h-[520px] rounded-2xl overflow-hidden" />
         </div>
@@ -348,10 +347,10 @@ export function ProjectsMap() {
         {/* Selected Project Inspector Card (4 cols) */}
         <div className="lg:col-span-4 flex flex-col">
           {selectedProject ? (
-            <div className="bg-white dark:bg-[#0B1B2B] rounded-3xl p-6 sm:p-7 border border-slate-100 dark:border-white/10 flex flex-col justify-between h-full space-y-6 shadow-[0_20px_50px_-12px_rgba(11,30,51,0.08)] dark:shadow-2xl">
+            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-100 flex flex-col justify-between h-full space-y-6 shadow-[0_20px_50px_-12px_rgba(11,30,51,0.08)]">
               <div>
                 {/* Project Image */}
-                <div className="relative h-48 sm:h-52 w-full rounded-2xl overflow-hidden mb-4 border border-slate-100 dark:border-white/10 group">
+                <div className="relative h-48 sm:h-52 w-full rounded-2xl overflow-hidden mb-4 border border-slate-100 group">
                   <Image
                     src={selectedProject.image}
                     alt={selectedProject.title}
@@ -386,14 +385,14 @@ export function ProjectsMap() {
                 </p>
 
                 {/* Specs Box */}
-                <div className="bg-slate-50/80 dark:bg-white/5 rounded-2xl p-4 border border-slate-200/60 dark:border-white/10 space-y-2.5">
+                <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/60 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[var(--text-muted)] font-medium">Primary Materials:</span>
                     <span className="font-bold text-[var(--text-primary)] text-right">{selectedProject.materials}</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs pt-2.5 border-t border-slate-200/60 dark:border-white/10">
+                  <div className="flex items-center justify-between text-xs pt-2.5 border-t border-slate-200/60">
                     <span className="text-[var(--text-muted)] font-medium">Warranty Issued:</span>
-                    <span className="font-bold text-emerald-700 dark:text-emerald-400">Owens Corning 50-Year</span>
+                    <span className="font-bold text-emerald-700">Owens Corning 50-Year</span>
                   </div>
                 </div>
               </div>
@@ -410,7 +409,7 @@ export function ProjectsMap() {
 
                 <a
                   href={PHONE_HREF}
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-[var(--text-primary)] text-xs font-bold border border-slate-200/80 dark:border-white/10 hover:border-brand-blue/30 transition-all"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[var(--text-primary)] text-xs font-bold border border-slate-200/80 hover:border-brand-blue/30 transition-all"
                 >
                   <Phone className="w-3.5 h-3.5 text-brand-blue" />
                   <span>Call About Similar Project</span>
@@ -418,7 +417,7 @@ export function ProjectsMap() {
               </div>
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#0B1B2B] rounded-3xl p-6 border border-slate-100 dark:border-white/10 flex items-center justify-center h-full text-center text-[var(--text-muted)] text-sm shadow-[0_20px_50px_-12px_rgba(11,30,51,0.08)]">
+            <div className="bg-white rounded-3xl p-6 border border-slate-100 flex items-center justify-center h-full text-center text-[var(--text-muted)] text-sm shadow-[0_20px_50px_-12px_rgba(11,30,51,0.08)]">
               Click any pin on the map to inspect project specifications.
             </div>
           )}

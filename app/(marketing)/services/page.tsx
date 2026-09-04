@@ -20,14 +20,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export default function ServicesPage() {
   return (
-    <Section dark={true} alternate={false} className="pt-32 sm:pt-36">
+    <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Services' }]} />
       
       <SectionHeading
         label="Our Services"
         title="Complete Roofing &amp; Construction Solutions"
         subtitle="From complete roof replacements and tile relays to commercial flat roofing and emergency leak detection, our licensed team delivers professional results built for coastal longevity."
-        dark={true}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -37,7 +36,7 @@ export default function ServicesPage() {
 
           return (
             <Link key={service.slug} href={`/services/${service.slug}`} className="group flex">
-              <div className="glass-card-interactive rounded-2xl overflow-hidden p-5 sm:p-6 flex flex-col w-full h-full border border-white/15 hover:border-white/30 transition-all duration-300">
+              <div className="glass-card-interactive rounded-2xl overflow-hidden p-5 sm:p-6 flex flex-col w-full h-full border border-slate-200/80 hover:border-brand-blue/30 shadow-xs transition-all duration-300">
                 {/* Image */}
                 <div className="relative h-52 -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 mb-5 overflow-hidden rounded-t-xl">
                   <Image
@@ -58,29 +57,29 @@ export default function ServicesPage() {
 
                 {/* Icon & Title */}
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand-blue/20 text-brand-blue border border-brand-blue/30 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-brand-blue border border-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-brand-blue transition-colors">
+                  <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
                     {service.name}
                   </h3>
                 </div>
 
-                <p className="text-xs text-white/70 leading-relaxed flex-1 mb-4 line-clamp-2">
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed flex-1 mb-4 line-clamp-2">
                   {service.shortDescription}
                 </p>
 
                 {/* Includes chips */}
                 <ul className="space-y-1.5 mb-5">
                   {topIncludes.map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-xs text-white/80">
+                    <li key={item} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                       <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-white transition-colors">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-[#1C88DD] transition-colors">
                   <span>View Specifications &amp; Pricing</span>
                   <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                 </div>

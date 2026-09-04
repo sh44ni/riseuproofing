@@ -87,26 +87,25 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       </section>
 
       {/* What's Included */}
-      <Section dark={true} alternate={false}>
+      <Section alternate={false}>
         <SectionHeading
           label="What's Included"
           title={`Our ${service.name} Scope of Work`}
           subtitle="Every project includes comprehensive property protection, premium materials, and certified installation."
-          dark={true}
           centered={false}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {service.includes.map((item) => (
             <div
               key={item}
-              className="glass-card-interactive rounded-2xl p-5 flex items-start gap-3.5 border-white/15"
+              className="glass-card-interactive rounded-2xl p-5 flex items-start gap-3.5 border border-slate-200/80 shadow-xs"
             >
-              <div className="w-8 h-8 rounded-xl bg-brand-blue/20 text-brand-blue flex items-center justify-center flex-shrink-0 mt-0.5 border border-brand-blue/30">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 mt-0.5 border border-blue-100">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white mb-1">{item}</h4>
-                <p className="text-xs text-white/65 leading-relaxed">
+                <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">{item}</h4>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                   Engineered and inspected according to manufacturer specifications and San Diego coastal building codes.
                 </p>
               </div>
@@ -116,26 +115,25 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       </Section>
 
       {/* Process */}
-      <Section dark={true} alternate={true}>
+      <Section alternate={true}>
         <SectionHeading
           label="Our Process"
           title="How We Deliver Lasting Results"
           subtitle="A seamless 5-step workflow designed for complete transparency, safety, and guaranteed quality."
-          dark={true}
           centered={false}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           {service.processSteps.map((step, index) => (
             <div
               key={index}
-              className="glass-card-interactive rounded-2xl p-5 flex flex-col justify-between border-white/15"
+              className="glass-card-interactive rounded-2xl p-5 flex flex-col justify-between border border-slate-200/80 shadow-xs"
             >
               <div>
                 <div className="w-10 h-10 rounded-xl bg-brand-blue text-white flex items-center justify-center font-extrabold text-sm mb-4 shadow-md shadow-brand-blue/30">
                   0{index + 1}
                 </div>
-                <h4 className="text-sm font-bold text-white mb-2">{step.title}</h4>
-                <p className="text-xs text-white/70 leading-relaxed">{step.description}</p>
+                <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2">{step.title}</h4>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{step.description}</p>
               </div>
             </div>
           ))}
@@ -144,18 +142,17 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
 
       {/* Related Projects */}
       {relatedProjects.length > 0 && (
-        <Section dark={true} alternate={false}>
+        <Section alternate={false}>
           <SectionHeading
             label="Real Craftsmanship"
             title={`Recent ${service.name} Projects`}
             subtitle="Explore our completed work in San Diego County."
-            dark={true}
             centered={false}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {relatedProjects.map((project) => (
               <Link key={project.slug} href={`/projects/${project.slug}`} className="group flex">
-                <div className="image-overlay-card glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border-white/15">
+                <div className="image-overlay-card glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border border-slate-200/80 shadow-xs">
                   <div className="relative h-52 overflow-hidden">
                     <Image
                       src={project.afterImage}
@@ -168,12 +165,12 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                   </div>
                   <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-white mb-1 group-hover:text-brand-blue transition-colors">
+                      <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1 group-hover:text-brand-blue transition-colors">
                         {project.title}
                       </h4>
-                      <p className="text-xs text-white/60 mb-3">{project.city}, CA</p>
+                      <p className="text-xs text-[var(--text-muted)] mb-3">{project.city}, CA</p>
                     </div>
-                    <span className="text-xs font-bold text-brand-blue flex items-center gap-1 group-hover:text-white transition-colors">
+                    <span className="text-xs font-bold text-brand-blue flex items-center gap-1 group-hover:text-[#1C88DD] transition-colors">
                       View Project <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
@@ -186,26 +183,25 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
 
       {/* FAQ */}
       {service.faqs.length > 0 && (
-        <Section dark={true} alternate={true}>
+        <Section alternate={true}>
           <SectionHeading
             label="Common Questions"
             title={`${service.name} FAQ`}
             subtitle="Answers to the most frequently asked questions about this roofing service."
-            dark={true}
             centered={true}
           />
-          <FAQAccordion items={service.faqs} dark={true} />
+          <FAQAccordion items={service.faqs} />
         </Section>
       )}
 
       {/* Service CTA Banner */}
-      <section className="py-16 bg-[#07131F] border-t border-white/10 relative">
+      <section className="py-16 bg-[#F4F8FD] border-t border-slate-200/80 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <div className="glass-card-hero rounded-3xl p-8 sm:p-10 border-white/20 shadow-2xl">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">
+          <div className="glass-card-hero rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-md">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-3">
               Ready for a Free {service.name} Proposal?
             </h2>
-            <p className="text-xs sm:text-sm text-white/75 mb-6 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-6 max-w-md mx-auto leading-relaxed">
               Schedule your 100% free inspection with our licensed San Diego specialists today.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -216,7 +212,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                 </span>
               </Link>
               <a href={PHONE_HREF}>
-                <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl backdrop-blur-md transition-all">
+                <span className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-xs">
                   <Phone className="w-4 h-4 text-brand-blue" />
                   <span>Call {PHONE_NUMBER}</span>
                 </span>

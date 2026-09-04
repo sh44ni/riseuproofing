@@ -5,7 +5,6 @@ interface SectionHeadingProps {
   title: string;
   subtitle?: string;
   centered?: boolean;
-  dark?: boolean;
   className?: string;
 }
 
@@ -20,7 +19,7 @@ export function SectionHeading({
     <div className={cn('mb-10 lg:mb-14', centered && 'text-center', className)}>
       {label && (
         <div className={cn('mb-4 inline-flex', centered && 'justify-center')}>
-          <span className="section-label-pill px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.08em] text-brand-blue bg-blue-50/80 dark:bg-brand-blue/15 border border-blue-100/80 dark:border-brand-blue/30 shadow-[0_1px_3px_rgba(47,159,227,0.10)] dark:shadow-none">
+          <span className="section-label-pill px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.08em] text-brand-blue bg-blue-50/80 border border-blue-100/80 shadow-[0_1px_3px_rgba(47,159,227,0.10)]">
             {label}
           </span>
         </div>

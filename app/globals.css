@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
 @theme {
   /* Brand Colors from /updated_branding */
   --color-brand-navy: #112D49;
@@ -16,7 +14,7 @@
 }
 
 /* ============================================================
-   SEMANTIC THEME TOKENS — Dark Mode Defaults
+   SEMANTIC THEME TOKENS — "Coastal Architectural Daylight"
    ============================================================ */
 :root {
   /* Layout tokens */
@@ -24,56 +22,31 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
   --container-max: 1280px;
 
   /* Surface tokens */
-  --surface-base: #07131F;
-  --surface-raised: #112D49;
-  --surface-sunken: #07131F;
-  --surface-overlay: rgba(11,27,43,0.65);
-
-  /* Text tokens */
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(255,255,255,0.80);
-  --text-muted: rgba(255,255,255,0.55);
-  --text-on-dark: #FFFFFF;
-
-  /* Border tokens */
-  --border-default: rgba(255,255,255,0.18);
-  --border-emphasis: rgba(255,255,255,0.32);
-
-  /* Shadow tokens */
-  --shadow-card: 0 16px 36px rgba(0,0,0,0.4);
-  --shadow-elevated: 0 24px 50px rgba(0,0,0,0.55);
-
-  /* Color scheme */
-  --color-scheme: dark;
-}
-
-/* ============================================================
-   LIGHT MODE — "Coastal Architectural Daylight"
-   ============================================================ */
-[data-theme="light"] {
   --surface-base: #F4F8FD;
   --surface-raised: #FFFFFF;
   --surface-sunken: #E8F0FA;
-  --surface-overlay: rgba(255,255,255,0.95);
+  --surface-overlay: rgba(255, 255, 255, 0.95);
 
+  /* Text tokens */
   --text-primary: #0B1E33;
   --text-secondary: #1E3A52;
   --text-muted: #4E6478;
   --text-on-dark: #FFFFFF;
 
-  --border-default: rgba(17,45,73,0.09);
-  --border-emphasis: rgba(17,45,73,0.18);
+  /* Border tokens */
+  --border-default: rgba(17, 45, 73, 0.09);
+  --border-emphasis: rgba(17, 45, 73, 0.18);
 
-  /* Richer, more directional shadows for premium depth */
-  --shadow-card: 0 1px 3px rgba(11,30,51,0.04), 0 8px 24px -4px rgba(11,30,51,0.07), 0 24px 48px -8px rgba(11,30,51,0.05);
-  --shadow-elevated: 0 2px 6px rgba(11,30,51,0.04), 0 16px 40px -6px rgba(11,30,51,0.10), 0 32px 64px -10px rgba(11,30,51,0.07);
-  --shadow-card-blue: 0 8px 24px -4px rgba(47,159,227,0.12), 0 1px 3px rgba(11,30,51,0.04);
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(11, 30, 51, 0.04);
+  --shadow-md: 0 4px 12px rgba(11, 30, 51, 0.06);
+  --shadow-lg: 0 12px 32px rgba(11, 30, 51, 0.08);
+  --shadow-card: 0 1px 3px rgba(11, 30, 51, 0.04), 0 8px 24px -4px rgba(11, 30, 51, 0.07), 0 24px 48px -8px rgba(11, 30, 51, 0.05);
+  --shadow-elevated: 0 2px 6px rgba(11, 30, 51, 0.04), 0 16px 40px -6px rgba(11, 30, 51, 0.10), 0 32px 64px -10px rgba(11, 30, 51, 0.07);
+  --shadow-card-blue: 0 8px 24px -4px rgba(47, 159, 227, 0.12), 0 1px 3px rgba(11, 30, 51, 0.04);
 
   --color-scheme: light;
 }
@@ -81,7 +54,7 @@
 html, body {
   background-color: var(--surface-base) !important;
   color: var(--text-primary);
-  color-scheme: var(--color-scheme);
+  color-scheme: light;
   min-height: 100vh;
 }
 
@@ -97,11 +70,6 @@ html {
 /* Firefox */
 html {
   scrollbar-width: thin;
-  scrollbar-color: #2F9FE3 rgba(11, 27, 43, 0.25);
-}
-
-[data-theme="light"] html,
-html[data-theme="light"] {
   scrollbar-color: #2F9FE3 rgba(17, 45, 73, 0.08);
 }
 
@@ -112,52 +80,29 @@ html[data-theme="light"] {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(11, 27, 43, 0.20);
+  background: rgba(17, 45, 73, 0.06);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #2F9FE3 0%, #1C7BC4 100%);
+  background: linear-gradient(180deg, #2F9FE3 0%, #1878B8 100%);
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.40);
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #4FAFE8 0%, #2F9FE3 100%);
-  box-shadow: 0 0 8px rgba(47, 159, 227, 0.50);
+  box-shadow: 0 0 8px rgba(47, 159, 227, 0.35);
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* Light mode scrollbar track */
-[data-theme="light"] ::-webkit-scrollbar-track {
-  background: rgba(17, 45, 73, 0.06);
-}
-
-[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #2F9FE3 0%, #1878B8 100%);
-  border: 1px solid rgba(255, 255, 255, 0.40);
-}
-
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #4FAFE8 0%, #2F9FE3 100%);
-  box-shadow: 0 0 8px rgba(47, 159, 227, 0.35);
-}
-
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   color: var(--text-primary);
-  background-color: var(--surface-base);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* Light mode — Coastal Architectural Canvas */
-[data-theme="light"] body {
   background-color: #F4F8FD;
   background-image:
     radial-gradient(ellipse 80% 40% at 15% 0%, rgba(47,159,227,0.12) 0%, transparent 60%),
@@ -166,105 +111,114 @@ body {
     radial-gradient(ellipse 40% 40% at 10% 80%, rgba(99,102,241,0.05) 0%, transparent 50%),
     radial-gradient(ellipse 50% 40% at 90% 90%, rgba(47,159,227,0.06) 0%, transparent 55%);
   background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .hero-video-overlay {
   background: linear-gradient(180deg, rgba(7, 19, 31, 0.92) 0%, rgba(10, 25, 45, 0.70) 50%, rgba(7, 19, 31, 0.95) 100%);
 }
 
-/* Glassmorphism System Classes (Dark Mode Base) */
+/* Glassmorphism System Classes (Clean Light Mode Base) */
 .glass-nav-surface {
-  background: rgba(7, 19, 31, 0.88) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
   -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
   backdrop-filter: blur(28px) saturate(200%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border-bottom: 1px solid rgba(17, 45, 73, 0.07) !important;
+  box-shadow: 0 1px 0 rgba(17,45,73,0.04), 0 4px 24px -4px rgba(11, 30, 51, 0.06) !important;
 }
 
 .glass-card-hero {
-  background: rgba(11, 27, 43, 0.65);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  backdrop-filter: blur(24px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.55), 0 8px 24px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.10);
+  box-shadow: var(--shadow-elevated);
+  color: var(--text-primary);
 }
 
 .glass-card-interactive {
-  background: rgba(11, 27, 43, 0.60);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.07);
+  box-shadow: var(--shadow-card);
+  color: var(--text-primary);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
 }
 
 .glass-card-interactive:hover {
-  transform: translateY(-4px);
-  background: rgba(11, 27, 43, 0.75);
-  border-color: rgba(255, 255, 255, 0.32);
-  box-shadow: 0 24px 50px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: #FFFFFF;
+  border-color: rgba(47, 159, 227, 0.35);
+  box-shadow: var(--shadow-card-blue), 0 0 0 1px rgba(47,159,227,0.10);
+  transform: translateY(-3px);
 }
 
 .glass-panel-dark {
-  background: rgba(11, 27, 43, 0.70);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  backdrop-filter: blur(24px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.08);
+  box-shadow: var(--shadow-card);
+  color: var(--text-primary);
 }
 
 .glass-section-dark {
-  background: radial-gradient(circle at 50% 0%, #112d49 0%, #0B1B2B 55%, #07131F 100%);
+  background: #FFFFFF;
   position: relative;
+  color: var(--text-primary);
+}
+
+.theme-section-alt {
+  background: linear-gradient(180deg, #EEF5FC 0%, #F4F8FD 100%);
+  color: var(--text-primary);
+}
+
+.image-overlay-card {
   color: #FFFFFF;
 }
 
 .glass-pill-badge {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  color: #FFFFFF;
+  background: rgba(47, 159, 227, 0.08);
+  border: 1px solid rgba(47, 159, 227, 0.20);
+  color: #1878B8;
 }
 
 .glass-chip {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.09);
+  box-shadow: 0 1px 4px rgba(11, 30, 51, 0.05);
+  color: #0B1E33;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-chip:hover {
+  background: #FFFFFF;
+  border-color: rgba(47, 159, 227, 0.45);
+  box-shadow: 0 4px 16px rgba(47, 159, 227, 0.14);
+  color: #2F9FE3;
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.32);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.40);
 }
 
 .glass-chip-active {
-  background: rgba(46, 155, 240, 0.20) !important;
-  border-color: rgba(46, 155, 240, 0.85) !important;
-  box-shadow: 0 6px 20px rgba(46, 155, 240, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  background: #2F9FE3 !important;
+  border-color: #2F9FE3 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(47, 159, 227, 0.30) !important;
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.08);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-  color: #FFFFFF;
+  background: #FFFFFF;
+  border: 1px solid rgba(17, 45, 73, 0.14);
+  box-shadow: inset 0 1px 2px rgba(11, 30, 51, 0.04);
+  color: var(--text-primary);
   transition: all 0.2s ease;
 }
 
 .glass-input:focus {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: #2E9BF0;
-  box-shadow: 0 0 0 3px rgba(46, 155, 240, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: #FFFFFF;
+  border-color: #2F9FE3;
+  box-shadow: 0 0 0 3px rgba(47, 159, 227, 0.15), inset 0 1px 2px rgba(11, 30, 51, 0.04);
   outline: none;
 }
 
 .glass-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(11, 30, 51, 0.40);
 }
 
 /* Ambient Living Glow Keyframes */
@@ -462,27 +416,21 @@ body {
   }
 }
 
-/* Leaflet Interactive Map Custom Styling */
+/* Leaflet Interactive Map Custom Styling (Light Canvas) */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #07131f !important;
+  background: #E5EEF5 !important;
   font-family: inherit;
   z-index: 1;
 }
 
-[data-theme="light"] .leaflet-container {
-  background: #E5EEF5 !important;
-}
-
 .leaflet-popup-content-wrapper {
-  background: rgba(11, 27, 43, 0.95) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  color: #0B1E33 !important;
+  border: 1px solid rgba(17, 45, 73, 0.12) !important;
   border-radius: 16px !important;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 16px 36px -8px rgba(11, 30, 51, 0.15) !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -493,31 +441,25 @@ body {
 }
 
 .leaflet-popup-tip {
-  background: rgba(11, 27, 43, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(17, 45, 73, 0.12) !important;
 }
 
 .leaflet-popup-close-button {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: rgba(11, 30, 51, 0.6) !important;
   padding: 6px !important;
   z-index: 10 !important;
 }
 
 .leaflet-popup-close-button:hover {
-  color: #ffffff !important;
+  color: #0B1E33 !important;
 }
 
 .leaflet-control-zoom a {
-  background: rgba(11, 27, 43, 0.9) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(10px) !important;
-}
-
-[data-theme="light"] .leaflet-control-zoom a {
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   color: #112D49 !important;
   border-color: rgba(17, 45, 73, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .leaflet-control-zoom a:hover {
@@ -526,249 +468,16 @@ body {
 }
 
 .leaflet-control-attribution {
-  background: rgba(7, 19, 31, 0.75) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #64748B !important;
   font-size: 10px !important;
   border-radius: 6px !important;
   padding: 2px 6px !important;
 }
 
-[data-theme="light"] .leaflet-control-attribution {
-  background: rgba(255, 255, 255, 0.85) !important;
-  color: #64748B !important;
-}
-
 .leaflet-control-attribution a {
   color: #2F9FE3 !important;
 }
-
-/* ============================================================
-   LIGHT MODE — Glass & Surface Overrides
-   ============================================================ */
-
-/* --- Nav Surface in Light Mode --- */
-[data-theme="light"] .glass-nav-surface {
-  background: rgba(255, 255, 255, 0.94) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
-  backdrop-filter: blur(28px) saturate(200%) !important;
-  border-bottom: 1px solid rgba(17, 45, 73, 0.07) !important;
-  box-shadow: 0 1px 0 rgba(17,45,73,0.04), 0 4px 24px -4px rgba(11, 30, 51, 0.06) !important;
-}
-
-/* --- Interactive Cards in Light Mode --- */
-[data-theme="light"] :not(.always-dark) .glass-card-interactive {
-  background: #FFFFFF;
-  border: 1px solid rgba(17, 45, 73, 0.07);
-  box-shadow: var(--shadow-card);
-  color: var(--text-primary);
-}
-
-[data-theme="light"] :not(.always-dark) .glass-card-interactive:hover {
-  background: #FFFFFF;
-  border-color: rgba(47, 159, 227, 0.35);
-  box-shadow: var(--shadow-card-blue), 0 0 0 1px rgba(47,159,227,0.10);
-  transform: translateY(-3px);
-}
-
-/* --- Hero Cards in Light Mode --- */
-[data-theme="light"] :not(.always-dark) .glass-card-hero {
-  background: #FFFFFF;
-  border: 1px solid rgba(17, 45, 73, 0.10);
-  box-shadow: var(--shadow-elevated);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  color: var(--text-primary);
-}
-
-/* --- Dark Panels in Light Mode --- */
-[data-theme="light"] :not(.always-dark) .glass-panel-dark {
-  background: #FFFFFF;
-  border: 1px solid rgba(17, 45, 73, 0.08);
-  box-shadow: var(--shadow-card);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  color: var(--text-primary);
-}
-
-/* --- Primary Section (glass-section-dark → light mode) --- */
-[data-theme="light"] :not(.always-dark) .glass-section-dark {
-  background: #FFFFFF;
-  color: var(--text-primary);
-  position: relative;
-}
-
-/* image-overlay-card resets color to white inside any light-mode section.
-   This is the base anchor — explicit text-white/* classes on children
-   then work correctly against this white baseline. */
-[data-theme="light"] .image-overlay-card {
-  color: #FFFFFF;
-}
-
-/* --- Alternate Section --- */
-[data-theme="light"] .theme-section-alt {
-  background: linear-gradient(180deg, #EEF5FC 0%, #F4F8FD 100%);
-  color: var(--text-primary);
-}
-
-/* --- Chips in Light Mode --- */
-[data-theme="light"] :not(.always-dark) .glass-chip {
-  background: #FFFFFF;
-  border: 1px solid rgba(17, 45, 73, 0.09);
-  box-shadow: 0 1px 4px rgba(11, 30, 51, 0.05);
-  color: #0B1E33;
-}
-
-[data-theme="light"] :not(.always-dark) .glass-chip:hover {
-  background: #FFFFFF;
-  border-color: rgba(47, 159, 227, 0.45);
-  box-shadow: 0 4px 16px rgba(47, 159, 227, 0.14);
-  color: #2F9FE3;
-}
-
-[data-theme="light"] :not(.always-dark) .glass-chip-active {
-  background: #2F9FE3 !important;
-  border-color: #2F9FE3 !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 16px rgba(47, 159, 227, 0.30) !important;
-}
-
-/* --- Pills / Badges in Light Mode --- */
-[data-theme="light"] :not(.always-dark) .glass-pill-badge {
-  background: rgba(47, 159, 227, 0.08);
-  border: 1px solid rgba(47, 159, 227, 0.20);
-  color: #1878B8;
-}
-
-/* --- Inputs in Light Mode --- */
-[data-theme="light"] :not(.always-dark) .glass-input {
-  background: #FFFFFF;
-  border: 1px solid rgba(17, 45, 73, 0.14);
-  box-shadow: inset 0 1px 2px rgba(11, 30, 51, 0.04);
-  color: var(--text-primary);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-[data-theme="light"] :not(.always-dark) .glass-input::placeholder {
-  color: rgba(11, 30, 51, 0.40);
-}
-
-[data-theme="light"] :not(.always-dark) .glass-input:focus {
-  background: #FFFFFF;
-  border-color: #2F9FE3;
-  box-shadow: 0 0 0 3px rgba(47, 159, 227, 0.15), inset 0 1px 2px rgba(11, 30, 51, 0.04);
-}
-
-/* ============================================================
-   LIGHT MODE — Targeted text-white override
-   Only applies inside containers known to become white in light mode.
-   image-overlay-card elements (ServicesOverview, FeaturedProjects,
-   project cards) keep their dark gradient + white text.
-   ============================================================ */
-
-/* Inside white glass interactive cards */
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white,
-[data-theme="light"] :not(.always-dark) .glass-panel-dark .text-white {
-  color: var(--text-primary) !important;
-}
-
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/80,
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/85,
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/75,
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/70,
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/65,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/80,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/75,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/70,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/65 {
-  color: var(--text-secondary) !important;
-}
-
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/60,
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .text-white\/50,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/60,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .text-white\/50 {
-  color: var(--text-muted) !important;
-}
-
-/* image-overlay-card: keeps white text (dark gradient over image, always legible).
-   Must outrank the glass-section-dark .text-white rule above — use higher specificity
-   by chaining the section/card parent with image-overlay-card. */
-[data-theme="light"] .image-overlay-card .text-white,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white,
-[data-theme="light"] .theme-section-alt .image-overlay-card .text-white,
-[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white {
-  color: #FFFFFF !important;
-}
-[data-theme="light"] .image-overlay-card .text-white\/90,
-[data-theme="light"] .image-overlay-card .text-white\/80,
-[data-theme="light"] .image-overlay-card .text-white\/85,
-[data-theme="light"] .image-overlay-card .text-white\/75,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/90,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/80,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/85,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/75,
-[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/80,
-[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/75 {
-  color: rgba(255,255,255,0.82) !important;
-}
-[data-theme="light"] .image-overlay-card .text-white\/70,
-[data-theme="light"] .image-overlay-card .text-white\/65,
-[data-theme="light"] .image-overlay-card .text-white\/60,
-[data-theme="light"] .image-overlay-card .text-white\/50,
-[data-theme="light"] .image-overlay-card .text-white\/45,
-[data-theme="light"] .image-overlay-card .text-white\/40,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/70,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/65,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/60,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/50,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/45,
-[data-theme="light"] .glass-section-dark .image-overlay-card .text-white\/40,
-[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/70,
-[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/60,
-[data-theme="light"] .glass-card-interactive .image-overlay-card .text-white\/50 {
-  color: rgba(255,255,255,0.55) !important;
-}
-
-/* Re-allow white text on solid colored backgrounds (CTA buttons, dark banners) */
-[data-theme="light"] .bg-brand-blue .text-white,
-[data-theme="light"] .bg-brand-blue.text-white,
-[data-theme="light"] .bg-\[\#2E9BF0\] .text-white,
-[data-theme="light"] .bg-\[\#1C88DD\] .text-white,
-[data-theme="light"] .bg-\[\#07131F\] .text-white,
-[data-theme="light"] .bg-\[\#0B1B2B\] .text-white,
-[data-theme="light"] .bg-\[\#081B2E\] .text-white,
-[data-theme="light"] .bg-\[\#12365C\] .text-white,
-[data-theme="light"] .bg-\[\#0E2845\] .text-white,
-[data-theme="light"] .bg-brand-navy .text-white,
-[data-theme="light"] .bg-brand-dark .text-white {
-  color: #FFFFFF !important;
-}
-
-/* --- Ghost buttons (bg-white/10 text-white) in light mode ---
-   These use transparent white backgrounds that disappear on white sections.
-   Convert them to a solid light surface with dark text. */
-[data-theme="light"] :not(.always-dark) .bg-white\/10 {
-  background: rgba(17, 45, 73, 0.06) !important;
-}
-[data-theme="light"] :not(.always-dark) .bg-white\/10:hover,
-[data-theme="light"] :not(.always-dark) .hover\:bg-white\/20:hover {
-  background: rgba(17, 45, 73, 0.10) !important;
-}
-[data-theme="light"] :not(.always-dark) .glass-card-interactive .bg-white\/10,
-[data-theme="light"] :not(.always-dark) .glass-card-hero .bg-white\/10,
-[data-theme="light"] :not(.always-dark) .glass-section-dark .bg-white\/10,
-[data-theme="light"] :not(.always-dark) .theme-section-alt .bg-white\/10 {
-  border-color: rgba(17, 45, 73, 0.14) !important;
-}
-[data-theme="light"] :not(.always-dark) .bg-white\/10 .text-white,
-[data-theme="light"] :not(.always-dark) .bg-white\/10.text-white {
-  color: var(--text-primary) !important;
-}
-
-/* Direct section headings using text-white are fixed at component level.
-   See: about/page.tsx, reviews/page.tsx, service-area/[city]/page.tsx */
 
 /* ============================================================
    THEME-AWARE UTILITY CLASSES
@@ -785,26 +494,22 @@ body {
 .border-theme { border-color: var(--border-default); }
 .border-theme-emphasis { border-color: var(--border-emphasis); }
 
-/* ============================================================
-   LIGHT MODE — Premium Card Treatment
-   ============================================================ */
-
-/* White cards in light mode get richer depth */
-[data-theme="light"] .lm-card {
+/* Premium Card Treatment */
+.lm-card {
   background: #FFFFFF;
   border: 1px solid rgba(17, 45, 73, 0.07);
   box-shadow: var(--shadow-card);
   transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1);
 }
 
-[data-theme="light"] .lm-card:hover {
+.lm-card:hover {
   border-color: rgba(47, 159, 227, 0.30);
   box-shadow: var(--shadow-card-blue);
   transform: translateY(-2px);
 }
 
-/* Section Label pill — more refined in light mode */
-[data-theme="light"] .section-label-pill {
+/* Section Label pill */
+.section-label-pill {
   background: linear-gradient(135deg, rgba(47,159,227,0.10) 0%, rgba(47,159,227,0.06) 100%);
   border: 1px solid rgba(47,159,227,0.22);
   color: #1878B8;
@@ -833,14 +538,15 @@ body {
   backdrop-filter: blur(24px) saturate(190%);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #FFFFFF;
 }
 
 /* ============================================================
-   LIGHT MODE — Section Divider System
+   SECTION DIVIDER & ORB SYSTEM
    ============================================================ */
 
 /* Subtle section edge lines for visual rhythm */
-[data-theme="light"] section:not(.always-dark):not(:first-of-type)::before {
+section:not(.always-dark):not(:first-of-type)::before {
   content: '';
   display: block;
   position: absolute;
@@ -854,11 +560,11 @@ body {
   z-index: 1;
 }
 
-/* Ambient section background orbs — stronger in light mode */
-[data-theme="light"] section:not(.always-dark) .ambient-orb-primary {
+/* Ambient section background orbs */
+section:not(.always-dark) .ambient-orb-primary {
   background: rgba(47, 159, 227, 0.10);
 }
 
-[data-theme="light"] section:not(.always-dark) .ambient-orb-secondary {
+section:not(.always-dark) .ambient-orb-secondary {
   background: rgba(234, 166, 54, 0.07);
 }

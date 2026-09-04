@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { buildLocalBusinessJsonLd } from '@/lib/seo/metadata';
 import { COMPANY_NAME } from '@/lib/utils';
-import { ThemeProvider } from '@/lib/theme';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -25,19 +24,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Inline script to set theme before first paint — prevents flash of wrong theme
-const themeInitScript = `
-(function(){
-  try {
-    var t = localStorage.getItem('theme');
-    if (t !== 'light' && t !== 'dark') t = 'dark';
-    document.documentElement.setAttribute('data-theme', t);
-    if (t === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-    document.documentElement.style.colorScheme = t;
-  } catch(e) {}
-})();
-`;
 
 // Rich analytics tracking snippet
 const analyticsScript = `
@@ -172,11 +158,8 @@ export default function RootLayout({
   const localBusinessJsonLd = buildLocalBusinessJsonLd();
 
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
       <body className="antialiased">
-        <script
-          dangerouslySetInnerHTML={{ __html: themeInitScript }}
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
@@ -185,9 +168,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{ __html: analyticsScript }}
         />
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

@@ -18,7 +18,6 @@ import {
 import { cn, PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
 import { SERVICES_NAV, TOP_CITIES } from '@/lib/data/navigation';
 import { Button } from '@/components/shared/Button';
-import { ThemeToggle } from './ThemeToggle';
 
 
 
@@ -86,7 +85,6 @@ export function MobileNav() {
             />
           </Link>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <button
               onClick={() => setOpen(false)}
               className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"

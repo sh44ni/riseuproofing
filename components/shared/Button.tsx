@@ -10,7 +10,7 @@ const buttonVariants = cva(
         primary:
           'bg-brand-blue text-white shadow-md hover:brightness-110 hover:-translate-y-[1px] active:translate-y-0',
         secondary:
-          'bg-transparent text-brand-navy border-2 border-primary hover:bg-brand-navy hover:text-white active:translate-y-0',
+          'bg-transparent text-brand-navy border-2 border-brand-navy hover:bg-brand-navy hover:text-white active:translate-y-0',
         ghost:
           'bg-transparent text-brand-navy hover:text-brand-blue underline-offset-4 hover:underline',
       },

@@ -16,14 +16,13 @@ export const metadata: Metadata = buildMetadata({
 
 export default function ServiceAreaPage() {
   return (
-    <Section dark={true} alternate={false} className="pt-32 sm:pt-36">
+    <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Service Areas' }]} />
       
       <SectionHeading
         label="Local Coverage"
         title="San Diego County Service Areas"
         subtitle="We provide expert roofing and construction services across all North County coastal, inland, and greater San Diego communities."
-        dark={true}
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mb-16">
@@ -31,10 +30,10 @@ export default function ServiceAreaPage() {
           <Link
             key={area.slug}
             href={`/service-area/${area.slug}`}
-            className="glass-card-interactive rounded-xl p-4 flex items-center gap-2.5 border-white/15 hover:border-white/30 transition-all group"
+            className="glass-card-interactive rounded-xl p-4 flex items-center gap-2.5 border border-slate-200/80 hover:border-brand-blue/40 shadow-2xs transition-all group"
           >
             <MapPin className="w-4 h-4 text-brand-blue flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-brand-blue transition-colors">
+            <span className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
               {area.name}
             </span>
           </Link>
@@ -42,7 +41,7 @@ export default function ServiceAreaPage() {
       </div>
 
       {/* Local Consultation Glass Banner */}
-      <div className="glass-card-hero rounded-3xl p-8 sm:p-10 text-center max-w-3xl mx-auto border-white/20 shadow-2xl">
+      <div className="glass-card-hero rounded-3xl p-8 sm:p-10 text-center max-w-3xl mx-auto border border-slate-200/80 shadow-md">
         <h3 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-2">
           Don&apos;t See Your Community Listed?
         </h3>
@@ -57,7 +56,7 @@ export default function ServiceAreaPage() {
             </span>
           </Link>
           <a href={PHONE_HREF}>
-            <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl backdrop-blur-md transition-all">
+            <span className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all shadow-xs">
               <Phone className="w-4 h-4 text-brand-blue" />
               <span>Call {PHONE_NUMBER}</span>
             </span>

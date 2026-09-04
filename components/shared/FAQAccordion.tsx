@@ -15,7 +15,7 @@ interface FAQAccordionProps {
   className?: string;
 }
 
-export function FAQAccordion({ items, dark = true, className }: FAQAccordionProps) {
+export function FAQAccordion({ items, className }: FAQAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
@@ -25,12 +25,7 @@ export function FAQAccordion({ items, dark = true, className }: FAQAccordionProp
         return (
           <div
             key={index}
-            className={cn(
-              'rounded-2xl transition-all duration-200 overflow-hidden border',
-              dark
-                ? 'glass-card-interactive border-white/15'
-                : 'bg-white border-slate-200 shadow-sm'
-            )}
+            className="rounded-2xl transition-all duration-200 overflow-hidden border bg-white border-slate-200/80 shadow-xs hover:border-brand-blue/30"
           >
             <button
               onClick={() => setOpenIndex(isOpen ? null : index)}
@@ -39,20 +34,14 @@ export function FAQAccordion({ items, dark = true, className }: FAQAccordionProp
             >
               <div className="flex items-center gap-3 pr-4">
                 <HelpCircle className="w-5 h-5 text-brand-blue flex-shrink-0" />
-                <span
-                  className={cn(
-                    'text-sm sm:text-base font-bold transition-colors',
-                    dark ? 'text-white group-hover:text-brand-blue' : 'text-brand-navy group-hover:text-brand-blue'
-                  )}
-                >
+                <span className="text-sm sm:text-base font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
                   {item.question}
                 </span>
               </div>
               <div
                 className={cn(
                   'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200',
-                  dark ? 'bg-white/10 text-white group-hover:bg-brand-blue' : 'bg-slate-100 text-slate-600',
-                  isOpen && 'rotate-180 bg-brand-blue text-white'
+                  isOpen ? 'rotate-180 bg-brand-blue text-white' : 'bg-slate-100 text-slate-600 group-hover:bg-slate-200'
                 )}
               >
                 <ChevronDown className="w-4 h-4" />
@@ -65,14 +54,7 @@ export function FAQAccordion({ items, dark = true, className }: FAQAccordionProp
               )}
             >
               <div className="overflow-hidden">
-                <div
-                  className={cn(
-                    'px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm leading-relaxed border-t',
-                    dark
-                      ? 'text-white/80 border-white/10'
-                      : 'text-slate-600 border-slate-100'
-                  )}
-                >
+                <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm leading-relaxed border-t text-[var(--text-secondary)] border-slate-100">
                   <p className="pt-4">{item.answer}</p>
                 </div>
               </div>

@@ -49,21 +49,20 @@ export function ReviewsStrip() {
       : reviews.filter((r) => r.source === platformFilter);
 
   return (
-    <Section alternate={true} dark={true} id="reviews">
+    <Section alternate={true} id="reviews">
       <SectionHeading
         label="Verified Feedback"
         title="What San Diego Homeowners Say"
         subtitle="Real reviews from verified property owners across North County & Greater San Diego on Google Maps and Yelp."
-        dark={true}
       />
 
       {/* Interactive Platform Trust Header Strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
         {/* Google Score Box */}
         <Tooltip content="Read 85+ verified 5-star customer reviews on Google" className="w-full">
-          <div className="bg-white dark:bg-[#0B1B2B] rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 dark:border-white/10 hover:border-brand-blue/30 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] dark:shadow-xl hover:-translate-y-0.5">
+          <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 hover:border-brand-blue/30 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] hover:-translate-y-0.5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/10 p-2 border border-slate-100 dark:border-white/10 flex items-center justify-center flex-shrink-0 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 p-2 border border-slate-100 flex items-center justify-center flex-shrink-0 shadow-2xs">
                 <GoogleLogo className="w-5 h-5" />
               </div>
               <div>
@@ -78,7 +77,7 @@ export function ReviewsStrip() {
                 <p className="text-[11px] text-[var(--text-muted)] font-medium">85+ Google Reviews</p>
               </div>
             </div>
-            <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/25">
+            <span className="text-[10px] uppercase font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               Verified
             </span>
           </div>
@@ -86,9 +85,9 @@ export function ReviewsStrip() {
 
         {/* Yelp Score Box */}
         <Tooltip content="Read verified residential & commercial reviews on Yelp" className="w-full">
-          <div className="bg-white dark:bg-[#0B1B2B] rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 dark:border-white/10 hover:border-red-300/40 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] dark:shadow-xl hover:-translate-y-0.5">
+          <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 hover:border-red-300/40 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] hover:-translate-y-0.5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-[#D32323]/15 border border-red-100 dark:border-[#D32323]/30 p-2 flex items-center justify-center flex-shrink-0 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-100 p-2 flex items-center justify-center flex-shrink-0 shadow-2xs">
                 <YelpLogo className="w-5 h-5" />
               </div>
               <div>
@@ -103,7 +102,7 @@ export function ReviewsStrip() {
                 <p className="text-[11px] text-[var(--text-muted)] font-medium">38+ Yelp Reviews</p>
               </div>
             </div>
-            <span className="text-[10px] uppercase font-bold text-amber-800 dark:text-[#EAA636] bg-amber-50 dark:bg-amber-500/15 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-500/25">
+            <span className="text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
               Top Rated
             </span>
           </div>
@@ -111,7 +110,7 @@ export function ReviewsStrip() {
 
         {/* Combined Score Box */}
         <Tooltip content="Combined average rating across all major customer review platforms" className="w-full">
-          <div className="bg-white dark:bg-[#0B1B2B] rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 dark:border-white/10 hover:border-brand-blue/30 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] dark:shadow-xl hover:-translate-y-0.5">
+          <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 hover:border-brand-blue/30 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] hover:-translate-y-0.5">
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-extrabold text-[var(--text-primary)] text-xl tracking-tight">{avgRating}</span>
@@ -119,7 +118,7 @@ export function ReviewsStrip() {
               </div>
               <p className="text-[11px] text-[var(--text-muted)] font-medium">Overall Rating</p>
             </div>
-            <span className="text-[10px] uppercase font-bold text-brand-blue bg-blue-50 dark:bg-brand-blue/15 px-2.5 py-1 rounded-full border border-blue-100 dark:border-brand-blue/25">
+            <span className="text-[10px] uppercase font-bold text-brand-blue bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
               100% Recommended
             </span>
           </div>
@@ -135,7 +134,7 @@ export function ReviewsStrip() {
             'px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border',
             platformFilter === 'all'
               ? 'bg-brand-blue text-white border-brand-blue shadow-xs'
-              : 'bg-white dark:bg-[#0B1B2B] text-[#475569] dark:text-white/80 border-slate-200/80 dark:border-white/10 hover:border-brand-blue/30 shadow-2xs'
+              : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/30 shadow-2xs'
           )}
         >
           All Reviews ({reviews.length})
@@ -148,7 +147,7 @@ export function ReviewsStrip() {
             'inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border',
             platformFilter === 'google'
               ? 'bg-brand-blue text-white border-brand-blue shadow-xs'
-              : 'bg-white dark:bg-[#0B1B2B] text-[#475569] dark:text-white/80 border-slate-200/80 dark:border-white/10 hover:border-brand-blue/30 shadow-2xs'
+              : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/30 shadow-2xs'
           )}
         >
           <GoogleLogo className="w-3.5 h-3.5" />
@@ -162,7 +161,7 @@ export function ReviewsStrip() {
             'inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border',
             platformFilter === 'yelp'
               ? 'bg-brand-blue text-white border-brand-blue shadow-xs'
-              : 'bg-white dark:bg-[#0B1B2B] text-[#475569] dark:text-white/80 border-slate-200/80 dark:border-white/10 hover:border-brand-blue/30 shadow-2xs'
+              : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/30 shadow-2xs'
           )}
         >
           <YelpLogo className="w-3.5 h-3.5" />
@@ -183,15 +182,15 @@ export function ReviewsStrip() {
           return (
             <div
               key={review.author}
-              className="bg-white dark:bg-[#0B1B2B] rounded-3xl p-6 sm:p-7 flex flex-col justify-between border border-slate-100/80 dark:border-white/10 hover:border-brand-blue/30 transition-all duration-300 relative group shadow-[0_1px_3px_rgba(11,30,51,0.04),0_8px_24px_-4px_rgba(11,30,51,0.07),0_24px_48px_-8px_rgba(11,30,51,0.04)] dark:shadow-xl hover:shadow-[0_8px_24px_-4px_rgba(47,159,227,0.11),0_1px_3px_rgba(11,30,51,0.04)] hover:-translate-y-0.5 overflow-hidden"
+              className="bg-white rounded-3xl p-6 sm:p-7 flex flex-col justify-between border border-slate-100/80 hover:border-brand-blue/30 transition-all duration-300 relative group shadow-[0_1px_3px_rgba(11,30,51,0.04),0_8px_24px_-4px_rgba(11,30,51,0.07),0_24px_48px_-8px_rgba(11,30,51,0.04)] hover:shadow-[0_8px_24px_-4px_rgba(47,159,227,0.11),0_1px_3px_rgba(11,30,51,0.04)] hover:-translate-y-0.5 overflow-hidden"
             >
               {/* Accent top on hover */}
-              <div className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-brand-blue/35 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:hidden" />
+              <div className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-brand-blue/35 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div>
                 {/* Header: Author Avatar + Name + Platform Badge */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-brand-blue/20 border border-blue-100 dark:border-brand-blue/40 flex items-center justify-center text-xs font-bold text-brand-blue shadow-2xs flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-xs font-bold text-brand-blue shadow-2xs flex-shrink-0">
                       {initials}
                     </div>
                     <div>
@@ -206,7 +205,7 @@ export function ReviewsStrip() {
                   </div>
 
                   {/* Platform pill with official logo */}
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 flex-shrink-0">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] bg-slate-50 border border-slate-200/60 flex-shrink-0">
                     {isGoogle ? <GoogleLogo className="w-3 h-3" /> : <YelpLogo className="w-3 h-3" />}
                     <span>{isGoogle ? 'Google' : 'Yelp'}</span>
                   </span>
@@ -215,7 +214,7 @@ export function ReviewsStrip() {
                 {/* Project Tag */}
                 {review.projectType && (
                   <div className="mb-3">
-                    <span className="text-[10px] font-bold text-brand-blue bg-blue-50 dark:bg-brand-blue/15 border border-blue-100 dark:border-brand-blue/20 px-2.5 py-0.5 rounded-full inline-block">
+                    <span className="text-[10px] font-bold text-brand-blue bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full inline-block">
                       Project: {review.projectType}
                     </span>
                   </div>
@@ -238,8 +237,8 @@ export function ReviewsStrip() {
               </div>
 
               {/* Bottom Verification Footer */}
-              <div className="pt-3.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+              <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-1.5 text-emerald-700 font-bold">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Verified Customer</span>
                 </div>
@@ -258,7 +257,7 @@ export function ReviewsStrip() {
           href="https://www.google.com/maps/place/Rise+Up+Roofing+%26+Construction"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 bg-white dark:bg-[#0B1B2B] hover:bg-brand-blue text-[#0B1E33] dark:text-white hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"
+          className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue text-[#0B1E33] hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"
         >
           <GoogleLogo className="w-4 h-4" />
           <span>Read All Google Reviews (4.9 ★)</span>
@@ -269,7 +268,7 @@ export function ReviewsStrip() {
           href="https://www.yelp.com/biz/rise-up-roofing-and-construction"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 bg-white dark:bg-[#0B1B2B] hover:bg-brand-blue text-[#0B1E33] dark:text-white hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"
+          className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue text-[#0B1E33] hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"
         >
           <YelpLogo className="w-4 h-4" />
           <span>Read All Yelp Reviews (5.0 ★)</span>

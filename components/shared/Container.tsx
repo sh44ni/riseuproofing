@@ -20,7 +20,6 @@ interface SectionProps {
   children: ReactNode;
   className?: string;
   id?: string;
-  dark?: boolean;
   alternate?: boolean;
 }
 
@@ -40,11 +39,11 @@ export function Section({
       )}
     >
       {/* Living Ambient Drift Orbs */}
-      <div className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full bg-brand-blue/10 dark:bg-brand-blue/5 blur-3xl pointer-events-none animate-ambient-drift-1" />
-      <div className="absolute -bottom-32 -right-32 w-[420px] h-[420px] rounded-full bg-amber-400/8 dark:bg-brand-blue/5 blur-3xl pointer-events-none animate-ambient-drift-2" />
+      <div className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full bg-brand-blue/10 blur-3xl pointer-events-none animate-ambient-drift-1" />
+      <div className="absolute -bottom-32 -right-32 w-[420px] h-[420px] rounded-full bg-amber-400/8 blur-3xl pointer-events-none animate-ambient-drift-2" />
       
       {/* Delicate Architectural Micro-Grid Texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(#2F9FE3_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04] dark:opacity-[0.02] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#2F9FE3_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04] pointer-events-none" />
 
       <Container className="relative z-10">{children}</Container>
     </section>

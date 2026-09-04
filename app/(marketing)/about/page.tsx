@@ -42,19 +42,18 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <Section dark={true} alternate={false} className="pt-32 sm:pt-36">
+    <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
       
       <SectionHeading
         label="Our Heritage"
         title="San Diego's Trusted Roofing Specialists"
         subtitle={`${COMPANY_NAME} has been protecting homes and commercial properties across San Diego County for over 25 years with master craftsmanship.`}
-        dark={true}
       />
 
       {/* Founder Story Glass Card */}
       <div className="max-w-4xl mx-auto mb-16">
-        <div className="glass-card-hero rounded-3xl p-8 sm:p-10 lg:p-12 border-white/20 shadow-2xl">
+        <div className="glass-card-hero rounded-3xl p-8 sm:p-10 lg:p-12 border border-slate-200/80 shadow-md">
           <div className="inline-flex items-center gap-2 glass-chip px-3.5 py-1 rounded-full mb-4 text-xs font-bold uppercase tracking-wider text-brand-blue">
             <span>Established 2000 • San Diego County</span>
           </div>
@@ -73,9 +72,9 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+          <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>CA License #{LICENSE_NUMBER} • Fully Bonded</span>
             </div>
             <div className="flex items-center gap-3">
@@ -107,7 +106,7 @@ export default function AboutPage() {
             return (
               <div
                 key={v.title}
-                className="glass-card-interactive rounded-2xl p-6 flex items-start gap-4 border-white/15"
+                className="glass-card-interactive rounded-2xl p-6 flex items-start gap-4 border border-slate-200/80"
               >
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border ${v.color}`}
@@ -125,7 +124,7 @@ export default function AboutPage() {
       </div>
 
       {/* Facts Dock */}
-      <div className="glass-card-interactive rounded-3xl p-8 lg:p-10 border-white/20 max-w-5xl mx-auto">
+      <div className="glass-card-interactive rounded-3xl p-8 lg:p-10 border border-slate-200/80 max-w-5xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
           {[
             { stat: '25+', label: 'Years Experience' },

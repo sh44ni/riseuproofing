@@ -22,12 +22,11 @@ export function FeaturedProjects() {
           .slice(0, 6);
 
   return (
-    <Section id="projects" dark={true} alternate={false}>
+    <Section id="projects" alternate={false}>
       <SectionHeading
         label="Our Portfolio"
         title="Featured Roofing &amp; Construction Projects"
         subtitle="See the craftsmanship and attention to detail that sets Rise Up apart. Every project is engineered with premium materials, strict manufacturer guidelines, and lasting coastal protection."
-        dark={true}
       />
 
       {/* Category filter tabs */}
@@ -43,7 +42,7 @@ export function FeaturedProjects() {
                 'px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border',
                 isActive
                   ? 'bg-brand-blue text-white border-brand-blue shadow-xs'
-                  : 'bg-white dark:bg-[#0B1B2B] text-[#475569] dark:text-white/80 border-slate-200/80 dark:border-white/10 hover:border-brand-blue/30 shadow-2xs'
+                  : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/30 shadow-2xs'
               )}
             >
               {cat}
@@ -58,7 +57,7 @@ export function FeaturedProjects() {
           <Link
             key={project.slug}
             href={`/projects/${project.slug}`}
-            className="image-overlay-card group relative rounded-3xl overflow-hidden flex flex-col justify-end min-h-[450px] sm:min-h-[480px] border border-slate-200/60 dark:border-white/15 hover:border-brand-blue/70 transition-all duration-300 shadow-[0_16px_40px_-10px_rgba(11,30,51,0.10)] dark:shadow-2xl hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-10px_rgba(47,159,227,0.25)] cursor-pointer"
+            className="image-overlay-card group relative rounded-3xl overflow-hidden flex flex-col justify-end min-h-[450px] sm:min-h-[480px] border border-slate-200/60 hover:border-brand-blue/70 transition-all duration-300 shadow-[0_16px_40px_-10px_rgba(11,30,51,0.10)] hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-10px_rgba(47,159,227,0.25)] cursor-pointer"
           >
             {/* Full Bleed Background Image */}
             <Image
@@ -129,7 +128,7 @@ export function FeaturedProjects() {
       {/* View All Projects Bottom Banner */}
       <div className="text-center mt-10 sm:mt-12">
         <Link href="/projects">
-          <span className="inline-flex items-center gap-2 bg-white dark:bg-[#0B1B2B] hover:bg-brand-blue hover:text-white border border-slate-200/80 dark:border-white/15 hover:border-brand-blue text-[#0B1E33] dark:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer">
+          <span className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue hover:text-white border border-slate-200/80 hover:border-brand-blue text-[#0B1E33] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer">
             <span>Explore All Completed Projects</span>
             <ArrowRight className="w-4 h-4" />
           </span>

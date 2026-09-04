@@ -30,7 +30,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   if (!area) notFound();
 
   return (
-    <Section dark={true} alternate={false} className="pt-32 sm:pt-36">
+    <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
@@ -62,26 +62,26 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             <Link
               key={service.slug}
               href={`/services/${service.slug}`}
-              className="glass-card-interactive rounded-2xl p-5 flex items-center gap-3.5 border-white/15 hover:border-white/30 transition-all group"
+              className="glass-card-interactive rounded-2xl p-5 flex items-center gap-3.5 border border-slate-200/80 hover:border-brand-blue/30 shadow-xs transition-all group"
             >
-              <div className="w-9 h-9 rounded-xl bg-brand-blue/20 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-bold text-white group-hover:text-brand-blue transition-colors">
+                <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
                   {service.name}
                 </h3>
-                <p className="text-xs text-white/60 line-clamp-1 mt-0.5">
+                <p className="text-xs text-[var(--text-muted)] line-clamp-1 mt-0.5">
                   {service.shortDescription}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
             </Link>
           ))}
         </div>
 
         {/* Why Choose Rise Up in This City */}
-        <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 mb-12 border-white/15">
+        <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 mb-12 border border-slate-200/80 shadow-xs">
           <h2 className="text-xl font-extrabold text-[var(--text-primary)] mb-4">
             Why {area.name} Homeowners Choose Rise Up Roofing
           </h2>
@@ -96,7 +96,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
         </div>
 
         {/* City CTA Banner */}
-        <div className="glass-card-hero rounded-3xl p-8 sm:p-10 text-center border-white/20 shadow-2xl">
+        <div className="glass-card-hero rounded-3xl p-8 sm:p-10 text-center border border-slate-200/80 shadow-md">
           <h3 className="text-2xl font-extrabold text-[var(--text-primary)] mb-2">
             Get a Free Estimate in {area.name}
           </h3>
@@ -111,7 +111,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
               </span>
             </Link>
             <a href={PHONE_HREF}>
-              <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl backdrop-blur-md transition-all">
+              <span className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all shadow-xs">
                 <Phone className="w-4 h-4 text-brand-blue" />
                 <span>Call {PHONE_NUMBER}</span>
               </span>

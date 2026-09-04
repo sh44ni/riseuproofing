@@ -38,38 +38,37 @@ export default function ContactPage() {
   };
 
   return (
-    <Section dark={true} alternate={false} className="pt-32 sm:pt-36">
+    <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]} />
       
       <SectionHeading
         label="Contact Us"
         title="Schedule Your 100% Free Roof Estimate"
         subtitle="Whether you need a full tile relay, roof replacement, emergency leak diagnostics, or solar integration — our licensed team responds within 15 minutes."
-        dark={true}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[58%_42%] gap-10 lg:gap-12 max-w-6xl mx-auto">
-        {/* Left — Glass Form */}
+        {/* Left — Form Card */}
         <div>
-          <div className="glass-card-hero rounded-3xl p-6 sm:p-8 md:p-10 border-white/20 shadow-2xl">
+          <div className="glass-card-hero rounded-3xl p-6 sm:p-8 md:p-10 border border-slate-200/80 shadow-lg">
             {submitted ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-400/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
-                <h3 className="text-2xl font-extrabold text-white mb-2">
+                <h3 className="text-2xl font-extrabold text-[var(--text-primary)] mb-2">
                   Request Confirmed!
                 </h3>
-                <p className="text-sm text-white/80 max-w-md mx-auto mb-6 leading-relaxed">
+                <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto mb-6 leading-relaxed">
                   Thank you! Your inspection request has been routed to our San Diego project team. A licensed specialist will contact you shortly.
                 </p>
                 <div className="glass-chip rounded-2xl p-4 mb-6 text-left max-w-md mx-auto">
-                  <p className="text-[11px] text-white/60 font-bold uppercase tracking-wider mb-1">
+                  <p className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider mb-1">
                     Need Same-Day Emergency Response?
                   </p>
                   <a
                     href={PHONE_HREF}
-                    className="inline-flex items-center gap-2 text-sm font-bold text-brand-blue hover:text-white transition-colors"
+                    className="inline-flex items-center gap-2 text-sm font-bold text-brand-blue hover:text-[#1C88DD] transition-colors"
                   >
                     <Phone className="w-4 h-4" />
                     <span>Call our dispatch desk at {PHONE_NUMBER}</span>
@@ -78,7 +77,7 @@ export default function ContactPage() {
                 <button
                   type="button"
                   onClick={() => setSubmitted(false)}
-                  className="text-xs text-white/60 hover:text-white underline cursor-pointer"
+                  className="text-xs text-[var(--text-muted)] hover:text-brand-blue underline cursor-pointer"
                 >
                   ← Submit Another Inquiry
                 </button>
@@ -87,7 +86,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5 block">
+                    <label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                       Full Name *
                     </label>
                     <input
@@ -100,7 +99,7 @@ export default function ContactPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5 block">
+                    <label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                       Phone Number *
                     </label>
                     <input
@@ -116,7 +115,7 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5 block">
+                    <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                       Email Address
                     </label>
                     <input
@@ -128,26 +127,26 @@ export default function ContactPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="serviceType" className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5 block">
+                    <label htmlFor="serviceType" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                       Roofing Service Needed
                     </label>
                     <select
                       id="serviceType"
                       name="serviceType"
-                      className="glass-input w-full px-4 py-3 rounded-xl text-sm font-medium bg-[#0B1B2B]"
+                      className="glass-input w-full px-4 py-3 rounded-xl text-sm font-medium bg-white text-[var(--text-primary)]"
                     >
-                      <option value="residential" className="bg-[#0B1B2B] text-white">Residential Tile / Shingle</option>
-                      <option value="repair" className="bg-[#0B1B2B] text-white">Leak Diagnostic &amp; Repair</option>
-                      <option value="commercial" className="bg-[#0B1B2B] text-white">Commercial Flat / TPO</option>
-                      <option value="solar" className="bg-[#0B1B2B] text-white">Solar Roofing Integration</option>
-                      <option value="construction" className="bg-[#0B1B2B] text-white">General Construction / Dry Rot</option>
-                      <option value="other" className="bg-[#0B1B2B] text-white">Other Inquiry</option>
+                      <option value="residential">Residential Tile / Shingle</option>
+                      <option value="repair">Leak Diagnostic &amp; Repair</option>
+                      <option value="commercial">Commercial Flat / TPO</option>
+                      <option value="solar">Solar Roofing Integration</option>
+                      <option value="construction">General Construction / Dry Rot</option>
+                      <option value="other">Other Inquiry</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="address" className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5 block">
+                  <label htmlFor="address" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                     Property Address or City
                   </label>
                   <input
@@ -160,7 +159,7 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5 block">
+                  <label htmlFor="message" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                     Project Details or Specific Concerns
                   </label>
                   <textarea
@@ -181,7 +180,7 @@ export default function ContactPage() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <div className="pt-2 flex items-center justify-center gap-4 text-[11px] text-white/60">
+                <div className="pt-2 flex items-center justify-center gap-4 text-[11px] text-[var(--text-muted)]">
                   <span>✓ 100% Itemized Proposal</span>
                   <span>•</span>
                   <span>✓ No Obligation</span>
@@ -195,71 +194,71 @@ export default function ContactPage() {
 
         {/* Right — Contact Cards */}
         <div className="space-y-6">
-          <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 border-white/15">
-            <h3 className="text-lg font-extrabold text-white mb-6 pb-3 border-b border-white/10">
+          <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 border border-slate-200/80">
+            <h3 className="text-lg font-extrabold text-[var(--text-primary)] mb-6 pb-3 border-b border-slate-100">
               Direct Contact Channels
             </h3>
             
             <div className="space-y-5">
               <a
                 href={PHONE_HREF}
-                className="flex items-center gap-3.5 text-white hover:text-brand-blue transition-colors group"
+                className="flex items-center gap-3.5 text-[var(--text-primary)] hover:text-brand-blue transition-colors group"
               >
-                <div className="w-11 h-11 rounded-xl bg-brand-blue/20 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">24/7 Phone &amp; Text</p>
-                  <p className="text-base font-extrabold text-white">{PHONE_NUMBER}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">24/7 Phone &amp; Text</p>
+                  <p className="text-base font-extrabold text-[var(--text-primary)]">{PHONE_NUMBER}</p>
                 </div>
               </a>
 
               <a
                 href="mailto:info@riseuproofing.com"
-                className="flex items-center gap-3.5 text-white hover:text-brand-blue transition-colors group"
+                className="flex items-center gap-3.5 text-[var(--text-primary)] hover:text-brand-blue transition-colors group"
               >
-                <div className="w-11 h-11 rounded-xl bg-white/10 text-white/80 flex items-center justify-center flex-shrink-0 group-hover:bg-white/20 transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 group-hover:text-brand-blue transition-colors">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">Email Inquiries</p>
-                  <p className="text-sm font-bold text-white">info@riseuproofing.com</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Email Inquiries</p>
+                  <p className="text-sm font-bold text-[var(--text-primary)]">info@riseuproofing.com</p>
                 </div>
               </a>
 
-              <div className="flex items-center gap-3.5 text-white">
-                <div className="w-11 h-11 rounded-xl bg-white/10 text-white/80 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3.5 text-[var(--text-primary)]">
+                <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">Primary Coverage</p>
-                  <p className="text-sm font-bold text-white">San Diego County &amp; North County Hubs</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Primary Coverage</p>
+                  <p className="text-sm font-bold text-[var(--text-primary)]">San Diego County &amp; North County Hubs</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3.5 text-white">
-                <div className="w-11 h-11 rounded-xl bg-white/10 text-white/80 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3.5 text-[var(--text-primary)]">
+                <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">Operating Hours</p>
-                  <p className="text-sm font-bold text-white">Mon–Fri 7am–6pm, Sat 8am–2pm</p>
-                  <p className="text-[11px] text-emerald-400 font-semibold mt-0.5">24/7 Storm Leak Dispatch</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Operating Hours</p>
+                  <p className="text-sm font-bold text-[var(--text-primary)]">Mon–Fri 7am–6pm, Sat 8am–2pm</p>
+                  <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">24/7 Storm Leak Dispatch</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Verification Badge Dock */}
-          <div className="glass-card-interactive rounded-3xl p-6 border-white/15 flex items-center justify-between">
+          <div className="glass-card-interactive rounded-3xl p-6 border border-slate-200/80 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ShieldCheck className="w-8 h-8 text-brand-gold flex-shrink-0" />
               <div>
-                <p className="text-xs font-bold text-white">CA Contractor License #{LICENSE_NUMBER}</p>
-                <p className="text-[11px] text-white/60">Fully Licensed, Bonded &amp; Insured</p>
+                <p className="text-xs font-bold text-[var(--text-primary)]">CA Contractor License #{LICENSE_NUMBER}</p>
+                <p className="text-[11px] text-[var(--text-muted)]">Fully Licensed, Bonded &amp; Insured</p>
               </div>
             </div>
-            <span className="glass-chip px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
+            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200">
               Active
             </span>
           </div>

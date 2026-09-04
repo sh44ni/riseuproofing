@@ -11,7 +11,7 @@ const CERTS = [
     name: 'Owens Corning Preferred Contractor',
     subtitle: 'Factory Certified Master Installer',
     badgeText: 'Factory Certified',
-    badgeColor: 'text-rose-700 dark:text-[#F43F5E] bg-rose-50 dark:bg-[#F43F5E]/15 border-rose-200 dark:border-[#F43F5E]/30',
+    badgeColor: 'text-rose-700 bg-rose-50 border-rose-200',
     iconBg: 'bg-rose-50 border-rose-100 text-rose-600',
     accentColor: '#F43F5E',
     imageSrc: '/badges/owens_corning_icon_org.png',
@@ -22,7 +22,7 @@ const CERTS = [
     name: 'California CSLB Licensed & Bonded',
     subtitle: `CA License #${LICENSE_NUMBER}`,
     badgeText: 'Active & Verified',
-    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-400/30',
+    badgeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
     iconBg: 'bg-emerald-50 border-emerald-100 text-emerald-600',
     accentColor: '#10B981',
     imageSrc: '/badges/cslb.webp',
@@ -33,7 +33,7 @@ const CERTS = [
     name: 'Tile Roofing Industry Alliance',
     subtitle: 'Concrete & Clay Tile Relay Specialists',
     badgeText: 'Master Specialist',
-    badgeColor: 'text-amber-700 dark:text-[#EAA636] bg-amber-50 dark:bg-[#EAA636]/15 border-amber-200 dark:border-[#EAA636]/30',
+    badgeColor: 'text-amber-700 bg-amber-50 border-amber-200',
     iconBg: 'bg-amber-50 border-amber-100 text-amber-600',
     accentColor: '#EAA636',
     imageSrc: '/badges/satisfaction.webp',
@@ -44,7 +44,7 @@ const CERTS = [
     name: '25+ Years San Diego Chamber Member',
     subtitle: 'Serving San Diego County Since 2000',
     badgeText: 'Community Trust',
-    badgeColor: 'text-blue-700 dark:text-brand-blue bg-blue-50 dark:bg-brand-blue/15 border-blue-200 dark:border-brand-blue/30',
+    badgeColor: 'text-blue-700 bg-blue-50 border-blue-200',
     iconBg: 'bg-blue-50 border-blue-100 text-brand-blue',
     accentColor: '#2F9FE3',
     imageSrc: '/badges/escondido-chamber.png',
@@ -55,12 +55,11 @@ const CERTS = [
 
 export function Certifications() {
   return (
-    <Section dark={true} alternate={false} id="certifications">
+    <Section alternate={false} id="certifications">
       <SectionHeading
         label="Trusted &amp; Certified"
         title="Manufacturer Certifications &amp; Warranties"
         subtitle="As an Owens Corning Preferred Contractor and fully licensed California specialist, we provide manufacturer-backed non-prorated warranties up to 50 years."
-        dark={true}
       />
 
       {/* Certifications 4-Column Grid */}
@@ -90,14 +89,14 @@ export function Certifications() {
             href={cert.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`bg-white dark:bg-[#0B1B2B] rounded-3xl p-6 flex flex-col justify-between border border-slate-200/70 dark:border-white/10 ${hoverBorders[i]} transition-all duration-300 group relative overflow-hidden shadow-[0_1px_3px_rgba(11,30,51,0.04),0_8px_24px_-4px_rgba(11,30,51,0.07),0_24px_48px_-8px_rgba(11,30,51,0.04)] dark:shadow-lg ${hoverShadows[i]} hover:-translate-y-0.5`}
+            className={`bg-white rounded-3xl p-6 flex flex-col justify-between border border-slate-200/70 ${hoverBorders[i]} transition-all duration-300 group relative overflow-hidden shadow-[0_1px_3px_rgba(11,30,51,0.04),0_8px_24px_-4px_rgba(11,30,51,0.07),0_24px_48px_-8px_rgba(11,30,51,0.04)] ${hoverShadows[i]} hover:-translate-y-0.5`}
           >
             {/* Accent top edge on hover */}
-            <div className={`absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent ${accentGradients[i]} to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:hidden`} />
+            <div className={`absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent ${accentGradients[i]} to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
             <div>
               {/* Top Row: Logo Badge + Status Pill */}
               <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="w-13 h-13 rounded-2xl bg-white p-2 shadow-xs flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200 border border-slate-100 dark:border-white/20">
+                <div className="w-13 h-13 rounded-2xl bg-white p-2 shadow-xs flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200 border border-slate-100">
                   <Image
                     src={cert.imageSrc}
                     alt={cert.name}
@@ -123,11 +122,11 @@ export function Certifications() {
               </p>
 
               {/* Bullet Highlights */}
-              <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-white/10 mb-4">
+              <div className="space-y-2 pt-3 border-t border-slate-100 mb-4">
                 {cert.bullets.map((b) => (
                   <div key={b} className="flex items-center gap-2 text-xs text-[var(--text-secondary)] text-left">
                     <CheckCircle2
-                      className="w-3.5 h-3.5 flex-shrink-0 text-emerald-600 dark:text-emerald-400"
+                      className="w-3.5 h-3.5 flex-shrink-0 text-emerald-600"
                     />
                     <span className="leading-tight font-medium">{b}</span>
                   </div>
@@ -136,8 +135,8 @@ export function Certifications() {
             </div>
 
             {/* Bottom Link with External Link Icon */}
-            <div className="pt-3.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-brand-blue transition-colors w-full">
-              <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+            <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue transition-colors w-full">
+              <div className="flex items-center gap-1.5 text-emerald-700">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span className="text-[11px]">Verified Partner</span>
               </div>

@@ -4,7 +4,7 @@ import { Section } from '@/components/shared/Container';
 
 export function CareersTeaser() {
   return (
-    <Section dark={true} alternate={true}>
+    <Section alternate={true}>
       <div className="w-full glass-card-interactive rounded-2xl p-7 sm:p-9 border border-[var(--border-default)] hover:border-brand-blue/40 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 transition-all duration-300">
         <div className="max-w-xl text-center md:text-left">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg mb-3 text-[11px] font-bold uppercase tracking-wider text-[#EAA636] bg-[#EAA636]/15 border border-[#EAA636]/30 backdrop-blur-md">

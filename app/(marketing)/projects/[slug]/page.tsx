@@ -66,19 +66,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </section>
 
-      <Section dark={true} alternate={false}>
+      <Section alternate={false}>
         <div className="grid grid-cols-1 lg:grid-cols-[62%_38%] gap-10 lg:gap-12">
           {/* Left — Scope & Gallery */}
           <div>
-            <div className="glass-card-interactive rounded-2xl p-6 sm:p-8 mb-8 border-white/15">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-4">
+            <div className="glass-card-interactive rounded-2xl p-6 sm:p-8 mb-8 border border-slate-200/80 shadow-xs">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-4">
                 Scope of Work
               </h2>
-              <p className="text-sm text-white/80 leading-relaxed mb-6">
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
                 {project.scopeOfWork}
               </p>
 
-              <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-base font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-brand-blue" />
                 <span>Materials &amp; Specifications</span>
               </h3>
@@ -86,9 +86,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 {project.materialsUsed.map((mat) => (
                   <div
                     key={mat}
-                    className="glass-chip rounded-xl p-3 flex items-center gap-2 text-xs text-white/90"
+                    className="glass-chip rounded-xl p-3 flex items-center gap-2 text-xs text-[var(--text-secondary)]"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>{mat}</span>
                   </div>
                 ))}
@@ -98,12 +98,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             {/* Gallery */}
             {project.gallery.length > 1 && (
               <div>
-                <h3 className="text-xl font-extrabold text-white mb-4">
+                <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-4">
                   Project Gallery
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   {project.gallery.map((img, i) => (
-                    <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden glass-chip border-white/15">
+                    <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden glass-chip border border-slate-200/80">
                       <Image
                         src={img}
                         alt={`${project.title} photo ${i + 1}`}
@@ -118,31 +118,31 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             )}
           </div>
 
-          {/* Right — Sticky Glass Info Card */}
+          {/* Right — Sticky Info Card */}
           <div>
-            <div className="lg:sticky lg:top-28 glass-card-hero rounded-3xl p-6 sm:p-8 border-white/20 shadow-2xl">
-              <h3 className="text-lg font-extrabold text-white mb-5 pb-3 border-b border-white/15">
+            <div className="lg:sticky lg:top-28 glass-card-hero rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-lg">
+              <h3 className="text-lg font-extrabold text-[var(--text-primary)] mb-5 pb-3 border-b border-slate-100">
                 Project Summary
               </h3>
               
               <div className="space-y-3.5 text-xs mb-6">
-                <div className="flex justify-between items-center py-1 border-b border-white/10">
-                  <span className="text-white/60 font-semibold uppercase tracking-wider">Location</span>
-                  <span className="font-bold text-white">{project.city}, CA</span>
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-[var(--text-muted)] font-semibold uppercase tracking-wider">Location</span>
+                  <span className="font-bold text-[var(--text-primary)]">{project.city}, CA</span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-white/10">
-                  <span className="text-white/60 font-semibold uppercase tracking-wider">Category</span>
-                  <span className="font-bold text-white capitalize">{project.category}</span>
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-[var(--text-muted)] font-semibold uppercase tracking-wider">Category</span>
+                  <span className="font-bold text-[var(--text-primary)] capitalize">{project.category}</span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-white/10">
-                  <span className="text-white/60 font-semibold uppercase tracking-wider">Warranty</span>
-                  <span className="font-bold text-emerald-300">Lifetime Owens Corning</span>
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-[var(--text-muted)] font-semibold uppercase tracking-wider">Warranty</span>
+                  <span className="font-bold text-emerald-700">Lifetime Owens Corning</span>
                 </div>
               </div>
 
               {project.clientQuote && (
-                <div className="glass-chip rounded-2xl p-4 mb-6 border-white/15">
-                  <p className="text-xs text-white/90 italic mb-2 leading-relaxed">
+                <div className="glass-chip rounded-2xl p-4 mb-6 border border-slate-200/80">
+                  <p className="text-xs text-[var(--text-secondary)] italic mb-2 leading-relaxed">
                     &ldquo;{project.clientQuote.text}&rdquo;
                   </p>
                   <p className="text-[11px] text-brand-blue font-bold">

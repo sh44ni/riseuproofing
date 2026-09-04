@@ -21,14 +21,13 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     : projects;
 
   return (
-    <Section dark={true} alternate={false} className="pt-32 sm:pt-36">
+    <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Projects' }]} />
       
       <SectionHeading
         label="Our Portfolio"
         title="San Diego County Roofing Showcase"
         subtitle="Explore our completed roofing, tile relay, commercial flat roofing, and general construction projects. Every home is protected with master craftsmanship."
-        dark={true}
       />
 
       {/* Filter pills */}
@@ -44,7 +43,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all inline-block border ${
                   isActive
                     ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/30 scale-105'
-                    : 'glass-chip text-[var(--text-secondary)] hover:text-brand-blue hover:bg-white/15 border-white/15'
+                    : 'bg-white text-[#475569] hover:text-brand-blue hover:bg-slate-50 border-slate-200/80 shadow-2xs'
                 }`}
               >
                 {cat.label}
@@ -58,7 +57,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {filtered.map((project) => (
           <Link key={project.slug} href={`/projects/${project.slug}`} className="group flex">
-            <div className="glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border border-white/15 hover:border-white/30 transition-all duration-300">
+            <div className="glass-card-interactive rounded-2xl overflow-hidden flex flex-col w-full border border-slate-200/80 hover:border-brand-blue/30 shadow-sm transition-all duration-300">
               <div className="image-overlay-card relative h-60 overflow-hidden">
                 <Image
                   src={project.afterImage}
@@ -82,14 +81,14 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-white mb-1.5 group-hover:text-brand-blue transition-colors">
+                  <h3 className="text-base font-bold text-[var(--text-primary)] mb-1.5 group-hover:text-brand-blue transition-colors">
                     {project.title}
                   </h3>
-                  <p className="text-xs text-white/70 line-clamp-2 mb-4 leading-relaxed">
+                  <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-4 leading-relaxed">
                     {project.scopeOfWork}
                   </p>
                 </div>
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-white transition-colors">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-[#1C88DD] transition-colors">
                   <span>View Project Case Study</span>
                   <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>

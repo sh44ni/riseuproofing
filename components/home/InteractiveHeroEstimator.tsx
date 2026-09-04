@@ -16,7 +16,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn, PHONE_HREF, PHONE_NUMBER } from '@/lib/utils';
-import { useTheme } from '@/lib/theme';
 
 type ServiceId = 'residential' | 'repair' | 'commercial' | 'solar';
 type SizeId = 'small' | 'medium' | 'large';
@@ -134,8 +133,7 @@ export function InteractiveHeroEstimator() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
+  const isLight = true;
 
   const selectedServiceObj = SERVICE_OPTIONS.find((s) => s.id === service) || SERVICE_OPTIONS[0];
   const currentPricing = selectedServiceObj.pricing[size];
