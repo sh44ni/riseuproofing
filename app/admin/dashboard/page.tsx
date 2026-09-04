@@ -127,7 +127,33 @@ export default function DashboardPage() {
     );
   }
 
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
+          <AlertTriangle size={28} />
+        </div>
+        <h2 className="text-white font-bold text-lg">Unable to Load Dashboard Data</h2>
+        <p className="text-slate-400 text-xs mt-1 mb-5">
+          The dashboard metrics service was temporarily unavailable or encountered a connection error.
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => fetchStats()}
+            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 transition shadow-lg shadow-amber-500/20 cursor-pointer"
+          >
+            <RefreshCw size={14} /> Retry Connection
+          </button>
+          <Link
+            href="/admin/leads"
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition"
+          >
+            View Leads
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const rev = stats.revenue;
   const alerts = stats.urgentAlerts;

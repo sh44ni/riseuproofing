@@ -30,21 +30,21 @@ export async function GET() {
         SELECT COALESCE(SUM(contract_value), 0) as val 
         FROM jobs 
         WHERE status != 'complete'
-      `),
+      `).catch(() => [{ val: '0' }]),
 
       // 2. Cash collected in past 30 days
       query<{ val: string }>(`
         SELECT COALESCE(SUM(amount), 0) as val 
         FROM invoices 
         WHERE status = 'paid' AND (paid_at >= NOW() - INTERVAL '30 days' OR updated_at >= NOW() - INTERVAL '30 days')
-      `),
+      `).catch(() => [{ val: '0' }]),
 
       // 3. Pending milestone invoices
       query<{ val: string; count: string }>(`
         SELECT COALESCE(SUM(amount), 0) as val, COUNT(*) as count 
         FROM invoices 
         WHERE status = 'pending'
-      `),
+      `).catch(() => [{ val: '0', count: '0' }]),
 
       // 4. Win / Close Rate
       query<{ won_count: string; total_closed: string }>(`
@@ -52,38 +52,38 @@ export async function GET() {
           COUNT(CASE WHEN status = 'won' THEN 1 END) as won_count,
           COUNT(CASE WHEN status IN ('won', 'lost') THEN 1 END) as total_closed
         FROM leads
-      `),
+      `).catch(() => [{ won_count: '0', total_closed: '0' }]),
 
       // 5. Urgent: Hot leads not yet closed
       query<any>(`
-        SELECT id, full_name, phone, address, city, service_type, lead_score, priority, created_at 
+        SELECT id, full_name, phone, address, COALESCE(city, 'San Diego') as city, service_type, lead_score, priority, created_at 
         FROM leads 
         WHERE status IN ('new', 'contacted') AND (priority = 'hot' OR lead_score >= 70) 
         ORDER BY created_at DESC 
         LIMIT 5
-      `),
+      `).catch(() => []),
 
       // 6. Urgent: Inspections with critical leak/rot hazards
       query<any>(`
         SELECT i.id, i.inspection_number, i.roof_health_score, i.inspection_date, 
-               l.full_name as customer_name, l.address, l.city 
+               l.full_name as customer_name, l.address, COALESCE(l.city, 'San Diego') as city 
         FROM inspections i 
         LEFT JOIN leads l ON i.lead_id = l.id 
         WHERE i.urgent_action_required = true 
         ORDER BY i.created_at DESC 
         LIMIT 5
-      `),
+      `).catch(() => []),
 
       // 7. Urgent: Overdue invoices
       query<any>(`
-        SELECT i.id, i.invoice_number, i.amount, i.due_date, i.milestone_title,
+        SELECT i.id, i.invoice_number, i.amount, i.due_date, i.milestone_name as milestone_title,
                j.job_number, j.customer_name 
         FROM invoices i 
         LEFT JOIN jobs j ON i.job_id = j.id 
         WHERE i.status = 'pending' AND i.due_date < CURRENT_DATE 
         ORDER BY i.due_date ASC 
         LIMIT 5
-      `),
+      `).catch(() => []),
 
       // 8. Urgent: Customer Review Escalations (<4★)
       query<any>(`
@@ -92,7 +92,7 @@ export async function GET() {
         WHERE status = 'escalated' 
         ORDER BY created_at DESC 
         LIMIT 3
-      `),
+      `).catch(() => []),
 
       // 9. Tasks due today or overdue
       query<any>(`
@@ -101,24 +101,24 @@ export async function GET() {
         WHERE completed_at IS NULL AND due_at::DATE <= CURRENT_DATE 
         ORDER BY due_at ASC 
         LIMIT 5
-      `),
+      `).catch(() => []),
 
       // 10. Jobs count by 7 Kanban stages
       query<{ status: string; count: string }>(`
         SELECT status, COUNT(*) as count 
         FROM jobs 
         GROUP BY status
-      `),
+      `).catch(() => []),
 
       // 11. Today's scheduled inspections
       query<any>(`
         SELECT i.inspection_number, i.inspector_name, 
-               l.full_name as customer_name, l.address, l.city 
+               l.full_name as customer_name, l.address, COALESCE(l.city, 'San Diego') as city 
         FROM inspections i 
         LEFT JOIN leads l ON i.lead_id = l.id 
         WHERE i.inspection_date = CURRENT_DATE 
         LIMIT 5
-      `),
+      `).catch(() => []),
 
       // 12. Active jobs on site
       query<any>(`
@@ -127,7 +127,7 @@ export async function GET() {
         WHERE status IN ('scheduled', 'in_progress', 'material_order', 'permit_pending') 
         ORDER BY updated_at DESC 
         LIMIT 6
-      `),
+      `).catch(() => []),
 
       // 13. Crew Roster status
       query<{ total: string; dispatched: string }>(`
@@ -136,15 +136,15 @@ export async function GET() {
           COUNT(CASE WHEN current_job_id IS NOT NULL THEN 1 END) as dispatched 
         FROM crew_members 
         WHERE active = true
-      `),
+      `).catch(() => [{ total: '0', dispatched: '0' }]),
 
       // 14. Recent Leads
       query<any>(`
-        SELECT id, full_name, phone, email, address, city, service_type, status, priority, lead_score, created_at 
+        SELECT id, full_name, phone, email, address, COALESCE(city, 'San Diego') as city, service_type, status, priority, lead_score, created_at 
         FROM leads 
         ORDER BY created_at DESC 
         LIMIT 6
-      `),
+      `).catch(() => []),
 
       // 15. Quick website traffic pulse
       query<{ today: string; past_7d: string }>(`

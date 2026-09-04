@@ -97,6 +97,7 @@ const MIGRATIONS = [
   )`,
 
   // ── Phase 1 CRM: Extended Leads columns ────────────────────────────────────
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS city TEXT`,
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS assigned_to TEXT`,
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_score INTEGER DEFAULT 0`,
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_source TEXT DEFAULT 'website'`,
