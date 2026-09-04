@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
+import { calculateLeadScore } from '@/lib/crm-scoring';
 
 export async function GET(req: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -10,20 +11,52 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
   const formType = searchParams.get('form_type');
-  const page = parseInt(searchParams.get('page') ?? '1');
+  const priority = searchParams.get('priority');
+  const source = searchParams.get('source');
+  const search = searchParams.get('search');
+  const page = parseInt(searchParams.get('page') ?? '1', 10);
   const limit = 20;
   const offset = (page - 1) * limit;
 
   const conditions: string[] = [];
   const params: unknown[] = [];
 
-  if (status) { params.push(status); conditions.push(`status = $${params.length}`); }
-  if (formType) { params.push(formType); conditions.push(`form_type = $${params.length}`); }
+  if (status && status !== 'all') {
+    params.push(status);
+    conditions.push(`status = $${params.length}`);
+  }
+
+  if (formType && formType !== 'all') {
+    params.push(formType);
+    conditions.push(`form_type = $${params.length}`);
+  }
+
+  if (priority && priority !== 'all') {
+    params.push(priority);
+    conditions.push(`priority = $${params.length}`);
+  }
+
+  if (source && source !== 'all') {
+    params.push(source);
+    conditions.push(`lead_source = $${params.length}`);
+  }
+
+  if (search && search.trim()) {
+    params.push(`%${search.trim().toLowerCase()}%`);
+    const pIdx = `$${params.length}`;
+    conditions.push(`(
+      LOWER(full_name) LIKE ${pIdx} OR 
+      phone LIKE ${pIdx} OR 
+      LOWER(COALESCE(email, '')) LIKE ${pIdx} OR 
+      LOWER(COALESCE(address, '')) LIKE ${pIdx} OR
+      LOWER(COALESCE(service_type, '')) LIKE ${pIdx}
+    )`);
+  }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   const [rows, countRow, daily] = await Promise.all([
-    query(
+    query<any>(
       `SELECT * FROM leads ${where} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
       params
     ),
@@ -35,12 +68,115 @@ export async function GET(req: NextRequest) {
     ),
   ]);
 
+  // Ensure every lead has score & priority populated
+  const enrichedLeads = rows.map(lead => {
+    if (!lead.lead_score || lead.lead_score === 0) {
+      const scored = calculateLeadScore({
+        serviceType: lead.service_type,
+        phone: lead.phone,
+        email: lead.email,
+        roofSqf: lead.roof_sqf,
+        address: lead.address,
+        zip: lead.zip,
+        leadSource: lead.lead_source,
+        formType: lead.form_type,
+      });
+      return {
+        ...lead,
+        lead_score: scored.score,
+        priority: scored.priority,
+      };
+    }
+    return lead;
+  });
+
   return NextResponse.json({
-    leads: rows,
-    total: parseInt(countRow[0]?.count ?? '0'),
+    leads: enrichedLeads,
+    total: parseInt(countRow[0]?.count ?? '0', 10),
     page,
     daily,
   });
+}
+
+export async function POST(req: NextRequest) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+    const {
+      fullName,
+      phone,
+      email,
+      address,
+      zip,
+      serviceType,
+      leadSource = 'phone',
+      notes,
+      propertyType,
+      roofType,
+      roofSqf,
+      stories,
+    } = body;
+
+    if (!fullName || !phone) {
+      return NextResponse.json({ error: 'Full name and phone are required' }, { status: 400 });
+    }
+
+    const scored = calculateLeadScore({
+      serviceType,
+      phone,
+      email,
+      roofSqf: roofSqf ? parseInt(roofSqf, 10) : null,
+      address,
+      zip,
+      leadSource,
+      formType: 'manual',
+    });
+
+    const rows = await query<any>(
+      `INSERT INTO leads (
+        form_type, full_name, phone, email, address, zip, service_type,
+        lead_source, notes, property_type, roof_type, roof_sqf, stories,
+        lead_score, priority, status, source_page
+      ) VALUES (
+        'manual', $1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10, $11, $12,
+        $13, $14, 'new', 'admin'
+      ) RETURNING *`,
+      [
+        fullName,
+        phone,
+        email ?? null,
+        address ?? null,
+        zip ?? null,
+        serviceType ?? null,
+        leadSource,
+        notes ?? null,
+        propertyType ?? null,
+        roofType ?? null,
+        roofSqf ? parseInt(roofSqf, 10) : null,
+        stories ? parseInt(stories, 10) : null,
+        scored.score,
+        scored.priority,
+      ]
+    );
+
+    const newLead = rows[0];
+
+    // Log creation activity
+    await query(
+      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+       VALUES ('lead', $1, 'system', 'Lead created manually', $2, 'Staff')`,
+      [newLead.id, `Created via manual entry (Source: ${leadSource})`]
+    );
+
+    return NextResponse.json({ ok: true, lead: newLead });
+  } catch (err) {
+    console.error('[api/admin/leads POST]', err);
+    return NextResponse.json({ error: 'Server error creating lead' }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -48,12 +184,20 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, status } = await req.json();
-  const valid = ['new', 'contacted', 'quoted', 'won', 'lost'];
+  const { id, status, performedBy } = await req.json();
+  const valid = ['new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
   if (!valid.includes(status)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
   await query(`UPDATE leads SET status = $1 WHERE id = $2`, [status, id]);
+
+  // Log status change activity
+  await query(
+    `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+     VALUES ('lead', $1, 'status_change', $2, $3, $4)`,
+    [id, `Status changed to ${status}`, `Lead status updated to ${status}`, performedBy || 'Staff']
+  );
+
   return NextResponse.json({ ok: true });
 }

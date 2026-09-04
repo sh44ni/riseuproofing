@@ -1,72 +1,93 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Download, Filter } from 'lucide-react';
-import LeadsTable from '@/components/admin/LeadsTable';
+import { Users, Download, Filter, Search, Plus, Sparkles, RefreshCw } from 'lucide-react';
+import LeadsTable, { Lead } from '@/components/admin/LeadsTable';
+import MobileLeadCard from '@/components/admin/leads/MobileLeadCard';
+import AddLeadSheet from '@/components/admin/leads/AddLeadSheet';
 import { AdminAreaChart } from '@/components/admin/Charts';
 
-interface Lead {
-  id: number;
-  form_type: string;
-  full_name: string;
-  phone: string;
-  email: string;
-  service_type: string;
-  status: string;
-  created_at: string;
-  address?: string;
-  zip?: string;
-  notes?: string;
-  message?: string;
-  subject?: string;
-}
-
-const STATUSES = ['all', 'new', 'contacted', 'quoted', 'won', 'lost'];
-const FORM_TYPES = ['all', 'estimate', 'contact'];
+const STATUSES = ['all', 'new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
+const PRIORITIES = ['all', 'hot', 'warm', 'cool'];
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [total, setTotal] = useState(0);
   const [daily, setDaily] = useState<{ day: string; count: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Filters
+  const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
-  const [formType, setFormType] = useState('all');
+  const [priority, setPriority] = useState('all');
   const [page, setPage] = useState(1);
+  const [showAddSheet, setShowAddSheet] = useState(false);
+
   const router = useRouter();
 
-  async function load() {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
+
     try {
       const params = new URLSearchParams({ page: String(page) });
       if (status !== 'all') params.set('status', status);
-      if (formType !== 'all') params.set('form_type', formType);
+      if (priority !== 'all') params.set('priority', priority);
+      if (search.trim()) params.set('search', search.trim());
+
       const res = await fetch(`/api/admin/leads?${params}`);
-      if (res.status === 401) { router.push('/admin/login'); return; }
+      if (res.status === 401) {
+        router.push('/admin/login');
+        return;
+      }
       const d = await res.json();
-      setLeads(d.leads);
-      setTotal(d.total);
-      setDaily(d.daily);
+      setLeads(d.leads ?? []);
+      setTotal(d.total ?? 0);
+      setDaily(d.daily ?? []);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }
+  }, [status, priority, search, page, router]);
 
-  useEffect(() => { load(); }, [status, formType, page]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Listen to FAB "crm:open-add-lead" event
+  useEffect(() => {
+    function handleOpenAdd() {
+      setShowAddSheet(true);
+    }
+    window.addEventListener('crm:open-add-lead', handleOpenAdd);
+    return () => window.removeEventListener('crm:open-add-lead', handleOpenAdd);
+  }, []);
 
   async function handleStatusChange(id: number, newStatus: string) {
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
+    setLeads(prev => prev.map(l => (l.id === id ? { ...l, status: newStatus } : l)));
     await fetch('/api/admin/leads', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status: newStatus }),
+      body: JSON.stringify({ id, status: newStatus, performedBy: 'Admin Staff' }),
     });
   }
 
   function exportCsv() {
-    const header = ['ID', 'Type', 'Name', 'Phone', 'Email', 'Service', 'Address', 'ZIP', 'Status', 'Date'];
+    const header = ['ID', 'Type', 'Name', 'Phone', 'Email', 'Service', 'Priority', 'Score', 'Address', 'Status', 'Date'];
     const rows = leads.map(l => [
-      l.id, l.form_type, l.full_name, l.phone, l.email, l.service_type, l.address, l.zip, l.status, l.created_at,
+      l.id,
+      l.form_type,
+      l.full_name,
+      l.phone,
+      l.email,
+      l.service_type,
+      l.priority ?? 'cool',
+      l.lead_score ?? 0,
+      l.address,
+      l.status,
+      l.created_at,
     ]);
     const csv = [header, ...rows].map(r => r.map(c => `"${c ?? ''}"`).join(',')).join('\n');
     const a = document.createElement('a');
@@ -78,86 +99,180 @@ export default function LeadsPage() {
   const totalPages = Math.ceil(total / 20);
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Users size={22} className="text-amber-400" /> Leads
+          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
+            <Users size={24} className="text-amber-400" />
+            <span>Leads CRM</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-0.5">{total} total submissions</p>
+          <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
+            {total} total homeowner & commercial inquiries tracked
+          </p>
         </div>
-        <button
-          onClick={exportCsv}
-          className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-400 rounded-xl text-sm font-medium transition-all cursor-pointer"
-        >
-          <Download size={15} /> Export CSV
-        </button>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => load(true)}
+            disabled={refreshing}
+            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors cursor-pointer disabled:opacity-50"
+            title="Refresh Leads"
+          >
+            <RefreshCw size={16} className={refreshing ? 'animate-spin text-amber-400' : ''} />
+          </button>
+
+          <button
+            onClick={exportCsv}
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+          >
+            <Download size={14} /> Export CSV
+          </button>
+
+          <button
+            onClick={() => setShowAddSheet(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer active:scale-95"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span>Add Lead</span>
+          </button>
+        </div>
       </div>
 
-      {/* Daily trend */}
-      {daily.length > 0 && (
-        <div className="bg-slate-900/50 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-white font-semibold mb-4">Leads Per Day (30d)</h2>
-          <AdminAreaChart data={daily} keys={['count']} />
+      {/* Search & Sticky Filters */}
+      <div className="space-y-3 bg-slate-900/60 p-3.5 sm:p-4 rounded-2xl border border-white/10">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by homeowner name, phone, address, city, or service..."
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+          />
         </div>
-      )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-center">
-        <Filter size={14} className="text-slate-400" />
-        <div className="flex gap-2 flex-wrap">
+        {/* Status Filter Chips (Horizontal scroll on mobile) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <Filter size={14} className="text-slate-500 flex-shrink-0 ml-1 mr-1" />
           {STATUSES.map(s => (
             <button
               key={s}
-              onClick={() => { setStatus(s); setPage(1); }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer
-                ${status === s ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'}`}
+              onClick={() => {
+                setStatus(s);
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
+                status === s
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-inner'
+                  : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
+              }`}
             >
               {s}
             </button>
           ))}
-        </div>
-        <div className="flex gap-2 ml-auto flex-wrap">
-          {FORM_TYPES.map(f => (
+
+          {/* Priority filter separator */}
+          <span className="text-slate-700 mx-1">|</span>
+
+          {PRIORITIES.map(p => (
             <button
-              key={f}
-              onClick={() => { setFormType(f); setPage(1); }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer
-                ${formType === f ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'}`}
+              key={p}
+              onClick={() => {
+                setPriority(p);
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
+                priority === p
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                  : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
+              }`}
             >
-              {f === 'all' ? 'All Forms' : f}
+              {p === 'all' ? 'All Priority' : `${p === 'hot' ? '🔴' : p === 'warm' ? '🟡' : '🔵'} ${p}`}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Table */}
+      {/* Daily trend summary on desktop */}
+      {daily.length > 0 && (
+        <div className="hidden lg:block bg-slate-900/40 border border-white/10 rounded-2xl p-5">
+          <h2 className="text-white font-semibold text-sm mb-3">Inbound Leads Velocity (30 Days)</h2>
+          <AdminAreaChart data={daily} keys={['count']} />
+        </div>
+      )}
+
+      {/* Main List Views */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+          <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-400 text-sm">Loading roofing leads...</p>
+        </div>
+      ) : leads.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-slate-900/40 rounded-2xl border border-white/5 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto">
+            <Sparkles size={24} />
+          </div>
+          <h3 className="text-lg font-bold text-white">No leads match this filter</h3>
+          <p className="text-slate-400 text-xs max-w-sm mx-auto">
+            Try adjusting your search query or clear the status filter to see all active inquiries.
+          </p>
+          <button
+            onClick={() => {
+              setStatus('all');
+              setPriority('all');
+              setSearch('');
+            }}
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+          >
+            Clear Filters
+          </button>
         </div>
       ) : (
-        <LeadsTable leads={leads} onStatusChange={handleStatusChange} />
+        <>
+          {/* Mobile View: High-density touch cards */}
+          <div className="lg:hidden space-y-3">
+            {leads.map(lead => (
+              <MobileLeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} />
+            ))}
+          </div>
+
+          {/* Desktop View: Full data table */}
+          <div className="hidden lg:block">
+            <LeadsTable leads={leads} onStatusChange={handleStatusChange} />
+          </div>
+        </>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 pt-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
             <button
               key={p}
               onClick={() => setPage(p)}
-              className={`w-9 h-9 rounded-xl text-sm font-medium transition-all cursor-pointer
-                ${p === page ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'}`}
+              className={`w-9 h-9 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                p === page
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-inner'
+                  : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
+              }`}
             >
               {p}
             </button>
           ))}
         </div>
       )}
+
+      {/* Add Lead Bottom Sheet */}
+      <AddLeadSheet
+        isOpen={showAddSheet}
+        onClose={() => setShowAddSheet(false)}
+        onCreated={() => load(true)}
+      />
     </div>
   );
 }

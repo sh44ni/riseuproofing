@@ -1,21 +1,18 @@
-import { redirect } from 'next/navigation';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { getCurrentUser } from '@/lib/admin-auth';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import BottomNav from '@/components/admin/layout/BottomNav';
+import FAB from '@/components/admin/shared/FAB';
 
-export const metadata = { title: 'Admin — Rise Up Roofing' };
+export const metadata = { title: 'CRM Admin — Rise Up Roofing & Construction' };
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Check if this is the login page by reading the children structure.
-  // We'll let the middleware-style check happen inside each protected page,
-  // but show the sidebar shell only for authenticated users.
-  const authed = await isAuthenticated();
+  const user = await getCurrentUser();
 
-  if (!authed) {
-    // Allow login page to render without sidebar
+  if (!user) {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
         {children}
@@ -24,11 +21,14 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex">
-      <AdminSidebar />
-      <main className="flex-1 min-h-screen overflow-auto pt-14 lg:pt-0">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col lg:flex-row">
+      <AdminSidebar user={user} />
+      <main className="flex-1 min-h-screen overflow-x-hidden overflow-y-auto pt-14 lg:pt-0 pb-24 lg:pb-10">
         {children}
       </main>
+      <FAB />
+      <BottomNav user={user} />
     </div>
   );
 }
+
