@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import crypto from 'crypto';
+import { requirePermission, requireAnyPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAnyPermission(['warranties:issue', 'jobs:view']);
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
@@ -73,9 +73,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('warranties:issue');
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();
@@ -101,6 +100,7 @@ export async function POST(req: NextRequest) {
     const countRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM warranties`);
     const seq = String(parseInt(countRes[0]?.count ?? '0', 10) + 1).padStart(4, '0');
     const warrantyNumber = `WAR-${year}-${seq}`;
+    const accessToken = crypto.randomBytes(32).toString('hex');
 
     const start = startDate ? new Date(startDate) : new Date();
     const startDateStr = start.toISOString().slice(0, 10);
@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
     const rows = await query<any>(
       `INSERT INTO warranties (
         job_id, lead_id, warranty_number, warranty_type, start_date, expiration_date,
-        coverage_details, status, checkin_6mo_due, checkin_1yr_due
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9)
+        coverage_details, status, checkin_6mo_due, checkin_1yr_due, access_token
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9, $10)
       RETURNING *`,
       [
         job.id,
@@ -137,6 +137,7 @@ export async function POST(req: NextRequest) {
         defaultCoverage,
         checkin6moStr,
         checkin1yrStr,
+        accessToken,
       ]
     );
 
@@ -161,9 +162,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('warranties:issue');
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();

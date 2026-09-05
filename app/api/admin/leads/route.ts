@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 import { calculateLeadScore } from '@/lib/crm-scoring';
 
@@ -12,9 +12,8 @@ let cachedDaily: CachedDaily | null = null;
 const DAILY_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('leads:view');
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
@@ -115,9 +114,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('leads:create');
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();
@@ -197,9 +195,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('leads:edit');
+  if (auth.response) return auth.response;
 
   const { id, status, performedBy } = await req.json();
   const valid = ['new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];

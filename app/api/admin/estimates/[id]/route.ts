@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('estimates:view');
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const estimateId = parseInt(id, 10);
@@ -21,16 +20,22 @@ export async function GET(
     return NextResponse.json({ error: 'Estimate not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ estimate: rows[0] });
+  const estimate = rows[0];
+  if (!hasPermission(auth.user, 'estimates:view_margins')) {
+    delete estimate.material_cost;
+    delete estimate.labor_cost;
+    delete estimate.margin_pct;
+  }
+
+  return NextResponse.json({ estimate });
 }
 
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('estimates:create');
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const estimateId = parseInt(id, 10);
@@ -92,9 +97,8 @@ export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('estimates:create');
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const estimateId = parseInt(id, 10);

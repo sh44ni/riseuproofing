@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission, requireAnyPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export const JOB_STAGES = [
@@ -13,9 +13,8 @@ export const JOB_STAGES = [
 ] as const;
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('jobs:view');
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
@@ -92,9 +91,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAnyPermission(['jobs:change_stage', 'estimates:create']);
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();

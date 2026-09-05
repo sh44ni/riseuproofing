@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import crypto from 'crypto';
+import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('reviews:manage');
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
@@ -89,9 +89,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('reviews:manage');
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();
@@ -109,8 +108,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Customer name is required' }, { status: 400 });
     }
 
-    // Generate unique random token
-    const token = `REV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    // Generate cryptographically secure unique token
+    const token = `REV-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
     const rows = await query<any>(
       `INSERT INTO reviews (
@@ -158,9 +157,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('reviews:manage');
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();
@@ -196,9 +194,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('reviews:manage');
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');

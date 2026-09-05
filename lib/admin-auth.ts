@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { query } from './db';
 import crypto from 'crypto';
-import { AuthUser } from './rbac';
+import { AuthUser, hasPermission, hasAnyPermission } from './rbac';
 
 export * from './rbac';
 
@@ -186,5 +187,60 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export { COOKIE_NAME, SESSION_HOURS };
+
+export type AuthResult =
+  | { user: AuthUser; response?: never }
+  | { user?: never; response: NextResponse };
+
+/**
+ * Enforce that request has a valid, active user session.
+ */
+export async function requireAuthUser(): Promise<AuthResult> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      response: NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 }),
+    };
+  }
+  return { user };
+}
+
+/**
+ * Enforce that authenticated user has a specific atomic permission (or is owner).
+ */
+export async function requirePermission(permission: string): Promise<AuthResult> {
+  const auth = await requireAuthUser();
+  if (auth.response) return auth;
+
+  if (!hasPermission(auth.user, permission)) {
+    return {
+      response: NextResponse.json(
+        { ok: false, error: `Forbidden: Missing required permission [${permission}]` },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return auth;
+}
+
+/**
+ * Enforce that authenticated user has at least one permission from a list.
+ */
+export async function requireAnyPermission(permissions: string[]): Promise<AuthResult> {
+  const auth = await requireAuthUser();
+  if (auth.response) return auth;
+
+  if (!hasAnyPermission(auth.user, permissions)) {
+    return {
+      response: NextResponse.json(
+        { ok: false, error: 'Forbidden: Insufficient permissions for this resource' },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return auth;
+}
 
 

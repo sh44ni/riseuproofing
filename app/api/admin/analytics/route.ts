@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('analytics:view');
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
 
@@ -14,13 +13,16 @@ export async function GET(req: NextRequest) {
   let toExpr: string;
   const fromParam = searchParams.get('from');
   const toParam = searchParams.get('to');
-  const days = parseInt(searchParams.get('days') ?? '30');
+  const rawDays = parseInt(searchParams.get('days') ?? '30', 10);
+  const safeDays = Number.isInteger(rawDays) && rawDays > 0 ? Math.min(rawDays, 365) : 30;
 
-  if (fromParam && toParam) {
+  // Strict YYYY-MM-DD date validation prevents SQL injection
+  const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+  if (fromParam && toParam && DATE_REGEX.test(fromParam) && DATE_REGEX.test(toParam)) {
     fromExpr = `'${fromParam}'::TIMESTAMPTZ`;
     toExpr   = `('${toParam}'::DATE + INTERVAL '1 day')::TIMESTAMPTZ`;
   } else {
-    fromExpr = `(NOW() - INTERVAL '${days} days')`;
+    fromExpr = `(NOW() - INTERVAL '${safeDays} days')`;
     toExpr   = `NOW()`;
   }
 

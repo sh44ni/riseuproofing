@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requireAnyPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export interface CalendarEvent {
@@ -17,9 +17,8 @@ export interface CalendarEvent {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAnyPermission(['field:view_calendar', 'jobs:view']);
+  if (auth.response) return auth.response;
 
   try {
     const [jobs, tasks, warranties, inspections] = await Promise.all([

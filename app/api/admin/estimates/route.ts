@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 import { calculateRoofEstimate, ROOFING_MATERIALS } from '@/lib/crm-calculator';
+import crypto from 'crypto';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('estimates:view');
+  if (auth.response) return auth.response;
+
+  const canViewMargins = hasPermission(auth.user, 'estimates:view_margins');
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
@@ -51,8 +53,15 @@ export async function GET(req: NextRequest) {
     accepted_value: '0',
   };
 
+  const sanitizedEstimates = canViewMargins
+    ? estimates
+    : estimates.map(e => {
+        const { material_cost, labor_cost, margin_pct, ...rest } = e;
+        return rest;
+      });
+
   return NextResponse.json({
-    estimates,
+    estimates: sanitizedEstimates,
     summary: {
       totalCount: parseInt(summary.total_count, 10),
       pipelineValue: parseFloat(summary.pipeline_value),
@@ -63,9 +72,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('estimates:create');
+  if (auth.response) return auth.response;
 
   try {
     const body = await req.json();
@@ -94,27 +102,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Customer name is required' }, { status: 400 });
     }
 
-    // Calculate costs
     const calc = calculateRoofEstimate({
       roofSquares: Number(roofSquares),
-      materialId,
       pitch: roofPitch,
       stories: Number(stories),
       tearoffLayers: Number(tearoffLayers),
+      materialId,
       addons,
       marginPct: Number(marginPct),
       financingMonths: Number(financingMonths),
     });
 
-    // Generate unique estimate number EST-YYYY-XXXX
+    // Auto-generate Estimate Number (e.g. EST-2026-0001)
     const year = new Date().getFullYear();
     const countRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM estimates`);
-    const nextSeq = String(parseInt(countRes[0]?.count ?? '0', 10) + 1).padStart(4, '0');
-    const estimateNumber = `EST-${year}-${nextSeq}`;
+    const seq = String(parseInt(countRes[0]?.count ?? '0', 10) + 1).padStart(4, '0');
+    const estimateNumber = `EST-${year}-${seq}`;
 
-    // Valid until
+    // Valid until date
     const validUntil = new Date();
-    validUntil.setDate(validUntil.getDate() + validDays);
+    validUntil.setDate(validUntil.getDate() + (Number(validDays) || 30));
+
+    // Generate high-entropy access token for secure portal verification
+    const accessToken = crypto.randomBytes(16).toString('hex');
 
     const rows = await query<any>(
       `INSERT INTO estimates (
@@ -122,13 +132,13 @@ export async function POST(req: NextRequest) {
         customer_address, customer_city, customer_zip, service_type,
         roof_squares, roof_pitch, stories, tearoff_layers, material_type,
         material_cost, labor_cost, addons, subtotal, margin_pct, total,
-        financing_months, monthly_payment, valid_until, notes
+        financing_months, monthly_payment, valid_until, notes, access_token
       ) VALUES (
         $1, $2, 'draft', $3, $4, $5,
         $6, $7, $8, $9,
         $10, $11, $12, $13, $14,
         $15, $16, $17, $18, $19, $20,
-        $21, $22, $23, $24
+        $21, $22, $23, $24, $25
       ) RETURNING *`,
       [
         leadId ? parseInt(leadId, 10) : null,
@@ -155,6 +165,7 @@ export async function POST(req: NextRequest) {
         calc.monthlyPayment,
         validUntil.toISOString().slice(0, 10),
         notes ?? null,
+        accessToken,
       ]
     );
 

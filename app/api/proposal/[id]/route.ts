@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAuthenticated } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(
@@ -7,17 +8,16 @@ export async function GET(
 ) {
   const { id } = await context.params;
 
-  // Support lookup by numeric ID or by estimate_number (e.g. EST-2026-0001)
-  let sql = `SELECT * FROM estimates WHERE `;
-  const params: unknown[] = [id];
-
+  // Strict anti-enumeration: Disallow sequential numeric lookups
   if (/^\d+$/.test(id)) {
-    sql += `id = $1`;
-  } else {
-    sql += `estimate_number = $1`;
+    return NextResponse.json({ error: 'Proposal not found or link has expired' }, { status: 404 });
   }
 
-  const rows = await query<any>(sql, params);
+  // Lookup by estimate_number (e.g. EST-2026-0001) or secure access_token
+  const rows = await query<any>(
+    `SELECT * FROM estimates WHERE estimate_number = $1 OR access_token = $1 LIMIT 1`,
+    [id]
+  );
   if (!rows || rows.length === 0) {
     return NextResponse.json({ error: 'Proposal not found or link has expired' }, { status: 404 });
   }
@@ -37,7 +37,7 @@ export async function GET(
     }
   }
 
-  // Sanitize internal costs from public view
+  // Sanitize internal wholesale costs from public view
   const publicProposal = {
     id: est.id,
     estimateNumber: est.estimate_number,
@@ -71,28 +71,40 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+
+  // Strict anti-enumeration: Disallow sequential numeric lookups
+  if (/^\d+$/.test(id)) {
+    return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
+  }
+
   const body = await req.json();
-  const { signatureName } = body;
+  const { signatureName, token } = body;
+  const tokenParam = req.nextUrl.searchParams.get('token') || req.headers.get('x-proposal-token') || token;
 
   if (!signatureName || !signatureName.trim()) {
     return NextResponse.json({ error: 'Full legal name signature is required' }, { status: 400 });
   }
 
-  let sql = `SELECT * FROM estimates WHERE `;
-  const params: unknown[] = [id];
-
-  if (/^\d+$/.test(id)) {
-    sql += `id = $1`;
-  } else {
-    sql += `estimate_number = $1`;
-  }
-
-  const rows = await query<any>(sql, params);
+  const rows = await query<any>(
+    `SELECT * FROM estimates WHERE estimate_number = $1 OR access_token = $1 LIMIT 1`,
+    [id]
+  );
   if (!rows || rows.length === 0) {
     return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
   }
 
   const est = rows[0];
+
+  // If estimate has an access_token, enforce token validation (unless user is authenticated admin)
+  if (est.access_token) {
+    const isAdmin = await isAuthenticated();
+    if (!isAdmin && tokenParam !== est.access_token && id !== est.access_token) {
+      return NextResponse.json(
+        { error: 'Forbidden: Valid authorization token required to accept proposal.' },
+        { status: 403 }
+      );
+    }
+  }
 
   if (est.status === 'accepted') {
     return NextResponse.json({ ok: true, message: 'Proposal was already accepted' });

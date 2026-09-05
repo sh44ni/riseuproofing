@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('analytics:view');
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const pagePath = searchParams.get('page') ?? '/';
-  const days = parseInt(searchParams.get('days') ?? '30');
+  const rawDays = parseInt(searchParams.get('days') ?? '30', 10);
+  const days = Number.isInteger(rawDays) && rawDays > 0 ? Math.min(rawDays, 365) : 30;
 
   // Do not show or query heatmaps for internal admin routes
   if (pagePath.startsWith('/admin')) {

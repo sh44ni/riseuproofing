@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('finances:view_invoices');
+  if (auth.response) return auth.response;
+
+  const canViewProfit = hasPermission(auth.user, 'finances:view_profit_ledger');
 
   const [invoiceStats, expenseStats, contractStats, recentInvoices] = await Promise.all([
     query<{
@@ -65,9 +66,9 @@ export async function GET(req: NextRequest) {
       paidCount: parseInt(inv.paid_count, 10),
       pendingCount: parseInt(inv.pending_count, 10),
       overdueCount: parseInt(inv.overdue_count, 10),
-      totalExpenses,
-      totalProfit,
-      realizedMarginPct: parseFloat(realizedMarginPct),
+      totalExpenses: canViewProfit ? totalExpenses : null,
+      totalProfit: canViewProfit ? totalProfit : null,
+      realizedMarginPct: canViewProfit ? parseFloat(realizedMarginPct) : null,
     },
     recentInvoices,
   });

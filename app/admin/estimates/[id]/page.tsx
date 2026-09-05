@@ -90,7 +90,8 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
 
   function getShareUrl() {
     if (typeof window === 'undefined' || !estimate) return '';
-    return `${window.location.origin}/proposal/${estimate.estimate_number}`;
+    const tokenParam = (estimate as any).access_token ? `?token=${(estimate as any).access_token}` : '';
+    return `${window.location.origin}/proposal/${estimate.estimate_number}${tokenParam}`;
   }
 
   function handleCopyShareLink() {
@@ -202,7 +203,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
           </button>
 
           <a
-            href={`/proposal/${estimate.estimate_number}`}
+            href={getShareUrl() || `/proposal/${estimate.estimate_number}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-[#a0aab8] font-semibold text-xs sm:text-sm transition-all duration-300 ease-out"

@@ -1,3 +1,5 @@
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/admin-auth';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import BottomNav from '@/components/admin/layout/BottomNav';
@@ -11,13 +13,19 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
+  const headerList = await headers();
+  const pathname = headerList.get('x-admin-pathname') || '';
 
   if (!user) {
-    return (
-      <div className="admin-theme min-h-screen bg-[#0c1117] text-[#f0f2f5]">
-        {children}
-      </div>
-    );
+    // Only allow /admin/login through without an authenticated session
+    if (pathname === '/admin/login' || pathname.startsWith('/admin/login')) {
+      return (
+        <div className="admin-theme min-h-screen bg-[#0c1117] text-[#f0f2f5]">
+          {children}
+        </div>
+      );
+    }
+    redirect('/admin/login');
   }
 
   return (

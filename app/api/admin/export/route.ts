@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requireAuthUser, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 function escapeCsvField(val: unknown): string {
   if (val === null || val === undefined) return '""';
-  const str = String(val);
+  let str = String(val);
+  // Neutralize CSV Formula Injection (Excel / LibreOffice command injection)
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
   return `"${str.replace(/"/g, '""')}"`;
 }
 
@@ -17,12 +21,31 @@ function generateCsv(headers: string[], rows: any[], keys: string[]): string {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAuthUser();
+  if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type') || 'leads';
+
+  // Granular RBAC verification based on export entity
+  if (type === 'leads' && !hasPermission(auth.user, 'leads:export')) {
+    return NextResponse.json({ error: 'Forbidden: Missing leads:export permission' }, { status: 403 });
+  }
+  if (type === 'jobs' && !hasPermission(auth.user, 'jobs:view')) {
+    return NextResponse.json({ error: 'Forbidden: Missing jobs:view permission' }, { status: 403 });
+  }
+  if (type === 'estimates' && !hasPermission(auth.user, 'estimates:view')) {
+    return NextResponse.json({ error: 'Forbidden: Missing estimates:view permission' }, { status: 403 });
+  }
+  if (type === 'finances' && !hasPermission(auth.user, 'finances:view_invoices')) {
+    return NextResponse.json({ error: 'Forbidden: Missing finances:view_invoices permission' }, { status: 403 });
+  }
+  if (type === 'inspections' && !hasPermission(auth.user, 'inspections:conduct')) {
+    return NextResponse.json({ error: 'Forbidden: Missing inspections:conduct permission' }, { status: 403 });
+  }
+  if (type === 'reviews' && !hasPermission(auth.user, 'reviews:manage')) {
+    return NextResponse.json({ error: 'Forbidden: Missing reviews:manage permission' }, { status: 403 });
+  }
   const dateStr = new Date().toISOString().slice(0, 10);
 
   let csv = '';

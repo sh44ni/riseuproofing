@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requireAnyPermission, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAnyPermission(['analytics:view', 'finances:view_profit_ledger']);
+  if (auth.response) return auth.response;
+
+  const canViewProfits = hasPermission(auth.user, 'finances:view_profit_ledger');
 
   try {
     // 1. Pipeline Funnel Metrics
@@ -194,9 +195,9 @@ export async function GET(req: NextRequest) {
         totalContractValue,
         totalCollected,
         totalPending,
-        totalExpenses,
-        totalProfit,
-        realizedMarginPct: parseFloat(realizedMarginPct),
+        totalExpenses: canViewProfits ? totalExpenses : 0,
+        totalProfit: canViewProfits ? totalProfit : 0,
+        realizedMarginPct: canViewProfits ? parseFloat(realizedMarginPct) : 0,
         winRatePct: totalLeads > 0 ? ((won / totalLeads) * 100).toFixed(1) : '0',
       },
     });

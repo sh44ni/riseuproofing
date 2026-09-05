@@ -55,7 +55,11 @@ export default function CustomerProposalPage({ params }: { params: Promise<{ id:
   const [jobNumber, setJobNumber] = useState('');
 
   useEffect(() => {
-    fetch(`/api/proposal/${proposalId}`)
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const token = searchParams?.get('token');
+    const url = `/api/proposal/${proposalId}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+
+    fetch(url)
       .then(res => {
         if (!res.ok) throw new Error('Proposal not found or link has expired');
         return res.json();
@@ -84,10 +88,13 @@ export default function CustomerProposalPage({ params }: { params: Promise<{ id:
 
     setSubmitting(true);
     try {
+      const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const token = searchParams?.get('token');
+
       const res = await fetch(`/api/proposal/${proposalId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signatureName: signature.trim() }),
+        body: JSON.stringify({ signatureName: signature.trim(), token }),
       });
 
       if (!res.ok) {

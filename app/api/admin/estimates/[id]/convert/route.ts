@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requireAnyPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAnyPermission(['jobs:change_stage', 'estimates:create']);
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const estimateId = parseInt(id, 10);

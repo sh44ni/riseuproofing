@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { getCurrentUser } from '@/lib/admin-auth';
+import crypto from 'crypto';
 
 const MIGRATIONS = [
   // ── Core analytics events table ──────────────────────────────────────────
@@ -413,9 +415,31 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_invoices_status_paid ON invoices (status, paid_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_tasks_pending_due ON tasks (due_at ASC) WHERE completed_at IS NULL`,
   `CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions (expires_at)`,
+
+  // ── Access Tokens for Secure Customer Portals ──────────────────────────────
+  `ALTER TABLE estimates ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`,
+  `ALTER TABLE inspections ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`,
+  `ALTER TABLE warranties ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`,
+  `CREATE INDEX IF NOT EXISTS idx_estimates_access_token ON estimates (access_token)`,
+  `CREATE INDEX IF NOT EXISTS idx_inspections_access_token ON inspections (access_token)`,
+  `CREATE INDEX IF NOT EXISTS idx_warranties_access_token ON warranties (access_token)`,
 ];
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  // Enforce Owner authentication or migration key
+  const currentUser = await getCurrentUser();
+  const migrationKey = req.headers.get('x-migration-key');
+  const isAuthorized =
+    (currentUser && currentUser.role === 'owner') ||
+    (process.env.MIGRATION_KEY && migrationKey === process.env.MIGRATION_KEY);
+
+  if (!isAuthorized) {
+    return NextResponse.json(
+      { ok: false, error: 'Forbidden. Owner authentication or valid migration key required.' },
+      { status: 403 }
+    );
+  }
+
   try {
     for (const sql of MIGRATIONS) {
       await query(sql);
@@ -480,6 +504,25 @@ export async function POST() {
     const owner = await query<{ id: number }>('SELECT id FROM users WHERE role = \'owner\' LIMIT 1');
     if (owner.length > 0) {
       await query('UPDATE admin_sessions SET user_id = $1 WHERE user_id IS NULL', [owner[0].id]);
+    }
+
+    // Backfill access tokens for existing estimates, inspections, and warranties
+    const pendingEstimates = await query<{ id: number }>('SELECT id FROM estimates WHERE access_token IS NULL');
+    for (const est of pendingEstimates) {
+      const tok = crypto.randomBytes(16).toString('hex');
+      await query('UPDATE estimates SET access_token = $1 WHERE id = $2', [tok, est.id]);
+    }
+
+    const pendingInspections = await query<{ id: number }>('SELECT id FROM inspections WHERE access_token IS NULL');
+    for (const insp of pendingInspections) {
+      const tok = crypto.randomBytes(16).toString('hex');
+      await query('UPDATE inspections SET access_token = $1 WHERE id = $2', [tok, insp.id]);
+    }
+
+    const pendingWarranties = await query<{ id: number }>('SELECT id FROM warranties WHERE access_token IS NULL');
+    for (const war of pendingWarranties) {
+      const tok = crypto.randomBytes(16).toString('hex');
+      await query('UPDATE warranties SET access_token = $1 WHERE id = $2', [tok, war.id]);
     }
 
     return NextResponse.json({ ok: true, message: 'Migrations and RBAC initialization complete' });

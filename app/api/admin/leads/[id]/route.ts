@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/admin-auth';
+import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 import { calculateLeadScore } from '@/lib/crm-scoring';
 
@@ -7,9 +7,8 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('leads:view');
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const leadId = parseInt(id, 10);
@@ -48,9 +47,8 @@ export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('leads:edit');
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const leadId = parseInt(id, 10);
@@ -120,9 +118,8 @@ export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requirePermission('leads:delete');
+  if (auth.response) return auth.response;
 
   const { id } = await context.params;
   const leadId = parseInt(id, 10);

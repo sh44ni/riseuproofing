@@ -1,9 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rateLimit = checkRateLimit('estimate-form', ip, {
+    limit: 5,
+    windowMs: 10 * 60 * 1000, // 5 requests per 10 minutes
+  });
+
+  if (!rateLimit.allowed) {
+    const retrySec = Math.ceil(rateLimit.resetMs / 1000);
+    return NextResponse.json(
+      { ok: false, error: `Too many submissions. Please wait ${retrySec} seconds.` },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retrySec) },
+      }
+    );
+  }
+
   try {
     const body = await req.json();
+
+    // Honeypot bot protection: If filled, silently discard
+    if (body.honeypot && String(body.honeypot).trim().length > 0) {
+      return NextResponse.json({ ok: true });
+    }
+
     const {
       fullName,
       phone,

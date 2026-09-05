@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+
+const IPV4_REGEX = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+const IPV6_REGEX = /^[a-fA-F0-9:]+$/;
 
 // Resolve geo from IP via ipapi.co (free, no key needed, 1000 req/day)
 async function getGeo(ip: string): Promise<{ country: string; city: string }> {
   if (!ip || ip === '127.0.0.1' || ip === '::1') return { country: '', city: '' };
+  // Strict format validation prevents SSRF or URL injection
+  if (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip)) return { country: '', city: '' };
+
   try {
-    const r = await fetch(`https://ipapi.co/${ip}/json/`, { signal: AbortSignal.timeout(1500) });
+    const r = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, { signal: AbortSignal.timeout(1500) });
     if (!r.ok) return { country: '', city: '' };
     const d = await r.json();
     return { country: d.country_name ?? '', city: d.city ?? '' };
@@ -28,6 +35,15 @@ const FEED_EVENTS = new Set([
 ]);
 
 export async function POST(req: NextRequest) {
+  const clientIp = getClientIp(req);
+  const rateLimit = checkRateLimit('analytics-track', clientIp, {
+    limit: 60,
+    windowMs: 60 * 1000, // 60 events per minute
+  });
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ ok: false, error: 'Rate limit exceeded' }, { status: 429 });
+  }
   try {
     const body = await req.json();
     const {

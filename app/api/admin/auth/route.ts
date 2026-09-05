@@ -9,6 +9,7 @@ import {
   SESSION_HOURS,
 } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -19,6 +20,25 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rateLimit = checkRateLimit('admin-login', ip, {
+    limit: 5,
+    windowMs: 5 * 60 * 1000, // 5 attempts per 5 minutes
+  });
+
+  if (!rateLimit.allowed) {
+    const retrySec = Math.ceil(rateLimit.resetMs / 1000);
+    return NextResponse.json(
+      { ok: false, error: `Too many login attempts. Please wait ${retrySec} seconds before retrying.` },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(retrySec),
+        },
+      }
+    );
+  }
+
   try {
     const body = await req.json();
     const { email, password } = body;

@@ -3,10 +3,13 @@ import { Pool, PoolClient, QueryResultRow } from 'pg';
 // Singleton pool — reused across hot reloads in dev
 const globalForPg = globalThis as unknown as { pgPool?: Pool };
 
+const isProduction = process.env.NODE_ENV === 'production';
+const allowSelfSigned = process.env.DB_SSL_ALLOW_SELFSIGNED === 'true';
+
 if (!globalForPg.pgPool) {
   globalForPg.pgPool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: isProduction && !allowSelfSigned } : false,
     max: 20, // Increased capacity to prevent query queuing on multi-metric dashboards
     min: 2,  // Maintain minimum warm connections
     idleTimeoutMillis: 30000, // Keep idle sockets warm for 30s before recycling
