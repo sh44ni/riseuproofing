@@ -54,18 +54,18 @@ export default function HeatmapCanvas({ clicks, scrollDepth, width = 800, height
     ctx.clearRect(0, 0, width, height);
 
     // Draw page outline
-    ctx.fillStyle = '#1e293b';
+    ctx.fillStyle = '#0c1117';
     ctx.fillRect(0, 0, width, height);
 
     // Add grid lines to represent page sections
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
     ctx.lineWidth = 1;
     for (let y = 0; y < height; y += height / 10) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
     }
 
     if (clicks.length === 0) {
-      ctx.fillStyle = 'rgba(148,163,184,0.5)';
+      ctx.fillStyle = 'rgba(138,149,165,0.5)';
       ctx.font = '16px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('No click data yet — visit the site to generate data', width / 2, height / 2);
@@ -113,10 +113,10 @@ export default function HeatmapCanvas({ clicks, scrollDepth, width = 800, height
           <button
             key={key}
             onClick={() => setTab(key as 'clicks' | 'scroll')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer
+            className={`flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-medium transition-all cursor-pointer
               ${tab === key
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                : 'text-slate-400 hover:text-white border border-white/10 hover:border-white/20'
+                ? 'bg-[#d4a447]/10 text-[#d4a447] border border-[#d4a447]/25'
+                : 'text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] hover:border-white/[0.12]'
               }`}
           >
             <Icon size={15} />
@@ -126,43 +126,43 @@ export default function HeatmapCanvas({ clicks, scrollDepth, width = 800, height
       </div>
 
       {tab === 'clicks' ? (
-        <div className="relative rounded-2xl overflow-hidden border border-white/10">
+        <div className="relative rounded-[16px] overflow-hidden border border-white/[0.06]">
           {/* Legend */}
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/10">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2 bg-[#141b24]/80 backdrop-blur-sm px-3 py-1.5 rounded-[12px] border border-white/[0.06]">
             <div className="flex gap-1 items-center">
               {['#3B82F6','#22C55E','#EAB308','#F97316','#EF4444'].map(c => (
                 <div key={c} className="w-4 h-2 rounded-sm" style={{ background: c }} />
               ))}
             </div>
-            <span className="text-xs text-slate-400">Low → High</span>
+            <span className="text-xs text-[#8a95a5]">Low → High</span>
           </div>
           <canvas
             ref={canvasRef}
             className="w-full"
-            style={{ display: 'block', background: '#1e293b' }}
+            style={{ display: 'block', background: '#0c1117' }}
           />
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-6">
+        <div className="rounded-[16px] border border-white/[0.06] admin-card p-6">
           {scrollDepth.length === 0 ? (
-            <p className="text-center text-slate-500 py-10">No scroll data yet</p>
+            <p className="text-center text-[#5e6a7a] py-10">No scroll data yet</p>
           ) : (
             <div className="space-y-3">
-              <p className="text-slate-400 text-xs uppercase tracking-wider mb-4">% of visitors who scrolled to each depth</p>
+              <p className="text-[#8a95a5] text-[11px] uppercase tracking-widest mb-4 admin-section-label">% of visitors who scrolled to each depth</p>
               {Array.from({ length: 11 }, (_, i) => i * 10).map(pct => {
                 const bucket = scrollDepth.find(s => s.bucket === pct);
                 const count = bucket ? parseInt(bucket.count) : 0;
                 const pctWidth = maxScroll > 0 ? (count / maxScroll) * 100 : 0;
-                const color = pct < 25 ? '#3B82F6' : pct < 50 ? '#22C55E' : pct < 75 ? '#EAB308' : pct < 90 ? '#F97316' : '#EF4444';
+                const color = pct < 25 ? '#3B82F6' : pct < 50 ? '#22C55E' : pct < 75 ? '#d4a447' : pct < 90 ? '#F97316' : '#EF4444';
                 return (
                   <div key={pct} className="flex items-center gap-3">
-                    <span className="text-slate-400 text-xs w-12 text-right flex-shrink-0">{pct}%</span>
-                    <div className="flex-1 h-6 bg-white/5 rounded-lg overflow-hidden">
+                    <span className="text-[#8a95a5] text-xs w-12 text-right flex-shrink-0">{pct}%</span>
+                    <div className="flex-1 h-6 bg-white/[0.03] rounded-lg overflow-hidden">
                       <div
                         className="h-full rounded-lg transition-all duration-700 flex items-center justify-end pr-2"
                         style={{ width: `${pctWidth}%`, background: color }}
                       >
-                        {count > 0 && <span className="text-white text-xs font-bold">{count}</span>}
+                        {count > 0 && <span className="text-[#f0f2f5] text-xs font-bold">{count}</span>}
                       </div>
                     </div>
                   </div>

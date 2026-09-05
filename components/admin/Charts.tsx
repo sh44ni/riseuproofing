@@ -18,21 +18,21 @@ import {
   Legend,
 } from 'recharts';
 
-const AMBER = '#F59E0B';
-const SLATE = '#64748B';
-const COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
+const GOLD = '#d4a447';
+const SLATE = '#8a95a5';
+const COLORS = ['#d4a447', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
 
 const tooltipStyle = {
-  backgroundColor: '#0F172A',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '12px',
-  color: '#F1F5F9',
+  backgroundColor: '#0c1117',
+  border: '1px solid rgba(255,255,255,0.06)',
+  borderRadius: '16px',
+  color: '#f0f2f5',
   fontSize: '12px',
 };
 
 // Shared axis styles
-const axisStyle = { fill: '#64748B', fontSize: 11 };
-const gridStyle = { stroke: 'rgba(255,255,255,0.05)', strokeDasharray: '3 3' };
+const axisStyle = { fill: '#8a95a5', fontSize: 11 };
+const gridStyle = { stroke: 'rgba(255,255,255,0.03)', strokeDasharray: '3 3' };
 
 // ── Area Chart (visitors over time) ──────────────────────────────────────────
 interface AreaPoint { day: string; visitors?: string | number; sessions?: string | number; pageviews?: string | number; count?: string | number; }
@@ -61,7 +61,7 @@ export function AdminAreaChart({ data, keys = ['visitors'] }: { data: AreaPoint[
         <CartesianGrid {...gridStyle} />
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'rgba(255,255,255,0.1)' }} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'rgba(255,255,255,0.06)' }} />
         {keys.map((k, i) => (
           <Area
             key={k}
@@ -86,7 +86,7 @@ export function AdminBarChart({
   data,
   dataKey = 'views',
   labelKey = 'page_path',
-  color = AMBER,
+  color = GOLD,
   horizontal = false,
 }: {
   data: BarPoint[];
@@ -157,16 +157,16 @@ export function AdminPieChart({ data, label = 'Total' }: { data: PiePoint[]; lab
           </RePieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-2xl font-bold text-white">{total}</span>
-          <span className="text-xs text-slate-400">{label}</span>
+          <span className="text-2xl font-bold text-[#f0f2f5]">{total}</span>
+          <span className="text-xs text-[#8a95a5]">{label}</span>
         </div>
       </div>
       <div className="flex flex-wrap gap-2 justify-center">
         {data.map((d, i) => (
-          <div key={d.name} className="flex items-center gap-1.5 text-xs text-slate-300">
+          <div key={d.name} className="flex items-center gap-1.5 text-xs text-[#a0aab8]">
             <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
             <span className="capitalize">{d.name}</span>
-            <span className="text-slate-500">({d.value})</span>
+            <span className="text-[#5e6a7a]">({d.value})</span>
           </div>
         ))}
       </div>

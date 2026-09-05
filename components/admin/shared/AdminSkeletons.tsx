@@ -23,15 +23,15 @@ export function DashboardSkeleton() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Skeleton className="w-28 h-5 rounded-full bg-amber-500/20" />
-            <Skeleton className="w-36 h-4 rounded-full" />
+            <Skeleton className="w-28 h-5 rounded-full bg-[#d4a447]/15 admin-shimmer" />
+            <Skeleton className="w-36 h-4 rounded-full admin-shimmer" />
           </div>
-          <Skeleton className="w-72 sm:w-96 h-8 rounded-xl" />
-          <Skeleton className="w-48 h-3.5" />
+          <Skeleton className="w-72 sm:w-96 h-8 rounded-xl admin-shimmer" />
+          <Skeleton className="w-48 h-3.5 admin-shimmer" />
         </div>
         <div className="flex items-center gap-2">
-          <Skeleton className="w-28 h-9 rounded-xl" />
-          <Skeleton className="w-32 h-9 rounded-xl bg-amber-500/20" />
+          <Skeleton className="w-28 h-9 rounded-xl admin-shimmer" />
+          <Skeleton className="w-32 h-9 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
         </div>
       </div>
 
@@ -40,38 +40,38 @@ export function DashboardSkeleton() {
         {[
           { icon: DollarSign, color: 'text-emerald-400 bg-emerald-500/10' },
           { icon: TrendingUp, color: 'text-cyan-400 bg-cyan-500/10' },
-          { icon: ClipboardCheck, color: 'text-amber-400 bg-amber-500/10' },
+          { icon: ClipboardCheck, color: 'text-[#d4a447] bg-[#d4a447]/10' },
           { icon: HardHat, color: 'text-purple-400 bg-purple-500/10' },
         ].map((kpi, idx) => (
           <div
             key={idx}
-            className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-white/5 flex flex-col justify-between space-y-3"
+            className="p-4 sm:p-5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] flex flex-col justify-between space-y-3"
           >
             <div className="flex items-center justify-between">
-              <Skeleton className="w-24 h-3.5" />
+              <Skeleton className="w-24 h-3.5 admin-shimmer" />
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${kpi.color}`}>
                 <kpi.icon size={16} />
               </div>
             </div>
-            <Skeleton className="w-32 h-8 rounded-xl" />
-            <div className="pt-2 border-t border-white/5 flex items-center justify-between">
-              <Skeleton className="w-20 h-3" />
-              <Skeleton className="w-12 h-4 rounded-full bg-emerald-500/15" />
+            <Skeleton className="w-32 h-8 rounded-xl admin-shimmer" />
+            <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between">
+              <Skeleton className="w-20 h-3 admin-shimmer" />
+              <Skeleton className="w-12 h-4 rounded-full bg-emerald-500/15 admin-shimmer" />
             </div>
           </div>
         ))}
       </div>
 
       {/* 7-Stage Kanban Distribution Bar */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Skeleton className="w-36 h-4" />
-            <Skeleton className="w-16 h-5 rounded-full bg-amber-500/20" />
+            <Skeleton className="w-36 h-4 admin-shimmer" />
+            <Skeleton className="w-16 h-5 rounded-full bg-[#d4a447]/15 admin-shimmer" />
           </div>
-          <Skeleton className="w-24 h-3" />
+          <Skeleton className="w-24 h-3 admin-shimmer" />
         </div>
-        <div className="grid grid-cols-7 gap-1.5 h-3 rounded-lg overflow-hidden bg-slate-800/40">
+        <div className="grid grid-cols-7 gap-1.5 h-3 rounded-lg overflow-hidden bg-[#1a2332]/80">
           {[1, 2, 3, 4, 5, 6, 7].map((s) => (
             <Skeleton key={s} className="h-full rounded-none" />
           ))}
@@ -86,9 +86,9 @@ export function DashboardSkeleton() {
             'Final Inspection',
             'Complete',
           ].map((label, idx) => (
-            <div key={idx} className="p-2 rounded-xl bg-slate-800/30 border border-white/5 space-y-1">
-              <Skeleton className="w-12 h-3" />
-              <Skeleton className="w-6 h-4" />
+            <div key={idx} className="p-2 rounded-xl bg-[#1a2332]/80 border border-white/[0.04] space-y-1">
+              <Skeleton className="w-12 h-3 admin-shimmer" />
+              <Skeleton className="w-6 h-4 admin-shimmer" />
             </div>
           ))}
         </div>
@@ -103,24 +103,24 @@ export function DashboardSkeleton() {
               <div className="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
                 <AlertTriangle size={14} />
               </div>
-              <Skeleton className="w-36 h-5" />
+              <Skeleton className="w-36 h-5 admin-shimmer" />
             </div>
-            <Skeleton className="w-16 h-5 rounded-full bg-rose-500/20" />
+            <Skeleton className="w-16 h-5 rounded-full bg-rose-500/20 admin-shimmer" />
           </div>
           <div className="space-y-2.5">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="p-3.5 rounded-2xl bg-slate-900/60 border border-rose-500/20 flex items-center justify-between"
+                className="p-3.5 rounded-2xl admin-card bg-[#141b24] border border-rose-500/20 flex items-center justify-between"
               >
                 <div className="space-y-1.5 w-3/4">
                   <div className="flex items-center gap-2">
-                    <Skeleton className="w-20 h-4 rounded-full bg-rose-500/25" />
-                    <Skeleton className="w-28 h-4" />
+                    <Skeleton className="w-20 h-4 rounded-full bg-rose-500/25 admin-shimmer" />
+                    <Skeleton className="w-28 h-4 admin-shimmer" />
                   </div>
-                  <Skeleton className="w-48 h-3" />
+                  <Skeleton className="w-48 h-3 admin-shimmer" />
                 </div>
-                <Skeleton className="w-16 h-7 rounded-xl bg-slate-800" />
+                <Skeleton className="w-16 h-7 rounded-xl bg-[#1a2332] admin-shimmer" />
               </div>
             ))}
           </div>
@@ -130,27 +130,27 @@ export function DashboardSkeleton() {
         <div className="lg:col-span-6 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-lg bg-[#d4a447]/15 text-[#d4a447] flex items-center justify-center">
                 <HardHat size={14} />
               </div>
-              <Skeleton className="w-44 h-5" />
+              <Skeleton className="w-44 h-5 admin-shimmer" />
             </div>
-            <Skeleton className="w-20 h-4" />
+            <Skeleton className="w-20 h-4 admin-shimmer" />
           </div>
           <div className="space-y-2.5">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5 flex items-center justify-between"
+                className="p-3.5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] flex items-center justify-between"
               >
                 <div className="space-y-1.5 w-3/4">
                   <div className="flex items-center gap-2">
-                    <Skeleton className="w-24 h-4 rounded-full bg-cyan-500/20" />
-                    <Skeleton className="w-36 h-4" />
+                    <Skeleton className="w-24 h-4 rounded-full bg-cyan-500/20 admin-shimmer" />
+                    <Skeleton className="w-36 h-4 admin-shimmer" />
                   </div>
-                  <Skeleton className="w-56 h-3" />
+                  <Skeleton className="w-56 h-3 admin-shimmer" />
                 </div>
-                <Skeleton className="w-12 h-6 rounded-lg bg-slate-800" />
+                <Skeleton className="w-12 h-6 rounded-lg bg-[#1a2332] admin-shimmer" />
               </div>
             ))}
           </div>
@@ -158,27 +158,27 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Full-Width Recent Leads Table Skeleton */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-4">
         <div className="flex items-center justify-between">
-          <Skeleton className="w-36 h-5" />
-          <Skeleton className="w-24 h-4" />
+          <Skeleton className="w-36 h-5 admin-shimmer" />
+          <Skeleton className="w-24 h-4 admin-shimmer" />
         </div>
         <div className="space-y-2">
           {[1, 2, 3, 4].map((row) => (
             <div
               key={row}
-              className="p-3.5 rounded-xl bg-slate-950/40 border border-white/5 flex items-center justify-between"
+              className="p-3.5 rounded-xl bg-[#0c1117]/40 border border-white/[0.04] flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
-                <Skeleton className="w-9 h-9 rounded-full bg-amber-500/15" />
+                <Skeleton className="w-9 h-9 rounded-full bg-[#d4a447]/10 admin-shimmer" />
                 <div className="space-y-1">
-                  <Skeleton className="w-36 h-4" />
-                  <Skeleton className="w-48 h-3" />
+                  <Skeleton className="w-36 h-4 admin-shimmer" />
+                  <Skeleton className="w-48 h-3 admin-shimmer" />
                 </div>
               </div>
               <div className="hidden sm:flex items-center gap-4">
-                <Skeleton className="w-20 h-5 rounded-full" />
-                <Skeleton className="w-16 h-5 rounded-full bg-amber-500/20" />
+                <Skeleton className="w-20 h-5 rounded-full admin-shimmer" />
+                <Skeleton className="w-16 h-5 rounded-full bg-[#d4a447]/15 admin-shimmer" />
               </div>
             </div>
           ))}
@@ -195,23 +195,23 @@ export function LeadsTableSkeleton() {
       {/* Header & KPIs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <Skeleton className="w-44 h-8 rounded-xl" />
-          <Skeleton className="w-64 h-3.5 mt-1.5" />
+          <Skeleton className="w-44 h-8 rounded-xl admin-shimmer" />
+          <Skeleton className="w-64 h-3.5 mt-1.5 admin-shimmer" />
         </div>
         <div className="flex items-center gap-2">
-          <Skeleton className="w-32 h-10 rounded-xl bg-amber-500/20" />
+          <Skeleton className="w-32 h-10 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
         </div>
       </div>
 
       {/* Search & Filters Bar */}
-      <div className="p-3 rounded-2xl bg-slate-900/60 border border-white/5 flex flex-wrap gap-2.5 items-center justify-between">
+      <div className="p-3 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] flex flex-wrap gap-2.5 items-center justify-between">
         <div className="flex-1 min-w-[240px]">
-          <Skeleton className="w-full h-10 rounded-xl" />
+          <Skeleton className="w-full h-10 rounded-xl admin-shimmer" />
         </div>
         <div className="flex flex-wrap gap-2">
-          <Skeleton className="w-28 h-10 rounded-xl" />
-          <Skeleton className="w-28 h-10 rounded-xl" />
-          <Skeleton className="w-28 h-10 rounded-xl" />
+          <Skeleton className="w-28 h-10 rounded-xl admin-shimmer" />
+          <Skeleton className="w-28 h-10 rounded-xl admin-shimmer" />
+          <Skeleton className="w-28 h-10 rounded-xl admin-shimmer" />
         </div>
       </div>
 
@@ -223,28 +223,28 @@ export function LeadsTableSkeleton() {
       </div>
 
       {/* Leads Table Rows (Desktop) */}
-      <div className="rounded-2xl border border-white/5 bg-slate-900/60 overflow-hidden">
-        <div className="p-4 border-b border-white/5 bg-slate-950/40 flex items-center justify-between">
-          <Skeleton className="w-24 h-4" />
-          <Skeleton className="w-24 h-4" />
-          <Skeleton className="w-24 h-4" />
-          <Skeleton className="w-24 h-4" />
-          <Skeleton className="w-16 h-4" />
+      <div className="rounded-2xl border border-white/[0.04] admin-card bg-[#141b24] overflow-hidden">
+        <div className="p-4 border-b border-white/[0.04] bg-[#0c1117]/40 flex items-center justify-between">
+          <Skeleton className="w-24 h-4 admin-shimmer" />
+          <Skeleton className="w-24 h-4 admin-shimmer" />
+          <Skeleton className="w-24 h-4 admin-shimmer" />
+          <Skeleton className="w-24 h-4 admin-shimmer" />
+          <Skeleton className="w-16 h-4 admin-shimmer" />
         </div>
         <div className="divide-y divide-white/5">
           {[1, 2, 3, 4, 5, 6].map((row) => (
             <div key={row} className="p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full bg-amber-500/20" />
+                <Skeleton className="w-10 h-10 rounded-full bg-[#d4a447]/15 admin-shimmer" />
                 <div className="space-y-1">
-                  <Skeleton className="w-40 h-4" />
-                  <Skeleton className="w-28 h-3" />
+                  <Skeleton className="w-40 h-4 admin-shimmer" />
+                  <Skeleton className="w-28 h-3 admin-shimmer" />
                 </div>
               </div>
-              <Skeleton className="w-36 h-3.5 hidden sm:block" />
-              <Skeleton className="w-24 h-5 rounded-full" />
-              <Skeleton className="w-16 h-5 rounded-full bg-amber-500/20" />
-              <Skeleton className="w-8 h-8 rounded-lg" />
+              <Skeleton className="w-36 h-3.5 hidden sm:block admin-shimmer" />
+              <Skeleton className="w-24 h-5 rounded-full admin-shimmer" />
+              <Skeleton className="w-16 h-5 rounded-full bg-[#d4a447]/15 admin-shimmer" />
+              <Skeleton className="w-8 h-8 rounded-lg admin-shimmer" />
             </div>
           ))}
         </div>
@@ -260,12 +260,12 @@ export function KanbanSkeleton() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <Skeleton className="w-48 h-8 rounded-xl" />
-          <Skeleton className="w-64 h-3.5 mt-1.5" />
+          <Skeleton className="w-48 h-8 rounded-xl admin-shimmer" />
+          <Skeleton className="w-64 h-3.5 mt-1.5 admin-shimmer" />
         </div>
         <div className="flex items-center gap-2">
-          <Skeleton className="w-28 h-10 rounded-xl" />
-          <Skeleton className="w-36 h-10 rounded-xl bg-amber-500/20" />
+          <Skeleton className="w-28 h-10 rounded-xl admin-shimmer" />
+          <Skeleton className="w-36 h-10 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
         </div>
       </div>
 
@@ -282,29 +282,29 @@ export function KanbanSkeleton() {
         ].map((col, idx) => (
           <div
             key={idx}
-            className="w-72 flex-shrink-0 rounded-2xl bg-slate-900/50 border border-white/5 p-3.5 space-y-3"
+            className="w-72 flex-shrink-0 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] p-3.5 space-y-3"
           >
             {/* Column Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
-              <Skeleton className="w-28 h-4" />
-              <Skeleton className="w-6 h-5 rounded-full bg-slate-800" />
+            <div className="flex items-center justify-between pb-2 border-b border-white/[0.04]">
+              <Skeleton className="w-28 h-4 admin-shimmer" />
+              <Skeleton className="w-6 h-5 rounded-full bg-[#1a2332] admin-shimmer" />
             </div>
 
             {/* 2 Job Card Skeletons per column */}
             {[1, 2].map((card) => (
               <div
                 key={card}
-                className="p-3.5 rounded-xl bg-slate-950/70 border border-white/5 space-y-2.5"
+                className="p-3.5 rounded-xl bg-[#0c1117]/70 border border-white/[0.04] space-y-2.5"
               >
                 <div className="flex items-center justify-between">
-                  <Skeleton className="w-20 h-4 rounded-md" />
-                  <Skeleton className="w-16 h-4 rounded-md bg-amber-500/20" />
+                  <Skeleton className="w-20 h-4 rounded-md admin-shimmer" />
+                  <Skeleton className="w-16 h-4 rounded-md bg-[#d4a447]/15 admin-shimmer" />
                 </div>
-                <Skeleton className="w-36 h-4" />
-                <Skeleton className="w-full h-3" />
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between">
-                  <Skeleton className="w-20 h-3" />
-                  <Skeleton className="w-16 h-4 rounded-md bg-slate-800" />
+                <Skeleton className="w-36 h-4 admin-shimmer" />
+                <Skeleton className="w-full h-3 admin-shimmer" />
+                <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between">
+                  <Skeleton className="w-20 h-3 admin-shimmer" />
+                  <Skeleton className="w-16 h-4 rounded-md bg-[#1a2332] admin-shimmer" />
                 </div>
               </div>
             ))}
@@ -322,41 +322,41 @@ export function FinancesSkeleton() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <Skeleton className="w-48 h-8 rounded-xl" />
-          <Skeleton className="w-64 h-3.5 mt-1.5" />
+          <Skeleton className="w-48 h-8 rounded-xl admin-shimmer" />
+          <Skeleton className="w-64 h-3.5 mt-1.5 admin-shimmer" />
         </div>
         <div className="flex items-center gap-2">
-          <Skeleton className="w-36 h-10 rounded-xl bg-amber-500/20" />
+          <Skeleton className="w-36 h-10 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
         </div>
       </div>
 
       {/* 4 Cash Flow KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
-            <Skeleton className="w-24 h-3.5" />
-            <Skeleton className="w-32 h-8 rounded-xl" />
-            <Skeleton className="w-20 h-3" />
+          <div key={i} className="p-5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-3">
+            <Skeleton className="w-24 h-3.5 admin-shimmer" />
+            <Skeleton className="w-32 h-8 rounded-xl admin-shimmer" />
+            <Skeleton className="w-20 h-3 admin-shimmer" />
           </div>
         ))}
       </div>
 
       {/* Milestone Invoices Table */}
-      <div className="rounded-2xl border border-white/5 bg-slate-900/60 overflow-hidden space-y-4 p-5">
-        <Skeleton className="w-48 h-5" />
+      <div className="rounded-2xl border border-white/[0.04] admin-card bg-[#141b24] overflow-hidden space-y-4 p-5">
+        <Skeleton className="w-48 h-5 admin-shimmer" />
         <div className="space-y-2">
           {[1, 2, 3, 4].map((row) => (
             <div
               key={row}
-              className="p-3.5 rounded-xl bg-slate-950/40 border border-white/5 flex items-center justify-between"
+              className="p-3.5 rounded-xl bg-[#0c1117]/40 border border-white/[0.04] flex items-center justify-between"
             >
               <div className="space-y-1 w-1/3">
-                <Skeleton className="w-32 h-4" />
-                <Skeleton className="w-44 h-3" />
+                <Skeleton className="w-32 h-4 admin-shimmer" />
+                <Skeleton className="w-44 h-3 admin-shimmer" />
               </div>
-              <Skeleton className="w-24 h-5 rounded-full bg-cyan-500/15" />
-              <Skeleton className="w-20 h-5" />
-              <Skeleton className="w-16 h-6 rounded-full bg-emerald-500/20" />
+              <Skeleton className="w-24 h-5 rounded-full bg-cyan-500/15 admin-shimmer" />
+              <Skeleton className="w-20 h-5 admin-shimmer" />
+              <Skeleton className="w-16 h-6 rounded-full bg-emerald-500/20 admin-shimmer" />
             </div>
           ))}
         </div>
@@ -372,18 +372,18 @@ export function CrewRosterSkeleton() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <Skeleton className="w-48 h-8 rounded-xl" />
-          <Skeleton className="w-64 h-3.5 mt-1.5" />
+          <Skeleton className="w-48 h-8 rounded-xl admin-shimmer" />
+          <Skeleton className="w-64 h-3.5 mt-1.5 admin-shimmer" />
         </div>
-        <Skeleton className="w-36 h-10 rounded-xl bg-amber-500/20" />
+        <Skeleton className="w-36 h-10 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
       </div>
 
       {/* 4 Crew KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-            <Skeleton className="w-20 h-3" />
-            <Skeleton className="w-16 h-7 rounded-lg" />
+          <div key={i} className="p-4 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-2">
+            <Skeleton className="w-20 h-3 admin-shimmer" />
+            <Skeleton className="w-16 h-7 rounded-lg admin-shimmer" />
           </div>
         ))}
       </div>
@@ -393,27 +393,27 @@ export function CrewRosterSkeleton() {
         {[1, 2, 3, 4, 5, 6].map((card) => (
           <div
             key={card}
-            className="p-5 rounded-2xl bg-slate-900/60 border border-white/5 flex flex-col justify-between space-y-4"
+            className="p-5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] flex flex-col justify-between space-y-4"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Skeleton className="w-10 h-10 rounded-full bg-amber-500/20" />
+                  <Skeleton className="w-10 h-10 rounded-full bg-[#d4a447]/15 admin-shimmer" />
                   <div className="space-y-1">
-                    <Skeleton className="w-28 h-4" />
-                    <Skeleton className="w-20 h-3" />
+                    <Skeleton className="w-28 h-4 admin-shimmer" />
+                    <Skeleton className="w-20 h-3 admin-shimmer" />
                   </div>
                 </div>
-                <Skeleton className="w-16 h-5 rounded-full bg-blue-500/20" />
+                <Skeleton className="w-16 h-5 rounded-full bg-blue-500/20 admin-shimmer" />
               </div>
-              <div className="p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-1">
-                <Skeleton className="w-20 h-3" />
-                <Skeleton className="w-36 h-4" />
+              <div className="p-3 rounded-xl bg-[#0c1117]/40 border border-white/[0.04] space-y-1">
+                <Skeleton className="w-20 h-3 admin-shimmer" />
+                <Skeleton className="w-36 h-4 admin-shimmer" />
               </div>
             </div>
-            <div className="flex gap-2 pt-2 border-t border-white/5">
-              <Skeleton className="w-1/2 h-9 rounded-xl" />
-              <Skeleton className="w-1/2 h-9 rounded-xl bg-amber-500/20" />
+            <div className="flex gap-2 pt-2 border-t border-white/[0.04]">
+              <Skeleton className="w-1/2 h-9 rounded-xl admin-shimmer" />
+              <Skeleton className="w-1/2 h-9 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
             </div>
           </div>
         ))}
@@ -427,21 +427,21 @@ export function InspectionsSkeleton() {
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <Skeleton className="w-48 h-8 rounded-xl" />
-        <Skeleton className="w-36 h-10 rounded-xl bg-amber-500/20" />
+        <Skeleton className="w-48 h-8 rounded-xl admin-shimmer" />
+        <Skeleton className="w-36 h-10 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="p-5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-4">
+          <div key={i} className="p-5 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-4">
             <div className="flex items-center justify-between">
-              <Skeleton className="w-28 h-4" />
-              <Skeleton className="w-12 h-6 rounded-full bg-emerald-500/20" />
+              <Skeleton className="w-28 h-4 admin-shimmer" />
+              <Skeleton className="w-12 h-6 rounded-full bg-emerald-500/20 admin-shimmer" />
             </div>
-            <Skeleton className="w-44 h-5" />
-            <Skeleton className="w-full h-3" />
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-              <Skeleton className="w-20 h-3" />
-              <Skeleton className="w-24 h-8 rounded-xl bg-slate-800" />
+            <Skeleton className="w-44 h-5 admin-shimmer" />
+            <Skeleton className="w-full h-3 admin-shimmer" />
+            <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between">
+              <Skeleton className="w-20 h-3 admin-shimmer" />
+              <Skeleton className="w-24 h-8 rounded-xl bg-[#1a2332] admin-shimmer" />
             </div>
           </div>
         ))}
@@ -461,36 +461,36 @@ export function AnalyticsHubSkeleton() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <Skeleton className="w-48 h-8 rounded-xl" />
-          <Skeleton className="w-64 h-3.5 mt-1.5" />
+          <Skeleton className="w-48 h-8 rounded-xl admin-shimmer" />
+          <Skeleton className="w-64 h-3.5 mt-1.5 admin-shimmer" />
         </div>
-        <Skeleton className="w-28 h-9 rounded-xl" />
+        <Skeleton className="w-28 h-9 rounded-xl admin-shimmer" />
       </div>
 
       {/* 3-Tab Switcher */}
-      <div className="flex gap-2 p-1 rounded-2xl bg-slate-900/80 border border-white/5 w-fit">
-        <Skeleton className="w-28 h-9 rounded-xl bg-amber-500/20" />
-        <Skeleton className="w-28 h-9 rounded-xl" />
-        <Skeleton className="w-28 h-9 rounded-xl" />
+      <div className="flex gap-2 p-1 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] w-fit">
+        <Skeleton className="w-28 h-9 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
+        <Skeleton className="w-28 h-9 rounded-xl admin-shimmer" />
+        <Skeleton className="w-28 h-9 rounded-xl admin-shimmer" />
       </div>
 
       {/* Scorecards Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-            <Skeleton className="w-24 h-3" />
-            <Skeleton className="w-20 h-7 rounded-lg" />
+          <div key={i} className="p-4 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-2">
+            <Skeleton className="w-24 h-3 admin-shimmer" />
+            <Skeleton className="w-20 h-7 rounded-lg admin-shimmer" />
           </div>
         ))}
       </div>
 
       {/* Chart Canvas Area */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 border border-white/5 space-y-4">
+      <div className="p-6 rounded-2xl admin-card bg-[#141b24] border border-white/[0.04] space-y-4">
         <div className="flex items-center justify-between">
-          <Skeleton className="w-36 h-5" />
-          <Skeleton className="w-24 h-4" />
+          <Skeleton className="w-36 h-5 admin-shimmer" />
+          <Skeleton className="w-24 h-4 admin-shimmer" />
         </div>
-        <Skeleton className="w-full h-64 rounded-xl" />
+        <Skeleton className="w-full h-64 rounded-xl admin-shimmer" />
       </div>
     </div>
   );
@@ -501,22 +501,22 @@ export function WarrantiesSkeleton() {
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <Skeleton className="w-48 h-8 rounded-xl" />
-        <Skeleton className="w-36 h-10 rounded-xl bg-amber-500/20" />
+        <Skeleton className="w-48 h-8 rounded-xl admin-shimmer" />
+        <Skeleton className="w-36 h-10 rounded-xl bg-[#d4a447]/15 admin-shimmer" />
       </div>
-      <div className="rounded-2xl border border-white/5 bg-slate-900/60 p-5 space-y-3">
+      <div className="rounded-2xl border border-white/[0.04] admin-card bg-[#141b24] p-5 space-y-3">
         {[1, 2, 3, 4, 5].map((row) => (
           <div
             key={row}
-            className="p-4 rounded-xl bg-slate-950/40 border border-white/5 flex items-center justify-between"
+            className="p-4 rounded-xl bg-[#0c1117]/40 border border-white/[0.04] flex items-center justify-between"
           >
             <div className="space-y-1 w-1/3">
-              <Skeleton className="w-36 h-4" />
-              <Skeleton className="w-48 h-3" />
+              <Skeleton className="w-36 h-4 admin-shimmer" />
+              <Skeleton className="w-48 h-3 admin-shimmer" />
             </div>
-            <Skeleton className="w-24 h-5 rounded-full bg-amber-500/20" />
-            <Skeleton className="w-20 h-4" />
-            <Skeleton className="w-20 h-8 rounded-xl bg-slate-800" />
+            <Skeleton className="w-24 h-5 rounded-full bg-[#d4a447]/15 admin-shimmer" />
+            <Skeleton className="w-20 h-4 admin-shimmer" />
+            <Skeleton className="w-20 h-8 rounded-xl bg-[#1a2332] admin-shimmer" />
           </div>
         ))}
       </div>

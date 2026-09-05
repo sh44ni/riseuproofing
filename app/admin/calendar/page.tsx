@@ -21,8 +21,8 @@ import {
 import { CalendarEvent } from '@/app/api/admin/calendar/route';
 
 const EVENT_TYPES = [
-  { id: 'all', label: 'All Events', color: 'bg-slate-700 text-white' },
-  { id: 'job', label: 'Roof Installs', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  { id: 'all', label: 'All Events', color: 'bg-slate-700 text-[#f0f2f5]' },
+  { id: 'job', label: 'Roof Installs', color: 'bg-[#d4a447]/15 text-[#d4a447] border-[#d4a447]/25' },
   { id: 'delivery', label: 'Boom Deliveries', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   { id: 'city_inspection', label: 'City Permits', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   { id: 'task', label: 'Tasks', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
@@ -123,14 +123,14 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          <div className="p-2.5 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
             <CalendarIcon size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
               Field Operations &amp; Dispatch Calendar
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-[#8a95a5]">
               Schedule active roof installs, supplier boom deliveries, and city permit inspections
             </p>
           </div>
@@ -143,9 +143,9 @@ export default function CalendarPage() {
               fetchEvents();
             }}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.06] bg-[#141b24] hover:bg-[#1a2332] text-xs font-semibold text-[#a0aab8] transition-all duration-300 ease-out cursor-pointer"
           >
-            <RefreshCw size={14} className={refreshing ? 'animate-spin text-amber-400' : ''} />
+            <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
             Refresh
           </button>
         </div>
@@ -158,10 +158,10 @@ export default function CalendarPage() {
             key={t.id}
             type="button"
             onClick={() => setFilterType(t.id)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ease-out whitespace-nowrap cursor-pointer ${
               filterType === t.id
-                ? 'bg-amber-400 text-slate-950 shadow-sm'
-                : 'bg-slate-800/80 text-slate-400 hover:text-white border border-white/5'
+                ? 'bg-[#d4a447] text-[#0c1117] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
+                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
             }`}
           >
             {t.label}
@@ -172,29 +172,29 @@ export default function CalendarPage() {
       {/* Calendar Grid & Day Detail (2 Columns on Desktop) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left (2/3): Calendar Month Grid */}
-        <div className="lg:col-span-2 p-5 sm:p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4 shadow-xl">
+        <div className="lg:col-span-2 p-5 sm:p-6 rounded-[20px] admin-card space-y-4 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
           {/* Calendar Month Navigation Header */}
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
-            <h2 className="text-lg sm:text-xl font-black text-white">
+          <div className="flex items-center justify-between border-b border-white/[0.04] pb-4">
+            <h2 className="text-lg sm:text-xl font-black text-[#f0f2f5]">
               {monthNames[month]} {year}
             </h2>
 
             <div className="flex items-center gap-1.5">
               <button
                 onClick={goToToday}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-white/10 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-[#1a2332] hover:bg-slate-700 text-xs font-bold text-[#a0aab8] border border-white/[0.06] transition-all duration-300 ease-out cursor-pointer"
               >
                 Today
               </button>
               <button
                 onClick={prevMonth}
-                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl bg-[#1a2332] hover:bg-slate-700 text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] transition-all duration-300 ease-out cursor-pointer"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={nextMonth}
-                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl bg-[#1a2332] hover:bg-slate-700 text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] transition-all duration-300 ease-out cursor-pointer"
               >
                 <ChevronRight size={16} />
               </button>
@@ -202,7 +202,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Days of Week */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 pb-1">
+          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold uppercase tracking-wider text-[#5e6a7a] pb-1">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -219,7 +219,7 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={`empty-${idx}`}
-                    className="min-h-[64px] sm:min-h-[88px] rounded-xl bg-slate-950/20 border border-transparent"
+                    className="min-h-[64px] sm:min-h-[88px] rounded-xl bg-[#0c1117]/20 border border-transparent"
                   />
                 );
               }
@@ -233,29 +233,29 @@ export default function CalendarPage() {
                 <div
                   key={`day-${day}`}
                   onClick={() => setSelectedDateStr(dStr)}
-                  className={`min-h-[64px] sm:min-h-[88px] p-1.5 sm:p-2 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`min-h-[64px] sm:min-h-[88px] p-1.5 sm:p-2 rounded-xl border text-left cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-slate-800 border-amber-400/80 shadow-md ring-1 ring-amber-400/50'
+                      ? 'bg-[#1a2332] border-[#d4a447]/80 shadow-[0_2px_12px_rgba(0,0,0,0.2)] ring-1 ring-amber-400/50'
                       : isToday
-                      ? 'bg-slate-950/80 border-amber-400/30'
-                      : 'bg-slate-950/50 border-white/5 hover:border-white/20 hover:bg-slate-800/40'
+                      ? 'bg-[#0c1117]/80 border-[#d4a447]/25'
+                      : 'bg-[#0a0f14] border-white/[0.04] hover:border-white/[0.12] hover:bg-[#1a2332]/40'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-xs font-bold ${
                         isToday
-                          ? 'w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center text-[10px]'
+                          ? 'w-5 h-5 rounded-full bg-[#d4a447] text-[#0c1117] flex items-center justify-center text-[10px]'
                           : isSelected
-                          ? 'text-amber-400 font-black'
-                          : 'text-slate-300'
+                          ? 'text-[#d4a447] font-black'
+                          : 'text-[#a0aab8]'
                       }`}
                     >
                       {day}
                     </span>
 
                     {dayEvents.length > 0 && (
-                      <span className="text-[9px] font-mono font-bold text-slate-400 sm:hidden">
+                      <span className="text-[9px] font-mono font-bold text-[#8a95a5] sm:hidden">
                         {dayEvents.length}
                       </span>
                     )}
@@ -269,13 +269,13 @@ export default function CalendarPage() {
                           key={ev.id}
                           className={`text-[9px] font-semibold px-1.5 py-0.5 rounded truncate border leading-tight ${
                             ev.type === 'job'
-                              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                              ? 'bg-[#d4a447]/12 text-[#e8c06a] border-[#d4a447]/25'
                               : ev.type === 'delivery'
                               ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
                               : ev.type === 'city_inspection'
-                              ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                              ? 'bg-blue-500/10 text-blue-300 border-blue-500/30'
                               : ev.type === 'warranty'
-                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                               : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
                           }`}
                         >
@@ -284,7 +284,7 @@ export default function CalendarPage() {
                       );
                     })}
                     {dayEvents.length > 2 && (
-                      <div className="text-[9px] text-slate-500 font-mono">
+                      <div className="text-[9px] text-[#5e6a7a] font-mono">
                         +{dayEvents.length - 2} more
                       </div>
                     )}
@@ -297,7 +297,7 @@ export default function CalendarPage() {
                         key={ev.id}
                         className={`w-1.5 h-1.5 rounded-full ${
                           ev.type === 'job'
-                            ? 'bg-amber-400'
+                            ? 'bg-[#d4a447]'
                             : ev.type === 'delivery'
                             ? 'bg-purple-400'
                             : ev.type === 'city_inspection'
@@ -314,12 +314,12 @@ export default function CalendarPage() {
         </div>
 
         {/* Right (1/3): Selected Day Event Drawer */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4 shadow-xl">
-          <div className="border-b border-white/5 pb-3">
-            <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+        <div className="p-5 sm:p-6 rounded-[20px] admin-card space-y-4 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+          <div className="border-b border-white/[0.04] pb-3">
+            <span className="text-[10px] uppercase font-bold text-[#d4a447] tracking-wider">
               Selected Day Dispatch
             </span>
-            <h3 className="text-lg font-black text-white mt-0.5">
+            <h3 className="text-lg font-black text-[#f0f2f5] mt-0.5">
               {new Date(selectedDateStr + 'T00:00:00').toLocaleDateString('en-US', {
                 weekday: 'long',
                 month: 'short',
@@ -327,18 +327,18 @@ export default function CalendarPage() {
                 year: 'numeric',
               })}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8a95a5] mt-0.5">
               {selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? 's' : ''} scheduled
             </p>
           </div>
 
           {selectedDayEvents.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-500 space-y-2">
+            <div className="py-12 text-center text-xs text-[#5e6a7a] space-y-2">
               <CalendarIcon size={28} className="mx-auto text-slate-600" />
               <p>No operations scheduled on this date.</p>
               <Link
                 href="/admin/jobs"
-                className="inline-block text-amber-400 hover:underline font-semibold"
+                className="inline-block text-[#d4a447] hover:underline font-semibold"
               >
                 Schedule a job from pipeline &rarr;
               </Link>
@@ -348,32 +348,32 @@ export default function CalendarPage() {
               {selectedDayEvents.map(ev => (
                 <div
                   key={ev.id}
-                  className="p-3.5 rounded-2xl bg-slate-950/60 border border-white/5 space-y-2"
+                  className="p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <span
                         className={`text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
                           ev.type === 'job'
-                            ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                            ? 'bg-[#d4a447]/12 text-[#d4a447] border-[#d4a447]/25'
                             : ev.type === 'delivery'
                             ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
                             : ev.type === 'city_inspection'
-                            ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                             : ev.type === 'warranty'
-                            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                             : 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
                         }`}
                       >
                         {ev.type.replace('_', ' ')}
                       </span>
-                      <h4 className="text-xs font-bold text-white mt-1">{ev.title}</h4>
+                      <h4 className="text-xs font-bold text-[#f0f2f5] mt-1">{ev.title}</h4>
                     </div>
 
                     {ev.link && (
                       <Link
                         href={ev.link}
-                        className="p-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+                        className="p-1 rounded-lg bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5]"
                         title="View Details"
                       >
                         <ExternalLink size={12} />
@@ -382,20 +382,20 @@ export default function CalendarPage() {
                   </div>
 
                   {ev.customer && (
-                    <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <User size={12} className="text-slate-500" /> {ev.customer}
+                    <div className="text-xs font-semibold text-[#a0aab8] flex items-center gap-1.5">
+                      <User size={12} className="text-[#5e6a7a]" /> {ev.customer}
                     </div>
                   )}
 
                   {ev.address && (
-                    <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                      <MapPin size={11} className="text-slate-500 flex-shrink-0" />
+                    <div className="text-[11px] text-[#8a95a5] flex items-center gap-1.5">
+                      <MapPin size={11} className="text-[#5e6a7a] flex-shrink-0" />
                       <span className="truncate">{ev.address}</span>
                     </div>
                   )}
 
                   {ev.crewLead && (
-                    <div className="text-[11px] text-amber-400/90 font-medium">
+                    <div className="text-[11px] text-[#d4a447]/90 font-medium">
                       Foreman / Lead: {ev.crewLead}
                     </div>
                   )}

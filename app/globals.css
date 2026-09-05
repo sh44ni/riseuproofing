@@ -568,3 +568,308 @@ section:not(.always-dark) .ambient-orb-primary {
 section:not(.always-dark) .ambient-orb-secondary {
   background: rgba(234, 166, 54, 0.07);
 }
+
+/* ============================================================
+   ADMIN PANEL — "Obsidian & Gold" Luxury Theme System
+   ============================================================ */
+
+.admin-theme {
+  /* Surface depth system (layered obsidian) */
+  --admin-bg-base: #0c1117;
+  --admin-bg-card: #141b24;
+  --admin-bg-card-hover: #1a2332;
+  --admin-bg-input: #0a0f14;
+  --admin-bg-elevated: #1e2736;
+  --admin-bg-surface-subtle: rgba(255, 255, 255, 0.02);
+
+  /* Premium gold accent spectrum */
+  --admin-gold: #d4a447;
+  --admin-gold-light: #e8c06a;
+  --admin-gold-soft: rgba(212, 164, 71, 0.12);
+  --admin-gold-glow: rgba(212, 164, 71, 0.20);
+  --admin-gold-border: rgba(212, 164, 71, 0.28);
+
+  /* Text hierarchy */
+  --admin-text-primary: #f0f2f5;
+  --admin-text-secondary: #a0aab8;
+  --admin-text-muted: #5e6a7a;
+  --admin-text-gold: #d4a447;
+
+  /* Refined border system */
+  --admin-border: rgba(255, 255, 255, 0.06);
+  --admin-border-hover: rgba(255, 255, 255, 0.12);
+  --admin-border-subtle: rgba(255, 255, 255, 0.04);
+
+  /* Premium shadow stack */
+  --admin-shadow-card:
+    0 1px 2px rgba(0, 0, 0, 0.30),
+    0 4px 16px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --admin-shadow-elevated:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --admin-shadow-gold:
+    0 4px 24px rgba(212, 164, 71, 0.12),
+    0 1px 4px rgba(212, 164, 71, 0.08);
+  --admin-shadow-gold-intense:
+    0 4px 24px rgba(212, 164, 71, 0.25),
+    0 8px 40px rgba(212, 164, 71, 0.15);
+}
+
+/* --- Premium Admin Card Base --- */
+.admin-card {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  box-shadow: var(--admin-shadow-card);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-card:hover {
+  background: var(--admin-bg-card-hover);
+  border-color: var(--admin-border-hover);
+  box-shadow: var(--admin-shadow-elevated);
+  transform: translateY(-1px);
+}
+
+/* Interactive variant with gold accent on hover */
+.admin-card-gold:hover {
+  border-color: var(--admin-gold-border);
+  box-shadow: var(--admin-shadow-gold);
+}
+
+/* --- Premium Admin Inputs --- */
+.admin-input {
+  background: var(--admin-bg-input);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  color: var(--admin-text-primary);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease;
+}
+
+.admin-input:focus {
+  border-color: var(--admin-gold);
+  box-shadow:
+    0 0 0 3px rgba(212, 164, 71, 0.12),
+    inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+.admin-input::placeholder {
+  color: var(--admin-text-muted);
+}
+
+/* --- Premium Admin Badges --- */
+.admin-badge {
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  transition: all 0.2s ease;
+}
+
+/* --- Premium Admin Button --- */
+.admin-btn-gold {
+  background: linear-gradient(135deg, #d4a447 0%, #c4923a 50%, #d4a447 100%);
+  background-size: 200% 200%;
+  color: #0c1117;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow-gold);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-btn-gold:hover {
+  box-shadow: var(--admin-shadow-gold-intense);
+  transform: translateY(-1px);
+  background-position: 100% 100%;
+}
+
+/* --- Glassmorphic Sidebar --- */
+.admin-sidebar-glass {
+  background: rgba(14, 18, 24, 0.92);
+  backdrop-filter: blur(32px) saturate(180%);
+  border-right: 1px solid var(--admin-border);
+}
+
+/* --- Glassmorphic Top/Bottom Bar --- */
+.admin-bar-glass {
+  background: rgba(12, 17, 23, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* --- Section Header Label --- */
+.admin-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+/* --- Premium Divider --- */
+.admin-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(212, 164, 71, 0.10) 50%,
+    rgba(255, 255, 255, 0.06) 80%,
+    transparent 100%
+  );
+}
+
+/* --- Admin Scrollbar Override --- */
+.admin-theme ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.admin-theme ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 999px;
+}
+
+.admin-theme ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(212, 164, 71, 0.4) 0%, rgba(212, 164, 71, 0.2) 100%);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-theme ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(212, 164, 71, 0.6) 0%, rgba(212, 164, 71, 0.35) 100%);
+}
+
+/* --- Admin Animations --- */
+@keyframes adminFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes adminShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes adminPulseGold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 164, 71, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(212, 164, 71, 0.15);
+  }
+}
+
+@keyframes adminGlow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.admin-fade-in {
+  animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.admin-fade-in-1 { animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0ms both; }
+.admin-fade-in-2 { animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 60ms both; }
+.admin-fade-in-3 { animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 120ms both; }
+.admin-fade-in-4 { animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 180ms both; }
+.admin-fade-in-5 { animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 240ms both; }
+
+.admin-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--admin-bg-card) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    var(--admin-bg-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: adminShimmer 2s ease-in-out infinite;
+}
+
+.admin-pulse-gold {
+  animation: adminPulseGold 3s ease-in-out infinite;
+}
+
+/* Admin gold gradient text */
+.admin-text-gold-gradient {
+  background: linear-gradient(135deg, #e8c06a 0%, #d4a447 50%, #c4923a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   MOBILE APP EXPERIENCE ENHANCEMENTS (Mobile Only)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Native-feeling view transitions on mobile navigation */
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root) {
+    animation: 180ms cubic-bezier(0.4, 0, 0.2, 1) both mobilePageFadeOut;
+  }
+
+  ::view-transition-new(root) {
+    animation: 220ms cubic-bezier(0, 0, 0.2, 1) both mobilePageSlideIn;
+  }
+
+  @keyframes mobilePageFadeOut {
+    to {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+
+  @keyframes mobilePageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Anchor fixed header during page transitions */
+  header {
+    view-transition-name: app-header;
+  }
+
+  ::view-transition-group(app-header) {
+    animation: none;
+    z-index: 100;
+  }
+
+  /* Optimize touch responsiveness and eliminate tap delays */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent overscroll bounce from feeling glitchy behind bars */
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+

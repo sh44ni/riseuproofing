@@ -189,18 +189,18 @@ export default function SettingsPage() {
 
   if (isForbidden) {
     return (
-      <div className="p-8 max-w-lg mx-auto text-center my-16 space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-lg">
+      <div className="p-8 max-w-lg mx-auto text-center my-16 space-y-4 admin-fade-in">
+        <div className="w-16 h-16 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447] flex items-center justify-center mx-auto shadow-[0_4px_16px_rgba(212,164,71,0.08)]">
           <ShieldCheck size={32} />
         </div>
-        <h2 className="text-xl font-black text-white">Owner Access Required</h2>
-        <p className="text-sm text-slate-400 leading-relaxed">
+        <h2 className="text-xl font-black text-[#f0f2f5]">Owner Access Required</h2>
+        <p className="text-sm text-[#8a95a5] leading-relaxed">
           CRM pricing configurations, database health monitors, and system settings can only be accessed by the primary Owner / Qualifier.
         </p>
         <div className="pt-2">
           <a
             href="/admin/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all border border-white/10"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#f0f2f5] text-xs font-bold transition-all border border-white/[0.06]"
           >
             Return to Dashboard
           </a>
@@ -210,33 +210,33 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 pb-24 md:pb-12 max-w-6xl mx-auto">
+    <div className="space-y-8 pb-24 md:pb-12 max-w-6xl mx-auto admin-fade-in">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-            <Settings size={26} className="text-amber-400" />
+          <h1 className="text-xl sm:text-2xl font-black text-[#f0f2f5] flex items-center gap-2.5">
+            <Settings size={26} className="text-[#d4a447]" />
             CRM Settings &amp; Operations Hub
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-[#8a95a5] mt-0.5">
             Configure business license information, default estimator pricing, accounting backups, and database monitoring.
           </p>
         </div>
 
         {dbHealth && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold self-start sm:self-auto">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold self-start sm:self-auto shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Neon DB Latency: {dbHealth.latencyMs}ms
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 admin-fade-in-1">
         {/* Card 1: Company Profile & License */}
-        <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Building2 size={18} className="text-amber-400" />
+        <div className="p-6 rounded-[20px] admin-card space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
+              <Building2 size={18} className="text-[#d4a447]" />
               Company Profile &amp; CSLB Credentials
             </h2>
             {companySuccess && (
@@ -248,76 +248,76 @@ export default function SettingsPage() {
 
           <form onSubmit={handleSaveCompany} className="space-y-3.5 text-xs">
             <div>
-              <label className="block text-slate-300 font-semibold mb-1">Company Legal Name</label>
+              <label className="block text-[#a0aab8] font-semibold mb-1">Company Legal Name</label>
               <input
                 type="text"
                 value={companyProfile.company_name}
                 onChange={e => setCompanyProfile({ ...companyProfile, company_name: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">California License (CSLB)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">California License (CSLB)</label>
                 <input
                   type="text"
                   value={companyProfile.license_cslb}
                   onChange={e => setCompanyProfile({ ...companyProfile, license_cslb: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Owens Corning ID</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Owens Corning ID</label>
                 <input
                   type="text"
                   value={companyProfile.owens_corning_id}
                   onChange={e => setCompanyProfile({ ...companyProfile, owens_corning_id: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Primary Phone</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Primary Phone</label>
                 <input
                   type="text"
                   value={companyProfile.phone}
                   onChange={e => setCompanyProfile({ ...companyProfile, phone: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Notification Email</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Notification Email</label>
                 <input
                   type="email"
                   value={companyProfile.email}
                   onChange={e => setCompanyProfile({ ...companyProfile, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 font-semibold mb-1">Google Business Review Link</label>
+              <label className="block text-[#a0aab8] font-semibold mb-1">Google Business Review Link</label>
               <input
                 type="text"
                 value={companyProfile.google_review_url}
                 onChange={e => setCompanyProfile({ ...companyProfile, google_review_url: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono text-[11px]"
+                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono text-[11px]"
               />
             </div>
 
             <div>
-              <label className="block text-slate-300 font-semibold mb-1">Service Region / Office</label>
+              <label className="block text-[#a0aab8] font-semibold mb-1">Service Region / Office</label>
               <input
                 type="text"
                 value={companyProfile.office_address}
                 onChange={e => setCompanyProfile({ ...companyProfile, office_address: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
               />
             </div>
 
@@ -325,7 +325,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={savingCompany}
-                className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl admin-btn-gold text-[#0c1117] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save size={13} /> {savingCompany ? 'Saving...' : 'Save Profile'}
               </button>
@@ -334,10 +334,10 @@ export default function SettingsPage() {
         </div>
 
         {/* Card 2: Estimator & Pricing Defaults */}
-        <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <DollarSign size={18} className="text-amber-400" />
+        <div className="p-6 rounded-[20px] admin-card space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
+              <DollarSign size={18} className="text-[#d4a447]" />
               Estimator &amp; Pricing Baseline Rates
             </h2>
             {pricingSuccess && (
@@ -350,81 +350,81 @@ export default function SettingsPage() {
           <form onSubmit={handleSavePricing} className="space-y-3.5 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Target Gross Margin (%)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Target Gross Margin (%)</label>
                 <input
                   type="number"
                   value={pricingDefaults.target_margin_pct}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, target_margin_pct: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Labor Rate ($/Square)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Labor Rate ($/Square)</label>
                 <input
                   type="number"
                   value={pricingDefaults.labor_rate_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, labor_rate_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Dumpster Flat Fee ($)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Dumpster Flat Fee ($)</label>
                 <input
                   type="number"
                   value={pricingDefaults.dumpster_flat_fee}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, dumpster_flat_fee: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">City Building Permit ($)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">City Building Permit ($)</label>
                 <input
                   type="number"
                   value={pricingDefaults.permit_base_fee}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, permit_base_fee: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Shingle Material ($/sq)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Shingle Material ($/sq)</label>
                 <input
                   type="number"
                   value={pricingDefaults.default_shingle_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, default_shingle_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Tile Material ($/sq)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">Tile Material ($/sq)</label>
                 <input
                   type="number"
                   value={pricingDefaults.default_tile_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, default_tile_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">TPO Flat ($/sq)</label>
+                <label className="block text-[#a0aab8] font-semibold mb-1">TPO Flat ($/sq)</label>
                 <input
                   type="number"
                   value={pricingDefaults.default_tpo_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, default_tpo_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 italic">
+            <p className="text-[11px] text-[#5e6a7a] italic">
               These values populate the instant cost calculator wizard when building proposals for homeowners.
             </p>
 
@@ -432,7 +432,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={savingPricing}
-                className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl admin-btn-gold text-[#0c1117] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save size={13} /> {savingPricing ? 'Saving...' : 'Save Pricing Rates'}
               </button>
@@ -442,14 +442,14 @@ export default function SettingsPage() {
       </div>
 
       {/* 1-Click Data Backup & CSV Exports Section */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+      <div className="p-6 rounded-[20px] admin-card space-y-4 admin-fade-in-2">
+        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
               <FileSpreadsheet size={18} className="text-emerald-400" />
               1-Click Data Backup &amp; Accounting CSV Exports
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8a95a5] mt-0.5">
               Instantly export CRM records in standard RFC 4180 CSV format for QuickBooks, Excel, or offline compliance.
             </p>
           </div>
@@ -461,15 +461,15 @@ export default function SettingsPage() {
               key={type}
               href={`/api/admin/export?type=${type}`}
               download
-              className="p-4 rounded-2xl bg-slate-950/60 hover:bg-slate-800/80 border border-white/5 hover:border-amber-400/40 transition-all flex items-start justify-between group cursor-pointer"
+              className="p-4 rounded-[16px] bg-[#0a0f14] hover:bg-[#141b24] border border-white/[0.04] hover:border-[#d4a447]/30 transition-all flex items-start justify-between group cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_16px_rgba(212,164,71,0.08)]"
             >
               <div>
-                <span className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors block">
+                <span className="text-sm font-bold text-[#f0f2f5] group-hover:text-[#e8c06a] transition-colors block">
                   {label}
                 </span>
-                <span className="text-[11px] text-slate-400 mt-0.5 block">{desc}</span>
+                <span className="text-[11px] text-[#8a95a5] mt-0.5 block">{desc}</span>
               </div>
-              <div className="p-2 rounded-xl bg-white/5 group-hover:bg-amber-400 group-hover:text-slate-950 text-slate-400 transition-all flex-shrink-0">
+              <div className="p-2 rounded-xl bg-white/[0.03] group-hover:bg-[#d4a447] group-hover:text-[#0c1117] text-[#8a95a5] transition-all flex-shrink-0">
                 <Download size={14} />
               </div>
             </a>
@@ -478,21 +478,21 @@ export default function SettingsPage() {
       </div>
 
       {/* Live Neon PostgreSQL Database Health Monitor */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+      <div className="p-6 rounded-[20px] admin-card space-y-4 admin-fade-in-3">
+        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
               <Database size={18} className="text-cyan-400" />
               Live Database Health &amp; Table Telemetry
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8a95a5] mt-0.5">
               Neon Serverless PostgreSQL connection status and real-time record volumes across all 16 tables.
             </p>
           </div>
 
           <button
             onClick={fetchSettings}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
             title="Refresh table metrics"
           >
             <RefreshCw size={14} />
@@ -500,18 +500,18 @@ export default function SettingsPage() {
         </div>
 
         {loadingData ? (
-          <div className="p-8 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-            <Sparkles size={14} className="text-amber-400 animate-spin" /> Querying table metrics...
+          <div className="p-8 text-center text-[#8a95a5] text-xs flex items-center justify-center gap-2">
+            <Sparkles size={14} className="text-[#d4a447] admin-shimmer" /> Querying table metrics...
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {tableStats.map(t => (
-              <div key={t.table} className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5">
-                <span className="font-mono text-xs font-bold text-amber-400 block truncate">
+              <div key={t.table} className="p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04]">
+                <span className="font-mono text-xs font-bold text-[#d4a447] block truncate">
                   {t.table}
                 </span>
-                <div className="text-xl font-black text-white mt-1">{t.count}</div>
-                <span className="text-[10px] text-slate-500 line-clamp-1 mt-0.5" title={t.desc}>
+                <div className="text-xl font-black text-[#f0f2f5] mt-1">{t.count}</div>
+                <span className="text-[10px] text-[#5e6a7a] line-clamp-1 mt-0.5" title={t.desc}>
                   {t.label}
                 </span>
               </div>
@@ -521,11 +521,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Security & Password Change */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-sm space-y-4">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Lock size={18} className="text-amber-400" /> Security &amp; Admin Password
+      <div className="p-6 rounded-[20px] admin-card space-y-4 admin-fade-in-4">
+        <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
+          <Lock size={18} className="text-[#d4a447]" /> Security &amp; Admin Password
         </h2>
-        <p className="text-slate-400 text-xs">
+        <p className="text-[#8a95a5] text-xs">
           Verify and generate a new secure password for the CRM administrative session.
         </p>
 
@@ -536,14 +536,14 @@ export default function SettingsPage() {
             { id: 'confirm', label: 'Confirm New Password', val: confirmPw, set: setConfirmPw },
           ].map(f => (
             <div key={f.id}>
-              <label htmlFor={f.id} className="block font-semibold text-slate-300 mb-1">{f.label}</label>
+              <label htmlFor={f.id} className="block font-semibold text-[#a0aab8] mb-1">{f.label}</label>
               <input
                 id={f.id}
                 type="password"
                 value={f.val}
                 onChange={e => f.set(e.target.value)}
                 required
-                className="w-full bg-slate-800 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-400"
+                className="w-full admin-input rounded-xl px-3.5 py-2.5 text-[#f0f2f5] focus:outline-none"
               />
             </div>
           ))}
@@ -562,7 +562,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={pwLoading}
-            className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold py-2.5 px-5 rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+            className="admin-btn-gold text-[#0c1117] font-bold py-2.5 px-5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
           >
             {pwLoading ? 'Verifying…' : 'Update Password'}
           </button>

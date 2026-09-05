@@ -46,29 +46,29 @@ export default function MobileLeadCard({ lead, onStatusChange }: MobileLeadCardP
   const locationLabel = lead.address || (lead.zip ? `ZIP ${lead.zip}` : null);
 
   return (
-    <div className="bg-slate-900/70 border border-white/10 rounded-2xl p-4 transition-all hover:border-white/20 active:scale-[0.99] shadow-sm">
+    <div className="admin-card p-4 transition-all active:scale-[0.99]">
       {/* Top Row: Avatar + Name + Priority/Status */}
       <div className="flex items-start justify-between gap-3 mb-2.5">
         <Link href={`/admin/leads/${lead.id}`} className="flex items-center gap-3 flex-1 min-w-0">
           <div className="relative flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-slate-950 font-bold text-sm shadow-md">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d4a447] to-[#c4923a] flex items-center justify-center text-[#0c1117] font-bold text-sm shadow-[0_2px_12px_rgba(0,0,0,0.2)]">
               {lead.full_name ? lead.full_name[0].toUpperCase() : '?'}
             </div>
             {lead.priority === 'hot' && (
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 ring-2 ring-slate-900 animate-pulse" />
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 ring-2 ring-[#141b24] animate-pulse" />
             )}
           </div>
           <div className="min-w-0">
-            <h3 className="text-white font-bold text-base truncate flex items-center gap-1.5">
+            <h3 className="text-[#f0f2f5] font-bold text-base truncate flex items-center gap-1.5">
               {lead.full_name}
-              <ChevronRight size={14} className="text-slate-500 flex-shrink-0" />
+              <ChevronRight size={14} className="text-[#5e6a7a] flex-shrink-0" />
             </h3>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
-              <span className="capitalize text-amber-400 font-medium">
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-[#8a95a5]">
+              <span className="capitalize text-[#d4a447] font-medium">
                 {lead.service_type || 'Roofing Inquiry'}
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1 text-slate-500">
+              <span className="flex items-center gap-1 text-[#5e6a7a]">
                 <Clock size={11} /> {timeAgo(lead.created_at)}
               </span>
             </div>
@@ -79,10 +79,10 @@ export default function MobileLeadCard({ lead, onStatusChange }: MobileLeadCardP
         <select
           value={lead.status}
           onChange={e => onStatusChange(lead.id, e.target.value)}
-          className="text-xs font-semibold px-2 py-1 rounded-full border border-white/10 bg-slate-800 text-slate-200 cursor-pointer outline-none focus:border-amber-400"
+          className="text-xs font-semibold px-2 py-1 rounded-full border border-white/[0.06] bg-[#1a2332] text-[#f0f2f5] cursor-pointer outline-none focus:border-[#d4a447]"
         >
           {STATUSES.map(s => (
-            <option key={s} value={s} className="bg-slate-900 text-white capitalize">
+            <option key={s} value={s} className="bg-[#141b24] text-[#f0f2f5] capitalize">
               {s}
             </option>
           ))}
@@ -90,21 +90,21 @@ export default function MobileLeadCard({ lead, onStatusChange }: MobileLeadCardP
       </div>
 
       {/* Middle Specs Bar (Roof SQF, Location, Priority Score) */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2 border-y border-white/5 text-xs text-slate-300">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2 border-y border-white/[0.04] text-xs text-[#a0aab8]">
         {lead.priority && (
           <StatusBadge priority={lead.priority} size="sm" />
         )}
 
         {lead.roof_sqf && lead.roof_sqf > 0 && (
-          <span className="flex items-center gap-1 text-slate-300">
-            <Home size={12} className="text-slate-500" />
+          <span className="flex items-center gap-1 text-[#a0aab8]">
+            <Home size={12} className="text-[#5e6a7a]" />
             {lead.roof_sqf.toLocaleString()} sq ft
           </span>
         )}
 
         {locationLabel && (
-          <span className="flex items-center gap-1 text-slate-400 truncate max-w-[180px]">
-            <MapPin size={12} className="text-slate-500" />
+          <span className="flex items-center gap-1 text-[#8a95a5] truncate max-w-[180px]">
+            <MapPin size={12} className="text-[#5e6a7a]" />
             {locationLabel}
           </span>
         )}
@@ -115,18 +115,18 @@ export default function MobileLeadCard({ lead, onStatusChange }: MobileLeadCardP
         {lead.phone ? (
           <a
             href={`tel:${lead.phone.replace(/\D/g, '')}`}
-            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-semibold text-xs transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-semibold text-xs transition-colors"
           >
             <Phone size={13} />
             <span>Call {lead.phone}</span>
           </a>
         ) : (
-          <span className="text-xs text-slate-500 italic">No phone provided</span>
+          <span className="text-xs text-[#5e6a7a] italic">No phone provided</span>
         )}
 
         <Link
           href={`/admin/leads/${lead.id}`}
-          className="py-2 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-semibold text-xs transition-colors"
+          className="py-2 px-3.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-[#a0aab8] font-semibold text-xs transition-colors"
         >
           View Profile
         </Link>

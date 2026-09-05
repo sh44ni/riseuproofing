@@ -14,99 +14,140 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  function triggerAction(action: () => void | undefined, fallbackEvent: string) {
+  function handleNewEstimate() {
     setOpen(false);
-    if (action) {
-      action();
+    router.push('/admin/estimates/new');
+  }
+
+  function handleAddTask() {
+    setOpen(false);
+    if (onAddTask) {
+      onAddTask();
+    } else if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/tasks')) {
+      window.dispatchEvent(new CustomEvent('crm:open-add-task'));
     } else {
-      window.dispatchEvent(new CustomEvent(fallbackEvent));
+      router.push('/admin/tasks?new=1');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('crm:open-add-task'));
+      }
+    }
+  }
+
+  function handleLogCall() {
+    setOpen(false);
+    if (onLogCall) {
+      onLogCall();
+    } else if (typeof window !== 'undefined' && window.location.pathname.includes('/admin/leads/')) {
+      window.dispatchEvent(new CustomEvent('crm:open-log-call'));
+    } else {
+      router.push('/admin/analytics?tab=calls');
+    }
+  }
+
+  function handleAddLead() {
+    setOpen(false);
+    if (onAddLead) {
+      onAddLead();
+    } else if (
+      typeof window !== 'undefined' &&
+      window.location.pathname.startsWith('/admin/leads') &&
+      !window.location.pathname.includes('/admin/leads/')
+    ) {
+      window.dispatchEvent(new CustomEvent('crm:open-add-lead'));
+    } else {
+      router.push('/admin/leads?new=1');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('crm:open-add-lead'));
+      }
     }
   }
 
   return (
-    <div className="fixed right-4 bottom-20 lg:bottom-6 z-40 flex flex-col items-end gap-3">
+    <>
       {/* Dim overlay when open */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 transition-opacity"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity"
           onClick={() => setOpen(false)}
         />
       )}
 
-      {/* Speed Dial Menu Items */}
-      {open && (
-        <div className="flex flex-col items-end gap-2.5 z-40 transition-all duration-200">
-          {/* New Estimate */}
-          <div className="flex items-center gap-2">
-            <span className="bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10 shadow-lg">
-              New Estimate
-            </span>
+      {/* FAB Floating Container: sits above BottomNav on mobile (calc(4.75rem + safe-area)) */}
+      <div className="fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] lg:bottom-6 z-50 flex flex-col items-end gap-3 pointer-events-auto select-none">
+        {/* Speed Dial Menu Items */}
+        {open && (
+          <div className="flex flex-col items-end gap-2.5 z-50 transition-all duration-200">
+            {/* New Estimate */}
             <button
-              onClick={() => {
-                setOpen(false);
-                router.push('/admin/estimates/new');
-              }}
-              className="w-11 h-11 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer font-bold"
-              title="New Estimate"
+              type="button"
+              onClick={handleNewEstimate}
+              className="flex items-center gap-2 group cursor-pointer"
             >
-              <FileText size={18} />
+              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+                New Estimate
+              </span>
+              <div className="w-11 h-11 rounded-[14px] bg-[#d4a447] hover:bg-[#c4923a] text-[#0c1117] shadow-[0_4px_16px_rgba(212,164,71,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 font-bold">
+                <FileText size={18} />
+              </div>
+            </button>
+
+            {/* Add Task */}
+            <button
+              type="button"
+              onClick={handleAddTask}
+              className="flex items-center gap-2 group cursor-pointer"
+            >
+              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+                Add Task
+              </span>
+              <div className="w-11 h-11 rounded-[14px] bg-purple-600 hover:bg-purple-500 text-[#f0f2f5] shadow-[0_4px_16px_rgba(168,85,247,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+                <CheckSquare size={18} />
+              </div>
+            </button>
+
+            {/* Log Call */}
+            <button
+              type="button"
+              onClick={handleLogCall}
+              className="flex items-center gap-2 group cursor-pointer"
+            >
+              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+                Log Call
+              </span>
+              <div className="w-11 h-11 rounded-[14px] bg-emerald-600 hover:bg-emerald-500 text-[#f0f2f5] shadow-[0_4px_16px_rgba(16,185,129,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+                <PhoneCall size={18} />
+              </div>
+            </button>
+
+            {/* Add Lead */}
+            <button
+              type="button"
+              onClick={handleAddLead}
+              className="flex items-center gap-2 group cursor-pointer"
+            >
+              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+                New Lead
+              </span>
+              <div className="w-11 h-11 rounded-[14px] bg-blue-600 hover:bg-blue-500 text-[#f0f2f5] shadow-[0_4px_16px_rgba(59,130,246,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+                <UserPlus size={18} />
+              </div>
             </button>
           </div>
+        )}
 
-          {/* Add Task */}
-          <div className="flex items-center gap-2">
-            <span className="bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10 shadow-lg">
-              Add Task
-            </span>
-            <button
-              onClick={() => triggerAction(onAddTask!, 'crm:open-add-task')}
-              className="w-11 h-11 rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-              title="Add Task"
-            >
-              <CheckSquare size={18} />
-            </button>
-          </div>
-
-          {/* Log Call */}
-          <div className="flex items-center gap-2">
-            <span className="bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10 shadow-lg">
-              Log Call
-            </span>
-            <button
-              onClick={() => triggerAction(onLogCall!, 'crm:open-log-call')}
-              className="w-11 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-              title="Log Call"
-            >
-              <PhoneCall size={18} />
-            </button>
-          </div>
-
-          {/* Add Lead */}
-          <div className="flex items-center gap-2">
-            <span className="bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10 shadow-lg">
-              New Lead
-            </span>
-            <button
-              onClick={() => triggerAction(onAddLead!, 'crm:open-add-lead')}
-              className="w-11 h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-              title="New Lead"
-            >
-              <UserPlus size={18} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main FAB Toggle */}
-      <button
-        onClick={() => setOpen(!open)}
-        className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 font-bold shadow-xl flex items-center justify-center transition-all duration-300 z-40 hover:scale-105 active:scale-95 cursor-pointer border border-amber-300/30 ${
-          open ? 'rotate-45 shadow-amber-500/30' : ''
-        }`}
-        aria-label="Quick actions"
-      >
-        <Plus size={26} strokeWidth={2.5} />
-      </button>
-    </div>
+        {/* Main FAB Toggle */}
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className={`w-14 h-14 rounded-[18px] bg-gradient-to-br from-[#d4a447] to-[#c4923a] text-[#0c1117] font-bold shadow-[0_4px_24px_rgba(212,164,71,0.25)] flex items-center justify-center transition-all duration-300 ease-out z-50 hover:scale-105 active:scale-95 cursor-pointer border border-[#d4a447]/40 ${
+            open ? 'rotate-45 shadow-[0_8px_40px_rgba(212,164,71,0.4)]' : ''
+          }`}
+          aria-label="Quick actions"
+          aria-expanded={open}
+        >
+          <Plus size={26} strokeWidth={2.5} />
+        </button>
+      </div>
+    </>
   );
 }

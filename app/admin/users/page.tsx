@@ -272,18 +272,18 @@ export default function TeamManagementPage() {
   if (isForbidden) {
     return (
       <div className="p-8 max-w-lg mx-auto text-center my-16 space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-lg">
+        <div className="w-16 h-16 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447] flex items-center justify-center mx-auto shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
           <ShieldCheck size={32} />
         </div>
-        <h2 className="text-xl font-black text-white">Owner Access Required</h2>
-        <p className="text-sm text-slate-400 leading-relaxed">
+        <h2 className="text-xl font-black text-[#f0f2f5]">Owner Access Required</h2>
+        <p className="text-sm text-[#8a95a5] leading-relaxed">
           Only the primary Owner / Qualifier has authorization to manage team members, assign
           operational roles, and configure system credentials.
         </p>
         <div className="pt-2">
           <a
             href="/admin/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all border border-white/10"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#f0f2f5] text-xs font-bold transition-all border border-white/[0.06]"
           >
             Return to Dashboard
           </a>
@@ -295,21 +295,21 @@ export default function TeamManagementPage() {
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#141b24] backdrop-blur-xl border border-white/[0.06] rounded-[16px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <ShieldCheck size={26} className="text-white" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#d4a447] to-[#b8873a] flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.25)] shadow-[0_4px_20px_rgba(212,164,71,0.12)]">
+            <ShieldCheck size={26} className="text-[#f0f2f5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl lg:text-2xl font-black text-white">
+              <h1 className="text-xl lg:text-2xl font-black text-[#f0f2f5]">
                 Team &amp; Dynamic Permissions
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
                 CSLB #1096492
               </span>
             </div>
-            <p className="text-sm text-slate-400 mt-0.5">
+            <p className="text-sm text-[#8a95a5] mt-0.5">
               Add unlimited team members, grant specific permissions, or assign full super-admin
               privileges
             </p>
@@ -322,7 +322,7 @@ export default function TeamManagementPage() {
             setActionError('');
             setActionSuccess('');
           }}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-400 hover:to-orange-400 text-[#0c1117] font-bold text-sm shadow-[0_4px_16px_rgba(0,0,0,0.25)] shadow-[0_4px_20px_rgba(212,164,71,0.12)] transition-all cursor-pointer"
         >
           <UserPlus size={18} />
           Add Team Member
@@ -337,7 +337,7 @@ export default function TeamManagementPage() {
         </div>
       )}
       {actionError && (
-        <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+        <div className="flex items-center gap-3 bg-red-500/[0.08] border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
           <AlertTriangle size={18} className="flex-shrink-0" />
           <span>{actionError}</span>
         </div>
@@ -354,16 +354,16 @@ export default function TeamManagementPage() {
               onClick={() => setRoleFilter(roleFilter === r ? 'all' : r)}
               className={`p-4 rounded-xl border transition-all cursor-pointer ${
                 roleFilter === r
-                  ? 'bg-slate-800 border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
-                  : 'bg-slate-900/40 border-white/5 hover:border-white/15'
+                  ? 'bg-[#1a2332] border-[#d4a447]/50 shadow-[0_2px_12px_rgba(0,0,0,0.2)] ring-1 ring-amber-500/30'
+                  : 'bg-[#141b24] border-white/[0.04] hover:border-white/[0.10]'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xl">{cfg.icon}</span>
-                <span className="text-lg font-black text-white">{count}</span>
+                <span className="text-lg font-black text-[#f0f2f5]">{count}</span>
               </div>
-              <p className="text-xs font-bold text-slate-200 truncate">{cfg.label}</p>
-              <p className="text-[10px] text-slate-500 mt-1 line-clamp-2 leading-tight">
+              <p className="text-xs font-bold text-[#c8cfd8] truncate">{cfg.label}</p>
+              <p className="text-[10px] text-[#5e6a7a] mt-1 line-clamp-2 leading-tight">
                 {cfg.description}
               </p>
             </div>
@@ -372,24 +372,24 @@ export default function TeamManagementPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/40 border border-white/10 rounded-xl p-3">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#141b24] border border-white/[0.06] rounded-xl p-3">
         <div className="relative w-full sm:w-80">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5e6a7a]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email, phone..."
-            className="w-full bg-slate-800/80 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/40"
+            className="w-full bg-[#1a2332] border border-white/[0.06] rounded-lg pl-9 pr-3 py-1.5 text-xs text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]/40"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter size={14} className="text-slate-500" />
+          <Filter size={14} className="text-[#5e6a7a]" />
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-slate-800 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none cursor-pointer"
+            className="bg-[#1a2332] border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-[#a0aab8] focus:outline-none cursor-pointer"
           >
             <option value="all">All Roles ({users.length})</option>
             {(Object.keys(ROLE_CONFIG) as UserRole[]).map((r) => (
@@ -400,7 +400,7 @@ export default function TeamManagementPage() {
           </select>
           <button
             onClick={fetchUsers}
-            className="p-1.5 rounded-lg bg-slate-800 border border-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-[#1a2332] border border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
             title="Refresh list"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -409,21 +409,21 @@ export default function TeamManagementPage() {
       </div>
 
       {/* Users Roster Table */}
-      <div className="bg-slate-900/60 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+      <div className="admin-card rounded-[16px] overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
         {loading ? (
           <div className="py-20 text-center">
-            <RefreshCw size={28} className="animate-spin text-amber-400 mx-auto mb-2" />
-            <p className="text-sm text-slate-400">Loading team members...</p>
+            <RefreshCw size={28} className="animate-spin text-[#d4a447] mx-auto mb-2" />
+            <p className="text-sm text-[#8a95a5]">Loading team members...</p>
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 text-sm">
+          <div className="py-16 text-center text-[#8a95a5] text-sm">
             No team members found matching your search.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-slate-950/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-white/[0.06] bg-[#0a0f14] text-[11px] font-bold text-[#8a95a5] uppercase tracking-wider">
                   <th className="px-5 py-3.5">Team Member</th>
                   <th className="px-4 py-3.5">Role &amp; Scope</th>
                   <th className="px-4 py-3.5">Granted Capabilities</th>
@@ -433,7 +433,7 @@ export default function TeamManagementPage() {
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-xs">
+              <tbody className="divide-y divide-white/[0.04] text-xs">
                 {filteredUsers.map((u) => {
                   const cfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.sales_rep;
                   const isActive = u.status === 'active';
@@ -444,13 +444,13 @@ export default function TeamManagementPage() {
                     <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center font-bold text-white text-sm">
+                          <div className="w-9 h-9 rounded-xl bg-[#1a2332] border border-white/[0.06] flex items-center justify-center font-bold text-[#f0f2f5] text-sm">
                             {u.name.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-bold text-white text-sm">{u.name}</div>
-                            <div className="text-slate-400 text-[11px] flex items-center gap-1.5">
-                              <Mail size={12} className="text-slate-500" />
+                            <div className="font-bold text-[#f0f2f5] text-sm">{u.name}</div>
+                            <div className="text-[#8a95a5] text-[11px] flex items-center gap-1.5">
+                              <Mail size={12} className="text-[#5e6a7a]" />
                               {u.email}
                             </div>
                           </div>
@@ -468,25 +468,25 @@ export default function TeamManagementPage() {
 
                       <td className="px-4 py-4">
                         {hasAll ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447] text-[11px] font-bold">
                             <Sparkles size={12} />
                             Full Access (All {ALL_PERMISSIONS.length})
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-medium">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-500/[0.07] border border-blue-500/20 text-blue-400 text-[11px] font-medium">
                             {permCount} / {ALL_PERMISSIONS.length} Permissions
                           </span>
                         )}
                       </td>
 
-                      <td className="px-4 py-4 text-slate-300">
+                      <td className="px-4 py-4 text-[#a0aab8]">
                         {u.phone ? (
                           <div className="flex items-center gap-1.5">
-                            <Phone size={12} className="text-slate-500" />
+                            <Phone size={12} className="text-[#5e6a7a]" />
                             <span>{u.phone}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-600">—</span>
+                          <span className="text-[#4a5568]">—</span>
                         )}
                       </td>
 
@@ -495,7 +495,7 @@ export default function TeamManagementPage() {
                           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
                             isActive
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                              : 'bg-red-500/[0.08] text-red-400 border border-red-500/20'
                           }`}
                         >
                           <span
@@ -507,10 +507,10 @@ export default function TeamManagementPage() {
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 text-slate-400">
+                      <td className="px-4 py-4 text-[#8a95a5]">
                         {u.last_login_at ? (
                           <div className="flex items-center gap-1">
-                            <Clock size={12} className="text-slate-500" />
+                            <Clock size={12} className="text-[#5e6a7a]" />
                             {new Date(u.last_login_at).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
@@ -519,7 +519,7 @@ export default function TeamManagementPage() {
                             })}
                           </div>
                         ) : (
-                          <span className="text-slate-600">Never</span>
+                          <span className="text-[#4a5568]">Never</span>
                         )}
                       </td>
 
@@ -527,7 +527,7 @@ export default function TeamManagementPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => openEditModal(u)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-[#1a2332] hover:bg-[#1e2736] text-[#a0aab8] hover:text-[#f0f2f5] transition-colors cursor-pointer"
                             title="Edit Role & Permissions"
                           >
                             <Edit2 size={14} />
@@ -535,7 +535,7 @@ export default function TeamManagementPage() {
                           {isActive && u.role !== 'owner' && (
                             <button
                               onClick={() => handleDeactivate(u)}
-                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-[#1a2332] hover:bg-red-500/15 text-[#8a95a5] hover:text-red-400 transition-colors cursor-pointer"
                               title="Deactivate Account"
                             >
                               <XCircle size={14} />
@@ -554,23 +554,23 @@ export default function TeamManagementPage() {
 
       {/* Add Member Modal with Dynamic Permissions Matrix */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-          <div className="bg-slate-900 border border-white/15 rounded-3xl p-6 sm:p-7 max-w-2xl w-full shadow-2xl space-y-5 my-8 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#141b24] border border-white/[0.10] rounded-[20px] p-6 sm:p-7 max-w-2xl w-full shadow-[0_8px_40px_rgba(0,0,0,0.4)] space-y-5 my-8 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] flex-shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#d4a447]/20 text-[#d4a447] flex items-center justify-center">
                   <UserPlus size={18} />
                 </div>
                 <div>
-                  <h3 className="font-black text-white text-base">Add Team Member</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="font-black text-[#f0f2f5] text-base">Add Team Member</h3>
+                  <p className="text-xs text-[#8a95a5]">
                     Assign role preset and configure custom permissions
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
+                className="text-[#8a95a5] hover:text-[#f0f2f5] p-1 rounded-lg cursor-pointer"
               >
                 <XCircle size={20} />
               </button>
@@ -579,61 +579,61 @@ export default function TeamManagementPage() {
             <form onSubmit={handleAddUser} className="space-y-5 overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Full Name</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Full Name</label>
                   <input
                     type="text"
                     required
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. David Vance"
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Work Email</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Work Email</label>
                   <input
                     type="email"
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="name@riseuproofing.com"
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Phone Number</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Phone Number</label>
                   <input
                     type="tel"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
                     placeholder="(818) 555-0100"
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Initial Password</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Initial Password</label>
                   <input
                     type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1 text-xs">
+                <label className="block text-[#a0aab8] font-bold mb-1 text-xs">
                   Base Role Template
                 </label>
                 <select
                   value={newRole}
                   onChange={(e) => handleAddRoleChange(e.target.value as UserRole)}
-                  className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+                  className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-[#f0f2f5] focus:outline-none focus:border-[#d4a447] cursor-pointer"
                 >
                   {(Object.keys(ROLE_CONFIG) as UserRole[]).map((r) => (
                     <option key={r} value={r}>
@@ -644,16 +644,16 @@ export default function TeamManagementPage() {
               </div>
 
               {/* Dynamic Permissions Matrix */}
-              <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
+              <div className="bg-[#0a0f14] border border-white/[0.06] rounded-[16px] p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/[0.06]">
                   <div>
-                    <h4 className="text-xs font-black text-white flex items-center gap-1.5">
-                      <Lock size={14} className="text-amber-400" />
+                    <h4 className="text-xs font-black text-[#f0f2f5] flex items-center gap-1.5">
+                      <Lock size={14} className="text-[#d4a447]" />
                       Custom Permissions Matrix
                     </h4>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-[#8a95a5]">
                       Granted:{' '}
-                      <span className="text-amber-400 font-bold">
+                      <span className="text-[#d4a447] font-bold">
                         {newPermissions.includes('*') ? ALL_PERMISSIONS.length : newPermissions.length}{' '}
                         / {ALL_PERMISSIONS.length}
                       </span>{' '}
@@ -665,21 +665,21 @@ export default function TeamManagementPage() {
                     <button
                       type="button"
                       onClick={() => setNewPermissions(['*'])}
-                      className="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 text-[10px] font-bold cursor-pointer"
+                      className="px-2 py-1 rounded-lg bg-[#d4a447]/15 hover:bg-[#d4a447]/20 border border-[#d4a447]/30 text-[#d4a447] text-[10px] font-bold cursor-pointer"
                     >
                       Select All
                     </button>
                     <button
                       type="button"
                       onClick={() => setNewPermissions([])}
-                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-medium cursor-pointer"
+                      className="px-2 py-1 rounded-lg bg-[#1a2332] hover:bg-[#1e2736] text-[#8a95a5] text-[10px] font-medium cursor-pointer"
                     >
                       Clear All
                     </button>
                     <button
                       type="button"
                       onClick={() => setNewPermissions(DEFAULT_ROLE_PERMISSIONS[newRole] || [])}
-                      className="px-2 py-1 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-[10px] font-medium flex items-center gap-1 cursor-pointer"
+                      className="px-2 py-1 rounded-lg bg-blue-500/[0.12] hover:bg-blue-500/[0.22] border border-blue-500/30 text-blue-400 text-[10px] font-medium flex items-center gap-1 cursor-pointer"
                       title="Reset to role defaults"
                     >
                       <RotateCcw size={11} />
@@ -694,7 +694,7 @@ export default function TeamManagementPage() {
                     const catPerms = ALL_PERMISSIONS.filter((p) => p.category === cat);
                     return (
                       <div key={cat} className="space-y-1.5">
-                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                        <div className="text-[11px] font-bold text-[#8a95a5] uppercase tracking-wider px-1">
                           {cat}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -707,8 +707,8 @@ export default function TeamManagementPage() {
                                 key={p.id}
                                 className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer text-left ${
                                   isChecked
-                                    ? 'bg-amber-500/10 border-amber-500/30 text-white'
-                                    : 'bg-slate-900/50 border-white/5 text-slate-400 hover:border-white/10'
+                                    ? 'bg-[#d4a447]/10 border-[#d4a447]/30 text-[#f0f2f5]'
+                                    : 'bg-[#141b24] border-white/[0.04] text-[#8a95a5] hover:border-white/[0.06]'
                                 }`}
                               >
                                 <input
@@ -719,16 +719,16 @@ export default function TeamManagementPage() {
                                 />
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-semibold leading-tight text-slate-200">
+                                    <span className="text-xs font-semibold leading-tight text-[#c8cfd8]">
                                       {p.label}
                                     </span>
                                     {p.sensitive && (
-                                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">
                                         Sensitive
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                                  <p className="text-[10px] text-[#5e6a7a] leading-tight mt-0.5">
                                     {p.desc}
                                   </p>
                                 </div>
@@ -746,14 +746,14 @@ export default function TeamManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white font-medium text-xs cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl border border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5] font-medium text-xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-400 hover:to-orange-400 text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] shadow-[0_4px_20px_rgba(212,164,71,0.12)] disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? 'Creating User...' : 'Save & Grant Permissions'}
                 </button>
@@ -765,21 +765,21 @@ export default function TeamManagementPage() {
 
       {/* Edit User Modal with Dynamic Permissions Matrix */}
       {editUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-          <div className="bg-slate-900 border border-white/15 rounded-3xl p-6 sm:p-7 max-w-2xl w-full shadow-2xl space-y-5 my-8 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#141b24] border border-white/[0.10] rounded-[20px] p-6 sm:p-7 max-w-2xl w-full shadow-[0_8px_40px_rgba(0,0,0,0.4)] space-y-5 my-8 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] flex-shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/[0.17] text-blue-400 flex items-center justify-center">
                   <Edit2 size={16} />
                 </div>
                 <div>
-                  <h3 className="font-black text-white text-base">Edit Team Member</h3>
-                  <p className="text-xs text-slate-400">{editUser.email}</p>
+                  <h3 className="font-black text-[#f0f2f5] text-base">Edit Team Member</h3>
+                  <p className="text-xs text-[#8a95a5]">{editUser.email}</p>
                 </div>
               </div>
               <button
                 onClick={() => setEditUser(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
+                className="text-[#8a95a5] hover:text-[#f0f2f5] p-1 rounded-lg cursor-pointer"
               >
                 <XCircle size={20} />
               </button>
@@ -788,32 +788,32 @@ export default function TeamManagementPage() {
             <form onSubmit={handleUpdateUser} className="space-y-5 overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Full Name</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Full Name</label>
                   <input
                     type="text"
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Phone Number</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Phone Number</label>
                   <input
                     type="tel"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Assigned Role</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Assigned Role</label>
                   <select
                     value={editRole}
                     onChange={(e) => handleEditRoleChange(e.target.value as UserRole)}
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] focus:outline-none focus:border-[#d4a447] cursor-pointer"
                   >
                     {(Object.keys(ROLE_CONFIG) as UserRole[]).map((r) => (
                       <option key={r} value={r}>
@@ -824,11 +824,11 @@ export default function TeamManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Account Status</label>
+                  <label className="block text-[#a0aab8] font-bold mb-1">Account Status</label>
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as 'active' | 'inactive')}
-                    className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+                    className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-[#f0f2f5] focus:outline-none focus:border-[#d4a447] cursor-pointer"
                   >
                     <option value="active">Active (Can log in)</option>
                     <option value="inactive">Inactive (Deactivated)</option>
@@ -837,30 +837,30 @@ export default function TeamManagementPage() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1 text-xs">
+                <label className="block text-[#a0aab8] font-bold mb-1 text-xs">
                   Reset Password{' '}
-                  <span className="text-slate-500 font-normal">(Leave blank to keep unchanged)</span>
+                  <span className="text-[#5e6a7a] font-normal">(Leave blank to keep unchanged)</span>
                 </label>
                 <input
                   type="password"
                   value={editPassword}
                   onChange={(e) => setEditPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="w-full bg-slate-800 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#1a2332] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
                 />
               </div>
 
               {/* Dynamic Permissions Matrix */}
-              <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
+              <div className="bg-[#0a0f14] border border-white/[0.06] rounded-[16px] p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/[0.06]">
                   <div>
-                    <h4 className="text-xs font-black text-white flex items-center gap-1.5">
-                      <Lock size={14} className="text-amber-400" />
+                    <h4 className="text-xs font-black text-[#f0f2f5] flex items-center gap-1.5">
+                      <Lock size={14} className="text-[#d4a447]" />
                       Granted Permissions &amp; Data Scopes
                     </h4>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-[#8a95a5]">
                       Granted:{' '}
-                      <span className="text-amber-400 font-bold">
+                      <span className="text-[#d4a447] font-bold">
                         {editPermissions.includes('*')
                           ? ALL_PERMISSIONS.length
                           : editPermissions.length}{' '}
@@ -874,21 +874,21 @@ export default function TeamManagementPage() {
                     <button
                       type="button"
                       onClick={() => setEditPermissions(['*'])}
-                      className="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 text-[10px] font-bold cursor-pointer"
+                      className="px-2 py-1 rounded-lg bg-[#d4a447]/15 hover:bg-[#d4a447]/20 border border-[#d4a447]/30 text-[#d4a447] text-[10px] font-bold cursor-pointer"
                     >
                       Select All
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditPermissions([])}
-                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-medium cursor-pointer"
+                      className="px-2 py-1 rounded-lg bg-[#1a2332] hover:bg-[#1e2736] text-[#8a95a5] text-[10px] font-medium cursor-pointer"
                     >
                       Clear All
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditPermissions(DEFAULT_ROLE_PERMISSIONS[editRole] || [])}
-                      className="px-2 py-1 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-[10px] font-medium flex items-center gap-1 cursor-pointer"
+                      className="px-2 py-1 rounded-lg bg-blue-500/[0.12] hover:bg-blue-500/[0.22] border border-blue-500/30 text-blue-400 text-[10px] font-medium flex items-center gap-1 cursor-pointer"
                       title="Reset to role defaults"
                     >
                       <RotateCcw size={11} />
@@ -903,7 +903,7 @@ export default function TeamManagementPage() {
                     const catPerms = ALL_PERMISSIONS.filter((p) => p.category === cat);
                     return (
                       <div key={cat} className="space-y-1.5">
-                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                        <div className="text-[11px] font-bold text-[#8a95a5] uppercase tracking-wider px-1">
                           {cat}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -916,8 +916,8 @@ export default function TeamManagementPage() {
                                 key={p.id}
                                 className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer text-left ${
                                   isChecked
-                                    ? 'bg-amber-500/10 border-amber-500/30 text-white'
-                                    : 'bg-slate-900/50 border-white/5 text-slate-400 hover:border-white/10'
+                                    ? 'bg-[#d4a447]/10 border-[#d4a447]/30 text-[#f0f2f5]'
+                                    : 'bg-[#141b24] border-white/[0.04] text-[#8a95a5] hover:border-white/[0.06]'
                                 }`}
                               >
                                 <input
@@ -928,16 +928,16 @@ export default function TeamManagementPage() {
                                 />
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-semibold leading-tight text-slate-200">
+                                    <span className="text-xs font-semibold leading-tight text-[#c8cfd8]">
                                       {p.label}
                                     </span>
                                     {p.sensitive && (
-                                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">
                                         Sensitive
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                                  <p className="text-[10px] text-[#5e6a7a] leading-tight mt-0.5">
                                     {p.desc}
                                   </p>
                                 </div>
@@ -955,14 +955,14 @@ export default function TeamManagementPage() {
                 <button
                   type="button"
                   onClick={() => setEditUser(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white font-medium text-xs cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl border border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5] font-medium text-xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-400 hover:to-orange-400 text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] shadow-[0_4px_20px_rgba(212,164,71,0.12)] disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? 'Saving...' : 'Save Changes'}
                 </button>

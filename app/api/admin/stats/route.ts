@@ -152,7 +152,7 @@ export async function GET() {
           COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN session_id END) as today,
           COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN session_id END) as past_7d
         FROM analytics_events 
-        WHERE event_type = 'pageview'
+        WHERE event_type = 'pageview' AND page_path NOT LIKE '/admin%'
       `).catch(() => [{ today: '0', past_7d: '0' }]),
     ]);
 

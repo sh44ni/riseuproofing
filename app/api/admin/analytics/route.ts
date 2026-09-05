@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   // Base WHERE predicates (no alias usage — PostgreSQL requires full expressions in GROUP BY)
   const timeFilter = `created_at >= ${fromExpr} AND created_at < ${toExpr}`;
-  const pvFilter   = `event_type = 'pageview' AND ${timeFilter}`;
+  const pvFilter   = `event_type = 'pageview' AND page_path NOT LIKE '/admin%' AND ${timeFilter}`;
 
   const [
     dailyPageviews,
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
     query<{ event_type: string; count: string }>(
       `SELECT event_type, COUNT(*) AS count
        FROM analytics_events
-       WHERE ${timeFilter}
+       WHERE ${timeFilter} AND page_path NOT LIKE '/admin%'
        GROUP BY event_type
        ORDER BY count DESC`
     ),
@@ -130,6 +130,7 @@ export async function GET(req: NextRequest) {
               COUNT(*)                             AS count
        FROM analytics_events
        WHERE event_type IN ('button_click','nav_click') AND ${timeFilter}
+         AND page_path NOT LIKE '/admin%'
          AND COALESCE(label, element) IS NOT NULL
        GROUP BY COALESCE(label, element, 'unknown')
        ORDER BY count DESC LIMIT 10`
@@ -146,7 +147,7 @@ export async function GET(req: NextRequest) {
               device_type, country, city, scroll_pct, duration_ms,
               utm_source, utm_medium, created_at
        FROM activity_log
-       WHERE ${timeFilter}
+       WHERE ${timeFilter} AND page_path NOT LIKE '/admin%'
        ORDER BY created_at DESC LIMIT 60`
     ).catch(() => []),
 
@@ -160,7 +161,7 @@ export async function GET(req: NextRequest) {
                 COUNT(CASE WHEN event_type='pageview' THEN 1 END)               AS pv_count,
                 MAX(CASE WHEN event_type='scroll' THEN scroll_pct ELSE 0 END)   AS max_scroll
          FROM analytics_events
-         WHERE ${timeFilter}
+         WHERE ${timeFilter} AND page_path NOT LIKE '/admin%'
          GROUP BY session_id
        ) s`
     ),
@@ -170,7 +171,7 @@ export async function GET(req: NextRequest) {
       `SELECT EXTRACT(HOUR FROM created_at)::INT AS hour,
               COUNT(*)                            AS count
        FROM call_events
-       WHERE ${timeFilter}
+       WHERE ${timeFilter} AND (page_path NOT LIKE '/admin%' OR page_path IS NULL)
        GROUP BY EXTRACT(HOUR FROM created_at)::INT
        ORDER BY EXTRACT(HOUR FROM created_at)::INT`
     ),

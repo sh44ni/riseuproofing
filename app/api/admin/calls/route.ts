@@ -15,22 +15,27 @@ export async function GET(req: NextRequest) {
       `SELECT DATE_TRUNC('day', created_at)::DATE AS day, COUNT(*) AS count
        FROM call_events
        WHERE created_at >= NOW() - INTERVAL '${days} days'
+         AND (page_path NOT LIKE '/admin%' OR page_path IS NULL)
        GROUP BY day ORDER BY day`
     ),
     query<{ page_path: string; count: string }>(
       `SELECT page_path, COUNT(*) AS count
        FROM call_events
        WHERE created_at >= NOW() - INTERVAL '${days} days'
+         AND (page_path NOT LIKE '/admin%' OR page_path IS NULL)
        GROUP BY page_path ORDER BY count DESC LIMIT 8`
     ),
     query<{ device_type: string; count: string }>(
       `SELECT device_type, COUNT(*) AS count
        FROM call_events
        WHERE created_at >= NOW() - INTERVAL '${days} days'
+         AND (page_path NOT LIKE '/admin%' OR page_path IS NULL)
        GROUP BY device_type`
     ),
     query(
-      `SELECT * FROM call_events ORDER BY created_at DESC LIMIT 20`
+      `SELECT * FROM call_events
+       WHERE (page_path NOT LIKE '/admin%' OR page_path IS NULL)
+       ORDER BY created_at DESC LIMIT 20`
     ),
   ]);
 

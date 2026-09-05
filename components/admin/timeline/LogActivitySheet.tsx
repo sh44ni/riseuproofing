@@ -101,7 +101,7 @@ export default function LogActivitySheet({
 
         {/* Activity Type Selector */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">
+          <label className="block text-xs font-semibold text-[#a0aab8] mb-2 uppercase tracking-wider">
             Activity Type
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -111,7 +111,7 @@ export default function LogActivitySheet({
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'call'
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                  : 'border-white/10 text-slate-400 hover:text-white'
+                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
               }`}
             >
               <Phone size={16} className="mb-1" />
@@ -123,7 +123,7 @@ export default function LogActivitySheet({
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'note'
                   ? 'bg-purple-500/20 text-purple-400 border-purple-500/40'
-                  : 'border-white/10 text-slate-400 hover:text-white'
+                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
               }`}
             >
               <FileText size={16} className="mb-1" />
@@ -135,7 +135,7 @@ export default function LogActivitySheet({
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'text'
                   ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
-                  : 'border-white/10 text-slate-400 hover:text-white'
+                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
               }`}
             >
               <MessageSquare size={16} className="mb-1" />
@@ -147,7 +147,7 @@ export default function LogActivitySheet({
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'visit'
                   ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
-                  : 'border-white/10 text-slate-400 hover:text-white'
+                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
               }`}
             >
               <MapPin size={16} className="mb-1" />
@@ -161,11 +161,11 @@ export default function LogActivitySheet({
           <div className="space-y-3 pt-1">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Call Outcome</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Call Outcome</label>
                 <select
                   value={outcome}
                   onChange={e => setOutcome(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="admin-input text-xs w-full px-3 py-2 rounded-xl"
                 >
                   {OUTCOMES.map(o => (
                     <option key={o} value={o}>
@@ -175,14 +175,14 @@ export default function LogActivitySheet({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Duration (minutes)</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Duration (minutes)</label>
                 <input
                   type="number"
                   min="0"
                   max="120"
                   value={durationMins}
                   onChange={e => setDurationMins(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="admin-input text-xs w-full px-3 py-2 rounded-xl"
                 />
               </div>
             </div>
@@ -191,18 +191,18 @@ export default function LogActivitySheet({
 
         {/* Team Member */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">Logged By</label>
+          <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Logged By</label>
           <input
             type="text"
             value={performedBy}
             onChange={e => setPerformedBy(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+            className="admin-input text-xs w-full px-3 py-2 rounded-xl"
           />
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
+          <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
             {activityType === 'call' ? 'Call Discussion Notes' : 'Details / Notes'}
           </label>
           <textarea
@@ -211,7 +211,7 @@ export default function LogActivitySheet({
             placeholder="e.g. Homeowner confirmed roof is 20 years old. Scheduled drone inspection for Thursday 10 AM..."
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+            className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
           />
         </div>
 
@@ -220,7 +220,7 @@ export default function LogActivitySheet({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-bold text-sm shadow-lg hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="admin-btn-gold text-sm font-bold shadow-[0_4px_16px_rgba(0,0,0,0.25)] w-full py-3 px-4 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Save to Activity Timeline'}
           </button>

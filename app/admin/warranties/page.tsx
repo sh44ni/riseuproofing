@@ -131,18 +131,18 @@ export default function WarrantiesPage() {
   }
 
   return (
-    <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto">
+    <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto admin-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+          <div className="p-2.5 rounded-[16px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-[0_2px_12px_rgba(0,0,0,0.2)]">
             <ShieldCheck size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
               Warranties &amp; Post-Job Lifecycle
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-[#8a95a5]">
               Stage 8: Owens Corning Preferred Protection certificates &amp; automated customer check-ins
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function WarrantiesPage() {
             fetchWarranties();
           }}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/10 bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-300 transition-colors cursor-pointer self-start sm:self-auto"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/[0.06] bg-[#141b24] hover:bg-[#1a2332] text-xs font-semibold text-[#a0aab8] transition-colors cursor-pointer self-start sm:self-auto"
         >
           <RefreshCw size={14} className={refreshing ? 'animate-spin text-emerald-400' : ''} />
           Refresh
@@ -162,46 +162,46 @@ export default function WarrantiesPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 admin-fade-in-1">
+        <div className="p-4 rounded-[16px] admin-card">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>Active Warranties</span>
             <ShieldCheck size={15} className="text-emerald-400" />
           </div>
-          <div className="text-2xl font-black text-white">{summary.activeCount}</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">{summary.activeCount}</div>
           <div className="text-xs text-emerald-400 font-semibold mt-1">Roofs under active coverage</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>6-Month Follow-ups</span>
-            <Clock size={15} className="text-amber-400" />
+            <Clock size={15} className="text-[#d4a447]" />
           </div>
-          <div className="text-2xl font-black text-white">{summary.checkin6moDue}</div>
-          <div className="text-xs text-amber-400 font-semibold mt-1">Inspection due soon</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">{summary.checkin6moDue}</div>
+          <div className="text-xs text-[#d4a447] font-semibold mt-1">Inspection due soon</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>1-Year Anniversaries</span>
             <Award size={15} className="text-blue-400" />
           </div>
-          <div className="text-2xl font-black text-white">{summary.checkin1yrDue}</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">{summary.checkin1yrDue}</div>
           <div className="text-xs text-blue-400 font-semibold mt-1">Review &amp; referral drivers</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>Preferred Contractor</span>
             <CheckCircle2 size={15} className="text-cyan-400" />
           </div>
-          <div className="text-2xl font-black text-white">50 Years</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">50 Years</div>
           <div className="text-xs text-cyan-400 font-semibold mt-1">Owens Corning System Warranty</div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-[16px] bg-[#141b24] border border-white/[0.06] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 admin-fade-in-2">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
             { id: 'all', label: 'All Certificates' },
@@ -213,8 +213,8 @@ export default function WarrantiesPage() {
               onClick={() => setStatusFilter(tab.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 statusFilter === tab.id
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                  : 'bg-slate-800/80 text-slate-400 hover:text-white border border-white/5'
+                  ? 'bg-emerald-500 text-[#0c1117] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
+                  : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
               }`}
             >
               {tab.label}
@@ -223,28 +223,28 @@ export default function WarrantiesPage() {
         </div>
 
         <div className="relative flex-1 sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a95a5]" />
           <input
             type="text"
             placeholder="Search certificate #, homeowner, city..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-800/90 border border-white/10 text-white placeholder-slate-400 text-xs focus:outline-none focus:border-emerald-400"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl admin-input text-[#f0f2f5] placeholder-[#8a95a5] text-xs focus:outline-none"
           />
         </div>
       </div>
 
       {/* Warranties List */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-500 gap-3">
+        <div className="py-20 flex flex-col items-center justify-center text-[#5e6a7a] gap-3 admin-fade-in-3">
           <RefreshCw size={24} className="animate-spin text-emerald-400" />
           <span className="text-xs font-semibold">Loading warranty certificates...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-white/5 bg-slate-900/40">
-          <ShieldCheck size={36} className="mx-auto text-slate-600 mb-3" />
-          <h3 className="text-sm font-bold text-white mb-1">No Warranties Found</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+        <div className="py-16 text-center rounded-[16px] border border-white/[0.04] bg-[#141b24] admin-fade-in-3">
+          <ShieldCheck size={36} className="mx-auto text-[#4a5568] mb-3" />
+          <h3 className="text-sm font-bold text-[#f0f2f5] mb-1">No Warranties Found</h3>
+          <p className="text-xs text-[#8a95a5] max-w-sm mx-auto">
             {search
               ? 'No certificates match your search query.'
               : 'Issue official 50-year warranty certificates directly from any completed roofing job.'}
@@ -252,14 +252,14 @@ export default function WarrantiesPage() {
           <div className="mt-4">
             <Link
               href="/admin/jobs"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-colors"
             >
               Go to Jobs Pipeline
             </Link>
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 admin-fade-in-3">
           {filtered.map(war => {
             const is6moDue =
               !war.checkin_6mo_completed &&
@@ -271,28 +271,28 @@ export default function WarrantiesPage() {
             return (
               <div
                 key={war.id}
-                className="p-5 rounded-3xl bg-slate-900 border border-white/10 space-y-4 hover:border-white/20 transition-all shadow-md"
+                className="p-5 rounded-[20px] admin-card admin-card-gold space-y-4 shadow-[0_2px_12px_rgba(0,0,0,0.2)]"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-bold text-amber-400">
+                      <span className="font-mono text-xs font-bold text-[#d4a447]">
                         {war.warranty_number}
                       </span>
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full admin-badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                         ACTIVE CERTIFICATE
                       </span>
                       {war.material_type && (
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-[#8a95a5]">
                           {war.material_type}
                         </span>
                       )}
                     </div>
 
-                    <h3 className="text-base font-bold text-white mt-1">
+                    <h3 className="text-base font-bold text-[#f0f2f5] mt-1">
                       {war.customer_name || 'Homeowner'}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#8a95a5]">
                       {war.address ? `${war.address}, ${war.city || 'CA'}` : 'San Diego County'}
                       {war.job_number && ` • ${war.job_number}`}
                     </p>
@@ -303,7 +303,7 @@ export default function WarrantiesPage() {
                       <button
                         type="button"
                         onClick={() => setMessageTarget(war)}
-                        className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
                         <MessageSquare size={13} />
                         Quick Check-in
@@ -313,7 +313,7 @@ export default function WarrantiesPage() {
                     <Link
                       href={`/warranty/${war.warranty_number}`}
                       target="_blank"
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
                     >
                       View Certificate <ExternalLink size={12} />
                     </Link>
@@ -321,35 +321,35 @@ export default function WarrantiesPage() {
                 </div>
 
                 {/* Scope & Terms */}
-                <div className="p-3 rounded-2xl bg-slate-950/60 border border-white/5 text-xs space-y-1">
-                  <div className="font-semibold text-slate-200">{war.warranty_type}</div>
-                  <p className="text-slate-400 text-[11px] line-clamp-2">
+                <div className="p-3 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] text-xs space-y-1">
+                  <div className="font-semibold text-[#c8cfd8]">{war.warranty_type}</div>
+                  <p className="text-[#8a95a5] text-[11px] line-clamp-2">
                     {war.coverage_details}
                   </p>
                 </div>
 
                 {/* Bottom Timeline: Coverage Dates & Automated Check-in Checkboxes */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-white/5 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-white/[0.04] text-xs">
                   {/* Coverage Period */}
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                    <span className="text-[10px] text-[#8a95a5] admin-section-label font-semibold">
                       Coverage Span
                     </span>
-                    <div className="text-slate-200 font-semibold mt-0.5">
+                    <div className="text-[#c8cfd8] font-semibold mt-0.5">
                       {war.start_date} → {war.expiration_date}
                     </div>
                   </div>
 
                   {/* 6-Month Check-in */}
-                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-950/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#0a0f14] p-2.5 rounded-xl border border-white/[0.04]">
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold flex items-center gap-1">
+                      <div className="text-[10px] text-[#8a95a5] admin-section-label font-semibold flex items-center gap-1">
                         <span>6-Mo Inspection</span>
                         {is6moDue && (
-                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                          <span className="w-2 h-2 rounded-full bg-[#d4a447] admin-pulse-gold" />
                         )}
                       </div>
-                      <div className="text-slate-300 text-[11px] font-mono">
+                      <div className="text-[#a0aab8] text-[11px] font-mono">
                         {war.checkin_6mo_due}
                       </div>
                     </div>
@@ -365,10 +365,10 @@ export default function WarrantiesPage() {
                       }
                       className={`ml-auto px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
                         war.checkin_6mo_completed
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40'
                           : is6moDue
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                          : 'bg-slate-800 text-slate-400 border-white/10 hover:text-white'
+                          ? 'bg-[#d4a447]/10 text-[#d4a447] border-[#d4a447]/30'
+                          : 'bg-[#1a2332] text-[#8a95a5] border-white/[0.06] hover:text-[#f0f2f5]'
                       }`}
                     >
                       {war.checkin_6mo_completed ? (
@@ -382,15 +382,15 @@ export default function WarrantiesPage() {
                   </div>
 
                   {/* 1-Year Check-in */}
-                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-950/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#0a0f14] p-2.5 rounded-xl border border-white/[0.04]">
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold flex items-center gap-1">
+                      <div className="text-[10px] text-[#8a95a5] admin-section-label font-semibold flex items-center gap-1">
                         <span>1-Yr Anniversary</span>
                         {is1yrDue && (
                           <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
                         )}
                       </div>
-                      <div className="text-slate-300 text-[11px] font-mono">
+                      <div className="text-[#a0aab8] text-[11px] font-mono">
                         {war.checkin_1yr_due}
                       </div>
                     </div>
@@ -406,10 +406,10 @@ export default function WarrantiesPage() {
                       }
                       className={`ml-auto px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
                         war.checkin_1yr_completed
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40'
                           : is1yrDue
-                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                          : 'bg-slate-800 text-slate-400 border-white/10 hover:text-white'
+                          ? 'bg-blue-500/10 text-blue-300 border-blue-500/40'
+                          : 'bg-[#1a2332] text-[#8a95a5] border-white/[0.06] hover:text-[#f0f2f5]'
                       }`}
                     >
                       {war.checkin_1yr_completed ? (

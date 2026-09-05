@@ -108,41 +108,41 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
         {/* Contact Info */}
         <div className="space-y-3">
-          <h4 className="text-xs uppercase font-bold tracking-wider text-slate-400">
+          <h4 className="text-xs uppercase font-bold tracking-wider text-[#8a95a5]">
             Contact Information
           </h4>
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Full Name *</label>
+            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Full Name *</label>
             <input
               type="text"
               required
               placeholder="e.g. Robert Johnson"
               value={formData.fullName}
               onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+              className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Phone *</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Phone *</label>
               <input
                 type="tel"
                 required
                 placeholder="(760) 000-0000"
                 value={formData.phone}
                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Email</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Email</label>
               <input
                 type="email"
                 placeholder="name@example.com"
                 value={formData.email}
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
               />
             </div>
           </div>
@@ -150,16 +150,16 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
         {/* Project & Source */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-xs uppercase font-bold tracking-wider text-slate-400">
+          <h4 className="text-xs uppercase font-bold tracking-wider text-[#8a95a5]">
             Project & Pipeline
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Service Type</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Service Type</label>
               <select
                 value={formData.serviceType}
                 onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
               >
                 {SERVICE_TYPES.map(s => (
                   <option key={s} value={s}>
@@ -169,11 +169,11 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Lead Source</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Lead Source</label>
               <select
                 value={formData.leadSource}
                 onChange={e => setFormData({ ...formData, leadSource: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
               >
                 {LEAD_SOURCES.map(s => (
                   <option key={s.value} value={s.value}>
@@ -187,26 +187,26 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
         {/* Roofing Specs */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-xs uppercase font-bold tracking-wider text-slate-400">
+          <h4 className="text-xs uppercase font-bold tracking-wider text-[#8a95a5]">
             Property Specifications (Roofing)
           </h4>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Est. SQF</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Est. SQF</label>
               <input
                 type="number"
                 placeholder="2500"
                 value={formData.roofSqf}
                 onChange={e => setFormData({ ...formData, roofSqf: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3 py-2 rounded-xl"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Roof Type</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Roof Type</label>
               <select
                 value={formData.roofType}
                 onChange={e => setFormData({ ...formData, roofType: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3 py-2 rounded-xl"
               >
                 <option value="Concrete Tile">Concrete Tile</option>
                 <option value="Clay Tile">Clay Tile</option>
@@ -216,11 +216,11 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Stories</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Stories</label>
               <select
                 value={formData.stories}
                 onChange={e => setFormData({ ...formData, stories: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3 py-2 rounded-xl"
               >
                 <option value="1">1 Story</option>
                 <option value="2">2 Stories</option>
@@ -231,35 +231,35 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Address / City</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Address / City</label>
               <input
                 type="text"
                 placeholder="e.g. 1245 Grand Ave, Escondido"
                 value={formData.address}
                 onChange={e => setFormData({ ...formData, address: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">ZIP Code</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">ZIP Code</label>
               <input
                 type="text"
                 placeholder="92025"
                 value={formData.zip}
                 onChange={e => setFormData({ ...formData, zip: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Project Notes</label>
+            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Project Notes</label>
             <textarea
               rows={2}
               placeholder="e.g. Active leak in master bedroom ceiling; needs urgent inspection..."
               value={formData.notes}
               onChange={e => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-800/80 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+              className="admin-input text-sm w-full px-3.5 py-2 rounded-xl"
             />
           </div>
         </div>
@@ -269,7 +269,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-bold text-sm shadow-lg hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="admin-btn-gold text-sm font-bold shadow-[0_4px_16px_rgba(0,0,0,0.25)] w-full py-3 px-4 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <UserPlus size={18} />
             {loading ? 'Creating Lead...' : 'Save & Calculate Score'}

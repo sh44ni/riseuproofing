@@ -337,7 +337,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-[#d4a447] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -356,11 +356,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-5xl mx-auto pb-24 md:pb-12">
-      {/* Top Breadcrumb */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Top Breadcrumb — Sticky on mobile */}
+      <div className="sticky top-14 lg:static z-20 -mx-4 px-4 py-2.5 lg:mx-0 lg:px-0 lg:py-0 bg-[#0c1117]/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none border-b border-white/[0.04] lg:border-none flex items-center justify-between gap-4">
         <Link
           href="/admin/jobs"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#8a95a5] hover:text-[#f0f2f5] transition-colors"
         >
           <ArrowLeft size={16} />
           Back to Jobs Board
@@ -368,7 +368,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
         <button
           onClick={handleDelete}
-          className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+          className="p-2 rounded-xl text-[#5e6a7a] hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
           title="Delete Job"
         >
           <Trash2 size={16} />
@@ -376,38 +376,38 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Hero Header */}
-      <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+      <div className="bg-[#141b24]/80 border border-white/[0.06] rounded-[20px] p-5 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.3)] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs font-black px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">
                 {job.job_number}
               </span>
-              <span className="text-xs text-slate-400">{job.service_type || 'Roof Replacement'}</span>
+              <span className="text-xs text-[#8a95a5]">{job.service_type || 'Roof Replacement'}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#f0f2f5] mt-1">
               {job.customer_name}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-1.5 mt-0.5">
-              <MapPin size={14} className="text-slate-500" />
+            <p className="text-xs sm:text-sm text-[#8a95a5] flex items-center gap-1.5 mt-0.5">
+              <MapPin size={14} className="text-[#5e6a7a]" />
               {job.address ? `${job.address}${job.city ? `, ${job.city}` : ''}` : 'No address specified'}
             </p>
           </div>
 
           <div className="text-left sm:text-right">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Contract Value</p>
-            <p className="text-3xl font-black text-white tabular-nums">
+            <p className="text-xs font-bold text-[#8a95a5] uppercase tracking-wider">Contract Value</p>
+            <p className="text-3xl font-black text-[#f0f2f5] tabular-nums">
               ${Number(job.contract_value).toLocaleString()}
             </p>
           </div>
         </div>
 
         {/* Quick Contact & Estimate Link */}
-        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-white/10">
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-white/[0.06]">
           {job.customer_phone && (
             <a
-              href={`tel:${job.customer_phone.replace(/\D/g, '')}`}
+              href={`tel:${job.customer_phone.replace(/\\D/g, '')}`}
               className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-400 text-xs font-semibold"
             >
               <Phone size={13} /> Call Homeowner
@@ -417,7 +417,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           {job.estimate_id && (
             <Link
               href={`/admin/estimates/${job.estimate_id}`}
-              className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-500/15 text-amber-400 text-xs font-semibold"
+              className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-[#d4a447]/15 text-[#d4a447] text-xs font-semibold"
             >
               <FileText size={13} /> View Originating Estimate
             </Link>
@@ -433,14 +433,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* SECTION: Realized Profitability & Job Financials */}
-      <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-5 sm:p-6 space-y-5 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+      <div className="bg-[#141b24]/80 border border-white/[0.06] rounded-[20px] p-5 sm:p-6 space-y-5 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.04] pb-3">
           <div>
-            <h3 className="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
               <TrendingUp size={18} className="text-emerald-400" />
               Job Profitability &amp; Financial Ledger
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#8a95a5]">
               Contract value vs actual supplier expenses, dumpster fees and realized margin %
             </p>
           </div>
@@ -458,9 +458,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
         {/* Profitability KPI Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Total Contract</span>
-            <div className="text-xl font-black text-white mt-0.5">
+          <div className="p-3.5 rounded-[16px] bg-[#0c1117]/60 border border-white/[0.04]">
+            <span className="text-[10px] uppercase font-bold text-[#8a95a5]">Total Contract</span>
+            <div className="text-xl font-black text-[#f0f2f5] mt-0.5">
               ${contractValue.toLocaleString()}
             </div>
             <div className="text-[11px] text-emerald-400 font-semibold mt-0.5">
@@ -468,25 +468,25 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Total Actual Costs</span>
+          <div className="p-3.5 rounded-[16px] bg-[#0c1117]/60 border border-white/[0.04]">
+            <span className="text-[10px] uppercase font-bold text-[#8a95a5]">Total Actual Costs</span>
             <div className="text-xl font-black text-rose-400 mt-0.5">
               ${totalExpenses.toLocaleString()}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
+            <div className="text-[11px] text-[#8a95a5] mt-0.5">
               {expenses.length} expense receipt{expenses.length !== 1 ? 's' : ''}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-emerald-500/20">
+          <div className="p-3.5 rounded-[16px] bg-[#0c1117]/60 border border-emerald-500/20">
             <span className="text-[10px] uppercase font-bold text-emerald-400">Realized Gross Profit</span>
-            <div className="text-xl font-black text-white mt-0.5">
+            <div className="text-xl font-black text-[#f0f2f5] mt-0.5">
               ${realizedProfit.toLocaleString()}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">After all materials &amp; dump</div>
+            <div className="text-[11px] text-[#8a95a5] mt-0.5">After all materials &amp; dump</div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-cyan-500/20">
+          <div className="p-3.5 rounded-[16px] bg-[#0c1117]/60 border border-cyan-500/20">
             <span className="text-[10px] uppercase font-bold text-cyan-400">Realized Gross Margin</span>
             <div className="text-xl font-black text-cyan-300 mt-0.5">
               {realizedMargin}%
@@ -500,8 +500,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         {/* Milestone Invoicing Subsection */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <Receipt size={15} className="text-amber-400" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#a0aab8] flex items-center gap-2">
+              <Receipt size={15} className="text-[#d4a447]" />
               CSLB 4-Stage Milestone Invoices
             </h4>
 
@@ -510,7 +510,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 type="button"
                 disabled={generatingInvoices}
                 onClick={handleGenerateMilestones}
-                className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-3 py-1.5 rounded-xl bg-[#d4a447] hover:bg-[#c4923a] text-[#0c1117] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <DollarSign size={13} />
                 {generatingInvoices ? 'Generating...' : 'Auto-Generate 4 Milestones'}
@@ -519,7 +519,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
 
           {invoices.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-white/10 text-center text-xs text-slate-400">
+            <div className="p-4 rounded-[16px] border border-dashed border-white/[0.06] text-center text-xs text-[#8a95a5]">
               No invoices generated for this job yet. Click &quot;Auto-Generate 4 Milestones&quot; to build compliant CSLB progress billing.
             </div>
           ) : (
@@ -529,21 +529,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 return (
                   <div
                     key={inv.id}
-                    className={`p-3.5 rounded-2xl border ${
+                    className={`p-3.5 rounded-[16px] border ${
                       isPaid
                         ? 'bg-emerald-950/20 border-emerald-500/30'
-                        : 'bg-slate-950/60 border-white/5'
+                        : 'bg-[#0c1117]/60 border-white/[0.04]'
                     } space-y-2`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-bold text-amber-400">
+                      <span className="font-mono text-[10px] font-bold text-[#d4a447]">
                         {inv.invoice_number}
                       </span>
                       <span
                         className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
                           isPaid
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                            : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            : 'bg-[#d4a447]/10 text-[#d4a447] border-[#d4a447]/30'
                         }`}
                       >
                         {isPaid ? 'PAID' : 'PENDING'}
@@ -551,13 +551,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     </div>
 
                     <div>
-                      <div className="text-xs font-bold text-white line-clamp-1">
+                      <div className="text-xs font-bold text-[#f0f2f5] line-clamp-1">
                         {inv.milestone_name}
                       </div>
-                      <div className="text-base font-black text-white mt-0.5">
+                      <div className="text-base font-black text-[#f0f2f5] mt-0.5">
                         ${Number(inv.amount).toLocaleString()}
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
+                      <div className="text-[10px] text-[#8a95a5] mt-0.5">
                         Due: {inv.due_date}
                       </div>
                     </div>
@@ -584,19 +584,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
         {/* Expenses List Subsection */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#a0aab8] flex items-center gap-2">
             <Receipt size={15} className="text-rose-400" />
             Job Expenses &amp; Vendor Receipts
           </h4>
 
           {expenses.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-white/10 text-center text-xs text-slate-400">
+            <div className="p-4 rounded-[16px] border border-dashed border-white/[0.06] text-center text-xs text-[#8a95a5]">
               No job expenses recorded yet. Click &quot;Log Expense&quot; to track supplier receipts, dumpster drops, and city permits.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-white/5 bg-slate-950/40">
+            <div className="overflow-x-auto rounded-[16px] border border-white/[0.04] bg-[#0c1117]/40">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/80 text-slate-400 font-semibold border-b border-white/5">
+                <thead className="bg-[#0c1117]/80 text-[#8a95a5] font-semibold border-b border-white/[0.04]">
                   <tr>
                     <th className="py-2.5 px-3">Date</th>
                     <th className="py-2.5 px-3">Vendor</th>
@@ -606,17 +606,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     <th className="py-2.5 px-3 text-right"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-slate-300">
+                <tbody className="divide-y divide-white/[0.04] text-[#a0aab8]">
                   {expenses.map(exp => (
                     <tr key={exp.id} className="hover:bg-white/[0.02]">
-                      <td className="py-2.5 px-3 text-slate-400">{exp.expense_date}</td>
-                      <td className="py-2.5 px-3 font-semibold text-white">{exp.vendor}</td>
+                      <td className="py-2.5 px-3 text-[#8a95a5]">{exp.expense_date}</td>
+                      <td className="py-2.5 px-3 font-semibold text-[#f0f2f5]">{exp.vendor}</td>
                       <td className="py-2.5 px-3 capitalize">
-                        <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300">
+                        <span className="px-2 py-0.5 rounded-md bg-[#1a2332] text-[10px] text-[#a0aab8]">
                           {exp.category}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-slate-400 font-mono">
+                      <td className="py-2.5 px-3 text-[#8a95a5] font-mono">
                         {exp.invoice_receipt_number || '—'}
                       </td>
                       <td className="py-2.5 px-3 font-bold text-rose-300">
@@ -626,7 +626,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         <button
                           type="button"
                           onClick={() => handleDeleteExpense(exp.id)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 transition-colors"
+                          className="p-1 rounded-lg text-[#5e6a7a] hover:text-rose-400 transition-colors"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -641,14 +641,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* SECTION: Owens Corning & Workmanship Warranty Certificate (Stage 8) */}
-      <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+      <div className="bg-[#141b24]/80 border border-white/[0.06] rounded-[20px] p-5 sm:p-6 space-y-4 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.04] pb-3">
           <div>
-            <h3 className="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
               <ShieldCheck size={18} className="text-emerald-400" />
               Warranty Registration &amp; Certificate (Stage 8)
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#8a95a5]">
               Owens Corning Preferred Contractor 50-Year System Protection &amp; post-completion inspections
             </p>
           </div>
@@ -658,7 +658,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               type="button"
               disabled={issuingWarranty}
               onClick={handleIssueWarranty}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-[#f0f2f5] font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Award size={14} />
               {issuingWarranty ? 'Issuing...' : 'Issue 50-Yr Warranty Certificate'}
@@ -667,7 +667,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
 
         {warranties.length === 0 ? (
-          <div className="p-4 rounded-2xl border border-dashed border-white/10 text-center text-xs text-slate-400">
+          <div className="p-4 rounded-[16px] border border-dashed border-white/[0.06] text-center text-xs text-[#8a95a5]">
             No warranty registered yet. Once the roof installation is completed and signed off, issue the official Owens Corning certificate to schedule 6-month &amp; 1-year check-ins.
           </div>
         ) : (
@@ -675,19 +675,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             {warranties.map(war => (
               <div
                 key={war.id}
-                className="p-4 rounded-2xl bg-slate-950/60 border border-emerald-500/30 space-y-3"
+                className="p-4 rounded-[16px] bg-[#0c1117]/60 border border-emerald-500/30 space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-amber-400">
+                      <span className="font-mono text-xs font-bold text-[#d4a447]">
                         {war.warranty_number}
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                         ACTIVE CERTIFICATE
                       </span>
                     </div>
-                    <div className="text-sm font-bold text-white mt-1">
+                    <div className="text-sm font-bold text-[#f0f2f5] mt-1">
                       {war.warranty_type}
                     </div>
                   </div>
@@ -701,24 +701,24 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-white/5 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-white/[0.04] text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-400">Coverage Start</span>
-                    <div className="font-semibold text-white">{war.start_date}</div>
+                    <span className="text-[10px] text-[#8a95a5]">Coverage Start</span>
+                    <div className="font-semibold text-[#f0f2f5]">{war.start_date}</div>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400">Valid Through</span>
-                    <div className="font-semibold text-white">{war.expiration_date}</div>
+                    <span className="text-[10px] text-[#8a95a5]">Valid Through</span>
+                    <div className="font-semibold text-[#f0f2f5]">{war.expiration_date}</div>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400">6-Month Check-in</span>
-                    <div className="font-semibold text-slate-200">
+                    <span className="text-[10px] text-[#8a95a5]">6-Month Check-in</span>
+                    <div className="font-semibold text-[#c8cfd8]">
                       {war.checkin_6mo_completed ? '✅ Completed' : `Due: ${war.checkin_6mo_due}`}
                     </div>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400">1-Year Check-in</span>
-                    <div className="font-semibold text-slate-200">
+                    <span className="text-[10px] text-[#8a95a5]">1-Year Check-in</span>
+                    <div className="font-semibold text-[#c8cfd8]">
                       {war.checkin_1yr_completed ? '✅ Completed' : `Due: ${war.checkin_1yr_due}`}
                     </div>
                   </div>
@@ -735,9 +735,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       {/* Main Operations Form */}
       <form onSubmit={handleSave} className="space-y-6">
         {/* Stage & Progress */}
-        <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-5 sm:p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <Hammer size={16} className="text-amber-400" />
+        <div className="bg-[#141b24]/60 border border-white/[0.06] rounded-[20px] p-5 sm:p-6 space-y-4">
+          <h3 className="text-sm font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
+            <Hammer size={16} className="text-[#d4a447]" />
             Project Stage &amp; Lifecycle
           </h3>
 
@@ -749,8 +749,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 onClick={() => setStatus(s.id)}
                 className={`p-2.5 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
                   status === s.id
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
-                    : 'bg-slate-800/50 text-slate-400 border-white/5 hover:text-white'
+                    ? 'bg-[#d4a447] text-[#0c1117] border-[#d4a447] shadow-[0_2px_12px_rgba(0,0,0,0.2)]'
+                    : 'bg-[#1a2332]/50 text-[#8a95a5] border-white/[0.04] hover:text-[#f0f2f5]'
                 }`}
               >
                 {s.label}
@@ -762,19 +762,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         {/* 3 Columns: Permits, Materials, Crew */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Permits */}
-          <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-5 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <div className="bg-[#141b24]/60 border border-white/[0.06] rounded-[20px] p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
               <Shield size={16} className="text-blue-400" />
               City Permitting
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Permit Status</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Permit Status</label>
                 <select
                   value={permitStatus}
                   onChange={e => setPermitStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 >
                   <option value="not_filed">Not Filed</option>
                   <option value="filed">Application Filed</option>
@@ -785,32 +785,32 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Permit Number</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Permit Number</label>
                 <input
                   type="text"
                   placeholder="e.g. BLD2026-04918"
                   value={permitNumber}
                   onChange={e => setPermitNumber(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 />
               </div>
             </div>
           </div>
 
           {/* Materials */}
-          <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-5 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <div className="bg-[#141b24]/60 border border-white/[0.06] rounded-[20px] p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
               <Truck size={16} className="text-purple-400" />
               Materials &amp; Logistics
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Supplier Delivery</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Supplier Delivery</label>
                 <select
                   value={materialStatus}
                   onChange={e => setMaterialStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 >
                   <option value="not_ordered">PO Not Ordered</option>
                   <option value="ordered">PO Sent to ABC Supply / Beacon</option>
@@ -820,50 +820,50 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </div>
 
               {estimate && (
-                <div className="p-3 bg-white/2 rounded-xl text-[11px] text-slate-400 space-y-1">
-                  <p><strong>Material:</strong> {estimate.material_type}</p>
-                  <p><strong>Quantity:</strong> {estimate.roof_squares} Squares</p>
+                <div className="p-3 bg-white/[0.03] rounded-xl text-[11px] text-[#8a95a5] space-y-1">
+                  <p><strong className="text-[#a0aab8]">Material:</strong> {estimate.material_type}</p>
+                  <p><strong className="text-[#a0aab8]">Quantity:</strong> {estimate.roof_squares} Squares</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Crew & Schedule */}
-          <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-5 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <User size={16} className="text-amber-400" />
+          <div className="bg-[#141b24]/60 border border-white/[0.06] rounded-[20px] p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
+              <User size={16} className="text-[#d4a447]" />
               Crew &amp; Dispatch
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Foreman / Crew Lead</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Foreman / Crew Lead</label>
                 <input
                   type="text"
                   value={crewLead}
                   onChange={e => setCrewLead(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Start Date</label>
+                  <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Start Date</label>
                   <input
                     type="date"
                     value={scheduledStart}
                     onChange={e => setScheduledStart(e.target.value)}
-                    className="w-full px-2 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="w-full px-2 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Est. Duration</label>
+                  <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Est. Duration</label>
                   <input
                     type="number"
                     min="1"
                     value={estimatedDays}
                     onChange={e => setEstimatedDays(Number(e.target.value))}
-                    className="w-full px-2 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="w-full px-2 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
               </div>
@@ -872,8 +872,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
 
         {/* On-site Notes */}
-        <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-5 space-y-3">
-          <label className="block text-xs uppercase font-bold text-slate-400 tracking-wider">
+        <div className="bg-[#141b24]/60 border border-white/[0.06] rounded-[20px] p-5 space-y-3">
+          <label className="block text-xs uppercase font-bold text-[#8a95a5] tracking-wider">
             Job Notes &amp; Field Instructions
           </label>
           <textarea
@@ -881,7 +881,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             placeholder="e.g. Protect driveway pavers with plywood before dumpster drop-off. Homeowner requested tile debris piled away from pool..."
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-[#5e6a7a] text-sm focus:outline-none focus:border-[#d4a447]"
           />
         </div>
 
@@ -890,7 +890,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-sm shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] font-bold text-sm shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Save size={16} />
             {saving ? 'Updating Job...' : 'Save Job Progress'}
@@ -909,11 +909,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <form onSubmit={handleAddExpense} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Category</label>
                 <select
                   value={expenseCategory}
                   onChange={e => setExpenseCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 >
                   <option value="materials">Materials</option>
                   <option value="labor">Labor Payroll</option>
@@ -926,21 +926,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Vendor / Payee</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Vendor / Payee</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. ABC Supply, EDCO"
                   value={expenseVendor}
                   onChange={e => setExpenseVendor(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Amount ($)</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Amount ($)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -948,40 +948,40 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   placeholder="0.00"
                   value={expenseAmount}
                   onChange={e => setExpenseAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Invoice / PO #</label>
+                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Invoice / PO #</label>
                 <input
                   type="text"
                   placeholder="e.g. INV-98242"
                   value={expenseReceipt}
                   onChange={e => setExpenseReceipt(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Date</label>
               <input
                 type="date"
                 value={expenseDate}
                 onChange={e => setExpenseDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Notes</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Notes</label>
               <textarea
                 rows={2}
                 placeholder="Details of materials or services rendered..."
                 value={expenseNotes}
                 onChange={e => setExpenseNotes(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447] resize-none"
               />
             </div>
 
@@ -989,7 +989,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               <button
                 type="submit"
                 disabled={savingExpense}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-[#f0f2f5] font-bold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {savingExpense ? 'Saving...' : 'Record Expense'}
               </button>
@@ -1007,20 +1007,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           subtitle={`${activePaymentInvoice.milestone_name} (${activePaymentInvoice.invoice_number})`}
         >
           <form onSubmit={handleRecordPayment} className="space-y-4">
-            <div className="p-3 bg-slate-950/50 rounded-xl border border-white/5 flex items-center justify-between">
+            <div className="p-3 bg-[#0c1117]/50 rounded-xl border border-white/[0.04] flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-400">Milestone Amount:</span>
+                <span className="text-xs text-[#8a95a5]">Milestone Amount:</span>
                 <div className="text-lg font-black text-emerald-400">
                   ${Number(activePaymentInvoice.amount).toLocaleString()}
                 </div>
               </div>
-              <div className="text-xs text-slate-400 font-mono">
+              <div className="text-xs text-[#8a95a5] font-mono">
                 Due: {activePaymentInvoice.due_date}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Payment Method</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1.5">Payment Method</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: 'check', label: 'Check' },
@@ -1035,8 +1035,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     onClick={() => setPaymentMethod(m.id)}
                     className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       paymentMethod === m.id
-                        ? 'bg-amber-400 text-slate-950 border-amber-400'
-                        : 'border-white/10 text-slate-300 hover:text-white bg-slate-800/80'
+                        ? 'bg-[#d4a447] text-[#0c1117] border-[#d4a447]'
+                        : 'border-white/[0.06] text-[#a0aab8] hover:text-[#f0f2f5] bg-[#1a2332]/80'
                     }`}
                   >
                     {m.label}
@@ -1046,7 +1046,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
                 Transaction ID / Check Number
               </label>
               <input
@@ -1054,18 +1054,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 placeholder="e.g. Check #1042 or Auth #98234"
                 value={paymentTxId}
                 onChange={e => setPaymentTxId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Notes</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Notes</label>
               <textarea
                 rows={2}
                 placeholder="e.g. Homeowner handed check upon tear-off completion..."
                 value={paymentNotes}
                 onChange={e => setPaymentNotes(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447] resize-none"
               />
             </div>
 
@@ -1073,7 +1073,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               <button
                 type="submit"
                 disabled={savingPayment}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-[#f0f2f5] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {savingPayment ? 'Recording...' : 'Confirm Payment'}
               </button>

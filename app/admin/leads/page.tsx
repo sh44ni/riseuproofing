@@ -57,10 +57,16 @@ export default function LeadsPage() {
     load();
   }, [load]);
 
-  // Listen to FAB "crm:open-add-lead" event
+  // Listen to FAB "crm:open-add-lead" event or ?new=1
   useEffect(() => {
     function handleOpenAdd() {
       setShowAddSheet(true);
+    }
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('new') === '1' || params.get('action') === 'new') {
+        setShowAddSheet(true);
+      }
     }
     window.addEventListener('crm:open-add-lead', handleOpenAdd);
     return () => window.removeEventListener('crm:open-add-lead', handleOpenAdd);
@@ -108,11 +114,11 @@ export default function LeadsPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <Users size={24} className="text-amber-400" />
+          <h1 className="text-2xl font-extrabold text-[#f0f2f5] flex items-center gap-2">
+            <Users size={24} className="text-[#d4a447]" />
             <span>Leads CRM</span>
           </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
+          <p className="text-[#8a95a5] text-xs sm:text-sm mt-0.5">
             {total} total homeowner & commercial inquiries tracked
           </p>
         </div>
@@ -121,22 +127,22 @@ export default function LeadsPage() {
           <button
             onClick={() => load(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors cursor-pointer disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-[#a0aab8] transition-colors cursor-pointer disabled:opacity-50"
             title="Refresh Leads"
           >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin text-amber-400' : ''} />
+            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
           </button>
 
           <button
             onClick={exportCsv}
-            className="hidden sm:flex items-center gap-2 px-3.5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-[#a0aab8] rounded-xl text-xs font-semibold transition-all cursor-pointer"
           >
             <Download size={14} /> Export CSV
           </button>
 
           <button
             onClick={() => setShowAddSheet(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] font-bold rounded-xl text-xs sm:text-sm transition-all shadow-[0_2px_12px_rgba(0,0,0,0.2)] cursor-pointer active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>Add Lead</span>
@@ -145,10 +151,10 @@ export default function LeadsPage() {
       </div>
 
       {/* Search & Sticky Filters */}
-      <div className="space-y-3 bg-slate-900/60 p-3.5 sm:p-4 rounded-2xl border border-white/10">
+      <div className="space-y-3 bg-[#141b24]/60 p-3.5 sm:p-4 rounded-[16px] border border-white/[0.06]">
         {/* Search Bar */}
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8a95a5]" />
           <input
             type="text"
             placeholder="Search by homeowner name, phone, address, city, or service..."
@@ -157,13 +163,13 @@ export default function LeadsPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#1a2332]/80 border border-white/[0.06] rounded-xl text-[#f0f2f5] placeholder-[#5e6a7a] text-sm focus:outline-none focus:border-[#d4a447]"
           />
         </div>
 
         {/* Status Filter Chips (Horizontal scroll on mobile) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <Filter size={14} className="text-slate-500 flex-shrink-0 ml-1 mr-1" />
+          <Filter size={14} className="text-[#5e6a7a] flex-shrink-0 ml-1 mr-1" />
           {STATUSES.map(s => (
             <button
               key={s}
@@ -173,8 +179,8 @@ export default function LeadsPage() {
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
                 status === s
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-inner'
-                  : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
+                  ? 'bg-[#d4a447]/20 text-[#d4a447] border border-[#d4a447]/40 shadow-inner'
+                  : 'text-[#8a95a5] border border-white/[0.06] hover:border-white/[0.12] hover:text-[#f0f2f5]'
               }`}
             >
               {s}
@@ -194,7 +200,7 @@ export default function LeadsPage() {
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
                 priority === p
                   ? 'bg-red-500/20 text-red-400 border border-red-500/40'
-                  : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
+                  : 'text-[#8a95a5] border border-white/[0.06] hover:border-white/[0.12] hover:text-[#f0f2f5]'
               }`}
             >
               {p === 'all' ? 'All Priority' : `${p === 'hot' ? '🔴' : p === 'warm' ? '🟡' : '🔵'} ${p}`}
@@ -205,37 +211,37 @@ export default function LeadsPage() {
 
       {/* Daily trend summary on desktop */}
       {daily.length > 0 && (
-        <div className="hidden lg:block bg-slate-900/40 border border-white/10 rounded-2xl p-5">
-          <h2 className="text-white font-semibold text-sm mb-3">Inbound Leads Velocity (30 Days)</h2>
+        <div className="hidden lg:block bg-[#141b24]/40 border border-white/[0.06] rounded-[16px] p-5">
+          <h2 className="text-[#f0f2f5] font-semibold text-sm mb-3">Inbound Leads Velocity (30 Days)</h2>
           <AdminAreaChart data={daily} keys={['count']} />
         </div>
       )}
 
       {/* Main List Views */}
       {loading ? (
-        <div className="rounded-2xl border border-white/5 bg-slate-900/60 overflow-hidden divide-y divide-white/5">
+        <div className="rounded-[16px] border border-white/[0.04] bg-[#141b24]/60 overflow-hidden divide-y divide-white/[0.04]">
           {[1, 2, 3, 4, 5].map((row) => (
-            <div key={row} className="p-4 flex items-center justify-between gap-4 animate-pulse">
+            <div key={row} className="p-4 flex items-center justify-between gap-4 admin-shimmer">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-500/20" />
+                <div className="w-10 h-10 rounded-full bg-[#d4a447]/20" />
                 <div className="space-y-1.5">
-                  <div className="w-36 h-4 rounded bg-slate-800" />
-                  <div className="w-24 h-3 rounded bg-slate-800" />
+                  <div className="w-36 h-4 rounded bg-[#1a2332]" />
+                  <div className="w-24 h-3 rounded bg-[#1a2332]" />
                 </div>
               </div>
-              <div className="w-32 h-3.5 rounded bg-slate-800 hidden sm:block" />
-              <div className="w-20 h-5 rounded-full bg-slate-800" />
-              <div className="w-16 h-5 rounded-full bg-amber-500/20" />
+              <div className="w-32 h-3.5 rounded bg-[#1a2332] hidden sm:block" />
+              <div className="w-20 h-5 rounded-full bg-[#1a2332]" />
+              <div className="w-16 h-5 rounded-full bg-[#d4a447]/20" />
             </div>
           ))}
         </div>
       ) : leads.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-slate-900/40 rounded-2xl border border-white/5 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto">
+        <div className="text-center py-16 px-4 bg-[#141b24]/40 rounded-[16px] border border-white/[0.04] space-y-3">
+          <div className="w-12 h-12 rounded-[16px] bg-[#d4a447]/10 text-[#d4a447] flex items-center justify-center mx-auto">
             <Sparkles size={24} />
           </div>
-          <h3 className="text-lg font-bold text-white">No leads match this filter</h3>
-          <p className="text-slate-400 text-xs max-w-sm mx-auto">
+          <h3 className="text-lg font-bold text-[#f0f2f5]">No leads match this filter</h3>
+          <p className="text-[#8a95a5] text-xs max-w-sm mx-auto">
             Try adjusting your search query or clear the status filter to see all active inquiries.
           </p>
           <button
@@ -244,7 +250,7 @@ export default function LeadsPage() {
               setPriority('all');
               setSearch('');
             }}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-xl text-xs font-semibold text-[#a0aab8] transition-colors cursor-pointer"
           >
             Clear Filters
           </button>
@@ -274,8 +280,8 @@ export default function LeadsPage() {
               onClick={() => setPage(p)}
               className={`w-9 h-9 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 p === page
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-inner'
-                  : 'text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
+                  ? 'bg-[#d4a447]/20 text-[#d4a447] border border-[#d4a447]/40 shadow-inner'
+                  : 'text-[#8a95a5] border border-white/[0.06] hover:border-white/[0.12] hover:text-[#f0f2f5]'
               }`}
             >
               {p}

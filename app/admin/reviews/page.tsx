@@ -186,14 +186,14 @@ export default function ReviewsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          <div className="p-2.5 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
             <Star size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
               Reputation &amp; Google Review Engine
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            <p className="text-xs sm:text-sm text-[#8a95a5] mt-0.5">
               Automated 5-star Google review generation with private feedback resolution.
             </p>
           </div>
@@ -205,7 +205,7 @@ export default function ReviewsPage() {
             setFormData({ customerName: '', customerCity: 'Carlsbad', serviceType: 'Roof Replacement', leadId: '' });
             setIsModalOpen(true);
           }}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shadow-lg active:scale-95 transition-all cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-300 hover:to-orange-400 text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] active:scale-95 transition-all cursor-pointer"
         >
           <Plus size={16} /> Send Review Request
         </button>
@@ -213,41 +213,41 @@ export default function ReviewsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>Average Rating</span>
-            <Star size={15} className="text-amber-400 fill-amber-400" />
+            <Star size={15} className="text-[#d4a447] fill-amber-400" />
           </div>
-          <div className="text-2xl font-black text-white flex items-center gap-1.5">
-            {summary.avgRating} <span className="text-sm font-semibold text-slate-400">/ 5.0</span>
+          <div className="text-2xl font-black text-[#f0f2f5] flex items-center gap-1.5">
+            {summary.avgRating} <span className="text-sm font-semibold text-[#8a95a5]">/ 5.0</span>
           </div>
           <div className="text-xs text-emerald-400 font-semibold mt-1">Excellent Reputation</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>5-Star Promoters</span>
             <TrendingUp size={15} className="text-emerald-400" />
           </div>
-          <div className="text-2xl font-black text-white">{summary.fiveStarPct}%</div>
-          <div className="text-xs text-slate-400 font-medium mt-1">{summary.totalReviews} Total Verified</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">{summary.fiveStarPct}%</div>
+          <div className="text-xs text-[#8a95a5] font-medium mt-1">{summary.totalReviews} Total Verified</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>Google Profile Boost</span>
             <Globe size={15} className="text-cyan-400" />
           </div>
-          <div className="text-2xl font-black text-white">{summary.googleClickedCount}</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">{summary.googleClickedCount}</div>
           <div className="text-xs text-cyan-400 font-semibold mt-1">Confirmed Google Clicks</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-sm">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
             <span>Private Escalations</span>
             <AlertTriangle size={15} className="text-rose-400" />
           </div>
-          <div className="text-2xl font-black text-white">{summary.escalatedCount}</div>
+          <div className="text-2xl font-black text-[#f0f2f5]">{summary.escalatedCount}</div>
           <div className="text-xs text-rose-400 font-semibold mt-1">
             {summary.escalatedCount > 0 ? 'Requires Owner Follow-up' : 'Zero Active Complaints'}
           </div>
@@ -255,14 +255,14 @@ export default function ReviewsPage() {
       </div>
 
       {/* Filters & Search */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-4 rounded-[16px] admin-card flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'all'
-                ? 'bg-amber-400 text-slate-950 shadow-sm'
-                : 'bg-slate-800 text-slate-400 hover:text-white border border-white/5'
+                ? 'bg-[#d4a447] text-[#0c1117] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
+                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
             }`}
           >
             All Reviews
@@ -271,8 +271,8 @@ export default function ReviewsPage() {
             onClick={() => setStatusFilter('published')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'published'
-                ? 'bg-emerald-500 text-white shadow-sm'
-                : 'bg-slate-800 text-slate-400 hover:text-white border border-white/5'
+                ? 'bg-emerald-500 text-[#f0f2f5] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
+                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
             }`}
           >
             Published on Website
@@ -281,8 +281,8 @@ export default function ReviewsPage() {
             onClick={() => setStatusFilter('escalated')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
               statusFilter === 'escalated'
-                ? 'bg-rose-500 text-white shadow-sm'
-                : 'bg-slate-800 text-slate-400 hover:text-white border border-white/5'
+                ? 'bg-rose-500 text-[#f0f2f5] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
+                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
             }`}
           >
             <AlertTriangle size={12} /> Needs Attention
@@ -293,7 +293,7 @@ export default function ReviewsPage() {
           <select
             value={ratingFilter}
             onChange={e => setRatingFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-xs text-white focus:outline-none focus:border-amber-400"
+            className="px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-xs text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
           >
             <option value="all">All Star Ratings</option>
             <option value="5">5 Stars Only ★★★★★</option>
@@ -302,13 +302,13 @@ export default function ReviewsPage() {
           </select>
 
           <div className="relative flex-1 md:w-52">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a95a5]" />
             <input
               type="text"
               placeholder="Search customer, city..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 text-xs focus:outline-none focus:border-[#d4a447]"
             />
           </div>
         </div>
@@ -316,14 +316,14 @@ export default function ReviewsPage() {
 
       {/* Reviews Feed */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-sm flex items-center justify-center gap-2">
-          <Sparkles size={16} className="text-amber-400 animate-spin" /> Loading customer reviews...
+        <div className="p-12 text-center text-[#8a95a5] text-sm flex items-center justify-center gap-2">
+          <Sparkles size={16} className="text-[#d4a447] animate-spin" /> Loading customer reviews...
         </div>
       ) : filteredReviews.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl bg-slate-900 border border-white/10">
-          <Star size={36} className="text-slate-600 mx-auto mb-3" />
-          <h3 className="text-white font-bold text-base">No Reviews Found</h3>
-          <p className="text-slate-400 text-xs mt-1">Send your first review request to a completed roofing job.</p>
+        <div className="p-12 text-center rounded-[20px] admin-card">
+          <Star size={36} className="text-[#4a5568] mx-auto mb-3" />
+          <h3 className="text-[#f0f2f5] font-bold text-base">No Reviews Found</h3>
+          <p className="text-[#8a95a5] text-xs mt-1">Send your first review request to a completed roofing job.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -335,10 +335,10 @@ export default function ReviewsPage() {
             return (
               <div
                 key={r.id}
-                className={`p-5 rounded-3xl border transition-all flex flex-col justify-between ${
+                className={`p-5 rounded-[20px] border transition-all flex flex-col justify-between ${
                   isEscalated
                     ? 'bg-rose-950/20 border-rose-500/40'
-                    : 'bg-slate-900 border-white/10 hover:border-amber-400/30'
+                    : 'bg-[#141b24] border-white/[0.06] hover:border-[#d4a447]/25'
                 }`}
               >
                 <div>
@@ -351,12 +351,12 @@ export default function ReviewsPage() {
                           size={16}
                           className={
                             star <= r.rating
-                              ? 'text-amber-400 fill-amber-400'
-                              : 'text-slate-600'
+                              ? 'text-[#d4a447] fill-amber-400'
+                              : 'text-[#4a5568]'
                           }
                         />
                       ))}
-                      <span className="text-xs font-bold text-white ml-1.5">{r.rating}.0</span>
+                      <span className="text-xs font-bold text-[#f0f2f5] ml-1.5">{r.rating}.0</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -372,7 +372,7 @@ export default function ReviewsPage() {
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             : isEscalated
                             ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            : 'bg-[#d4a447]/20 text-[#d4a447] border border-[#d4a447]/30'
                         }`}
                       >
                         {r.status}
@@ -382,27 +382,27 @@ export default function ReviewsPage() {
 
                   {/* Customer & City */}
                   <div>
-                    <h3 className="text-base font-black text-white">{r.customer_name}</h3>
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                    <h3 className="text-base font-black text-[#f0f2f5]">{r.customer_name}</h3>
+                    <div className="flex items-center gap-2 text-xs text-[#8a95a5] mt-0.5">
                       <span>{r.customer_city || 'San Diego County, CA'}</span>
                       <span>•</span>
-                      <span className="text-amber-400 font-semibold">{r.service_type || 'Roofing Service'}</span>
+                      <span className="text-[#d4a447] font-semibold">{r.service_type || 'Roofing Service'}</span>
                     </div>
                   </div>
 
                   {/* Feedback Quote */}
-                  <div className="mt-3 p-3.5 rounded-2xl bg-slate-950/60 border border-white/5 text-xs text-slate-200 leading-relaxed italic">
+                  <div className="mt-3 p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] text-xs text-[#c8cfd8] leading-relaxed italic">
                     "{r.feedback || 'Homeowner submitted star rating without additional comments.'}"
                   </div>
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between gap-2">
+                <div className="pt-4 mt-4 border-t border-white/[0.04] flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleStatusToggle(r.id, r.status)}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                       isPublished
-                        ? 'bg-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5]'
                         : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'
                     }`}
                   >
@@ -413,7 +413,7 @@ export default function ReviewsPage() {
                     {r.review_token && (
                       <button
                         onClick={() => handleCopyLink(r.review_token!)}
-                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                        className="p-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#a0aab8] text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
                         title="Copy Public Review Portal Link"
                       >
                         {copiedToken === r.review_token ? (
@@ -428,7 +428,7 @@ export default function ReviewsPage() {
                       <Link
                         href={`/review/${r.review_token}`}
                         target="_blank"
-                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 transition-colors"
+                        className="p-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-cyan-300 transition-colors"
                         title="View Homeowner Review Page"
                       >
                         <ExternalLink size={13} />
@@ -453,19 +453,19 @@ export default function ReviewsPage() {
       {/* Modal: Send Review Request */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-sm backdrop-blur-sm backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
 
-          <div className="relative w-full max-w-lg bg-slate-900 border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="relative w-full max-w-lg bg-[#141b24] border border-white/[0.10] rounded-[20px] p-6 sm:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.4)] z-10 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-400/10 text-amber-400">
+                <div className="p-2 rounded-xl bg-amber-400/10 text-[#d4a447]">
                   <Star size={20} />
                 </div>
-                <h2 className="text-lg font-black text-white">Send Google Review Request</h2>
+                <h2 className="text-lg font-black text-[#f0f2f5]">Send Google Review Request</h2>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -476,19 +476,19 @@ export default function ReviewsPage() {
                 <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                   <CheckCircle2 size={32} />
                 </div>
-                <h3 className="text-base font-bold text-white">Review Request Created!</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-base font-bold text-[#f0f2f5]">Review Request Created!</h3>
+                <p className="text-xs text-[#8a95a5]">
                   Share this personalized link with {requestResult.review.customer_name} via SMS or Email:
                 </p>
 
-                <div className="p-3 rounded-2xl bg-slate-950 border border-amber-400/30 flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs text-amber-400 truncate">{requestResult.link}</span>
+                <div className="p-3 rounded-[16px] bg-[#0c1117] border border-[#d4a447]/25 flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs text-[#d4a447] truncate">{requestResult.link}</span>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(requestResult.link);
                       alert('Copied to clipboard!');
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
+                    className="px-3 py-1.5 rounded-lg bg-[#d4a447] text-[#0c1117] font-bold text-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
                   >
                     <Copy size={12} /> Copy
                   </button>
@@ -497,7 +497,7 @@ export default function ReviewsPage() {
                 <div className="pt-3">
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors"
+                    className="w-full py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#f0f2f5] font-semibold text-xs transition-colors"
                   >
                     Done
                   </button>
@@ -506,35 +506,35 @@ export default function ReviewsPage() {
             ) : (
               <form onSubmit={handleSendRequest} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Customer Full Name</label>
+                  <label className="block font-semibold text-[#a0aab8] mb-1">Customer Full Name</label>
                   <input
                     type="text"
                     placeholder="e.g. Richard Henderson"
                     value={formData.customerName}
                     onChange={e => setFormData({ ...formData, customerName: e.target.value })}
                     required
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-300 mb-1">City / Region</label>
+                    <label className="block font-semibold text-[#a0aab8] mb-1">City / Region</label>
                     <input
                       type="text"
                       placeholder="e.g. Oceanside"
                       value={formData.customerCity}
                       onChange={e => setFormData({ ...formData, customerCity: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-300 mb-1">Service Type</label>
+                    <label className="block font-semibold text-[#a0aab8] mb-1">Service Type</label>
                     <select
                       value={formData.serviceType}
                       onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
                     >
                       <option value="Roof Replacement">Roof Replacement</option>
                       <option value="Tile Relayment">Tile Relayment</option>
@@ -544,24 +544,24 @@ export default function ReviewsPage() {
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1.5 text-slate-400">
-                  <span className="font-bold text-slate-300 block">How Reputation Gating Works:</span>
+                <div className="p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] space-y-1.5 text-[#8a95a5]">
+                  <span className="font-bold text-[#a0aab8] block">How Reputation Gating Works:</span>
                   <p>• If homeowner selects 5 Stars, they are prompted to submit directly to Google Business.</p>
                   <p>• If homeowner selects 1-3 Stars, feedback is sent privately to the owner to resolve.</p>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/[0.06]">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#a0aab8] font-bold cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submittingRequest}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold shadow-lg transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-300 hover:to-orange-400 text-[#0c1117] font-bold shadow-[0_4px_16px_rgba(0,0,0,0.25)] transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                   >
                     <Send size={13} /> {submittingRequest ? 'Generating...' : 'Generate Review Link'}
                   </button>

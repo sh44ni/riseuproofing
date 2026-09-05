@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
       durationMs,
     } = body;
 
+    // Never track internal admin routes in public web analytics
+    if (!pagePath || pagePath.startsWith('/admin')) {
+      return NextResponse.json({ ok: true, ignored: true });
+    }
+
     const ua = req.headers.get('user-agent') ?? '';
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??

@@ -11,7 +11,7 @@ export default function MarketingLayout({
   return (
     <>
       <Header />
-      <main className="relative min-h-screen">{children}</main>
+      <main className="relative min-h-screen pb-20 md:pb-0">{children}</main>
       <Footer />
       <StickyCTA />
       <StormPromoModal />

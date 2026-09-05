@@ -31,7 +31,8 @@ export function Breadcrumbs({ items, dark = true, className }: BreadcrumbsProps)
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav aria-label="Breadcrumb" className={cn('mb-6', className)}>
+      {/* Desktop Breadcrumbs — 100% untouched */}
+      <nav aria-label="Breadcrumb" className={cn('mb-6 hidden md:block', className)}>
         <ol className="inline-flex items-center gap-1.5 glass-chip px-3.5 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md border-white/20">
           {items.map((item, index) => (
             <li key={index} className="flex items-center gap-1.5">
@@ -51,6 +52,23 @@ export function Breadcrumbs({ items, dark = true, className }: BreadcrumbsProps)
             </li>
           ))}
         </ol>
+      </nav>
+
+      {/* Mobile Breadcrumb App Pill — Touch-friendly back navigation */}
+      <nav aria-label="Breadcrumb" className={cn('mb-4 md:hidden', className)}>
+        {items.length > 1 && (
+          <div className="inline-flex items-center gap-2">
+            {items[items.length - 2]?.href ? (
+              <Link
+                href={items[items.length - 2].href!}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 dark:bg-white/5 hover:bg-white/15 border border-white/15 backdrop-blur-md text-xs font-bold text-white transition-all active:scale-95 shadow-2xs"
+              >
+                <span className="text-brand-blue">←</span>
+                <span>Back to {items[items.length - 2].label}</span>
+              </Link>
+            ) : null}
+          </div>
+        )}
       </nav>
     </>
   );

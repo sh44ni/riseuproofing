@@ -82,10 +82,16 @@ export default function TasksPage() {
     loadTasks();
   }, [loadTasks]);
 
-  // Listen to FAB "crm:open-add-task" event
+  // Listen to FAB "crm:open-add-task" event or ?new=1
   useEffect(() => {
     function handleOpenAdd() {
       setShowAddModal(true);
+    }
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('new') === '1' || params.get('action') === 'new') {
+        setShowAddModal(true);
+      }
     }
     window.addEventListener('crm:open-add-task', handleOpenAdd);
     return () => window.removeEventListener('crm:open-add-task', handleOpenAdd);
@@ -167,11 +173,11 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <CheckSquare size={24} className="text-amber-400" />
+          <h1 className="text-2xl font-extrabold text-[#f0f2f5] flex items-center gap-2">
+            <CheckSquare size={24} className="text-[#d4a447]" />
             <span>Tasks & Follow-ups</span>
           </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
+          <p className="text-[#8a95a5] text-xs sm:text-sm mt-0.5">
             Never miss a callback, roof estimate review, or site inspection
           </p>
         </div>
@@ -180,14 +186,14 @@ export default function TasksPage() {
           <button
             onClick={() => loadTasks(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors cursor-pointer disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-[#a0aab8] transition-colors cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin text-amber-400' : ''} />
+            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
           </button>
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-300 hover:to-orange-400 text-[#0c1117] font-bold rounded-xl text-xs sm:text-sm transition-all shadow-[0_2px_12px_rgba(0,0,0,0.2)] cursor-pointer active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>New Task</span>
@@ -197,29 +203,29 @@ export default function TasksPage() {
 
       {/* KPI Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-4">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Overdue</p>
-          <p className={`text-2xl font-extrabold mt-1 tabular-nums ${counts.overdue > 0 ? 'text-red-400' : 'text-slate-400'}`}>
+        <div className="admin-card rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Overdue</p>
+          <p className={`text-2xl font-extrabold mt-1 tabular-nums ${counts.overdue > 0 ? 'text-red-400' : 'text-[#8a95a5]'}`}>
             {counts.overdue}
           </p>
         </div>
 
-        <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-4">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Due Today</p>
-          <p className="text-2xl font-extrabold text-amber-400 mt-1 tabular-nums">
+        <div className="admin-card rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Due Today</p>
+          <p className="text-2xl font-extrabold text-[#d4a447] mt-1 tabular-nums">
             {counts.today}
           </p>
         </div>
 
-        <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-4">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Upcoming</p>
+        <div className="admin-card rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Upcoming</p>
           <p className="text-2xl font-extrabold text-blue-400 mt-1 tabular-nums">
             {counts.upcoming}
           </p>
         </div>
 
-        <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-4">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Completed</p>
+        <div className="admin-card rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Completed</p>
           <p className="text-2xl font-extrabold text-emerald-400 mt-1 tabular-nums">
             {counts.completed}
           </p>
@@ -228,14 +234,14 @@ export default function TasksPage() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading tasks...</p>
+          <div className="w-10 h-10 border-3 border-[#d4a447] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[#8a95a5] text-sm">Loading tasks...</p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Overdue Tasks */}
           {grouped.overdue.length > 0 && (
-            <div className="space-y-3 bg-red-500/5 border border-red-500/20 rounded-3xl p-5">
+            <div className="space-y-3 bg-red-500/5 border border-red-500/20 rounded-[20px] p-5">
               <h2 className="text-sm font-bold text-red-400 uppercase tracking-wider flex items-center gap-2">
                 <AlertCircle size={16} />
                 Overdue Tasks ({grouped.overdue.length})
@@ -249,13 +255,13 @@ export default function TasksPage() {
           )}
 
           {/* Today's Tasks */}
-          <div className="space-y-3 bg-slate-900/60 border border-white/10 rounded-3xl p-5">
-            <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+          <div className="space-y-3 admin-card rounded-[20px] p-5">
+            <h2 className="text-sm font-bold text-[#d4a447] uppercase tracking-wider flex items-center gap-2">
               <Clock size={16} />
               Today&apos;s Follow-ups ({grouped.today.length})
             </h2>
             {grouped.today.length === 0 ? (
-              <p className="text-xs text-slate-500 py-3 italic">All set for today! No pending follow-ups due.</p>
+              <p className="text-xs text-[#5e6a7a] py-3 italic">All set for today! No pending follow-ups due.</p>
             ) : (
               <div className="space-y-2.5">
                 {grouped.today.map(t => (
@@ -267,7 +273,7 @@ export default function TasksPage() {
 
           {/* Upcoming Tasks */}
           {grouped.upcoming.length > 0 && (
-            <div className="space-y-3 bg-slate-900/60 border border-white/10 rounded-3xl p-5">
+            <div className="space-y-3 admin-card rounded-[20px] p-5">
               <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
                 <Calendar size={16} />
                 Upcoming Schedule ({grouped.upcoming.length})
@@ -282,8 +288,8 @@ export default function TasksPage() {
 
           {/* Completed Tasks */}
           {grouped.completed.length > 0 && (
-            <div className="space-y-3 bg-slate-900/40 border border-white/5 rounded-3xl p-5">
-              <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <div className="space-y-3 bg-[#141b24] border border-white/[0.04] rounded-[20px] p-5">
+              <h2 className="text-sm font-bold text-[#8a95a5] uppercase tracking-wider flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-emerald-400" />
                 Completed ({grouped.completed.length})
               </h2>
@@ -306,34 +312,34 @@ export default function TasksPage() {
       >
         <form onSubmit={handleCreateTask} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Task Title *</label>
+            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Task Title *</label>
             <input
               type="text"
               required
               placeholder="e.g. Call homeowner about roof shingle color choices"
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 text-sm focus:outline-none focus:border-[#d4a447]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Due Date & Time *</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Due Date & Time *</label>
               <input
                 type="datetime-local"
                 required
                 value={newDue}
                 onChange={e => setNewDue(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Priority</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Priority</label>
               <select
                 value={newPriority}
                 onChange={e => setNewPriority(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
               >
                 <option value="normal">Normal</option>
                 <option value="high">High</option>
@@ -344,20 +350,20 @@ export default function TasksPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Details (Optional)</label>
+            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Details (Optional)</label>
             <textarea
               rows={2}
               placeholder="Additional instructions or notes..."
               value={newDesc}
               onChange={e => setNewDesc(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 text-xs focus:outline-none focus:border-[#d4a447]"
             />
           </div>
 
           <button
             type="submit"
             disabled={creating}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-bold text-sm shadow-lg hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] text-[#0c1117] font-bold text-sm shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <CheckSquare size={16} />
             {creating ? 'Saving...' : 'Save Task'}
@@ -383,12 +389,12 @@ function TaskCard({
 }) {
   return (
     <div
-      className={`flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all ${
+      className={`flex items-start gap-3 p-3.5 sm:p-4 rounded-[16px] border transition-all ${
         isDone
-          ? 'bg-white/2 border-white/5 opacity-60'
+          ? 'bg-white/2 border-white/[0.04] opacity-60'
           : isOverdue
-          ? 'bg-red-500/10 border-red-500/30'
-          : 'bg-slate-800/60 border-white/10 hover:border-white/20'
+          ? 'bg-red-500/[0.08] border-red-500/30'
+          : 'bg-[#1a2332] border-white/[0.06] hover:border-white/[0.12]'
       }`}
     >
       <input
@@ -400,28 +406,28 @@ function TaskCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className={`text-sm font-semibold ${isDone ? 'line-through text-slate-500' : 'text-white'}`}>
+          <p className={`text-sm font-semibold ${isDone ? 'line-through text-[#5e6a7a]' : 'text-[#f0f2f5]'}`}>
             {task.title}
           </p>
           {task.priority === 'urgent' && (
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30">
               Urgent
             </span>
           )}
           {task.priority === 'high' && (
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#d4a447]/20 text-[#d4a447] border border-[#d4a447]/30">
               High
             </span>
           )}
         </div>
 
         {task.description && (
-          <p className="text-xs text-slate-400 mt-1 leading-relaxed">{task.description}</p>
+          <p className="text-xs text-[#8a95a5] mt-1 leading-relaxed">{task.description}</p>
         )}
 
-        <div className="flex items-center gap-3 mt-2 flex-wrap text-xs text-slate-500">
+        <div className="flex items-center gap-3 mt-2 flex-wrap text-xs text-[#5e6a7a]">
           <span className="flex items-center gap-1">
-            <Clock size={12} className={isOverdue ? 'text-red-400' : 'text-slate-500'} />
+            <Clock size={12} className={isOverdue ? 'text-red-400' : 'text-[#5e6a7a]'} />
             <span className={isOverdue ? 'text-red-400 font-semibold' : ''}>
               {formatDue(task.due_at)}
             </span>
@@ -430,7 +436,7 @@ function TaskCard({
           {task.lead_name && (
             <Link
               href={`/admin/leads/${task.entity_id}`}
-              className="flex items-center gap-1 text-amber-400/80 hover:text-amber-300 transition-colors font-medium"
+              className="flex items-center gap-1 text-amber-400/80 hover:text-[#e8c06a] transition-colors font-medium"
             >
               <User size={12} />
               <span>{task.lead_name}</span>

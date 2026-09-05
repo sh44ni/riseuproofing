@@ -389,6 +389,11 @@ const MIGRATIONS = [
   `ALTER TABLE jobs ADD COLUMN IF NOT EXISTS foreman_id BIGINT REFERENCES users(id)`,
   `ALTER TABLE activities ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id)`,
   `ALTER TABLE activities ADD COLUMN IF NOT EXISTS user_name TEXT`,
+
+  // ── Purge historical admin-page visits from analytics, activities & calls ──
+  `DELETE FROM analytics_events WHERE page_path LIKE '/admin%'`,
+  `DELETE FROM activity_log WHERE page_path LIKE '/admin%'`,
+  `DELETE FROM call_events WHERE page_path LIKE '/admin%'`,
 ];
 
 export async function POST() {

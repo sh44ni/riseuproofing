@@ -171,14 +171,14 @@ export default function FinancesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <div className="p-2 rounded-xl bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
               <DollarSign size={22} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
                 Financials & Milestone Invoices
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400">
+              <p className="text-xs sm:text-sm text-[#8a95a5]">
                 CSLB-compliant 4-stage billing, collections, and gross profit margins
               </p>
             </div>
@@ -192,9 +192,9 @@ export default function FinancesPage() {
               fetchFinances();
             }}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/10 bg-slate-900/80 hover:bg-slate-800 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/[0.06] bg-[#141b24] hover:bg-[#1a2332] text-xs font-semibold text-[#a0aab8] transition-colors cursor-pointer"
           >
-            <RefreshCw size={14} className={refreshing ? 'animate-spin text-amber-400' : ''} />
+            <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
             Refresh
           </button>
         </div>
@@ -203,14 +203,14 @@ export default function FinancesPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* 1. Collected Cash */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-900/80 border border-emerald-500/20 shadow-lg">
+        <div className="p-4 rounded-[16px] bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-900/80 border border-emerald-500/20 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
           <div className="flex items-center justify-between text-emerald-400 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">Collected Cash</span>
             <div className="p-1.5 rounded-lg bg-emerald-500/10">
               <CheckCircle2 size={16} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <div className="text-xl sm:text-2xl font-black text-[#f0f2f5] tracking-tight">
             ${summary.collectedCash.toLocaleString()}
           </div>
           <div className="mt-1 text-xs text-emerald-300/80 font-medium">
@@ -219,14 +219,14 @@ export default function FinancesPage() {
         </div>
 
         {/* 2. Pending Receivables */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/40 via-slate-900/60 to-slate-900/80 border border-amber-500/20 shadow-lg">
-          <div className="flex items-center justify-between text-amber-400 mb-2">
+        <div className="p-4 rounded-[16px] bg-gradient-to-br from-amber-950/40 via-slate-900/60 to-slate-900/80 border border-[#d4a447]/20 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
+          <div className="flex items-center justify-between text-[#d4a447] mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">Pending Receivables</span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10">
+            <div className="p-1.5 rounded-lg bg-[#d4a447]/10">
               <Clock size={16} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <div className="text-xl sm:text-2xl font-black text-[#f0f2f5] tracking-tight">
             ${summary.pendingAmount.toLocaleString()}
           </div>
           <div className="mt-1 text-xs text-amber-300/80 font-medium">
@@ -235,14 +235,14 @@ export default function FinancesPage() {
         </div>
 
         {/* 3. Overdue Invoices */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/60 to-slate-900/80 border border-rose-500/20 shadow-lg">
+        <div className="p-4 rounded-[16px] bg-gradient-to-br from-rose-950/40 via-slate-900/60 to-slate-900/80 border border-rose-500/20 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
           <div className="flex items-center justify-between text-rose-400 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">Overdue Invoices</span>
             <div className="p-1.5 rounded-lg bg-rose-500/10">
               <AlertCircle size={16} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <div className="text-xl sm:text-2xl font-black text-[#f0f2f5] tracking-tight">
             ${summary.overdueAmount.toLocaleString()}
           </div>
           <div className="mt-1 text-xs text-rose-300/80 font-medium">
@@ -251,14 +251,14 @@ export default function FinancesPage() {
         </div>
 
         {/* 4. Realized Gross Margin */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/40 via-slate-900/60 to-slate-900/80 border border-cyan-500/20 shadow-lg">
+        <div className="p-4 rounded-[16px] bg-gradient-to-br from-cyan-950/40 via-slate-900/60 to-slate-900/80 border border-cyan-500/20 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
           <div className="flex items-center justify-between text-cyan-400 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">Realized Margin</span>
             <div className="p-1.5 rounded-lg bg-cyan-500/10">
               <TrendingUp size={16} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <div className="text-xl sm:text-2xl font-black text-[#f0f2f5] tracking-tight">
             {summary.realizedMarginPct}%
           </div>
           <div className="mt-1 text-xs text-cyan-300/80 font-medium">
@@ -268,7 +268,7 @@ export default function FinancesPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-[16px] admin-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Status Filter Chips */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
@@ -282,8 +282,8 @@ export default function FinancesPage() {
               onClick={() => setStatusFilter(tab.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 statusFilter === tab.id
-                  ? 'bg-amber-400 text-slate-950 shadow-sm'
-                  : 'bg-slate-800/80 text-slate-400 hover:text-white border border-white/5'
+                  ? 'bg-[#d4a447] text-[#0c1117] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
+                  : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
               }`}
             >
               {tab.label}
@@ -293,28 +293,28 @@ export default function FinancesPage() {
 
         {/* Search */}
         <div className="relative flex-1 sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a95a5]" />
           <input
             type="text"
             placeholder="Search invoice, customer, city..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-800/90 border border-white/10 text-white placeholder-slate-400 text-xs focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-800/90 border border-white/[0.06] text-[#f0f2f5] placeholder-slate-400 text-xs focus:outline-none focus:border-[#d4a447]"
           />
         </div>
       </div>
 
       {/* Invoices List / Table */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-500 gap-3">
-          <RefreshCw size={24} className="animate-spin text-amber-400" />
+        <div className="py-20 flex flex-col items-center justify-center text-[#5e6a7a] gap-3">
+          <RefreshCw size={24} className="animate-spin text-[#d4a447]" />
           <span className="text-xs font-semibold">Loading invoices...</span>
         </div>
       ) : filteredInvoices.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-white/5 bg-slate-900/40">
-          <Receipt size={36} className="mx-auto text-slate-600 mb-3" />
-          <h3 className="text-sm font-bold text-white mb-1">No Invoices Found</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+        <div className="py-16 text-center rounded-[16px] border border-white/[0.04] bg-[#141b24]">
+          <Receipt size={36} className="mx-auto text-[#4a5568] mb-3" />
+          <h3 className="text-sm font-bold text-[#f0f2f5] mb-1">No Invoices Found</h3>
+          <p className="text-xs text-[#8a95a5] max-w-sm mx-auto">
             {search
               ? 'No invoices match your current search query.'
               : 'Generate milestone invoices directly from any active roofing job.'}
@@ -322,7 +322,7 @@ export default function FinancesPage() {
           <div className="mt-4">
             <Link
               href="/admin/jobs"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold border border-amber-400/20"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#d4a447] text-xs font-bold border border-[#d4a447]/15"
             >
               Go to Jobs Pipeline
             </Link>
@@ -331,9 +331,9 @@ export default function FinancesPage() {
       ) : (
         <div className="space-y-3">
           {/* Desktop Table */}
-          <div className="hidden md:block overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70">
+          <div className="hidden md:block overflow-hidden rounded-[16px] border border-white/[0.06] bg-slate-900/70">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/60 text-slate-400 font-semibold border-b border-white/5">
+              <thead className="bg-[#0a0f14] text-[#8a95a5] font-semibold border-b border-white/[0.04]">
                 <tr>
                   <th className="py-3 px-4">Invoice #</th>
                   <th className="py-3 px-4">Milestone</th>
@@ -344,7 +344,7 @@ export default function FinancesPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-slate-300">
+              <tbody className="divide-y divide-white/[0.04] text-[#a0aab8]">
                 {filteredInvoices.map(inv => {
                   const isPaid = inv.status === 'paid';
                   const isOverdue =
@@ -353,32 +353,32 @@ export default function FinancesPage() {
 
                   return (
                     <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-amber-400">
+                      <td className="py-3 px-4 font-mono font-bold text-[#d4a447]">
                         {inv.invoice_number}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-white">{inv.milestone_name}</div>
+                        <div className="font-semibold text-[#f0f2f5]">{inv.milestone_name}</div>
                         {inv.payment_method && (
-                          <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+                          <div className="text-[10px] text-[#8a95a5] uppercase tracking-wider mt-0.5">
                             via {inv.payment_method}
                           </div>
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-200">
+                        <div className="font-bold text-[#c8cfd8]">
                           {inv.customer_name || 'Homeowner'}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-[#8a95a5]">
                           {inv.city ? `${inv.city}, CA` : 'San Diego County'}
                           {inv.job_number && ` • ${inv.job_number}`}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-bold text-white text-sm">
+                      <td className="py-3 px-4 font-bold text-[#f0f2f5] text-sm">
                         ${Number(inv.amount).toLocaleString()}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 text-slate-300">
-                          <Calendar size={13} className="text-slate-400" />
+                        <div className="flex items-center gap-1.5 text-[#a0aab8]">
+                          <Calendar size={13} className="text-[#8a95a5]" />
                           <span>{inv.due_date}</span>
                         </div>
                         {isOverdue && !isPaid && (
@@ -392,7 +392,7 @@ export default function FinancesPage() {
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                               : isOverdue
                               ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              : 'bg-[#d4a447]/10 text-[#d4a447] border-[#d4a447]/30'
                           }`}
                         >
                           {isPaid ? 'Paid' : isOverdue ? 'Overdue' : 'Pending'}
@@ -412,7 +412,7 @@ export default function FinancesPage() {
                           {inv.job_id && (
                             <Link
                               href={`/admin/jobs/${inv.job_id}`}
-                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                              className="p-1.5 rounded-lg bg-[#1a2332] hover:bg-[#1e2736] text-[#8a95a5] hover:text-[#f0f2f5] transition-colors"
                               title="View Job"
                             >
                               <ExternalLink size={14} />
@@ -438,17 +438,17 @@ export default function FinancesPage() {
               return (
                 <div
                   key={inv.id}
-                  className="p-4 rounded-2xl bg-slate-900 border border-white/10 space-y-3"
+                  className="p-4 rounded-[16px] admin-card space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="text-[11px] font-mono font-bold text-amber-400">
+                      <div className="text-[11px] font-mono font-bold text-[#d4a447]">
                         {inv.invoice_number}
                       </div>
-                      <div className="text-sm font-bold text-white mt-0.5">
+                      <div className="text-sm font-bold text-[#f0f2f5] mt-0.5">
                         {inv.milestone_name}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-[#8a95a5]">
                         {inv.customer_name} • {inv.city || 'San Diego'}
                       </div>
                     </div>
@@ -458,23 +458,23 @@ export default function FinancesPage() {
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                           : isOverdue
                           ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                          : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                          : 'bg-[#d4a447]/10 text-[#d4a447] border-[#d4a447]/30'
                       }`}
                     >
                       {isPaid ? 'Paid' : isOverdue ? 'Overdue' : 'Pending'}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/[0.04] text-xs">
                     <div>
-                      <div className="text-[10px] text-slate-400">Amount Due</div>
-                      <div className="text-base font-black text-white">
+                      <div className="text-[10px] text-[#8a95a5]">Amount Due</div>
+                      <div className="text-base font-black text-[#f0f2f5]">
                         ${Number(inv.amount).toLocaleString()}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400">Due Date</div>
-                      <div className="text-xs font-semibold text-slate-300">{inv.due_date}</div>
+                      <div className="text-[10px] text-[#8a95a5]">Due Date</div>
+                      <div className="text-xs font-semibold text-[#a0aab8]">{inv.due_date}</div>
                     </div>
                   </div>
 
@@ -482,7 +482,7 @@ export default function FinancesPage() {
                     {inv.job_id && (
                       <Link
                         href={`/admin/jobs/${inv.job_id}`}
-                        className="text-xs text-amber-400 hover:underline flex items-center gap-1 font-semibold"
+                        className="text-xs text-[#d4a447] hover:underline flex items-center gap-1 font-semibold"
                       >
                         View Job Details <ExternalLink size={12} />
                       </Link>
@@ -521,21 +521,21 @@ export default function FinancesPage() {
               </div>
             )}
 
-            <div className="p-3 bg-slate-950/50 rounded-xl border border-white/5 flex items-center justify-between">
+            <div className="p-3 bg-[#0a0f14] rounded-xl border border-white/[0.04] flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-400">Invoice Amount:</span>
+                <span className="text-xs text-[#8a95a5]">Invoice Amount:</span>
                 <div className="text-lg font-black text-emerald-400">
                   ${Number(activeInvoice.amount).toLocaleString()}
                 </div>
               </div>
-              <div className="text-right text-xs text-slate-300">
+              <div className="text-right text-xs text-[#a0aab8]">
                 <div className="font-semibold">{activeInvoice.customer_name}</div>
-                <div className="text-slate-400">{activeInvoice.city || 'CA'}</div>
+                <div className="text-[#8a95a5]">{activeInvoice.city || 'CA'}</div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1.5">
                 Payment Method
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -552,8 +552,8 @@ export default function FinancesPage() {
                     onClick={() => setPaymentMethod(m.id)}
                     className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       paymentMethod === m.id
-                        ? 'bg-amber-400 text-slate-950 border-amber-400'
-                        : 'border-white/10 text-slate-300 hover:text-white bg-slate-800/80'
+                        ? 'bg-[#d4a447] text-[#0c1117] border-[#d4a447]'
+                        : 'border-white/[0.06] text-[#a0aab8] hover:text-[#f0f2f5] bg-[#1a2332]'
                     }`}
                   >
                     {m.label}
@@ -563,7 +563,7 @@ export default function FinancesPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
                 Transaction ID / Check Number
               </label>
               <input
@@ -571,18 +571,18 @@ export default function FinancesPage() {
                 placeholder="e.g. Check #1042 or Auth #98234"
                 value={transactionId}
                 onChange={e => setTransactionId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Notes</label>
+              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Notes</label>
               <textarea
                 rows={2}
                 placeholder="e.g. Handed check to crew lead at morning delivery..."
                 value={paymentNotes}
                 onChange={e => setPaymentNotes(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447] resize-none"
               />
             </div>
 
@@ -590,7 +590,7 @@ export default function FinancesPage() {
               <button
                 type="submit"
                 disabled={savingPayment}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-[#f0f2f5] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {savingPayment ? 'Recording...' : 'Confirm & Settle Payment'}
               </button>

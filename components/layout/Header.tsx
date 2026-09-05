@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Phone,
   Mail,
   ShieldCheck,
   ChevronDown,
+  ChevronLeft,
   Star,
   ArrowRight,
   MapPin,
@@ -18,11 +19,85 @@ import { cn, PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
 import { SERVICES_MEGA_MENU, TOP_CITIES } from '@/lib/data/navigation';
 import { MobileNav } from './MobileNav';
 
+const ROUTE_LABELS: Record<string, string> = {
+  services: 'Services',
+  projects: 'Projects',
+  reviews: 'Reviews',
+  about: 'About',
+  contact: 'Estimate',
+  careers: 'Careers',
+  'service-area': 'Areas',
+  privacy: 'Privacy',
+  terms: 'Terms',
+};
+
+const ROUTE_TITLES: Record<string, string> = {
+  services: 'Our Services',
+  projects: 'Our Projects',
+  reviews: 'Reviews (4.9★)',
+  about: 'About Rise Up',
+  contact: 'Free Estimate',
+  careers: 'Careers',
+  'service-area': 'Service Areas',
+  privacy: 'Privacy Policy',
+  terms: 'Terms of Service',
+};
+
+function getRouteNavInfo(pathname: string | null) {
+  if (!pathname || pathname === '/') return null;
+  if (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/proposal') ||
+    pathname.startsWith('/inspection') ||
+    pathname.startsWith('/warranty')
+  ) {
+    return null;
+  }
+
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments.length === 0) return null;
+
+  const first = segments[0];
+
+  if (segments.length === 1) {
+    return {
+      parentHref: '/',
+      label: 'Home',
+      title: ROUTE_TITLES[first] || first.charAt(0).toUpperCase() + first.slice(1),
+    };
+  }
+
+  const parentHref = `/${first}`;
+  const parentLabel = ROUTE_LABELS[first] || first.charAt(0).toUpperCase() + first.slice(1);
+  const slug = segments[1];
+
+  const title = slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+  return {
+    parentHref,
+    label: parentLabel,
+    title,
+  };
+}
+
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const navInfo = getRouteNavInfo(pathname);
+
+  const handleMobileBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else if (navInfo?.parentHref) {
+      router.push(navInfo.parentHref);
+    }
+  };
 
   const servicesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const areasTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -138,21 +213,57 @@ export function Header() {
         )}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-2 sm:py-2.5 flex items-center justify-between gap-4 xl:gap-8">
-          {/* Brand Logo */}
-          <Link
-            href="/"
-            className="flex-shrink-0 flex items-center group"
-            aria-label="Rise Up Roofing & Construction - Home"
-          >
-            <Image
-              src="/logo.svg"
-              alt="Rise Up Roofing & Construction"
-              width={165}
-              height={46}
-              priority
-              className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-[1.02]"
-            />
-          </Link>
+          {/* Brand Logo & Mobile App Back Navigation */}
+          {navInfo ? (
+            <>
+              {/* Desktop: Full brand logo */}
+              <Link
+                href="/"
+                className="hidden lg:flex flex-shrink-0 items-center group"
+                aria-label="Rise Up Roofing & Construction - Home"
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="Rise Up Roofing & Construction"
+                  width={165}
+                  height={46}
+                  priority
+                  className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+                />
+              </Link>
+
+              {/* Mobile: App-like Back Button & Current View Title */}
+              <div className="lg:hidden flex items-center gap-2 min-w-0 flex-1 mr-2">
+                <button
+                  type="button"
+                  onClick={handleMobileBack}
+                  className="inline-flex items-center gap-1 -ml-1 px-2.5 py-1.5 rounded-xl bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200 text-theme-primary font-bold text-xs transition-all active:scale-95 border border-slate-200/60 shadow-2xs flex-shrink-0 cursor-pointer"
+                  aria-label={`Go back to ${navInfo.label}`}
+                >
+                  <ChevronLeft className="w-4 h-4 text-brand-blue stroke-[2.5]" />
+                  <span className="truncate max-w-[70px] sm:max-w-[100px]">{navInfo.label}</span>
+                </button>
+                <span className="text-xs font-extrabold text-theme-primary tracking-tight truncate">
+                  {navInfo.title}
+                </span>
+              </div>
+            </>
+          ) : (
+            <Link
+              href="/"
+              className="flex-shrink-0 flex items-center group"
+              aria-label="Rise Up Roofing & Construction - Home"
+            >
+              <Image
+                src="/logo.svg"
+                alt="Rise Up Roofing & Construction"
+                width={165}
+                height={46}
+                priority
+                className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+              />
+            </Link>
+          )}
 
           {/* Desktop Navigation Links — Refined Interactive Pills */}
           <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">

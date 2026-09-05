@@ -45,7 +45,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
     {
       title: 'Field Operations',
       items: [
-        { href: '/admin/calendar', label: 'Operations Calendar', icon: Calendar, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+        { href: '/admin/calendar', label: 'Operations Calendar', icon: Calendar, color: 'text-[#d4a447]', bg: 'bg-[#d4a447]/10' },
         { href: '/admin/inspections', label: 'Roof Inspections', icon: ClipboardCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
         { href: '/admin/crew', label: 'Crew & Dispatch', icon: HardHat, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
         { href: '/admin/warranties', label: '50-Yr Warranties', icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
@@ -62,7 +62,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
     {
       title: 'Customer & Marketing',
       items: [
-        { href: '/admin/reviews', label: 'Customer Reviews', icon: Star, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+        { href: '/admin/reviews', label: 'Customer Reviews', icon: Star, color: 'text-[#d4a447]', bg: 'bg-[#d4a447]/10' },
         { href: '/admin/templates', label: 'Template Studio', icon: MessageSquareCode, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
         { href: '/admin/analytics', label: 'Web & Marketing', icon: BarChart3, color: 'text-blue-400', bg: 'bg-blue-500/10' },
       ],
@@ -70,8 +70,8 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
     {
       title: 'System & Security',
       items: [
-        { href: '/admin/users', label: 'Team & Roles', icon: ShieldCheck, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-        { href: '/admin/settings', label: 'CRM Settings & Backup', icon: Settings, color: 'text-slate-300', bg: 'bg-white/5' },
+        { href: '/admin/users', label: 'Team & Roles', icon: ShieldCheck, color: 'text-[#d4a447]', bg: 'bg-[#d4a447]/10' },
+        { href: '/admin/settings', label: 'CRM Settings & Backup', icon: Settings, color: 'text-[#a0aab8]', bg: 'bg-white/[0.03]' },
       ],
     },
   ];
@@ -88,27 +88,27 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
       <div className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative w-full max-w-lg bg-slate-900 border-t border-white/15 rounded-t-3xl shadow-2xl z-10 pb-8 px-5 pt-3.5 max-h-[85vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-[#141b24] border-t border-white/[0.06] rounded-t-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.4)] z-10 pb-8 px-5 pt-3.5 max-h-[85vh] overflow-y-auto">
         {/* Drag Handle Indicator */}
-        <div className="w-12 h-1.5 rounded-full bg-slate-700 mx-auto mb-3" />
+        <div className="w-12 h-1.5 rounded-full bg-[#1a2332] mx-auto mb-3" />
 
-        <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-4">
           <div>
-            <h2 className="text-base font-black text-white">Operations &amp; Management</h2>
+            <h2 className="text-base font-black text-[#f0f2f5]">Operations &amp; Management</h2>
             {user ? (
-              <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1.5">
+              <p className="text-[11px] text-[#d4a447] font-semibold flex items-center gap-1.5">
                 <span>{roleConfig.icon}</span>
                 <span>{user.name}</span>
-                <span className="text-slate-500">•</span>
-                <span className="text-slate-400">{roleConfig.label}</span>
+                <span className="text-[#5e6a7a]">•</span>
+                <span className="text-[#8a95a5]">{roleConfig.label}</span>
               </p>
             ) : (
-              <p className="text-[11px] text-slate-400">Rise Up Roofing &amp; Construction CRM</p>
+              <p className="text-[11px] text-[#8a95a5]">Rise Up Roofing &amp; Construction CRM</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] cursor-pointer transition-colors"
           >
             <X size={16} />
           </button>
@@ -118,7 +118,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
         <div className="space-y-4 mb-5">
           {filteredSections.map((sec) => (
             <div key={sec.title} className="space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider px-1 block">
+              <span className="admin-section-label px-1 block text-[#8a95a5]">
                 {sec.title}
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -127,12 +127,12 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
                     key={href}
                     href={href}
                     onClick={onClose}
-                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-white/5 transition-all group cursor-pointer"
+                    className="flex items-center gap-2.5 p-3 rounded-[16px] admin-card transition-all group cursor-pointer"
                   >
                     <div className={`w-9 h-9 rounded-xl ${bg} ${color} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
                       <Icon size={18} />
                     </div>
-                    <span className="text-xs font-semibold text-slate-200 leading-tight">
+                    <span className="text-xs font-semibold text-[#f0f2f5] leading-tight">
                       {label}
                     </span>
                   </Link>

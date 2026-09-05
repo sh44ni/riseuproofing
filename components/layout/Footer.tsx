@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, Mail, ArrowUpRight, ShieldCheck, Sparkles } from 'lucide-react';
-import { PHONE_HREF, PHONE_NUMBER, COMPANY_NAME, LICENSE_NUMBER } from '@/lib/utils';
+import { Phone, Mail, ArrowUpRight, ShieldCheck, Sparkles, ChevronDown } from 'lucide-react';
+import { PHONE_HREF, PHONE_NUMBER, COMPANY_NAME, LICENSE_NUMBER, cn } from '@/lib/utils';
 import { Container } from '@/components/shared/Container';
 import { TOP_CITIES } from '@/lib/data/navigation';
 import { Tooltip } from '@/components/shared/Tooltip';
@@ -29,6 +30,9 @@ const ESCONDIDO_CHAMBER_URL =
   'https://business.escondidochamber.org/list/member/rise-up-roofing-and-construction-inc-9925';
 
 export function Footer() {
+  const [capabilitiesOpen, setCapabilitiesOpen] = useState(false);
+  const [areasOpen, setAreasOpen] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
   return (
     <footer className="always-dark relative bg-[#03080E] text-white border-t border-white/10 overflow-hidden select-none">
       {/* Subtle Ambient Radial Lighting */}
@@ -207,8 +211,9 @@ export function Footer() {
               </div>
             </div>
 
+            {/* Desktop Navigation Columns (100% untouched on md+) */}
             {/* Col 2: Services (3 cols) */}
-            <div className="lg:col-span-3">
+            <div className="hidden md:block lg:col-span-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">
                 Capabilities
               </h4>
@@ -227,7 +232,7 @@ export function Footer() {
             </div>
 
             {/* Col 3: Service Areas (2 cols) */}
-            <div className="lg:col-span-2">
+            <div className="hidden md:block lg:col-span-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">
                 Service Areas
               </h4>
@@ -255,7 +260,7 @@ export function Footer() {
             </div>
 
             {/* Col 4: Company (2 cols) */}
-            <div className="lg:col-span-2">
+            <div className="hidden md:block lg:col-span-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">
                 Company
               </h4>
@@ -272,10 +277,91 @@ export function Footer() {
                 ))}
               </ul>
             </div>
+
+            {/* Mobile Accordions — Collapsible on mobile only (Eliminates mobile scroll trap) */}
+            <div className="col-span-1 md:hidden space-y-2 pt-2 border-t border-white/10">
+              {/* Capabilities Accordion */}
+              <div className="border border-white/10 rounded-xl overflow-hidden bg-white/[0.02]">
+                <button
+                  type="button"
+                  onClick={() => setCapabilitiesOpen(!capabilitiesOpen)}
+                  className="w-full flex items-center justify-between p-3.5 text-xs font-bold uppercase tracking-wider text-white hover:text-brand-blue transition-colors cursor-pointer"
+                  aria-expanded={capabilitiesOpen}
+                >
+                  <span>Capabilities &amp; Services</span>
+                  <ChevronDown className={cn('w-4 h-4 text-white/60 transition-transform duration-200', capabilitiesOpen && 'rotate-180 text-brand-blue')} />
+                </button>
+                {capabilitiesOpen && (
+                  <ul className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/5">
+                    {SERVICES.map((s) => (
+                      <li key={s.label}>
+                        <Link href={s.href} className="text-xs text-white/70 hover:text-white transition-colors block py-1">
+                          {s.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Service Areas Accordion */}
+              <div className="border border-white/10 rounded-xl overflow-hidden bg-white/[0.02]">
+                <button
+                  type="button"
+                  onClick={() => setAreasOpen(!areasOpen)}
+                  className="w-full flex items-center justify-between p-3.5 text-xs font-bold uppercase tracking-wider text-white hover:text-brand-blue transition-colors cursor-pointer"
+                  aria-expanded={areasOpen}
+                >
+                  <span>Service Areas</span>
+                  <ChevronDown className={cn('w-4 h-4 text-white/60 transition-transform duration-200', areasOpen && 'rotate-180 text-brand-blue')} />
+                </button>
+                {areasOpen && (
+                  <ul className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/5">
+                    {TOP_CITIES.slice(0, 8).map((city) => (
+                      <li key={city.slug}>
+                        <Link href={`/service-area/${city.slug}`} className="text-xs text-white/70 hover:text-white transition-colors block py-1">
+                          {city.name}, CA
+                        </Link>
+                      </li>
+                    ))}
+                    <li className="pt-1">
+                      <Link href="/service-area" className="text-xs font-bold text-brand-blue hover:text-white transition-colors inline-flex items-center gap-1">
+                        <span>All 30+ San Diego Cities</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </div>
+
+              {/* Company Accordion */}
+              <div className="border border-white/10 rounded-xl overflow-hidden bg-white/[0.02]">
+                <button
+                  type="button"
+                  onClick={() => setCompanyOpen(!companyOpen)}
+                  className="w-full flex items-center justify-between p-3.5 text-xs font-bold uppercase tracking-wider text-white hover:text-brand-blue transition-colors cursor-pointer"
+                  aria-expanded={companyOpen}
+                >
+                  <span>Company</span>
+                  <ChevronDown className={cn('w-4 h-4 text-white/60 transition-transform duration-200', companyOpen && 'rotate-180 text-brand-blue')} />
+                </button>
+                {companyOpen && (
+                  <ul className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/5">
+                    {COMPANY_LINKS.map((link) => (
+                      <li key={link.label}>
+                        <Link href={link.href} className="text-xs text-white/70 hover:text-white transition-colors block py-1">
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/45">
+          {/* Bottom Bar — with pb-20 on mobile to clear bottom tab bar */}
+          <div className="pt-8 pb-20 md:pb-0 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/45">
             <p>
               &copy; {new Date().getFullYear()} {COMPANY_NAME} Inc. All rights reserved.
             </p>

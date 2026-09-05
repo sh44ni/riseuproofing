@@ -74,18 +74,21 @@ export function StormPromoModal() {
     if (typeof window === 'undefined' || shouldSuppress()) return;
 
     let timer: NodeJS.Timeout;
+    const isMobile = window.innerWidth < 768;
+    const dwellTime = isMobile ? 30000 : 12000;
+    const scrollThreshold = isMobile ? 0.65 : 0.35;
 
-    // 1. Time-based trigger (12 seconds active reading)
+    // 1. Time-based trigger (30s on mobile, 12s on desktop)
     timer = setTimeout(() => {
       triggerModal();
-    }, 12000);
+    }, dwellTime);
 
-    // 2. Scroll depth trigger (35% scroll depth)
+    // 2. Scroll depth trigger (65% on mobile, 35% on desktop)
     const handleScroll = () => {
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (scrollHeight > 0) {
         const scrolledRatio = window.scrollY / scrollHeight;
-        if (scrolledRatio >= 0.35) {
+        if (scrolledRatio >= scrollThreshold) {
           triggerModal();
           window.removeEventListener('scroll', handleScroll);
         }
@@ -180,12 +183,12 @@ export function StormPromoModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="promo-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleDismiss();
       }}
     >
-      <div className="relative w-full max-w-4xl bg-[#0B1E33] border border-amber-500/30 rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8),0_0_40px_rgba(245,158,11,0.15)] overflow-hidden flex flex-col md:flex-row text-white animate-scaleUp">
+      <div className="relative w-full max-w-4xl bg-[#0B1E33] border-t sm:border border-amber-500/30 rounded-t-3xl sm:rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8),0_0_40px_rgba(245,158,11,0.15)] overflow-hidden flex flex-col md:flex-row text-white max-h-[92vh] sm:max-h-none overflow-y-auto animate-scaleUp">
         {/* Close Button */}
         <button
           onClick={handleDismiss}
@@ -196,7 +199,7 @@ export function StormPromoModal() {
         </button>
 
         {/* Left Column: Visual Photography & Trust Proof */}
-        <div className="relative w-full md:w-5/12 h-44 sm:h-52 md:h-auto min-h-[180px] md:min-h-[460px] bg-slate-900 overflow-hidden flex-shrink-0">
+        <div className="relative w-full md:w-5/12 h-28 sm:h-52 md:h-auto min-h-[110px] md:min-h-[460px] bg-slate-900 overflow-hidden flex-shrink-0">
           <Image
             src={PROMO_IMAGE}
             alt="San Diego residential roof under dramatic Pacific storm sky"

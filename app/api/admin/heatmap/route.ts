@@ -11,6 +11,17 @@ export async function GET(req: NextRequest) {
   const pagePath = searchParams.get('page') ?? '/';
   const days = parseInt(searchParams.get('days') ?? '30');
 
+  // Do not show or query heatmaps for internal admin routes
+  if (pagePath.startsWith('/admin')) {
+    const pages = await query<{ page_path: string; views: string }>(
+      `SELECT page_path, COUNT(*) AS views
+       FROM analytics_events
+       WHERE event_type = 'pageview' AND page_path NOT LIKE '/admin%'
+       GROUP BY page_path ORDER BY views DESC`
+    );
+    return NextResponse.json({ clicks: [], scrollDepth: [], topElements: [], pages });
+  }
+
   const [clicks, scrollDepth, topElements] = await Promise.all([
     // Click coordinates for heatmap
     query<{ x_pct: number; y_pct: number; count: number }>(
@@ -52,7 +63,7 @@ export async function GET(req: NextRequest) {
   const pages = await query<{ page_path: string; views: string }>(
     `SELECT page_path, COUNT(*) AS views
      FROM analytics_events
-     WHERE event_type = 'pageview'
+     WHERE event_type = 'pageview' AND page_path NOT LIKE '/admin%'
      GROUP BY page_path ORDER BY views DESC`
   );
 

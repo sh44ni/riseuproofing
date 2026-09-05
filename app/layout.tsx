@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { buildLocalBusinessJsonLd } from '@/lib/seo/metadata';
@@ -29,6 +30,9 @@ export const metadata: Metadata = {
 const analyticsScript = `
 (function(){
   try {
+    // ── Exclude internal admin pages from analytics & heatmaps ───────────────
+    if (window.location.pathname.startsWith('/admin')) return;
+
     // ── Session ID ──────────────────────────────────────────────────────────
     var SID = sessionStorage.getItem('_ruid');
     if (!SID) {
@@ -160,6 +164,23 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
       <body className="antialiased">
+        {/* Google tag (gtag.js) */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-82QZ88P6TK"
+        />
+        <Script id="google-tag-gtag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            if (!window.location.pathname.startsWith('/admin')) {
+              gtag('config', 'G-82QZ88P6TK');
+            }
+          `}
+        </Script>
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
