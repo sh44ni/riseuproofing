@@ -404,6 +404,15 @@ const MIGRATIONS = [
     WHEN 'office_admin' THEN 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80'
   END
   WHERE avatar_url IS NULL`,
+
+  // ── Database Performance & Latency Optimization Indexes ────────────────────
+  `CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads (created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_status ON leads (status)`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_status_priority ON leads (status, priority, lead_score)`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_source ON leads (lead_source)`,
+  `CREATE INDEX IF NOT EXISTS idx_invoices_status_paid ON invoices (status, paid_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_tasks_pending_due ON tasks (due_at ASC) WHERE completed_at IS NULL`,
+  `CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions (expires_at)`,
 ];
 
 export async function POST() {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser, hashPassword, UserRole } from '@/lib/admin-auth';
+import { getCurrentUser, hashPassword, UserRole, invalidateSessionCache } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 const VALID_ROLES: UserRole[] = [
@@ -115,6 +115,7 @@ export async function PATCH(
     // If deactivated, role changed, or permissions updated, invalidate sessions so changes take immediate effect
     if (status === 'inactive' || status === 'suspended' || role !== undefined || permissions !== undefined) {
       await query('DELETE FROM admin_sessions WHERE user_id = $1', [targetUserId]);
+      invalidateSessionCache();
     }
 
     return NextResponse.json({ ok: true, user: updated[0] });
@@ -151,6 +152,7 @@ export async function DELETE(
     // Soft-deactivate user & terminate sessions
     await query("UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1", [targetUserId]);
     await query('DELETE FROM admin_sessions WHERE user_id = $1', [targetUserId]);
+    invalidateSessionCache();
 
     return NextResponse.json({ ok: true, message: 'User deactivated successfully' });
   } catch (err) {

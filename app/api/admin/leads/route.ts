@@ -3,6 +3,14 @@ import { isAuthenticated } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 import { calculateLeadScore } from '@/lib/crm-scoring';
 
+// Cache 30-day lead trend to prevent re-querying on every pagination / filter
+interface CachedDaily {
+  data: { day: string; count: string }[];
+  expires: number;
+}
+let cachedDaily: CachedDaily | null = null;
+const DAILY_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
 export async function GET(req: NextRequest) {
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -55,17 +63,25 @@ export async function GET(req: NextRequest) {
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
+  const now = Date.now();
+  const dailyPromise = (cachedDaily && cachedDaily.expires > now)
+    ? Promise.resolve(cachedDaily.data)
+    : query<{ day: string; count: string }>(
+        `SELECT DATE_TRUNC('day', created_at)::DATE AS day, COUNT(*) AS count
+         FROM leads WHERE created_at >= NOW() - INTERVAL '30 days'
+         GROUP BY day ORDER BY day`
+      ).then(res => {
+        cachedDaily = { data: res, expires: Date.now() + DAILY_CACHE_TTL };
+        return res;
+      });
+
   const [rows, countRow, daily] = await Promise.all([
     query<any>(
       `SELECT * FROM leads ${where} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
       params
     ),
     query<{ count: string }>(`SELECT COUNT(*) AS count FROM leads ${where}`, params),
-    query<{ day: string; count: string }>(
-      `SELECT DATE_TRUNC('day', created_at)::DATE AS day, COUNT(*) AS count
-       FROM leads WHERE created_at >= NOW() - INTERVAL '30 days'
-       GROUP BY day ORDER BY day`
-    ),
+    dailyPromise,
   ]);
 
   // Ensure every lead has score & priority populated
@@ -164,6 +180,7 @@ export async function POST(req: NextRequest) {
     );
 
     const newLead = rows[0];
+    cachedDaily = null; // Invalidate daily sparkline cache
 
     // Log creation activity
     await query(
@@ -190,14 +207,24 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
-  await query(`UPDATE leads SET status = $1 WHERE id = $2`, [status, id]);
+  // Atomically update status and log activity in a single round-trip
+  await query(`
+    WITH updated_lead AS (
+      UPDATE leads SET status = $1 WHERE id = $2 RETURNING id
+    )
+    INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+    SELECT 'lead', id, 'status_change', $3, $4, $5
+    FROM updated_lead
+  `, [
+    status,
+    id,
+    `Status changed to ${status}`,
+    `Lead status updated to ${status}`,
+    performedBy || 'Staff',
+  ]);
 
-  // Log status change activity
-  await query(
-    `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-     VALUES ('lead', $1, 'status_change', $2, $3, $4)`,
-    [id, `Status changed to ${status}`, `Lead status updated to ${status}`, performedBy || 'Staff']
-  );
+  cachedDaily = null; // Invalidate daily sparkline cache
 
   return NextResponse.json({ ok: true });
 }
+
