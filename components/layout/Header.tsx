@@ -508,15 +508,6 @@ export function Header() {
               </div>
             </a>
 
-            {/* Mobile / Tablet Phone Quick Action */}
-            <a
-              href={PHONE_HREF}
-              className="xl:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[var(--surface-raised)] hover:border-brand-blue/50 text-theme-primary border border-[var(--border-default)] transition-all shadow-xs"
-              aria-label="Call Rise Up Roofing"
-            >
-              <Phone className="w-4 h-4 text-brand-blue" />
-            </a>
-
             {/* Free Estimate CTA Button */}
             <Link href="/contact" className="hidden sm:inline-block">
               <span className="inline-flex items-center gap-1.5 bg-brand-blue hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider rounded-xl px-4 py-2.5 transition-all shadow-md shadow-brand-blue/20 hover:shadow-brand-blue/35 hover:scale-[1.02] active:scale-[0.98]">

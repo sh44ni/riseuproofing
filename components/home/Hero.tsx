@@ -183,7 +183,7 @@ export function Hero() {
 
             <span className="hidden sm:inline-block w-[1px] h-3.5 bg-white/25" aria-hidden="true" />
 
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <a
                 href={GOOGLE_REVIEWS_URL}
                 target="_blank"
@@ -208,32 +208,35 @@ export function Hero() {
             </div>
           </div>
 
-          {/* CTA Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto mb-3 animate-hero-5">
-            <Link href="/contact" className="w-full sm:w-auto">
+          {/* Hero CTA Button Pair — Sleek, side-by-side on mobile, expanded on desktop */}
+          <div className="flex flex-row items-center justify-center gap-2.5 sm:gap-4 w-full max-w-[390px] sm:max-w-none sm:w-auto mb-3.5 sm:mb-4 animate-hero-5 px-2 sm:px-0">
+            <Link href="/contact" className="flex-1 sm:flex-initial">
               <span
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl px-7 py-3 cursor-pointer hover:brightness-110 hover:scale-[1.02] active:scale-[0.99] transition-all duration-150 ease-out group"
-                style={{
-                  boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)'
-                }}
+                className="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl px-3.5 sm:px-7 py-3 cursor-pointer hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 ease-out group shadow-[0_4px_16px_rgba(46,155,240,0.4)]"
               >
-                <ClipboardCheck className="w-4 h-4 text-white" />
-                <span>Get a Free Estimate</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                <ClipboardCheck className="w-4 h-4 text-white flex-shrink-0" />
+                <span className="truncate">
+                  <span className="sm:hidden">Estimate</span>
+                  <span className="hidden sm:inline">Get a Free Estimate</span>
+                </span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 hidden sm:inline-block flex-shrink-0" />
               </span>
             </Link>
 
             <a
               href={PHONE_HREF}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/12 border border-white/15 hover:border-white/30 text-white/85 hover:text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl px-5 py-3 backdrop-blur-md transition-all group cursor-pointer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-white/[0.08] hover:bg-white/15 border border-white/20 hover:border-white/35 text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl px-3.5 sm:px-5 py-3 backdrop-blur-md transition-all active:scale-[0.98] cursor-pointer group shadow-sm"
             >
-              <Phone className="w-4 h-4 text-brand-blue group-hover:scale-110 transition-transform" />
-              <span>Call {PHONE_NUMBER}</span>
+              <Phone className="w-4 h-4 text-brand-blue group-hover:scale-110 transition-transform flex-shrink-0" />
+              <span className="truncate">
+                <span className="sm:hidden">Call Now</span>
+                <span className="hidden sm:inline">Call {PHONE_NUMBER}</span>
+              </span>
             </a>
           </div>
 
           {/* Trust Row */}
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs sm:text-[12.5px] text-white/70 font-medium mb-5 sm:mb-6 animate-hero-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs sm:text-[12.5px] text-white/70 font-medium mb-4 sm:mb-6 animate-hero-6">
             <span className="inline-flex items-center gap-1.5 text-white/85 font-semibold">
               <Shield className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" aria-hidden="true" />
               <span>CA Lic #{LICENSE_NUMBER}</span>
@@ -258,7 +261,7 @@ export function Hero() {
         </div>
 
         {/* Wide Integrated Estimator Card with Built-in Trust Badges */}
-        <div className="w-full max-w-[920px] flex justify-center animate-hero-7 relative z-10">
+        <div id="hero-estimator" className="w-full max-w-[920px] flex justify-center animate-hero-7 relative z-10 scroll-mt-24">
           <InteractiveHeroEstimator />
         </div>
 

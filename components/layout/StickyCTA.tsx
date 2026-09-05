@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Wrench, Star, Phone, ClipboardCheck } from 'lucide-react';
+import { Home, Wrench, Star, Phone, Sparkles } from 'lucide-react';
 import { PHONE_HREF, cn } from '@/lib/utils';
 
 export function StickyCTA() {
@@ -23,90 +23,151 @@ export function StickyCTA() {
   const isReviews = pathname === '/reviews';
   const isContact = pathname === '/contact';
 
+  const handleEstimateClick = (e: React.MouseEvent) => {
+    if (isHome) {
+      e.preventDefault();
+      const estimator = document.getElementById('hero-estimator');
+      if (estimator) {
+        estimator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 380, behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden glass-nav-surface border-t border-slate-200/80 dark:border-white/10 backdrop-blur-2xl px-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] select-none"
+      className="fixed bottom-0 inset-x-0 z-50 md:hidden px-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-2 pointer-events-none select-none"
     >
-      <div className="flex items-center justify-around h-14 max-w-md mx-auto">
+      <div className="pointer-events-auto max-w-[430px] mx-auto bg-slate-900/95 dark:bg-[#07131e]/96 backdrop-blur-3xl border border-white/20 rounded-[24px] shadow-[0_16px_44px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.1),inset_0_1px_1px_rgba(255,255,255,0.2)] px-2.5 py-2 flex items-center justify-between gap-1.5">
+        
         {/* Tab 1: Home */}
         <Link
           href="/"
-          className={cn(
-            'flex-1 flex flex-col items-center justify-center h-full py-0.5 transition-all relative',
-            isHome ? 'text-brand-blue font-bold' : 'text-slate-500 hover:text-slate-800'
-          )}
+          className="flex-1 flex flex-col items-center justify-center active:scale-90 transition-transform duration-150 group cursor-pointer"
         >
-          <Home className={cn('w-5 h-5 transition-transform', isHome && 'scale-110 stroke-[2.25]')} />
-          <span className="text-[10px] mt-0.5 tracking-tight font-semibold">Home</span>
-          {isHome && (
-            <span className="w-1 h-1 bg-brand-blue rounded-full shadow-[0_0_8px_rgba(46,155,240,0.8)] mt-0.5" />
-          )}
+          <div
+            className={cn(
+              'flex flex-col items-center justify-center w-full min-h-[48px] py-1 px-1 rounded-2xl transition-all duration-200',
+              isHome ? 'bg-white/12 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <Home
+              className={cn(
+                'w-5 h-5 transition-transform duration-200',
+                isHome ? 'scale-110 stroke-[2.3] text-[#38BDF8]' : 'stroke-[1.8] group-hover:scale-105'
+              )}
+            />
+            <span
+              className={cn(
+                'text-[10.5px] mt-1 tracking-tight leading-none',
+                isHome ? 'font-bold text-white' : 'font-medium text-slate-400'
+              )}
+            >
+              Home
+            </span>
+            {isHome && <span className="w-1 h-1 rounded-full bg-[#38BDF8] mt-1" />}
+          </div>
         </Link>
 
         {/* Tab 2: Services */}
         <Link
           href="/services"
-          className={cn(
-            'flex-1 flex flex-col items-center justify-center h-full py-0.5 transition-all relative',
-            isServices ? 'text-brand-blue font-bold' : 'text-slate-500 hover:text-slate-800'
-          )}
+          className="flex-1 flex flex-col items-center justify-center active:scale-90 transition-transform duration-150 group cursor-pointer"
         >
-          <Wrench className={cn('w-5 h-5 transition-transform', isServices && 'scale-110 stroke-[2.25]')} />
-          <span className="text-[10px] mt-0.5 tracking-tight font-semibold">Services</span>
-          {isServices && (
-            <span className="w-1 h-1 bg-brand-blue rounded-full shadow-[0_0_8px_rgba(46,155,240,0.8)] mt-0.5" />
-          )}
+          <div
+            className={cn(
+              'flex flex-col items-center justify-center w-full min-h-[48px] py-1 px-1 rounded-2xl transition-all duration-200',
+              isServices ? 'bg-white/12 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <Wrench
+              className={cn(
+                'w-5 h-5 transition-transform duration-200',
+                isServices ? 'scale-110 stroke-[2.3] text-[#38BDF8]' : 'stroke-[1.8] group-hover:scale-105'
+              )}
+            />
+            <span
+              className={cn(
+                'text-[10.5px] mt-1 tracking-tight leading-none',
+                isServices ? 'font-bold text-white' : 'font-medium text-slate-400'
+              )}
+            >
+              Services
+            </span>
+            {isServices && <span className="w-1 h-1 rounded-full bg-[#38BDF8] mt-1" />}
+          </div>
         </Link>
 
         {/* Tab 3: Reviews */}
         <Link
           href="/reviews"
-          className={cn(
-            'flex-1 flex flex-col items-center justify-center h-full py-0.5 transition-all relative',
-            isReviews ? 'text-brand-blue font-bold' : 'text-slate-500 hover:text-slate-800'
-          )}
-        >
-          <Star className={cn('w-5 h-5 transition-transform', isReviews && 'scale-110 fill-brand-blue stroke-[2]')} />
-          <span className="text-[10px] mt-0.5 tracking-tight font-semibold">Reviews</span>
-          {isReviews && (
-            <span className="w-1 h-1 bg-brand-blue rounded-full shadow-[0_0_8px_rgba(46,155,240,0.8)] mt-0.5" />
-          )}
-        </Link>
-
-        {/* Tab 4: Direct Call Action */}
-        <a
-          href={PHONE_HREF}
-          className="flex-1 flex flex-col items-center justify-center h-full py-0.5 text-emerald-600 hover:text-emerald-700 transition-all active:scale-95"
-          aria-label="Direct Phone Call"
-        >
-          <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center">
-            <Phone className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/20 stroke-[2.2]" />
-          </div>
-          <span className="text-[10px] mt-0.5 tracking-tight font-bold text-emerald-700">Call</span>
-        </a>
-
-        {/* Tab 5: Free Estimate CTA */}
-        <Link
-          href="/contact"
-          className="flex-1 flex flex-col items-center justify-center h-full py-0.5 active:scale-95 transition-transform"
+          className="flex-1 flex flex-col items-center justify-center active:scale-90 transition-transform duration-150 group cursor-pointer"
         >
           <div
             className={cn(
-              'px-3 py-1 rounded-xl flex items-center gap-1 shadow-sm transition-all',
-              isContact
-                ? 'bg-brand-blue text-white shadow-brand-blue/30'
-                : 'bg-brand-blue/10 border border-brand-blue/30 text-brand-blue'
+              'flex flex-col items-center justify-center w-full min-h-[48px] py-1 px-1 rounded-2xl transition-all duration-200',
+              isReviews ? 'bg-white/12 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
             )}
           >
-            <ClipboardCheck className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-extrabold uppercase tracking-wide">Quote</span>
+            <Star
+              className={cn(
+                'w-5 h-5 transition-transform duration-200',
+                isReviews ? 'fill-[#38BDF8] text-[#38BDF8] scale-110' : 'text-slate-400 group-hover:scale-105'
+              )}
+            />
+            <span
+              className={cn(
+                'text-[10.5px] mt-1 tracking-tight leading-none',
+                isReviews ? 'font-bold text-white' : 'font-medium text-slate-400'
+              )}
+            >
+              Reviews
+            </span>
+            {isReviews && <span className="w-1 h-1 rounded-full bg-[#38BDF8] mt-1" />}
           </div>
-          {isContact && (
-            <span className="w-1 h-1 bg-brand-blue rounded-full shadow-[0_0_8px_rgba(46,155,240,0.8)] mt-0.5" />
-          )}
         </Link>
+
+        {/* Tab 4: Playful Direct Call Action */}
+        <a
+          href={PHONE_HREF}
+          className="flex-1 flex flex-col items-center justify-center active:scale-90 transition-transform duration-150 group cursor-pointer"
+          aria-label="Call Rise Up Roofing"
+        >
+          <div className="flex flex-col items-center justify-center w-full min-h-[48px] py-1 px-1 rounded-2xl hover:bg-emerald-500/10 transition-all duration-200">
+            <Phone className="w-5 h-5 text-emerald-400 fill-emerald-400/20 stroke-[2.3] transition-transform group-hover:rotate-12" />
+            <span className="text-[10.5px] mt-1 tracking-tight leading-none font-bold text-emerald-400">
+              Call
+            </span>
+            <span className="w-1 h-1 rounded-full bg-emerald-400/70 mt-1" />
+          </div>
+        </a>
+
+        {/* Tab 5: Juicy, Chunky Estimate Action Pill */}
+        <Link
+          href={isHome ? '#hero-estimator' : '/contact'}
+          onClick={handleEstimateClick}
+          className="flex-shrink-0 active:scale-92 transition-transform duration-150 cursor-pointer pl-0.5"
+          aria-label="Get Free Estimate"
+        >
+          <div
+            className={cn(
+              'px-4 py-2.5 min-h-[48px] rounded-2xl font-bold flex items-center gap-2 shadow-[0_6px_22px_rgba(46,155,240,0.55),inset_0_1px_1px_rgba(255,255,255,0.45)] border border-white/25 transition-all',
+              isContact
+                ? 'bg-[#1C88DD] text-white ring-2 ring-white/40'
+                : 'bg-gradient-to-r from-[#2E9BF0] via-[#38BDF8] to-[#1C88DD] hover:brightness-110 text-white'
+            )}
+          >
+            <Sparkles className="w-4 h-4 text-white animate-pulse flex-shrink-0" />
+            <span className="text-[11.5px] font-black tracking-wider uppercase text-white whitespace-nowrap">
+              Estimate
+            </span>
+          </div>
+        </Link>
+
       </div>
     </nav>
   );
 }
+
