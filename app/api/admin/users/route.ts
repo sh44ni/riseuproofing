@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, email, phone, role, password, permissions } = body;
+    const { name, email, phone, role, password, permissions, avatar_url } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({ ok: false, error: 'Name, email, password, and role are required' }, { status: 400 });
@@ -72,11 +72,11 @@ export async function POST(req: NextRequest) {
         ? permissions
         : DEFAULT_ROLE_PERMISSIONS[role as UserRole] || [];
 
-    const inserted = await query<{ id: number; name: string; email: string; role: string; status: string; permissions: string[] }>(
-      `INSERT INTO users (name, email, phone, role, password_hash, salt, permissions, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'active')
-       RETURNING id, name, email, phone, role, status, permissions, created_at`,
-      [name.trim(), email.trim().toLowerCase(), phone?.trim() || null, role, hash, salt, assignedPermissions]
+    const inserted = await query<{ id: number; name: string; email: string; role: string; status: string; avatar_url?: string; permissions: string[] }>(
+      `INSERT INTO users (name, email, phone, role, password_hash, salt, permissions, avatar_url, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'active')
+       RETURNING id, name, email, phone, role, status, avatar_url, permissions, created_at`,
+      [name.trim(), email.trim().toLowerCase(), phone?.trim() || null, role, hash, salt, assignedPermissions, avatar_url?.trim() || null]
     );
 
     const newUser = inserted[0];

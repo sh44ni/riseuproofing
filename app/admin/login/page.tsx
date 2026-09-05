@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Lock, Mail, Eye, EyeOff, AlertCircle, ShieldCheck, User } from 'lucide-react';
+import { RoleIcon } from '@/components/admin/shared/RoleBadge';
 
 export default function AdminLogin() {
   const [mode, setMode] = useState<'team' | 'quick'>('team');
@@ -204,37 +205,42 @@ export default function AdminLogin() {
               <button
                 type="button"
                 onClick={() => setDemoAccount('owner@riseuproofing.com', 'RiseUp2025!')}
-                className="px-2.5 py-1 rounded-lg bg-[#d4a447]/10 hover:bg-[#d4a447]/20 border border-[#d4a447]/20 text-[#d4a447] text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#d4a447]/10 hover:bg-[#d4a447]/20 border border-[#d4a447]/20 text-[#d4a447] text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                👑 Owner
+                <RoleIcon role="owner" size={12} />
+                Owner
               </button>
               <button
                 type="button"
                 onClick={() => setDemoAccount('pm@riseuproofing.com', 'RiseUpPM2025!')}
-                className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                🏗️ PM
+                <RoleIcon role="project_manager" size={12} />
+                PM
               </button>
               <button
                 type="button"
                 onClick={() => setDemoAccount('sales@riseuproofing.com', 'RiseUpSales2025!')}
-                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                💼 Sales Rep
+                <RoleIcon role="sales_rep" size={12} />
+                Sales Rep
               </button>
               <button
                 type="button"
                 onClick={() => setDemoAccount('foreman@riseuproofing.com', 'RiseUpCrew2025!')}
-                className="px-2.5 py-1 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                🔨 Foreman
+                <RoleIcon role="field_foreman" size={12} />
+                Foreman
               </button>
               <button
                 type="button"
                 onClick={() => setDemoAccount('office@riseuproofing.com', 'RiseUpOffice2025!')}
-                className="px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                📋 Office
+                <RoleIcon role="office_admin" size={12} />
+                Office
               </button>
             </div>
           </div>

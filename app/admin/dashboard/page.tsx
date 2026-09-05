@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 
 import { AuthUser, ROLE_CONFIG } from '@/lib/rbac';
+import RoleBadge from '@/components/admin/shared/RoleBadge';
+import UserAvatar from '@/components/admin/shared/UserAvatar';
 import { DashboardSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface StatsResponse {
@@ -158,37 +160,61 @@ export default function DashboardPage() {
   const isSales = role === 'sales_rep';
 
   return (
-    <div className="space-y-6 pb-20 md:pb-10 max-w-7xl mx-auto px-4 sm:px-6">
-      {/* Executive Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-2.5 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider ${roleCfg.badgeColor}`}
-            >
-              {roleCfg.icon} {roleCfg.label}
-            </span>
-            <span className="text-xs text-[#8a95a5]">CSLB License #1096492</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#f0f2f5] tracking-tight mt-1">
-            {isForeman
-              ? `Jobsite & Field Operations Hub`
-              : isSales
-              ? `Sales & Estimating Pipeline`
-              : `Executive Roofing Command Center`}
-          </h1>
+    <div className="space-y-5 pb-20 md:pb-10 max-w-7xl mx-auto px-3.5 sm:px-6">
+      {/* Remastered Executive Header */}
+      <div className="flex items-start sm:items-center justify-between gap-3 pt-1">
+        <div className="flex items-center gap-3.5 min-w-0 flex-1">
           {currentUser && (
-            <p className="text-xs text-[#8a95a5] mt-0.5">
-              Welcome back, <span className="text-[#c8cfd8] font-semibold">{currentUser.name}</span>
-            </p>
+            <UserAvatar
+              name={currentUser.name}
+              avatarUrl={currentUser.avatar_url}
+              role={currentUser.role}
+              size="lg"
+              showStatus
+              showRoleBadge
+              className="hidden sm:inline-flex flex-shrink-0"
+            />
           )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <RoleBadge role={role} size="xs" />
+              {currentUser && (
+                <span className="hidden sm:inline text-xs text-[#8a95a5]">
+                  Welcome back, <span className="text-[#f0f2f5] font-semibold">{currentUser.name}</span>
+                </span>
+              )}
+            </div>
+            <h1 className="text-xl sm:text-3xl font-black text-[#f0f2f5] tracking-tight leading-tight">
+              {isForeman ? (
+                <>
+                  <span className="sm:hidden">Field Operations Hub</span>
+                  <span className="hidden sm:inline">Jobsite &amp; Field Operations Hub</span>
+                </>
+              ) : isSales ? (
+                <>
+                  <span className="sm:hidden">Estimating Pipeline</span>
+                  <span className="hidden sm:inline">Sales &amp; Estimating Pipeline</span>
+                </>
+              ) : (
+                <>
+                  <span className="sm:hidden">Command Center</span>
+                  <span className="hidden sm:inline">Executive Roofing Command Center</span>
+                </>
+              )}
+            </h1>
+            {currentUser && (
+              <p className="sm:hidden text-[11px] text-[#8a95a5] mt-0.5 truncate">
+                Welcome back, <span className="text-[#c8cfd8] font-semibold">{currentUser.name.split(' ')[0]}</span>
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 flex-shrink-0 pt-1 sm:pt-0">
           <button
             onClick={() => fetchStats(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-[16px] bg-[#141b24] border border-white/[0.06] hover:bg-[#1a2332] text-[#a0aab8] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="w-9 h-9 sm:w-auto sm:px-3 sm:py-2 rounded-xl bg-[#141b24] border border-white/[0.06] hover:bg-[#1a2332] text-[#a0aab8] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
             title="Refresh metrics"
           >
             <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
@@ -198,18 +224,20 @@ export default function DashboardPage() {
           {!isForeman && (
             <Link
               href="/admin/estimates/new"
-              className="px-4 py-2.5 rounded-[16px] bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] font-black text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] active:scale-95 transition-all flex items-center gap-1.5"
+              className="h-9 px-3 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] font-black text-xs shadow-[0_2px_12px_rgba(212,164,71,0.25)] active:scale-95 transition-all flex items-center gap-1.5 flex-shrink-0"
             >
-              <Plus size={14} /> Quick Estimate
+              <Plus size={14} strokeWidth={3} />
+              <span>Estimate</span>
             </Link>
           )}
 
           {isForeman && (
             <Link
               href="/admin/inspections/new"
-              className="px-4 py-2.5 rounded-[16px] bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] font-black text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] active:scale-95 transition-all flex items-center gap-1.5"
+              className="h-9 px-3 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] font-black text-xs shadow-[0_2px_12px_rgba(212,164,71,0.25)] active:scale-95 transition-all flex items-center gap-1.5 flex-shrink-0"
             >
-              <ClipboardCheck size={14} /> 12-Pt Inspection
+              <ClipboardCheck size={14} strokeWidth={2.5} />
+              <span>Inspection</span>
             </Link>
           )}
         </div>

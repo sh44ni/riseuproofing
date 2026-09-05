@@ -21,6 +21,7 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  Camera,
 } from 'lucide-react';
 import {
   ROLE_CONFIG,
@@ -29,6 +30,9 @@ import {
   DEFAULT_ROLE_PERMISSIONS,
   PermissionDefinition,
 } from '@/lib/rbac';
+import UserAvatar from '@/components/admin/shared/UserAvatar';
+import RoleBadge, { RoleIcon } from '@/components/admin/shared/RoleBadge';
+import AvatarPickerModal from '@/components/admin/shared/AvatarPickerModal';
 
 interface UserRecord {
   id: number;
@@ -37,6 +41,7 @@ interface UserRecord {
   phone?: string;
   role: UserRole;
   status: 'active' | 'inactive' | 'suspended';
+  avatar_url?: string | null;
   permissions?: string[];
   last_login_at?: string;
   created_at: string;
@@ -58,6 +63,8 @@ export default function TeamManagementPage() {
   const [newPhone, setNewPhone] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('sales_rep');
   const [newPassword, setNewPassword] = useState('');
+  const [newAvatarUrl, setNewAvatarUrl] = useState<string>('');
+  const [showAddAvatarPicker, setShowAddAvatarPicker] = useState(false);
   const [newPermissions, setNewPermissions] = useState<string[]>(
     DEFAULT_ROLE_PERMISSIONS.sales_rep
   );
@@ -69,6 +76,8 @@ export default function TeamManagementPage() {
   const [editRole, setEditRole] = useState<UserRole>('sales_rep');
   const [editStatus, setEditStatus] = useState<'active' | 'inactive'>('active');
   const [editPassword, setEditPassword] = useState('');
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string>('');
+  const [showEditAvatarPicker, setShowEditAvatarPicker] = useState(false);
   const [editPermissions, setEditPermissions] = useState<string[]>([]);
 
   const [isForbidden, setIsForbidden] = useState(false);
@@ -155,6 +164,7 @@ export default function TeamManagementPage() {
           phone: newPhone,
           role: newRole,
           password: newPassword,
+          avatar_url: newAvatarUrl || null,
           permissions: newPermissions,
         }),
       });
@@ -166,6 +176,7 @@ export default function TeamManagementPage() {
         setNewEmail('');
         setNewPhone('');
         setNewPassword('');
+        setNewAvatarUrl('');
         setNewPermissions(DEFAULT_ROLE_PERMISSIONS.sales_rep);
         fetchUsers();
       } else {
@@ -185,6 +196,7 @@ export default function TeamManagementPage() {
     setEditRole(u.role);
     setEditStatus(u.status === 'active' ? 'active' : 'inactive');
     setEditPassword('');
+    setEditAvatarUrl(u.avatar_url || '');
     setEditPermissions(u.permissions || DEFAULT_ROLE_PERMISSIONS[u.role] || []);
     setActionError('');
     setActionSuccess('');
@@ -203,6 +215,7 @@ export default function TeamManagementPage() {
         phone: editPhone,
         role: editRole,
         status: editStatus,
+        avatar_url: editAvatarUrl || null,
         permissions: editPermissions,
       };
       if (editPassword) {
@@ -359,7 +372,7 @@ export default function TeamManagementPage() {
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xl">{cfg.icon}</span>
+                <RoleIcon role={r} size={20} />
                 <span className="text-lg font-black text-[#f0f2f5]">{count}</span>
               </div>
               <p className="text-xs font-bold text-[#c8cfd8] truncate">{cfg.label}</p>
@@ -444,9 +457,15 @@ export default function TeamManagementPage() {
                     <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-[#1a2332] border border-white/[0.06] flex items-center justify-center font-bold text-[#f0f2f5] text-sm">
-                            {u.name.charAt(0)}
-                          </div>
+                          <UserAvatar
+                            name={u.name}
+                            avatarUrl={u.avatar_url}
+                            role={u.role}
+                            size="md"
+                            showStatus
+                            statusOnline={isActive}
+                            showRoleBadge
+                          />
                           <div>
                             <div className="font-bold text-[#f0f2f5] text-sm">{u.name}</div>
                             <div className="text-[#8a95a5] text-[11px] flex items-center gap-1.5">
@@ -458,12 +477,7 @@ export default function TeamManagementPage() {
                       </td>
 
                       <td className="px-4 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.badgeColor}`}
-                        >
-                          <span>{cfg.icon}</span>
-                          {cfg.label}
-                        </span>
+                        <RoleBadge role={u.role} size="sm" />
                       </td>
 
                       <td className="px-4 py-4">
@@ -577,6 +591,44 @@ export default function TeamManagementPage() {
             </div>
 
             <form onSubmit={handleAddUser} className="space-y-5 overflow-y-auto pr-1 flex-1">
+              {/* Member Portrait Picker */}
+              <div className="flex items-center gap-4 p-3 bg-[#0a0f14] border border-white/[0.06] rounded-xl">
+                <UserAvatar
+                  name={newName || 'New Member'}
+                  avatarUrl={newAvatarUrl}
+                  role={newRole}
+                  size="xl"
+                  showRoleBadge
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-[#f0f2f5]">Member Portrait</div>
+                  <p className="text-[11px] text-[#8a95a5] mt-0.5">
+                    {newAvatarUrl
+                      ? 'Custom photo selected'
+                      : 'No photo chosen (will display clean monogram initials)'}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddAvatarPicker(true)}
+                      className="px-3 py-1.5 rounded-lg bg-[#1a2332] hover:bg-[#1e2736] border border-white/[0.08] text-[#f0f2f5] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Camera size={13} className="text-[#d4a447]" />
+                      {newAvatarUrl ? 'Change Portrait' : 'Choose Portrait'}
+                    </button>
+                    {newAvatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setNewAvatarUrl('')}
+                        className="text-xs text-[#8a95a5] hover:text-red-400 cursor-pointer transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-[#a0aab8] font-bold mb-1">Full Name</label>
@@ -637,7 +689,7 @@ export default function TeamManagementPage() {
                 >
                   {(Object.keys(ROLE_CONFIG) as UserRole[]).map((r) => (
                     <option key={r} value={r}>
-                      {ROLE_CONFIG[r].icon} {ROLE_CONFIG[r].label}
+                      {ROLE_CONFIG[r].label}
                     </option>
                   ))}
                 </select>
@@ -786,6 +838,44 @@ export default function TeamManagementPage() {
             </div>
 
             <form onSubmit={handleUpdateUser} className="space-y-5 overflow-y-auto pr-1 flex-1">
+              {/* Member Portrait Picker */}
+              <div className="flex items-center gap-4 p-3 bg-[#0a0f14] border border-white/[0.06] rounded-xl">
+                <UserAvatar
+                  name={editName || editUser.name}
+                  avatarUrl={editAvatarUrl}
+                  role={editRole}
+                  size="xl"
+                  showRoleBadge
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-[#f0f2f5]">Member Portrait</div>
+                  <p className="text-[11px] text-[#8a95a5] mt-0.5">
+                    {editAvatarUrl
+                      ? 'Custom photo active'
+                      : 'No photo chosen (will display clean monogram initials)'}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditAvatarPicker(true)}
+                      className="px-3 py-1.5 rounded-lg bg-[#1a2332] hover:bg-[#1e2736] border border-white/[0.08] text-[#f0f2f5] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Camera size={13} className="text-[#d4a447]" />
+                      {editAvatarUrl ? 'Change Portrait' : 'Choose Portrait'}
+                    </button>
+                    {editAvatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setEditAvatarUrl('')}
+                        className="text-xs text-[#8a95a5] hover:text-red-400 cursor-pointer transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-[#a0aab8] font-bold mb-1">Full Name</label>
@@ -817,7 +907,7 @@ export default function TeamManagementPage() {
                   >
                     {(Object.keys(ROLE_CONFIG) as UserRole[]).map((r) => (
                       <option key={r} value={r}>
-                        {ROLE_CONFIG[r].icon} {ROLE_CONFIG[r].label}
+                        {ROLE_CONFIG[r].label}
                       </option>
                     ))}
                   </select>
@@ -970,6 +1060,28 @@ export default function TeamManagementPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Avatar Picker Modal for Add User */}
+      <AvatarPickerModal
+        isOpen={showAddAvatarPicker}
+        onClose={() => setShowAddAvatarPicker(false)}
+        currentAvatarUrl={newAvatarUrl}
+        userName={newName || 'New Member'}
+        userRole={newRole}
+        onSelectAvatar={(url) => setNewAvatarUrl(url || '')}
+      />
+
+      {/* Avatar Picker Modal for Edit User */}
+      {editUser && (
+        <AvatarPickerModal
+          isOpen={showEditAvatarPicker}
+          onClose={() => setShowEditAvatarPicker(false)}
+          currentAvatarUrl={editAvatarUrl}
+          userName={editName || editUser.name}
+          userRole={editRole}
+          onSelectAvatar={(url) => setEditAvatarUrl(url || '')}
+        />
       )}
     </div>
   );

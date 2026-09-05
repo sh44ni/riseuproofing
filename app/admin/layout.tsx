@@ -23,7 +23,7 @@ export default async function AdminLayout({
   return (
     <div className="admin-theme min-h-screen bg-[#0c1117] text-[#f0f2f5] flex flex-col lg:flex-row">
       <AdminSidebar user={user} />
-      <main className="flex-1 min-h-screen overflow-x-hidden overflow-y-auto pt-14 lg:pt-0 pb-24 lg:pb-10">
+      <main className="flex-1 min-h-screen overflow-x-hidden overflow-y-auto pt-[52px] lg:pt-0 pb-24 lg:pb-10">
         {children}
       </main>
       <BottomNav user={user} />

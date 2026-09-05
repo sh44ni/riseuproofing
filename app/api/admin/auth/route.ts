@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       email: string;
       role: string;
       phone?: string;
+      avatar_url?: string | null;
       permissions?: string[];
     } | null = null;
 
@@ -45,11 +46,12 @@ export async function POST(req: NextRequest) {
         phone: string;
         role: string;
         status: string;
+        avatar_url: string;
         password_hash: string;
         salt: string;
         permissions: string[];
       }>(
-        `SELECT id, name, email, phone, role, status, password_hash, salt, permissions
+        `SELECT id, name, email, phone, role, status, avatar_url, password_hash, salt, permissions
          FROM users
          WHERE LOWER(email) = LOWER($1)`,
         [email.trim()]
@@ -75,6 +77,7 @@ export async function POST(req: NextRequest) {
         email: user.email,
         role: user.role,
         phone: user.phone,
+        avatar_url: user.avatar_url,
         permissions: user.permissions || [],
       };
     } else {
@@ -95,10 +98,11 @@ export async function POST(req: NextRequest) {
         phone: string;
         role: string;
         status: string;
+        avatar_url: string;
         password_hash: string;
         salt: string;
         permissions: string[];
-      }>(`SELECT id, name, email, phone, role, status, password_hash, salt, permissions FROM users WHERE role = 'owner' AND status = 'active' ORDER BY id ASC LIMIT 1`);
+      }>(`SELECT id, name, email, phone, role, status, avatar_url, password_hash, salt, permissions FROM users WHERE role = 'owner' AND status = 'active' ORDER BY id ASC LIMIT 1`);
 
       if (owners.length > 0) {
         if (!matched && verifyPassword(password, owners[0].password_hash, owners[0].salt)) {
@@ -112,6 +116,7 @@ export async function POST(req: NextRequest) {
             email: owners[0].email,
             role: owners[0].role,
             phone: owners[0].phone,
+            avatar_url: owners[0].avatar_url,
             permissions: owners[0].permissions || ['*'],
           };
         }
@@ -120,6 +125,10 @@ export async function POST(req: NextRequest) {
       if (!matched || !authenticatedUser) {
         return NextResponse.json({ ok: false, error: 'Incorrect password. Try again.' }, { status: 401 });
       }
+    }
+
+    if (!authenticatedUser) {
+      return NextResponse.json({ ok: false, error: 'Authentication failed' }, { status: 401 });
     }
 
     // Update last login timestamp

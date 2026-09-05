@@ -138,41 +138,75 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   ],
 };
 
+export type RoleIconName = 'Crown' | 'Briefcase' | 'TrendingUp' | 'HardHat' | 'ClipboardCheck';
+
 export const ROLE_CONFIG: Record<
   UserRole,
-  { label: string; icon: string; badgeColor: string; description: string }
+  {
+    label: string;
+    iconName: RoleIconName;
+    badgeColor: string;
+    accentColor: string;
+    description: string;
+  }
 > = {
   owner: {
     label: 'Owner / Qualifier',
-    icon: '👑',
-    badgeColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    iconName: 'Crown',
+    badgeColor: 'bg-[#d4a447]/15 text-[#d4a447] border-[#d4a447]/30',
+    accentColor: '#d4a447',
     description: 'Full administrative, financial, user, and CSLB command',
   },
   project_manager: {
     label: 'Project Manager',
-    icon: '🏗️',
-    badgeColor: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    iconName: 'Briefcase',
+    badgeColor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    accentColor: '#60a5fa',
     description: 'Production Kanban, dispatch, permits, material orders & job costs',
   },
   sales_rep: {
     label: 'Sales Representative',
-    icon: '💼',
-    badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    iconName: 'TrendingUp',
+    badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    accentColor: '#34d399',
     description: 'Lead follow-up, cost estimating, digital proposals & closing',
   },
   field_foreman: {
     label: 'Field Foreman',
-    icon: '🔨',
-    badgeColor: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    iconName: 'HardHat',
+    badgeColor: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
+    accentColor: '#fb923c',
     description: 'Mobile jobsite hub, 12-point roof inspections & photo uploads',
   },
   office_admin: {
     label: 'Office Administrator',
-    icon: '📋',
-    badgeColor: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    iconName: 'ClipboardCheck',
+    badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    accentColor: '#c084fc',
     description: 'Milestone invoicing, payment receipts, reviews & messaging templates',
   },
 };
+
+export const DEFAULT_AVATARS: Record<UserRole, string> = {
+  owner: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+  project_manager: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
+  sales_rep: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+  field_foreman: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80',
+  office_admin: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80',
+};
+
+export const CURATED_PORTRAITS = [
+  { id: 'p1', label: 'Sam Martinez (Owner)', role: 'owner' as UserRole, url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p2', label: 'Carlos Ramirez (PM)', role: 'project_manager' as UserRole, url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p3', label: 'Jessica Hayes (Sales)', role: 'sales_rep' as UserRole, url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p4', label: 'Marco Silva (Foreman)', role: 'field_foreman' as UserRole, url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p5', label: 'Elena Rostova (Office)', role: 'office_admin' as UserRole, url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p6', label: 'David Chen (Engineer)', role: 'project_manager' as UserRole, url: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p7', label: 'Rachel Moore (Consultant)', role: 'sales_rep' as UserRole, url: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p8', label: 'Tomas Vance (Superintendent)', role: 'field_foreman' as UserRole, url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p9', label: 'Lucas Wright (Crew Lead)', role: 'field_foreman' as UserRole, url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p10', label: 'Maya Patel (Coordinator)', role: 'office_admin' as UserRole, url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80' },
+];
 
 /**
  * Check if a user has a specific atomic permission

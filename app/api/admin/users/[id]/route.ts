@@ -31,7 +31,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { name, phone, role, status, password, permissions } = body;
+    const { name, phone, role, status, password, permissions, avatar_url } = body;
 
     // Check if target user exists
     const existing = await query<{ id: number; role: string; email: string }>(
@@ -70,6 +70,10 @@ export async function PATCH(
       updates.push(`phone = $${idx++}`);
       values.push(phone?.trim() || null);
     }
+    if (avatar_url !== undefined) {
+      updates.push(`avatar_url = $${idx++}`);
+      values.push(avatar_url ? avatar_url.trim() : null);
+    }
     if (role !== undefined) {
       if (!VALID_ROLES.includes(role as UserRole)) {
         return NextResponse.json({ ok: false, error: 'Invalid role' }, { status: 400 });
@@ -104,7 +108,7 @@ export async function PATCH(
     values.push(targetUserId);
 
     const updated = await query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, role, status, permissions, updated_at`,
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, role, status, avatar_url, permissions, updated_at`,
       values
     );
 

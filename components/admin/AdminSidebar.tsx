@@ -26,6 +26,8 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
+import UserAvatar from '@/components/admin/shared/UserAvatar';
+import RoleBadge, { RoleIcon } from '@/components/admin/shared/RoleBadge';
 
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -124,20 +126,42 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       {/* User Profile & Logout Bottom Section */}
       <div className="px-3 pb-4 space-y-2 border-t border-white/[0.06] pt-3">
         {user && !collapsed && (
-          <div className="px-2 py-2 rounded-xl bg-white/[0.03] border border-white/[0.04] flex items-center gap-2.5 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-[#d4a447]/20 border border-[#d4a447]/25 flex items-center justify-center text-xs font-black text-[#d4a447] flex-shrink-0">
-              {user.name.charAt(0)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-[#f0f2f5] truncate leading-tight">
-                {user.name}
-              </p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-[10px] text-[#d4a447]/90 font-medium truncate">
-                  {roleConfig.icon} {roleConfig.label}
-                </span>
+          <Link
+            href="/admin/settings"
+            title="Edit My Profile & Avatar"
+            className="px-2 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.04] hover:border-[#d4a447]/30 flex items-center gap-2.5 mb-1 transition-all group block"
+          >
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <UserAvatar
+                name={user.name}
+                avatarUrl={user.avatar_url}
+                role={user.role}
+                size="sm"
+                showStatus
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-[#f0f2f5] group-hover:text-[#d4a447] truncate leading-tight transition-colors">
+                  {user.name}
+                </p>
+                <div className="flex items-center gap-1 mt-1">
+                  <RoleBadge role={user.role} size="xs" />
+                </div>
               </div>
             </div>
+          </Link>
+        )}
+
+        {user && collapsed && (
+          <div className="flex justify-center mb-1">
+            <Link href="/admin/settings" title={`${user.name} (Edit Profile)`}>
+              <UserAvatar
+                name={user.name}
+                avatarUrl={user.avatar_url}
+                role={user.role}
+                size="sm"
+                showStatus
+              />
+            </Link>
           </div>
         )}
 
@@ -172,32 +196,41 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
         <SidebarContent />
       </aside>
 
-      {/* Clean Mobile Top Status Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-white/[0.06] flex items-center justify-between px-4 h-14">
-        <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#d4a447] to-[#c4923a] flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.2)]">
+      {/* Sleek Native Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-white/[0.06] flex items-center justify-between px-3.5 h-[52px]">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 group">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#d4a447] to-[#c4923a] flex items-center justify-center shadow-[0_2px_10px_rgba(212,164,71,0.25)] flex-shrink-0 group-active:scale-95 transition-transform">
             <Zap size={14} className="text-[#0c1117] font-black" />
           </div>
-          <div>
-            <span className="text-[#f0f2f5] font-black text-xs block leading-tight">
-              Rise Up Roofing CRM
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#f0f2f5] font-black text-sm tracking-tight">
+              Rise Up
             </span>
-            <span className="text-[#d4a447] text-[9px] font-bold uppercase tracking-wider block">
-              CSLB #1096492
+            <span className="px-1.5 py-0.5 rounded bg-[#d4a447]/15 border border-[#d4a447]/30 text-[#d4a447] text-[10px] font-bold uppercase tracking-wider">
+              CRM
             </span>
           </div>
         </Link>
 
         <div className="flex items-center gap-2">
           {user && (
-            <span className="px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[10px] text-[#a0aab8] font-medium">
-              {roleConfig.icon} {user.name.split(' ')[0]}
-            </span>
+            <Link
+              href="/admin/settings"
+              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all"
+            >
+              <UserAvatar
+                name={user.name}
+                avatarUrl={user.avatar_url}
+                role={user.role}
+                size="sm"
+                showStatus
+              />
+              <span className="text-xs font-semibold text-[#f0f2f5] max-w-[90px] truncate">
+                {user.name.split(' ')[0]}
+              </span>
+              <RoleIcon role={user.role} size={13} className="text-[#d4a447]" />
+            </Link>
           )}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Online
-          </div>
         </div>
       </div>
     </>

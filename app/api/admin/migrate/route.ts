@@ -394,6 +394,16 @@ const MIGRATIONS = [
   `DELETE FROM analytics_events WHERE page_path LIKE '/admin%'`,
   `DELETE FROM activity_log WHERE page_path LIKE '/admin%'`,
   `DELETE FROM call_events WHERE page_path LIKE '/admin%'`,
+
+  // ── Seed realistic professional portraits for initial team ──
+  `UPDATE users SET avatar_url = CASE role
+    WHEN 'owner' THEN 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80'
+    WHEN 'project_manager' THEN 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80'
+    WHEN 'sales_rep' THEN 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80'
+    WHEN 'field_foreman' THEN 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80'
+    WHEN 'office_admin' THEN 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80'
+  END
+  WHERE avatar_url IS NULL`,
 ];
 
 export async function POST() {

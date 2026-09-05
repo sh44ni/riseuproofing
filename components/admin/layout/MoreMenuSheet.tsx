@@ -21,6 +21,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
+import UserAvatar from '@/components/admin/shared/UserAvatar';
+import RoleBadge from '@/components/admin/shared/RoleBadge';
 
 interface MoreMenuSheetProps {
   isOpen: boolean;
@@ -92,23 +94,43 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
         {/* Drag Handle Indicator */}
         <div className="w-12 h-1.5 rounded-full bg-[#1a2332] mx-auto mb-3" />
 
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-4">
-          <div>
-            <h2 className="text-base font-black text-[#f0f2f5]">Operations &amp; Management</h2>
-            {user ? (
-              <p className="text-[11px] text-[#d4a447] font-semibold flex items-center gap-1.5">
-                <span>{roleConfig.icon}</span>
-                <span>{user.name}</span>
-                <span className="text-[#5e6a7a]">•</span>
-                <span className="text-[#8a95a5]">{roleConfig.label}</span>
-              </p>
-            ) : (
-              <p className="text-[11px] text-[#8a95a5]">Rise Up Roofing &amp; Construction CRM</p>
-            )}
-          </div>
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.06] mb-4">
+          {user ? (
+            <Link
+              href="/admin/settings"
+              onClick={onClose}
+              className="flex items-center gap-3 min-w-0 group hover:opacity-90 transition-opacity"
+              title="Edit Profile & Avatar"
+            >
+              <UserAvatar
+                name={user.name}
+                avatarUrl={user.avatar_url}
+                role={user.role}
+                size="md"
+                showStatus
+              />
+              <div className="min-w-0">
+                <h2 className="text-sm font-black text-[#f0f2f5] group-hover:text-[#d4a447] truncate transition-colors">
+                  {user.name}
+                </h2>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <RoleBadge role={user.role} size="xs" />
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="min-w-0">
+                <h2 className="text-sm font-black text-[#f0f2f5] truncate">
+                  Operations &amp; Management
+                </h2>
+                <p className="text-[11px] text-[#8a95a5]">Rise Up Roofing &amp; Construction CRM</p>
+              </div>
+            </div>
+          )}
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] cursor-pointer transition-colors flex-shrink-0"
           >
             <X size={16} />
           </button>

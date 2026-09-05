@@ -21,7 +21,13 @@ import {
   ExternalLink,
   Layers,
   FileSpreadsheet,
+  User as UserIcon,
+  Camera,
 } from 'lucide-react';
+import UserAvatar from '@/components/admin/shared/UserAvatar';
+import RoleBadge from '@/components/admin/shared/RoleBadge';
+import AvatarPickerModal from '@/components/admin/shared/AvatarPickerModal';
+import { UserRole } from '@/lib/rbac';
 
 interface TableStat {
   table: string;
@@ -69,6 +75,23 @@ export default function SettingsPage() {
   const [companySuccess, setCompanySuccess] = useState(false);
   const [pricingSuccess, setPricingSuccess] = useState(false);
 
+  // Profile & Avatar State
+  const [profile, setProfile] = useState<{
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    role: UserRole | string;
+    avatar_url?: string | null;
+  } | null>(null);
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
+  const [showProfileAvatarPicker, setShowProfileAvatarPicker] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState(false);
+  const [profileError, setProfileError] = useState('');
+
   // Password section
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -76,6 +99,23 @@ export default function SettingsPage() {
   const [pwMsg, setPwMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   const [pwLoading, setPwLoading] = useState(false);
   const [isForbidden, setIsForbidden] = useState(false);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('/api/admin/profile');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setProfile(data.user);
+          setProfileName(data.user.name || '');
+          setProfilePhone(data.user.phone || '');
+          setProfileAvatarUrl(data.user.avatar_url || null);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load profile', err);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -104,8 +144,38 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
+    fetchProfile();
     fetchSettings();
   }, []);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    setProfileError('');
+    try {
+      const res = await fetch('/api/admin/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profileName,
+          phone: profilePhone,
+          avatar_url: profileAvatarUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setProfile(data.user);
+        setProfileSuccess(true);
+        setTimeout(() => setProfileSuccess(false), 2500);
+      } else {
+        setProfileError(data.error || 'Failed to update profile');
+      }
+    } catch {
+      setProfileError('Connection error while updating profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,24 +257,182 @@ export default function SettingsPage() {
     { type: 'reviews', label: 'Customer Reviews', desc: 'Star ratings, testimonials, feedback' },
   ];
 
+  const renderProfileSection = () => (
+    <div className="p-6 rounded-[20px] admin-card border border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.3)] bg-[#141b24]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/[0.06] gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#d4a447]/20 text-[#d4a447] flex items-center justify-center">
+            <UserIcon size={18} />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-[#f0f2f5]">My Profile &amp; Avatar</h2>
+            <p className="text-xs text-[#8a95a5]">
+              Manage your personal portrait photo, contact information, and role identity
+            </p>
+          </div>
+        </div>
+        {profile?.role && (
+          <div className="flex items-center gap-2">
+            <RoleBadge role={profile.role} size="sm" />
+          </div>
+        )}
+      </div>
+
+      {profileSuccess && (
+        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+          <CheckCircle2 size={15} /> Profile updated successfully! Changes reflect across the CRM.
+        </div>
+      )}
+      {profileError && (
+        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
+          <AlertCircle size={15} /> {profileError}
+        </div>
+      )}
+
+      <form onSubmit={handleSaveProfile} className="mt-5 space-y-5">
+        {/* Avatar Section */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl bg-[#0a0f14] border border-white/[0.05]">
+          <div className="relative flex-shrink-0">
+            <UserAvatar
+              name={profileName || profile?.name || 'User'}
+              avatarUrl={profileAvatarUrl}
+              role={profile?.role}
+              size="2xl"
+              showStatus
+              showRoleBadge
+            />
+            <button
+              type="button"
+              onClick={() => setShowProfileAvatarPicker(true)}
+              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-[#d4a447] text-[#0c1117] hover:bg-amber-400 shadow-md transition-all cursor-pointer"
+              title="Change Photo"
+            >
+              <Camera size={14} className="stroke-[2.5]" />
+            </button>
+          </div>
+
+          <div className="space-y-1.5 flex-1 min-w-0">
+            <div className="text-sm font-bold text-[#f0f2f5] flex items-center gap-2">
+              <span>Portrait Photo</span>
+              {profileAvatarUrl ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
+                  Custom Portrait Active
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-[#8a95a5] border border-white/[0.08] font-semibold">
+                  Initial Monogram
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[#8a95a5]">
+              Choose from 10 realistic contractor portraits, upload any photo from your device (auto-compressed), or paste an external image link.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowProfileAvatarPicker(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] border border-white/[0.08] text-[#f0f2f5] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+              >
+                <Camera size={13} className="text-[#d4a447]" />
+                Change Photo
+              </button>
+              {profileAvatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => setProfileAvatarUrl(null)}
+                  className="px-3 py-1.5 text-xs text-[#8a95a5] hover:text-red-400 font-medium cursor-pointer transition-colors"
+                >
+                  Remove Photo
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Form Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div>
+            <label className="block text-[#a0aab8] font-semibold mb-1">Display Name</label>
+            <input
+              type="text"
+              required
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              placeholder="Your Full Name"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[#a0aab8] font-semibold mb-1">Direct Phone Number</label>
+            <input
+              type="tel"
+              value={profilePhone}
+              onChange={(e) => setProfilePhone(e.target.value)}
+              placeholder="(818) 555-0100"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[#a0aab8] font-semibold mb-1">Email Address</label>
+            <input
+              type="email"
+              disabled
+              value={profile?.email || ''}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0f14]/80 border border-white/[0.04] text-[#5e6a7a] cursor-not-allowed"
+              title="Email is fixed to your account login"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={savingProfile}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-400 hover:to-orange-400 text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] shadow-[0_4px_20px_rgba(212,164,71,0.12)] disabled:opacity-50 cursor-pointer flex items-center gap-2"
+          >
+            <Save size={14} />
+            {savingProfile ? 'Saving...' : 'Save Profile Changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
   if (isForbidden) {
     return (
-      <div className="p-8 max-w-lg mx-auto text-center my-16 space-y-4 admin-fade-in">
-        <div className="w-16 h-16 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447] flex items-center justify-center mx-auto shadow-[0_4px_16px_rgba(212,164,71,0.08)]">
-          <ShieldCheck size={32} />
+      <div className="space-y-8 pb-24 md:pb-12 max-w-6xl mx-auto admin-fade-in">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#f0f2f5] flex items-center gap-2.5">
+            <Settings size={26} className="text-[#d4a447]" />
+            Personal Settings &amp; Profile
+          </h1>
+          <p className="text-xs sm:text-sm text-[#8a95a5] mt-0.5">
+            Manage your personal portrait photo, contact details, and role credentials.
+          </p>
         </div>
-        <h2 className="text-xl font-black text-[#f0f2f5]">Owner Access Required</h2>
-        <p className="text-sm text-[#8a95a5] leading-relaxed">
-          CRM pricing configurations, database health monitors, and system settings can only be accessed by the primary Owner / Qualifier.
-        </p>
-        <div className="pt-2">
-          <a
-            href="/admin/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#f0f2f5] text-xs font-bold transition-all border border-white/[0.06]"
-          >
-            Return to Dashboard
-          </a>
+
+        {renderProfileSection()}
+
+        <div className="p-8 max-w-2xl mx-auto text-center my-6 space-y-3 bg-[#141b24] border border-white/[0.06] rounded-[20px]">
+          <div className="w-12 h-12 rounded-[14px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447] flex items-center justify-center mx-auto shadow-[0_4px_16px_rgba(212,164,71,0.08)]">
+            <ShieldCheck size={24} />
+          </div>
+          <h3 className="text-base font-black text-[#f0f2f5]">Company &amp; System Settings Restricted</h3>
+          <p className="text-xs text-[#8a95a5] leading-relaxed">
+            CRM pricing configurations, database health monitors, and system backups can only be accessed by the primary Owner / Qualifier.
+          </p>
         </div>
+
+        <AvatarPickerModal
+          isOpen={showProfileAvatarPicker}
+          onClose={() => setShowProfileAvatarPicker(false)}
+          currentAvatarUrl={profileAvatarUrl}
+          userName={profileName || profile?.name || 'User'}
+          userRole={profile?.role || 'owner'}
+          onSelectAvatar={(url) => setProfileAvatarUrl(url)}
+        />
       </div>
     );
   }
@@ -230,6 +458,9 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Featured: My Profile & Avatar Card */}
+      {renderProfileSection()}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 admin-fade-in-1">
         {/* Card 1: Company Profile & License */}
@@ -568,6 +799,15 @@ export default function SettingsPage() {
           </button>
         </form>
       </div>
+
+      <AvatarPickerModal
+        isOpen={showProfileAvatarPicker}
+        onClose={() => setShowProfileAvatarPicker(false)}
+        currentAvatarUrl={profileAvatarUrl}
+        userName={profileName || profile?.name || 'User'}
+        userRole={profile?.role || 'owner'}
+        onSelectAvatar={(url) => setProfileAvatarUrl(url)}
+      />
     </div>
   );
 }
