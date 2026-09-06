@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import { Shield, Users, Award, Heart, CheckCircle2, Phone, ClipboardCheck, FileText, ArrowRight } from 'lucide-react';
+import { Icon, type IconName } from '@/components/shared/Icon';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { COMPANY_NAME, LICENSE_NUMBER, PHONE_HREF, PHONE_NUMBER } from '@/lib/utils';
+import { getReviewStats } from '@/lib/reviews-server';
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
   title: 'About Us | San Diego Roofing & Construction',
@@ -13,34 +16,40 @@ export const metadata: Metadata = buildMetadata({
   path: '/about',
 });
 
-const VALUES = [
+const VALUES: Array<{
+  icon: IconName;
+  title: string;
+  desc: string;
+  color: string;
+}> = [
   {
-    icon: Shield,
+    icon: 'shield',
     title: 'Integrity First',
     desc: 'We provide honest assessments and transparent itemized pricing. If a targeted repair will solve the issue, we will never push for an unnecessary replacement.',
     color: 'text-brand-blue bg-blue-500/10 border-blue-400/30',
   },
   {
-    icon: Users,
+    icon: 'users',
     title: 'Customer Focus',
     desc: 'Every project starts with attentive communication. We tailor solutions to your property structure, timeline, and budget — treating your home with utmost care.',
     color: 'text-amber-400 bg-amber-500/10 border-amber-400/30',
   },
   {
-    icon: Award,
+    icon: 'award',
     title: 'Quality Craftsmanship',
     desc: 'We use premium Owens Corning materials, follow strict manufacturer specifications, and back our installations with long-term non-prorated warranties.',
     color: 'text-emerald-400 bg-emerald-500/10 border-emerald-400/30',
   },
   {
-    icon: Heart,
+    icon: 'heart',
     title: 'Community Roots',
     desc: 'We are proud San Diego neighbors, not an out-of-state franchise. We take personal pride in protecting the families and businesses across our local communities.',
     color: 'text-rose-400 bg-rose-500/10 border-rose-400/30',
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const stats = await getReviewStats();
   return (
     <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
@@ -75,13 +84,13 @@ export default function AboutPage() {
 
           <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600" />
               <span>CA License #{LICENSE_NUMBER} • Fully Bonded</span>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/contact">
                 <span className="inline-flex items-center gap-1.5 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-all hover:brightness-110">
-                  <ClipboardCheck className="w-3.5 h-3.5" />
+                  <Icon name="clipboard-check" className="w-3.5 h-3.5" />
                   <span>Free Estimate</span>
                 </span>
               </Link>
@@ -103,7 +112,6 @@ export default function AboutPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {VALUES.map((v) => {
-            const Icon = v.icon;
             return (
               <div
                 key={v.title}
@@ -112,7 +120,7 @@ export default function AboutPage() {
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border ${v.color}`}
                 >
-                  <Icon className="w-6 h-6" />
+                  <Icon name={v.icon} className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="text-base font-bold text-[var(--text-primary)] mb-1.5">{v.title}</h4>
@@ -129,7 +137,7 @@ export default function AboutPage() {
         <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 border border-blue-100">
-              <FileText className="w-6 h-6" />
+              <Icon name="file-text" className="w-6 h-6" />
             </div>
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-brand-blue block mb-1">
@@ -148,7 +156,7 @@ export default function AboutPage() {
             className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-all hover:brightness-110 flex-shrink-0"
           >
             <span>Read Technical Guide</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <Icon name="arrow-right" className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
@@ -159,7 +167,7 @@ export default function AboutPage() {
           {[
             { stat: '25+', label: 'Years Experience' },
             { stat: '1,000+', label: 'Roofs Protected' },
-            { stat: '4.9 / 5.0', label: 'Customer Rating' },
+            { stat: `${stats.averageRating ? stats.averageRating.toFixed(1) : '5.0'} / 5.0`, label: 'Customer Rating' },
             { stat: '100%', label: 'Licensed & Bonded' },
           ].map((item) => (
             <div key={item.label}>

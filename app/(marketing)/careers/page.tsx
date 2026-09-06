@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Briefcase, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { jobs } from '@/lib/data/careers';
 import { Section } from '@/components/shared/Container';
@@ -41,15 +41,15 @@ export default function CareersPage() {
 
                 <div className="flex flex-wrap gap-3 text-xs text-[var(--text-secondary)] mb-4">
                   <span className="flex items-center gap-1.5 glass-chip px-2.5 py-1 rounded-lg">
-                    <Briefcase className="w-3.5 h-3.5 text-brand-blue" />
+                    <Icon name="briefcase" className="w-3.5 h-3.5 text-brand-blue" />
                     {job.department}
                   </span>
                   <span className="flex items-center gap-1.5 glass-chip px-2.5 py-1 rounded-lg">
-                    <MapPin className="w-3.5 h-3.5 text-brand-blue" />
+                    <Icon name="map-pin" className="w-3.5 h-3.5 text-brand-blue" />
                     San Diego County, CA
                   </span>
                   <span className="flex items-center gap-1.5 glass-chip px-2.5 py-1 rounded-lg">
-                    <Clock className="w-3.5 h-3.5 text-brand-blue" />
+                    <Icon name="clock" className="w-3.5 h-3.5 text-brand-blue" />
                     {job.employmentType}
                   </span>
                 </div>
@@ -61,7 +61,7 @@ export default function CareersPage() {
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-[#1C88DD] transition-colors">
                 <span>View Responsibilities &amp; Apply</span>
-                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                <Icon name="arrow-right" className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </Link>

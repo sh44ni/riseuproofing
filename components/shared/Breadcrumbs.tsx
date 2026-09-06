@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { cn } from '@/lib/utils';
 
 interface BreadcrumbItem {
@@ -36,7 +36,7 @@ export function Breadcrumbs({ items, dark = true, className }: BreadcrumbsProps)
         <ol className="inline-flex items-center gap-1.5 glass-chip px-3.5 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md border-white/20">
           {items.map((item, index) => (
             <li key={index} className="flex items-center gap-1.5">
-              {index > 0 && <ChevronRight className="w-3.5 h-3.5 text-white/50" />}
+              {index > 0 && <Icon name="chevron-right" className="w-3.5 h-3.5 text-white/50" />}
               {item.href && index < items.length - 1 ? (
                 <Link
                   href={item.href}

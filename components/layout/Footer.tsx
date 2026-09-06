@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, Mail, ArrowUpRight, ShieldCheck, Sparkles, ChevronDown } from 'lucide-react';
+import { Icon, GoogleIcon, YelpIcon } from '@/components/shared/Icon';
 import {
   PHONE_HREF,
   PHONE_NUMBER,
@@ -16,6 +16,7 @@ import {
 import { Container } from '@/components/shared/Container';
 import { TOP_CITIES } from '@/lib/data/navigation';
 import { Tooltip } from '@/components/shared/Tooltip';
+import type { ReviewStats } from '@/lib/reviews-server';
 
 const SERVICES = [
   { label: 'Residential Roofing', href: '/services/residential' },
@@ -43,7 +44,7 @@ const COMPANY_LINKS = [
 const ESCONDIDO_CHAMBER_URL =
   'https://business.escondidochamber.org/list/member/rise-up-roofing-and-construction-inc-9925';
 
-export function Footer() {
+export function Footer({ stats }: { stats?: ReviewStats } = {}) {
   const [capabilitiesOpen, setCapabilitiesOpen] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);
@@ -53,10 +54,11 @@ export function Footer() {
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-blue/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Background Watermark Signature */}
-      <div className="absolute bottom-12 right-0 left-0 text-center pointer-events-none opacity-[0.025] select-none font-black text-[10vw] tracking-tighter leading-none whitespace-nowrap overflow-hidden">
-        RISE UP ROOFING
+      <div className="absolute -bottom-20 right-0 opacity-[0.02] pointer-events-none select-none">
+        <span className="text-[180px] lg:text-[240px] font-black tracking-tighter text-white font-mono">
+          RISE UP
+        </span>
       </div>
-
       <div className="py-14 lg:py-16 relative z-10">
         <Container>
           {/* Top Quick Status & Contact Header Bar */}
@@ -74,7 +76,7 @@ export function Footer() {
                   href={PHONE_HREF}
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-brand-blue hover:border-brand-blue text-white font-bold text-xs border border-white/15 transition-all"
                 >
-                  <Phone className="w-3.5 h-3.5 text-brand-blue group-hover:text-white" />
+                  <Icon name="phone" className="w-3.5 h-3.5 text-brand-blue group-hover:text-white" />
                   <span>{PHONE_NUMBER}</span>
                 </a>
               </Tooltip>
@@ -84,7 +86,7 @@ export function Footer() {
                   href="mailto:info@riseuproofing.com"
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white text-xs border border-white/15 transition-all"
                 >
-                  <Mail className="w-3.5 h-3.5 text-brand-blue" />
+                  <Icon name="mail" className="w-3.5 h-3.5 text-brand-blue" />
                   <span>info@riseuproofing.com</span>
                 </a>
               </Tooltip>
@@ -113,7 +115,7 @@ export function Footer() {
                 {/* Frosted Floating Platform Dock */}
                 <div className="inline-flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/10 shadow-lg">
                   {/* Google */}
-                  <Tooltip content="Google Business Profile & 5.0★ Reviews">
+                  <Tooltip content={`Google Business Profile & ${stats?.googleRating ? stats.googleRating.toFixed(1) : '5.0'}★ Reviews`}>
                     <a
                       href={GOOGLE_REVIEWS_URL}
                       target="_blank"
@@ -121,14 +123,12 @@ export function Footer() {
                       aria-label="Google Business Profile"
                       className="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all hover:scale-105"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 13.88c-.68.62-1.74 1.12-3.08 1.12-2.67 0-4.83-2.07-4.83-4.73 0-2.66 2.16-4.73 4.83-4.73 1.34 0 2.29.51 2.87 1.05l-1.16 1.12c-.32-.3-.87-.65-1.71-.65-1.47 0-2.67 1.21-2.67 2.71s1.2 2.71 2.67 2.71c1.39 0 1.95-.87 2.08-1.42h-2.08v-1.47h3.6c.04.2.06.41.06.66 0 1.28-.43 2.51-1.58 3.58z" />
-                      </svg>
+                      <GoogleIcon className="w-4 h-4" />
                     </a>
                   </Tooltip>
 
                   {/* Yelp */}
-                  <Tooltip content="5.0★ Verified Reviews on Yelp">
+                  <Tooltip content={`${stats?.yelpRating ? stats.yelpRating.toFixed(1) : '5.0'}★ Verified Reviews on Yelp`}>
                     <a
                       href={YELP_REVIEWS_URL}
                       target="_blank"
@@ -136,9 +136,7 @@ export function Footer() {
                       aria-label="Yelp Reviews"
                       className="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all hover:scale-105"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12.17 12.87l2.85 4.38c.3.46.16 1.07-.3 1.37-.46.3-1.07.16-1.37-.3l-2.47-3.8-1.5 4.28c-.16.46-.66.7-1.12.54-.46-.16-.7-.66-.54-1.12l1.5-4.28-4.28-1.5c-.46-.16-.7-.66-.54-1.12.16-.46.66-.7 1.12-.54l4.28 1.5 1.5-4.28c.16-.46.66-.7 1.12-.54.46.16.7.66.54 1.12l-1.5 4.28 3.8-2.47c.46-.3 1.07-.16 1.37.3.3.46.16 1.07-.3 1.37l-4.38 2.85z" />
-                      </svg>
+                      <YelpIcon className="w-4 h-4" />
                     </a>
                   </Tooltip>
 
@@ -151,11 +149,7 @@ export function Footer() {
                       aria-label="Instagram"
                       className="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all hover:scale-105"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                      </svg>
+                      <Icon name="instagram" className="w-4 h-4" />
                     </a>
                   </Tooltip>
 
@@ -168,9 +162,7 @@ export function Footer() {
                       aria-label="Facebook"
                       className="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all hover:scale-105"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
-                      </svg>
+                      <Icon name="facebook" className="w-4 h-4" />
                     </a>
                   </Tooltip>
 
@@ -218,7 +210,7 @@ export function Footer() {
               <div className="mt-8 flex items-center gap-2 text-xs text-white/50">
                 <Tooltip content="Verified active with California Contractors State License Board">
                   <span className="inline-flex items-center gap-2 cursor-help">
-                    <ShieldCheck className="w-4 h-4 text-brand-gold flex-shrink-0" />
+                    <Icon name="shield-check" className="w-4 h-4 text-brand-gold flex-shrink-0" />
                     <span>CA Lic #{LICENSE_NUMBER} • Class B &amp; C-39 Bonded &amp; Insured</span>
                   </span>
                 </Tooltip>
@@ -267,7 +259,7 @@ export function Footer() {
                     className="text-xs font-bold text-brand-blue hover:text-white transition-colors inline-flex items-center gap-1"
                   >
                     <span>All 30+ Cities</span>
-                    <ArrowUpRight className="w-3 h-3" />
+                    <Icon name="arrow-up-right" className="w-3 h-3" />
                   </Link>
                 </li>
               </ul>
@@ -303,7 +295,7 @@ export function Footer() {
                   aria-expanded={capabilitiesOpen}
                 >
                   <span>Capabilities &amp; Services</span>
-                  <ChevronDown className={cn('w-4 h-4 text-white/60 transition-transform duration-200', capabilitiesOpen && 'rotate-180 text-brand-blue')} />
+                  <Icon name="chevron-down" className={cn('w-4 h-4 text-white/60 transition-transform duration-200', capabilitiesOpen && 'rotate-180 text-brand-blue')} />
                 </button>
                 {capabilitiesOpen && (
                   <ul className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/5">
@@ -327,7 +319,7 @@ export function Footer() {
                   aria-expanded={areasOpen}
                 >
                   <span>Service Areas</span>
-                  <ChevronDown className={cn('w-4 h-4 text-white/60 transition-transform duration-200', areasOpen && 'rotate-180 text-brand-blue')} />
+                  <Icon name="chevron-down" className={cn('w-4 h-4 text-white/60 transition-transform duration-200', areasOpen && 'rotate-180 text-brand-blue')} />
                 </button>
                 {areasOpen && (
                   <ul className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/5">
@@ -341,7 +333,7 @@ export function Footer() {
                     <li className="pt-1">
                       <Link href="/service-area" className="text-xs font-bold text-brand-blue hover:text-white transition-colors inline-flex items-center gap-1">
                         <span>All 30+ San Diego Cities</span>
-                        <ArrowUpRight className="w-3 h-3" />
+                        <Icon name="arrow-up-right" className="w-3 h-3" />
                       </Link>
                     </li>
                   </ul>
@@ -357,7 +349,7 @@ export function Footer() {
                   aria-expanded={companyOpen}
                 >
                   <span>Company</span>
-                  <ChevronDown className={cn('w-4 h-4 text-white/60 transition-transform duration-200', companyOpen && 'rotate-180 text-brand-blue')} />
+                  <Icon name="chevron-down" className={cn('w-4 h-4 text-white/60 transition-transform duration-200', companyOpen && 'rotate-180 text-brand-blue')} />
                 </button>
                 {companyOpen && (
                   <ul className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/5">
@@ -390,7 +382,7 @@ export function Footer() {
                 className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.10] border border-white/10 hover:border-brand-blue/40 text-white hover:text-brand-blue font-extrabold tracking-wider transition-all duration-200 shadow-2xs"
               >
                 <span>PROJEKTS</span>
-                <ArrowUpRight className="w-3 h-3 text-brand-blue transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <Icon name="arrow-up-right" className="w-3 h-3 text-brand-blue transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             </div>
 

@@ -1,15 +1,5 @@
-'use client';
-
 import Link from 'next/link';
-import {
-  ShieldCheck,
-  Star,
-  CheckCircle2,
-  Hammer,
-  ArrowRight,
-  Sparkles,
-  Building2,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { LICENSE_NUMBER } from '@/lib/utils';
@@ -36,7 +26,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
             {/* Top Tag & License */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <Icon name="sparkles" className="w-3.5 h-3.5 text-amber-600" />
                 <span>Master Craftsmanship</span>
               </span>
               <span className="text-xs font-medium text-[var(--text-muted)] bg-slate-50 px-3 py-1 rounded-full border border-slate-200/80">
@@ -72,7 +62,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
                   className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-200/60 hover:border-brand-blue/30 transition-colors"
                 >
                   <div className="w-7 h-7 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 shadow-2xs">
-                    <CheckCircle2 className="w-4 h-4" />
+                    <Icon name="check-circle" className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-semibold text-[var(--text-primary)] leading-tight">
                     {item}
@@ -92,7 +82,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
               className="inline-flex items-center gap-2 text-xs font-bold text-brand-blue hover:text-[#1C88DD] uppercase tracking-wider transition-colors group/link bg-blue-50 hover:bg-blue-100 px-3.5 py-1.5 rounded-xl border border-blue-100"
             >
               <span>Our Standards</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" />
+              <Icon name="arrow-right" className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" />
             </Link>
           </div>
         </div>
@@ -114,7 +104,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
                   </span>
                 </div>
                 <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-brand-blue flex-shrink-0 group-hover:scale-105 transition-all shadow-[0_2px_8px_rgba(47,159,227,0.12)]">
-                  <Hammer className="w-5 h-5" />
+                  <Icon name="hammer" className="w-5 h-5" />
                 </div>
               </div>
               <p className="text-xs sm:text-[13px] text-[var(--text-secondary)] leading-relaxed">
@@ -123,7 +113,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
             </div>
 
             <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-emerald-700">
-              <ShieldCheck className="w-4 h-4" />
+              <Icon name="shield-check" className="w-4 h-4" />
               <span>100% Passed Final City Inspections</span>
             </div>
           </div>
@@ -135,7 +125,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
               <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="flex items-center gap-1 text-amber-400 mb-3">
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <Icon key={s} name="star" className="w-4 h-4 text-amber-400" />
                 ))}
               </div>
               <div>
@@ -156,7 +146,7 @@ export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
                   Verified Bonded
                 </span>
                 <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                  <Building2 className="w-4 h-4" />
+                  <Icon name="building" className="w-4 h-4" />
                 </div>
               </div>
               <div>

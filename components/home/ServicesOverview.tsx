@@ -1,21 +1,6 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ArrowRight,
-  Sparkles,
-  Home,
-  Building2,
-  Sun,
-  Hammer,
-  ShieldCheck,
-  Phone,
-  CheckCircle2,
-  Camera,
-  FileText,
-  BadgePercent,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { services } from '@/lib/data/services';
@@ -63,11 +48,11 @@ export function ServicesOverview() {
                 {/* Floating Badges inside Media Window */}
                 <div className="absolute top-4 left-4 right-4 z-10 flex flex-wrap items-center justify-between gap-2">
                   <div className="inline-flex items-center gap-1.5 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 text-brand-blue text-xs font-bold uppercase tracking-wider shadow-sm">
-                    <Home className="w-3.5 h-3.5 text-brand-blue" />
+                    <Icon name="home" className="w-3.5 h-3.5 text-brand-blue" />
                     <span>Residential Flagship</span>
                   </div>
                   <div className="inline-flex items-center gap-1.5 bg-brand-blue/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-brand-blue/40 text-white text-xs font-semibold shadow-sm">
-                    <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                    <Icon name="shield-check" className="w-3.5 h-3.5 text-white" />
                     <span>Up to 50-Year Warranty</span>
                   </div>
                 </div>
@@ -139,7 +124,7 @@ export function ServicesOverview() {
               className="w-full py-3.5 px-6 rounded-xl bg-brand-blue hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-brand-blue/30 cursor-pointer"
             >
               <span>Explore Residential Systems</span>
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <Icon name="arrow-right" className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -205,7 +190,7 @@ export function ServicesOverview() {
                   '26-Gauge Valley Metals & Flashing Replacement',
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-xs font-medium text-[#1E293B]">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <Icon name="check-circle" className="w-4 h-4 text-emerald-500 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -239,13 +224,13 @@ export function ServicesOverview() {
                 className="py-3 px-4 rounded-xl bg-brand-blue hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
               >
                 <span>Book Diagnostic</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Icon name="arrow-right" className="w-3.5 h-3.5" />
               </Link>
               <a
                 href={PHONE_HREF}
                 className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
               >
-                <Phone className="w-3.5 h-3.5" />
+                <Icon name="phone" className="w-3.5 h-3.5" />
                 <span>Call Dispatch</span>
               </a>
             </div>
@@ -271,7 +256,7 @@ export function ServicesOverview() {
                 {/* Top Badge inside Image */}
                 <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-purple-300 bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/20 shadow-sm">
-                    <Building2 className="w-3.5 h-3.5" />
+                    <Icon name="building" className="w-3.5 h-3.5" />
                     <span>Commercial Flat</span>
                   </span>
                   <span className="text-[10px] font-bold text-white bg-purple-600/90 backdrop-blur-md px-2 py-0.5 rounded-lg border border-purple-400/40">
@@ -316,7 +301,7 @@ export function ServicesOverview() {
               className="w-full py-3 px-5 rounded-xl bg-brand-blue group-hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
             >
               <span>Explore Commercial</span>
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <Icon name="arrow-right" className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -337,11 +322,11 @@ export function ServicesOverview() {
                 {/* Top Badge inside Image */}
                 <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-amber-300 bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/20 shadow-sm">
-                    <Sun className="w-3.5 h-3.5" />
+                    <Icon name="sun" className="w-3.5 h-3.5" />
                     <span>Solar &amp; Storage</span>
                   </span>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-900 bg-amber-300 px-2 py-0.5 rounded-lg shadow-xs">
-                    <BadgePercent className="w-3 h-3 text-amber-900" />
+                    <Icon name="badge-percent" className="w-3 h-3 text-amber-900" />
                     <span>Save 30%</span>
                   </span>
                 </div>
@@ -383,7 +368,7 @@ export function ServicesOverview() {
               className="w-full py-3 px-5 rounded-xl bg-brand-blue group-hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
             >
               <span>Explore Solar</span>
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <Icon name="arrow-right" className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -404,7 +389,7 @@ export function ServicesOverview() {
                 {/* Top Badge inside Image */}
                 <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-[#FB923C] bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/20 shadow-sm">
-                    <Hammer className="w-3.5 h-3.5" />
+                    <Icon name="hammer" className="w-3.5 h-3.5" />
                     <span>General Contractor</span>
                   </span>
                   <span className="text-[10px] font-bold text-white bg-[#C85A2A]/90 backdrop-blur-md px-2 py-0.5 rounded-lg border border-orange-400/40">
@@ -449,7 +434,7 @@ export function ServicesOverview() {
               className="w-full py-3 px-5 rounded-xl bg-brand-blue group-hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
             >
               <span>Explore Construction</span>
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <Icon name="arrow-right" className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
@@ -465,7 +450,7 @@ export function ServicesOverview() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-white/10">
               <div className="max-w-2xl">
                 <div className="inline-flex items-center gap-2 text-[11px] font-bold tracking-wider uppercase text-amber-400 bg-amber-400/10 px-3.5 py-1.5 rounded-xl border border-amber-400/25 mb-3.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <Icon name="sparkles" className="w-3.5 h-3.5 text-amber-400" />
                   <span>Complimentary Homeowner Service</span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight mb-2.5">
@@ -483,10 +468,10 @@ export function ServicesOverview() {
                   className="inline-flex items-center justify-center gap-2.5 bg-amber-400 hover:bg-amber-300 text-[#0B1E33] font-extrabold text-sm uppercase tracking-wider px-8 py-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-amber-400/30 hover:scale-[1.02] cursor-pointer"
                 >
                   <span>Claim Free 21-Point Inspection</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Icon name="arrow-right" className="w-4 h-4" />
                 </Link>
                 <div className="flex items-center gap-2 text-xs text-white/60">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <Icon name="shield-check" className="w-4 h-4 text-emerald-400" />
                   <span>100% Free • Zero Obligation • Licensed &amp; Insured</span>
                 </div>
               </div>
@@ -500,7 +485,7 @@ export function ServicesOverview() {
                   <span className="w-9 h-9 rounded-xl bg-brand-blue/20 border border-brand-blue/40 flex items-center justify-center text-brand-blue font-extrabold text-xs">
                     01
                   </span>
-                  <Camera className="w-5 h-5 text-brand-blue" />
+                  <Icon name="camera" className="w-5 h-5 text-brand-blue" />
                 </div>
                 <h4 className="text-base font-bold text-white mb-1.5">
                   Aerial Drone Scan
@@ -516,7 +501,7 @@ export function ServicesOverview() {
                   <span className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-extrabold text-xs">
                     02
                   </span>
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  <Icon name="shield-check" className="w-5 h-5 text-emerald-400" />
                 </div>
                 <h4 className="text-base font-bold text-white mb-1.5">
                   Attic &amp; Flashing Check
@@ -532,7 +517,7 @@ export function ServicesOverview() {
                   <span className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-extrabold text-xs">
                     03
                   </span>
-                  <FileText className="w-5 h-5 text-amber-400" />
+                  <Icon name="file-text" className="w-5 h-5 text-amber-400" />
                 </div>
                 <h4 className="text-base font-bold text-white mb-1.5">
                   Itemized Digital Report
@@ -551,7 +536,7 @@ export function ServicesOverview() {
         <Link href="/services">
           <span className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue hover:text-white border border-slate-200/80 hover:border-brand-blue text-[#0B1E33] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer">
             <span>Explore All Roofing &amp; Construction Divisions</span>
-            <ArrowRight className="w-4 h-4" />
+            <Icon name="arrow-right" className="w-4 h-4" />
           </span>
         </Link>
       </div>

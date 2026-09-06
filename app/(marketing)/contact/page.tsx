@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Phone, Mail, MapPin, Clock, ShieldCheck } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
@@ -44,7 +44,7 @@ export default function ContactPage() {
                 className="flex items-center gap-3.5 text-[var(--text-primary)] hover:text-brand-blue transition-colors group"
               >
                 <div className="w-11 h-11 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                  <Phone className="w-5 h-5" />
+                  <Icon name="phone" className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">24/7 Phone &amp; Text</p>
@@ -57,7 +57,7 @@ export default function ContactPage() {
                 className="flex items-center gap-3.5 text-[var(--text-primary)] hover:text-brand-blue transition-colors group"
               >
                 <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 group-hover:text-brand-blue transition-colors">
-                  <Mail className="w-5 h-5" />
+                  <Icon name="mail" className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Email Inquiries</p>
@@ -67,7 +67,7 @@ export default function ContactPage() {
 
               <div className="flex items-center gap-3.5 text-[var(--text-primary)]">
                 <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-5 h-5" />
+                  <Icon name="map-pin" className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Primary Coverage</p>
@@ -77,7 +77,7 @@ export default function ContactPage() {
 
               <div className="flex items-center gap-3.5 text-[var(--text-primary)]">
                 <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5" />
+                  <Icon name="clock" className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Operating Hours</p>
@@ -91,7 +91,7 @@ export default function ContactPage() {
           {/* Verification Badge Dock */}
           <div className="glass-card-interactive rounded-3xl p-6 border border-slate-200/80 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <ShieldCheck className="w-8 h-8 text-brand-gold flex-shrink-0" />
+              <Icon name="shield-check" className="w-8 h-8 text-brand-gold flex-shrink-0" />
               <div>
                 <p className="text-xs font-bold text-[var(--text-primary)]">CA Contractor License #{LICENSE_NUMBER}</p>
                 <p className="text-[11px] text-[var(--text-muted)]">Fully Licensed, Bonded &amp; Insured</p>

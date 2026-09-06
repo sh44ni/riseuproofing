@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { MapPin, ArrowRight, ShieldCheck, Phone } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { serviceAreas } from '@/lib/data/serviceAreas';
 import { Section } from '@/components/shared/Container';
@@ -33,7 +33,7 @@ export default function ServiceAreaPage() {
             href={`/service-area/${area.slug}`}
             className="glass-card-interactive rounded-xl p-4 flex items-center gap-2.5 border border-slate-200/80 hover:border-brand-blue/40 shadow-2xs transition-all group"
           >
-            <MapPin className="w-4 h-4 text-brand-blue flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <Icon name="map-pin" className="w-4 h-4 text-brand-blue flex-shrink-0 group-hover:scale-110 transition-transform" />
             <span className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
               {area.name}
             </span>
@@ -45,7 +45,7 @@ export default function ServiceAreaPage() {
       <div className="max-w-4xl mx-auto mb-16 space-y-8">
         <div className="glass-card-interactive rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs">
           <div className="flex items-center gap-2 mb-3 text-brand-blue font-bold text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-brand-blue" />
+            <Icon name="shield-check" className="w-4 h-4 text-brand-blue" />
             <span>Regional Microclimates &amp; Engineering</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-4 tracking-tight">
@@ -64,7 +64,7 @@ export default function ServiceAreaPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="glass-card-interactive rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
             <h3 className="text-lg font-extrabold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <Icon name="shield-check" className="w-4 h-4 text-emerald-600" />
               <span>Countywide Municipal Permitting</span>
             </h3>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
@@ -77,7 +77,7 @@ export default function ServiceAreaPage() {
 
           <div className="glass-card-interactive rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
             <h3 className="text-lg font-extrabold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-brand-blue" />
+              <Icon name="shield-check" className="w-4 h-4 text-brand-blue" />
               <span>Full-Service Roofing &amp; Solar Solutions</span>
             </h3>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
@@ -102,12 +102,12 @@ export default function ServiceAreaPage() {
           <Link href="/contact">
             <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
               <span>Book Free Inspection</span>
-              <ArrowRight className="w-4 h-4" />
+              <Icon name="arrow-right" className="w-4 h-4" />
             </span>
           </Link>
           <a href={PHONE_HREF}>
             <span className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all shadow-xs">
-              <Phone className="w-4 h-4 text-brand-blue" />
+              <Icon name="phone" className="w-4 h-4 text-brand-blue" />
               <span>Call {PHONE_NUMBER}</span>
             </span>
           </a>

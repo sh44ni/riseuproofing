@@ -5,28 +5,12 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import {
-  Menu,
-  X,
-  Phone,
-  ChevronDown,
-  ChevronRight,
-  ShieldCheck,
-  Star,
-  MapPin,
-  Sparkles,
-  Home,
-  Wrench,
-  Sun,
-  Building2,
-  ArrowUpRight,
-  ArrowRight,
-  CheckCircle2,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { cn, PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
 import { SERVICES_NAV, TOP_CITIES } from '@/lib/data/navigation';
+import type { ReviewStats } from '@/lib/reviews-server';
 
-export function MobileNav() {
+export function MobileNav({ stats }: { stats?: ReviewStats }) {
   const [open, setOpen] = useState(false);
   const [servicesExpanded, setServicesExpanded] = useState(false);
   const [areasExpanded, setAreasExpanded] = useState(false);
@@ -89,7 +73,7 @@ export function MobileNav() {
             className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer border border-white/10"
             aria-label="Close menu"
           >
-            <X className="w-5 h-5 stroke-[2.5]" />
+            <Icon name="x" className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
@@ -114,7 +98,7 @@ export function MobileNav() {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <Phone className="w-5 h-5" />
+                  <Icon name="phone" className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">
@@ -136,9 +120,9 @@ export function MobileNav() {
               onClick={() => setOpen(false)}
               className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-brand-blue to-[#1C88DD] hover:brightness-110 active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-brand-blue/30 transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-white animate-pulse" />
+              <Icon name="sparkles" className="w-4 h-4 text-white animate-pulse" />
               <span>Get Free Drone Estimate</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <Icon name="arrow-right" className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -164,7 +148,7 @@ export function MobileNav() {
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-brand-blue/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-brand-blue flex items-center justify-center">
-                  <Home className="w-4 h-4" />
+                  <Icon name="home" className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-white group-hover:text-brand-blue transition-colors">
@@ -180,7 +164,7 @@ export function MobileNav() {
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-amber-400/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                  <Wrench className="w-4 h-4" />
+                  <Icon name="wrench" className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
@@ -196,7 +180,7 @@ export function MobileNav() {
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-cyan-400/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                  <Building2 className="w-4 h-4" />
+                  <Icon name="building" className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
@@ -212,7 +196,7 @@ export function MobileNav() {
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-yellow-400/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center">
-                  <Sun className="w-4 h-4" />
+                  <Icon name="sun" className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-white group-hover:text-yellow-300 transition-colors">
@@ -241,7 +225,7 @@ export function MobileNav() {
               )}
             >
               <span>Home</span>
-              <ChevronRight className="w-4 h-4 text-white/30" />
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
             </Link>
 
             {/* Services Accordion */}
@@ -257,7 +241,7 @@ export function MobileNav() {
                 )}
               >
                 <span>All Roofing Services</span>
-                <ChevronDown
+                <Icon name="chevron-down"
                   className={cn(
                     'w-4 h-4 transition-transform duration-200 text-white/40',
                     servicesExpanded && 'rotate-180 text-brand-blue'
@@ -275,7 +259,7 @@ export function MobileNav() {
                       className="flex items-center justify-between p-2 rounded-lg text-xs text-white/70 hover:text-brand-blue hover:bg-white/[0.04] transition-colors"
                     >
                       <span>{s.label}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-white/20" />
+                      <Icon name="chevron-right" className="w-3.5 h-3.5 text-white/20" />
                     </Link>
                   ))}
                 </div>
@@ -299,7 +283,7 @@ export function MobileNav() {
                   Photos
                 </span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/30" />
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
             </Link>
 
             {/* Service Areas Accordion */}
@@ -315,10 +299,10 @@ export function MobileNav() {
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-white/40" />
+                  <Icon name="map-pin" className="w-3.5 h-3.5 text-white/40" />
                   <span>Service Areas</span>
                 </div>
-                <ChevronDown
+                <Icon name="chevron-down"
                   className={cn(
                     'w-4 h-4 transition-transform duration-200 text-white/40',
                     areasExpanded && 'rotate-180 text-brand-blue'
@@ -363,10 +347,10 @@ export function MobileNav() {
               <div className="flex items-center gap-2">
                 <span>Customer Reviews</span>
                 <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-300 bg-amber-500/20 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                  <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" /> 5.0★
+                  <Icon name="star" className="w-2.5 h-2.5 text-amber-400 fill-amber-400" /> {stats?.averageRating ? stats.averageRating.toFixed(1) : '5.0'}★
                 </span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/30" />
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
             </Link>
 
             {/* About */}
@@ -381,7 +365,7 @@ export function MobileNav() {
               )}
             >
               <span>About Rise Up</span>
-              <ChevronRight className="w-4 h-4 text-white/30" />
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
             </Link>
 
             {/* Careers */}
@@ -401,7 +385,7 @@ export function MobileNav() {
                   Hiring
                 </span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/30" />
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
             </Link>
 
             {/* Contact */}
@@ -416,18 +400,18 @@ export function MobileNav() {
               )}
             >
               <span>Contact Us</span>
-              <ChevronRight className="w-4 h-4 text-white/30" />
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
             </Link>
           </div>
 
           {/* 4. Social Proof & Trust Badges */}
           <div className="pt-4 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px] text-white/70">
             <div className="flex items-center gap-1.5 p-2 rounded-lg bg-white/[0.03] border border-white/5">
-              <ShieldCheck className="w-4 h-4 text-brand-gold flex-shrink-0" />
+              <Icon name="shield-check" className="w-4 h-4 text-brand-gold flex-shrink-0" />
               <span className="truncate">CA Lic #{LICENSE_NUMBER}</span>
             </div>
             <div className="flex items-center gap-1.5 p-2 rounded-lg bg-white/[0.03] border border-white/5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               <span className="truncate">Owens Corning Preferred</span>
             </div>
           </div>
@@ -447,7 +431,7 @@ export function MobileNav() {
               className="group inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-blue/40 text-white hover:text-brand-blue font-extrabold tracking-wider transition-all duration-200"
             >
               <span>PROJEKTS</span>
-              <ArrowUpRight className="w-3 h-3 text-brand-blue transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <Icon name="arrow-up-right" className="w-3 h-3 text-brand-blue transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
           </div>
         </div>
@@ -469,7 +453,7 @@ export function MobileNav() {
           Menu
         </span>
         {open ? (
-          <X className="w-4 h-4 stroke-[2.5] text-brand-blue" />
+          <Icon name="x" className="w-4 h-4 stroke-[2.5] text-brand-blue" />
         ) : (
           <div className="flex flex-col gap-1 w-4 items-end justify-center">
             <span className="w-4 h-[2px] bg-current rounded-full" />

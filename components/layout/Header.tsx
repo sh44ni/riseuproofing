@@ -4,19 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  Phone,
-  Mail,
-  ShieldCheck,
-  ChevronDown,
-  ChevronLeft,
-  Star,
-  ArrowRight,
-  MapPin,
-  Sparkles,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { cn, PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
 import { SERVICES_MEGA_MENU, TOP_CITIES } from '@/lib/data/navigation';
+import type { ReviewStats } from '@/lib/reviews-server';
 import { MobileNav } from './MobileNav';
 
 const ROUTE_LABELS: Record<string, string> = {
@@ -34,7 +25,7 @@ const ROUTE_LABELS: Record<string, string> = {
 const ROUTE_TITLES: Record<string, string> = {
   services: 'Our Services',
   projects: 'Our Projects',
-  reviews: 'Reviews (5.0★)',
+  reviews: 'Customer Reviews',
   about: 'About Rise Up',
   contact: 'Free Estimate',
   careers: 'Careers',
@@ -83,7 +74,7 @@ function getRouteNavInfo(pathname: string | null) {
   };
 }
 
-export function Header() {
+export function Header({ stats }: { stats?: ReviewStats } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
@@ -175,7 +166,7 @@ export function Header() {
             </div>
 
             <div className="hidden md:flex items-center gap-1.5 text-white/70">
-              <ShieldCheck className="w-3.5 h-3.5 text-brand-gold" />
+              <Icon name="shield-check" className="w-3.5 h-3.5 text-brand-gold" />
               <span>CA License #{LICENSE_NUMBER} • Fully Bonded</span>
             </div>
           </div>
@@ -187,10 +178,14 @@ export function Header() {
               className="inline-flex items-center gap-1.5 text-white hover:text-brand-gold transition-colors font-medium"
             >
               <div className="flex text-amber-400">
-                <Star className="w-3.5 h-3.5 fill-amber-400" />
+                <Icon name="star" className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
               </div>
-              <span className="font-bold text-white">5.0 / 5.0</span>
-              <span className="text-white/70 hidden sm:inline">(Verified Reviews)</span>
+              <span className="font-bold text-white">
+                {stats?.averageRating ? stats.averageRating.toFixed(1) : '5.0'} / 5.0
+              </span>
+              <span className="text-white/70 hidden sm:inline">
+                {stats?.totalCount ? `(${stats.totalCount} Verified Reviews)` : '(Verified Reviews)'}
+              </span>
             </Link>
 
             <span className="hidden sm:inline-block text-white/30">|</span>
@@ -199,7 +194,7 @@ export function Header() {
               href="mailto:info@riseuproofing.com"
               className="hidden sm:flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
             >
-              <Mail className="w-3.5 h-3.5 text-brand-blue" />
+              <Icon name="mail" className="w-3.5 h-3.5 text-brand-blue" />
               <span>info@riseuproofing.com</span>
             </a>
           </div>
@@ -240,7 +235,7 @@ export function Header() {
                   className="inline-flex items-center gap-1 -ml-1 px-3 py-2 rounded-xl bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200 text-theme-primary font-bold text-xs transition-all active:scale-95 border border-slate-200/60 shadow-2xs flex-shrink-0 cursor-pointer"
                   aria-label={`Go back to ${navInfo.label}`}
                 >
-                  <ChevronLeft className="w-4 h-4 text-brand-blue stroke-[2.5]" />
+                  <Icon name="chevron-left" className="w-4 h-4 text-brand-blue stroke-[2.5]" />
                   <span className="truncate max-w-[80px] sm:max-w-[120px]">{navInfo.label}</span>
                 </button>
                 <span className="text-xs sm:text-sm font-extrabold text-theme-primary tracking-tight truncate">
@@ -296,7 +291,7 @@ export function Header() {
                 aria-expanded={servicesOpen}
               >
                 <span>Services</span>
-                <ChevronDown
+                <Icon name="chevron-down"
                   className={cn(
                     'w-3.5 h-3.5 transition-transform duration-200 text-theme-muted',
                     servicesOpen && 'rotate-180 text-brand-blue'
@@ -353,7 +348,7 @@ export function Header() {
                     <div className="col-span-3 bg-gradient-to-r from-brand-navy to-brand-dark border border-slate-700/40 text-white rounded-xl p-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center text-brand-blue border border-brand-blue/30">
-                          <Sparkles className="w-4 h-4 text-brand-blue" />
+                          <Icon name="sparkles" className="w-4 h-4 text-brand-blue" />
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-white">
@@ -368,7 +363,7 @@ export function Header() {
                         href="/contact"
                         className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-navy bg-white px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
                       >
-                        Book Now <ArrowRight className="w-3.5 h-3.5" />
+                        Book Now <Icon name="arrow-right" className="w-3.5 h-3.5" />
                       </Link>
                     </div>
                   </div>
@@ -405,9 +400,9 @@ export function Header() {
                 )}
                 aria-expanded={areasOpen}
               >
-                <MapPin className="w-3.5 h-3.5 text-theme-muted" />
+                <Icon name="map-pin" className="w-3.5 h-3.5 text-theme-muted" />
                 <span>Service Areas</span>
-                <ChevronDown
+                <Icon name="chevron-down"
                   className={cn(
                     'w-3.5 h-3.5 transition-transform duration-200 text-theme-muted',
                     areasOpen && 'rotate-180 text-brand-blue'
@@ -439,7 +434,7 @@ export function Header() {
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-blue-50/60 rounded-lg transition-colors"
                       >
                         <span>All 30+ Service Areas</span>
-                        <ArrowRight className="w-3 h-3" />
+                        <Icon name="arrow-right" className="w-3 h-3" />
                       </Link>
                     </div>
                   </div>
@@ -496,7 +491,7 @@ export function Header() {
               aria-label={`Call ${PHONE_NUMBER}`}
             >
               <div className="w-7 h-7 rounded-lg bg-brand-blue/15 text-brand-blue flex items-center justify-center group-hover:bg-brand-blue group-hover:text-white transition-colors flex-shrink-0">
-                <Phone className="w-3.5 h-3.5" />
+                <Icon name="phone" className="w-3.5 h-3.5" />
               </div>
               <div className="flex flex-col whitespace-nowrap text-left">
                 <span className="text-[9px] font-bold uppercase tracking-wider text-theme-muted leading-tight">
@@ -512,12 +507,12 @@ export function Header() {
             <Link href="/contact" className="hidden sm:inline-block">
               <span className="inline-flex items-center gap-1.5 bg-brand-blue hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider rounded-xl px-4 py-2.5 transition-all shadow-md shadow-brand-blue/20 hover:shadow-brand-blue/35 hover:scale-[1.02] active:scale-[0.98]">
                 <span>Free Estimate</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Icon name="arrow-right" className="w-3.5 h-3.5" />
               </span>
             </Link>
 
             {/* Mobile Hamburger Trigger */}
-            <MobileNav />
+            <MobileNav stats={stats} />
           </div>
         </div>
       </div>

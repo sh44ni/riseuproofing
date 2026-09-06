@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, ArrowRight, ShieldCheck, Sun, CheckCircle2 } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { projects, projectCategories } from '@/lib/data/projects';
 import { Section } from '@/components/shared/Container';
@@ -65,7 +65,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       {category === 'solar' && (
         <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50/90 via-sky-50/60 to-white border border-blue-100/90 shadow-sm">
           <div className="flex items-center gap-2.5 mb-3 text-brand-blue font-bold text-xs uppercase tracking-wider">
-            <Sun className="w-4 h-4 text-amber-500 animate-pulse" />
+            <Icon name="sun" className="w-4 h-4 text-amber-500 animate-pulse" />
             <span>Solar Roofing Specialists • San Diego County</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
@@ -76,15 +76,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-brand-blue flex-shrink-0" />
               <span>Safe Electrical Decoupling</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <Icon name="shield-check" className="w-4 h-4 text-brand-blue flex-shrink-0" />
               <span>Watertight Boot Flashing</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Warranties Fully Protected</span>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       {category === 'repairs' && (
         <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-50/90 via-teal-50/60 to-white border border-emerald-100/90 shadow-sm">
           <div className="flex items-center gap-2.5 mb-3 text-emerald-700 font-bold text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <Icon name="shield-check" className="w-4 h-4 text-emerald-600" />
             <span>Emergency Leak Mitigation Specialists</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
@@ -105,15 +105,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Same-Day Emergency Dispatch</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="shield-check" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Thermal Infrared Tracing</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Written Workmanship Warranty</span>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       {category === 'residential' && (
         <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50/90 via-slate-50/60 to-white border border-blue-100/90 shadow-sm">
           <div className="flex items-center gap-2.5 mb-3 text-brand-blue font-bold text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-brand-blue" />
+            <Icon name="shield-check" className="w-4 h-4 text-brand-blue" />
             <span>Residential Roofing Craftsmanship</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
@@ -134,15 +134,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-brand-blue flex-shrink-0" />
               <span>Owens Corning Preferred</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <Icon name="shield-check" className="w-4 h-4 text-brand-blue flex-shrink-0" />
               <span>California Title 24 Compliant</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Lifetime Shingle Warranties</span>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       {category === 'commercial' && (
         <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-white border border-amber-100/90 shadow-sm">
           <div className="flex items-center gap-2.5 mb-3 text-amber-700 font-bold text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-amber-600" />
+            <Icon name="shield-check" className="w-4 h-4 text-amber-600" />
             <span>Commercial Low-Slope Systems</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
@@ -163,15 +163,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-amber-600 flex-shrink-0" />
               <span>Energy Star Cool Roofs</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <Icon name="shield-check" className="w-4 h-4 text-amber-600 flex-shrink-0" />
               <span>20-Year Commercial Warranty</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Zero Operational Downtime</span>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       {category === 'construction' && (
         <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-50/90 via-purple-50/40 to-white border border-indigo-100/90 shadow-sm">
           <div className="flex items-center gap-2.5 mb-3 text-indigo-700 font-bold text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            <Icon name="shield-check" className="w-4 h-4 text-indigo-600" />
             <span>Licensed General Contracting</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
@@ -192,15 +192,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-indigo-600 flex-shrink-0" />
               <span>Structural Engineering &amp; Plans</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+              <Icon name="shield-check" className="w-4 h-4 text-indigo-600 flex-shrink-0" />
               <span>City Permitting Handled 100%</span>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Class-A Fire Rated Materials</span>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 </div>
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white">
                   <span className="glass-chip px-2.5 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-md text-[11px] font-semibold">
-                    <MapPin className="w-3.5 h-3.5 text-brand-blue" />
+                    <Icon name="map-pin" className="w-3.5 h-3.5 text-brand-blue" />
                     {project.city}, CA
                   </span>
                 </div>
@@ -244,7 +244,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 </div>
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-[#1C88DD] transition-colors">
                   <span>View Project Case Study</span>
-                  <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+                  <Icon name="arrow-right" className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>

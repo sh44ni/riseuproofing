@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, ArrowRight, CheckCircle2, ShieldCheck, ClipboardCheck } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { getProjectBySlug, getAllProjectSlugs } from '@/lib/data/projects';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { Section } from '@/components/shared/Container';
@@ -56,7 +56,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {project.category}
             </span>
             <span className="glass-chip px-3 py-1 rounded-full text-xs font-semibold text-white/90 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-brand-blue" />
+              <Icon name="map-pin" className="w-3.5 h-3.5 text-brand-blue" />
               {project.city}, California
             </span>
           </div>
@@ -79,7 +79,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </p>
 
               <h3 className="text-base font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-blue" />
+                <Icon name="shield-check" className="w-4 h-4 text-brand-blue" />
                 <span>Materials &amp; Specifications</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -88,7 +88,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     key={mat}
                     className="glass-chip rounded-xl p-3 flex items-center gap-2 text-xs text-[var(--text-secondary)]"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>{mat}</span>
                   </div>
                 ))}
@@ -177,7 +177,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {/* Quality & Workmanship Standards */}
               <div className="glass-chip rounded-2xl p-4 mb-6 border border-slate-200/80">
                 <h4 className="text-xs font-bold text-[var(--text-primary)] mb-1.5 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
+                  <Icon name="shield-check" className="w-3.5 h-3.5 text-brand-blue" />
                   <span>Licensed &amp; Insured Craftsmanship</span>
                 </h4>
                 <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
@@ -187,9 +187,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
               <Link href="/contact" className="block">
                 <span className="w-full inline-flex items-center justify-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
-                  <ClipboardCheck className="w-4 h-4" />
+                  <Icon name="clipboard-check" className="w-4 h-4" />
                   <span>Get a Similar Estimate</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Icon name="arrow-right" className="w-4 h-4" />
                 </span>
               </Link>
             </div>

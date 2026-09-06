@@ -1,25 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  Shield,
-  CheckCircle2,
-  AlertTriangle,
-  FileText,
-  Recycle,
-  Layers,
-  Hammer,
-  Phone,
-  ArrowRight,
-  ClipboardCheck,
-  Scale,
-  Eye,
-  Wind,
-  Wrench,
-  Sparkles,
-  DollarSign,
-  Clock,
-  Home,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import {
   buildMetadata,
   buildFAQJsonLd,
@@ -71,7 +52,6 @@ const TEAR_OFF_PHASES = [
   {
     number: '01',
     title: 'Property Perimeter & Landscape Armor',
-    icon: Shield,
     tagline: 'Zero Property Impact Protocol',
     description:
       'Before a single nail is pulled, our crew establishes a reinforced safety perimeter around your home. We hang heavy-duty reinforced tarps from gutter lines to catch falling debris and protect stucco and windows. Specially constructed plywood barrier boxes are erected over HVAC condensing units, pool pumps, and outdoor kitchen equipment, while sensitive garden beds and shrubbery are shielded with breathable ground tarps.',
@@ -85,7 +65,6 @@ const TEAR_OFF_PHASES = [
   {
     number: '02',
     title: 'Systematic Shingle & Underlayment Stripping',
-    icon: Hammer,
     tagline: 'Stripping Down to Bare Sheathing',
     description:
       'Using specialized fulcrum-action shingle rippers and tear-off pitchforks, our crew strips the roof systematically from ridge to eaves. We remove all existing courses of asphalt shingles, aged asphalt-saturated felt paper, corroded valley metal, rusted step flashings, and deteriorated plumbing boots. We never scrape over old felt — every square inch of the wood substrate is exposed for structural review.',
@@ -99,7 +78,6 @@ const TEAR_OFF_PHASES = [
   {
     number: '03',
     title: 'Sub-Decking Dry Rot & Deflection Inspection',
-    icon: Eye,
     tagline: 'Ensuring Structural Framing Integrity',
     description:
       'With the roof deck fully bare, our master technicians walk every square foot of plywood, OSB, or skip-sheeting. In coastal San Diego climates where marine humidity quietly feeds fungal decay, we check for wood rot, delamination, termite tunneling, and rafter sag. Any compromised wood is marked, photographed, and replaced with CDX exterior plywood nailed to California high-wind seismic spacing.',
@@ -113,7 +91,6 @@ const TEAR_OFF_PHASES = [
   {
     number: '04',
     title: 'Caltrans-Approved Shingle Recycling & Magnetic Sweeps',
-    icon: Recycle,
     tagline: 'Diverting Landfill Waste & 100% Nail Pickup',
     description:
       'Rise Up is committed to sustainable construction. Asphalt shingles removed from your roof are transported to certified recycling facilities where they are processed into Recycled Asphalt Pavement (RAP) used by Caltrans on California highways. Meanwhile, on your grounds, we execute multiple overlapping passes with commercial-grade neodymium magnetic sweeps across lawns, driveways, and flowerbeds.',
@@ -127,7 +104,6 @@ const TEAR_OFF_PHASES = [
   {
     number: '05',
     title: 'Water-Tight Secondary Barrier & Synthetic Underlayment',
-    icon: Layers,
     tagline: 'Immediate Storm & Marine Layer Defense',
     description:
       'Before our crew departs for the day, your roof deck is completely sealed against rain and coastal fog. We install self-adhering modified bitumen Ice & Water Shield leak barriers in critical vulnerability zones — valleys, rakes, eaves, and chimney saddles. The entire deck is then clad with high-traction, Class A fire-rated synthetic underlayment fastened with plastic-capped ring nails.',
@@ -231,7 +207,7 @@ export default function RoofTearOffProcessPage() {
         <div className="max-w-4xl mx-auto mb-12">
           {/* Header Badge */}
           <div className="inline-flex items-center gap-2 glass-chip px-3.5 py-1 rounded-full mb-4 text-xs font-bold uppercase tracking-wider text-brand-blue">
-            <Scale className="w-3.5 h-3.5" />
+            <Icon name="scale" className="w-3.5 h-3.5" />
             <span>Engineering Standard • California Residential Code</span>
           </div>
 
@@ -246,19 +222,19 @@ export default function RoofTearOffProcessPage() {
           {/* Quick Authority Highlights Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs mb-10">
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-semibold text-[var(--text-primary)]">CRC R908 Compliant</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-semibold text-[var(--text-primary)]">100% Magnetic Sweep</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-semibold text-[var(--text-primary)]">Caltrans Recycling</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-semibold text-[var(--text-primary)]">Sub-Deck Certified</span>
             </div>
           </div>
@@ -269,7 +245,7 @@ export default function RoofTearOffProcessPage() {
           <div className="glass-card-hero rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-sm mb-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-                <FileText className="w-5 h-5" />
+                <Icon name="file-text" className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-500 block">
@@ -341,13 +317,13 @@ export default function RoofTearOffProcessPage() {
                     </td>
                     <td className="py-3 px-4 text-emerald-700 bg-emerald-50/20 font-medium">
                       <div className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                        <Icon name="check-circle" className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                         <span>{row.tearOff}</span>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-500">
                       <div className="flex items-start gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <Icon name="alert-triangle" className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                         <span>{row.overlay}</span>
                       </div>
                     </td>
@@ -373,13 +349,11 @@ export default function RoofTearOffProcessPage() {
           </div>
 
           <div className="space-y-6">
-            {TEAR_OFF_PHASES.map((phase) => {
-              const Icon = phase.icon;
-              return (
-                <div
-                  key={phase.number}
-                  className="glass-card-interactive rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs"
-                >
+            {TEAR_OFF_PHASES.map((phase) => (
+              <div
+                key={phase.number}
+                className="glass-card-interactive rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs"
+              >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
                     <div className="flex items-center gap-3.5">
                       <div className="w-12 h-12 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 font-extrabold text-base border border-blue-100">
@@ -403,14 +377,13 @@ export default function RoofTearOffProcessPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {phase.points.map((pt) => (
                       <div key={pt} className="flex items-start gap-2 text-xs text-[var(--text-primary)]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue flex-shrink-0 mt-0.5" />
+                        <Icon name="check-circle" className="w-3.5 h-3.5 text-brand-blue flex-shrink-0 mt-0.5" />
                         <span>{pt}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         </div>
 
@@ -419,7 +392,7 @@ export default function RoofTearOffProcessPage() {
           <div className="glass-card-interactive rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center">
-                <Wrench className="w-5 h-5" />
+                <Icon name="wrench" className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-blue block">
@@ -442,7 +415,7 @@ export default function RoofTearOffProcessPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <h4 className="font-bold text-slate-900 mb-1.5 text-xs sm:text-sm flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                    <Icon name="alert-triangle" className="w-3.5 h-3.5 text-amber-500" />
                     <span>Fungal Dry Rot</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed">
@@ -451,7 +424,7 @@ export default function RoofTearOffProcessPage() {
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <h4 className="font-bold text-slate-900 mb-1.5 text-xs sm:text-sm flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-brand-blue" />
+                    <Icon name="layers" className="w-3.5 h-3.5 text-brand-blue" />
                     <span>Skip-Sheeting Conversion</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed">
@@ -460,7 +433,7 @@ export default function RoofTearOffProcessPage() {
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <h4 className="font-bold text-slate-900 mb-1.5 text-xs sm:text-sm flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                    <Icon name="shield" className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Rafter Sistering</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed">
@@ -481,7 +454,7 @@ export default function RoofTearOffProcessPage() {
           <div className="glass-card-interactive rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                <DollarSign className="w-5 h-5" />
+                <Icon name="dollar-sign" className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 block">
@@ -615,7 +588,7 @@ export default function RoofTearOffProcessPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/contact">
                 <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider px-6 py-3 rounded-xl shadow-md transition-all hover:brightness-110">
-                  <ClipboardCheck className="w-4 h-4" />
+                  <Icon name="clipboard-check" className="w-4 h-4" />
                   <span>Request Free Estimate</span>
                 </span>
               </Link>
@@ -623,7 +596,7 @@ export default function RoofTearOffProcessPage() {
                 href={PHONE_HREF}
                 className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs sm:text-sm uppercase tracking-wider px-6 py-3 rounded-xl border border-slate-200 shadow-sm transition-all"
               >
-                <Phone className="w-4 h-4 text-brand-blue" />
+                <Icon name="phone" className="w-4 h-4 text-brand-blue" />
                 <span>Call {PHONE_NUMBER}</span>
               </a>
             </div>

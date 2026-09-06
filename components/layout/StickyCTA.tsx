@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Wrench, Star, Phone, Sparkles } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { PHONE_HREF, cn } from '@/lib/utils';
 
 export function StickyCTA() {
@@ -53,7 +53,7 @@ export function StickyCTA() {
               isHome ? 'bg-white/12 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
             )}
           >
-            <Home
+            <Icon name="home"
               className={cn(
                 'w-5 h-5 transition-transform duration-200',
                 isHome ? 'scale-110 stroke-[2.3] text-[#38BDF8]' : 'stroke-[1.8] group-hover:scale-105'
@@ -82,7 +82,7 @@ export function StickyCTA() {
               isServices ? 'bg-white/12 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
             )}
           >
-            <Wrench
+            <Icon name="wrench"
               className={cn(
                 'w-5 h-5 transition-transform duration-200',
                 isServices ? 'scale-110 stroke-[2.3] text-[#38BDF8]' : 'stroke-[1.8] group-hover:scale-105'
@@ -111,7 +111,7 @@ export function StickyCTA() {
               isReviews ? 'bg-white/12 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
             )}
           >
-            <Star
+            <Icon name="star"
               className={cn(
                 'w-5 h-5 transition-transform duration-200',
                 isReviews ? 'fill-[#38BDF8] text-[#38BDF8] scale-110' : 'text-slate-400 group-hover:scale-105'
@@ -136,7 +136,7 @@ export function StickyCTA() {
           aria-label="Call Rise Up Roofing"
         >
           <div className="flex flex-col items-center justify-center w-full min-h-[48px] py-1 px-1 rounded-2xl hover:bg-emerald-500/10 transition-all duration-200">
-            <Phone className="w-5 h-5 text-emerald-400 fill-emerald-400/20 stroke-[2.3] transition-transform group-hover:rotate-12" />
+            <Icon name="phone" className="w-5 h-5 text-emerald-400 stroke-[2.3] transition-transform group-hover:rotate-12" />
             <span className="text-[10.5px] mt-1 tracking-tight leading-none font-bold text-emerald-400">
               Call
             </span>
@@ -159,7 +159,7 @@ export function StickyCTA() {
                 : 'bg-gradient-to-r from-[#2E9BF0] via-[#38BDF8] to-[#1C88DD] hover:brightness-110 text-white'
             )}
           >
-            <Sparkles className="w-4 h-4 text-white animate-pulse flex-shrink-0" />
+            <Icon name="sparkles" className="w-4 h-4 text-white animate-pulse flex-shrink-0" />
             <span className="text-[11.5px] font-black tracking-wider uppercase text-white whitespace-nowrap">
               Estimate
             </span>

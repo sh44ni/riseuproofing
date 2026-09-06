@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle2, ArrowRight, ShieldCheck, Phone, ClipboardCheck } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { services, getServiceBySlug, getAllServiceSlugs } from '@/lib/data/services';
 import { projects } from '@/lib/data/projects';
 import { buildMetadata, buildServiceJsonLd, buildFAQJsonLd } from '@/lib/seo/metadata';
@@ -72,13 +72,13 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/contact">
               <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
-                <ClipboardCheck className="w-4 h-4" />
+                <Icon name="clipboard-check" className="w-4 h-4" />
                 <span>Get a Free Estimate</span>
               </span>
             </Link>
             <a href={PHONE_HREF}>
               <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl backdrop-blur-md transition-all">
-                <Phone className="w-4 h-4 text-brand-blue" />
+                <Icon name="phone" className="w-4 h-4 text-brand-blue" />
                 <span>{PHONE_NUMBER}</span>
               </span>
             </a>
@@ -107,7 +107,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                 {service.detailedOverview.highlights.map((item, i) => (
                   <div key={i} className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 shadow-xs">
                     <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+                      <Icon name="shield-check" className="w-4 h-4 text-brand-blue flex-shrink-0" />
                       <span>{item.title}</span>
                     </h3>
                     <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -136,7 +136,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               className="glass-card-interactive rounded-2xl p-5 flex items-start gap-3.5 border border-slate-200/80 shadow-xs"
             >
               <div className="w-8 h-8 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 mt-0.5 border border-blue-100">
-                <CheckCircle2 className="w-4 h-4" />
+                <Icon name="check-circle" className="w-4 h-4" />
               </div>
               <div>
                 <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">{item}</h4>
@@ -206,7 +206,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                       <p className="text-xs text-[var(--text-muted)] mb-3">{project.city}, CA</p>
                     </div>
                     <span className="text-xs font-bold text-brand-blue flex items-center gap-1 group-hover:text-[#1C88DD] transition-colors">
-                      View Project <ArrowRight className="w-3.5 h-3.5" />
+                      View Project <Icon name="arrow-right" className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
@@ -242,13 +242,13 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/contact">
                 <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
-                  <ClipboardCheck className="w-4 h-4" />
+                  <Icon name="clipboard-check" className="w-4 h-4" />
                   <span>Request Free Estimate</span>
                 </span>
               </Link>
               <a href={PHONE_HREF}>
                 <span className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-xs">
-                  <Phone className="w-4 h-4 text-brand-blue" />
+                  <Icon name="phone" className="w-4 h-4 text-brand-blue" />
                   <span>Call {PHONE_NUMBER}</span>
                 </span>
               </a>

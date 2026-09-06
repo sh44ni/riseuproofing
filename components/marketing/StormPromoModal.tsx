@@ -3,18 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import {
-  X,
-  CloudRain,
-  ShieldCheck,
-  CheckCircle2,
-  Phone,
-  ArrowRight,
-  Sparkles,
-  Loader2,
-  Calendar,
-  AlertTriangle,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
 
 const STORAGE_KEY_DISMISSED = 'riseup_storm_promo_dismissed';
@@ -195,7 +184,7 @@ export function StormPromoModal() {
           aria-label="Close promotion dialog"
           className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-white/10 transition-colors cursor-pointer"
         >
-          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Icon name="x" className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Left Column: Visual Photography & Trust Proof */}
@@ -213,7 +202,7 @@ export function StormPromoModal() {
           {/* Photo Badges */}
           <div className="absolute top-3 left-3 z-10">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-amber-500/90 text-slate-950 shadow-md">
-              <Sparkles className="w-3 h-3 fill-current" />
+              <Icon name="sparkles" className="w-3 h-3" />
               Early Bird Special
             </span>
           </div>
@@ -221,7 +210,7 @@ export function StormPromoModal() {
           <div className="absolute bottom-3 left-3 right-3 z-10 hidden sm:block">
             <div className="p-2.5 rounded-xl bg-slate-950/75 backdrop-blur-md border border-white/10 text-xs">
               <div className="flex items-center gap-2 text-white font-semibold mb-1">
-                <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+                <Icon name="shield-check" className="w-4 h-4 text-brand-blue flex-shrink-0" />
                 <span>Owens Corning Preferred</span>
               </div>
               <div className="text-[11px] text-slate-300 flex items-center justify-between">
@@ -237,7 +226,7 @@ export function StormPromoModal() {
           {/* Top Pill Alert */}
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-wider uppercase bg-amber-500/15 border border-amber-500/30 text-amber-300 mb-3">
-              <CloudRain className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+              <Icon name="cloud-rain" className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
               <span>San Diego County · Storm Season Alert</span>
             </div>
 
@@ -268,13 +257,13 @@ export function StormPromoModal() {
                       <span className="text-lg sm:text-xl font-bold uppercase text-amber-200">OFF</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-slate-300 font-medium mt-0.5">
-                      <Calendar className="w-3.5 h-3.5 text-amber-400/80" />
+                      <Icon name="calendar" className="w-3.5 h-3.5 text-amber-400/80" />
                       <span>Book by October 31st</span>
                     </div>
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] sm:text-xs font-semibold self-start sm:self-center">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                    <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                     <span>Free 21-pt inspection included</span>
                   </div>
                 </div>
@@ -287,9 +276,9 @@ export function StormPromoModal() {
                   onClick={() => setViewState('form')}
                   className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl font-bold text-sm sm:text-base uppercase tracking-wider bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:via-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer group"
                 >
-                  <Sparkles className="w-4 h-4 fill-current group-hover:rotate-12 transition-transform" />
+                  <Icon name="sparkles" className="w-4 h-4 fill-current group-hover:rotate-12 transition-transform" />
                   <span>Lock In My $1,000 Off</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  <Icon name="arrow-right" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </button>
 
                 <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm text-slate-400">
@@ -298,7 +287,7 @@ export function StormPromoModal() {
                     href={PHONE_HREF}
                     className="text-brand-blue hover:text-sky-300 font-semibold inline-flex items-center gap-1 transition-colors"
                   >
-                    <Phone className="w-3.5 h-3.5" />
+                    <Icon name="phone" className="w-3.5 h-3.5" />
                     <span>{PHONE_NUMBER}</span>
                   </a>
                 </div>
@@ -322,7 +311,7 @@ export function StormPromoModal() {
             <form onSubmit={handleSubmitClaim} className="mt-3.5 space-y-3">
               {errorMessage && (
                 <div className="p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-300 text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <Icon name="alert-triangle" className="w-4 h-4 flex-shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -396,12 +385,12 @@ export function StormPromoModal() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Icon name="loader" className="w-4 h-4 animate-spin" />
                       <span>Locking In Voucher...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
+                      <Icon name="check-circle" className="w-4 h-4" />
                       <span>Claim $1,000 Voucher Now</span>
                     </>
                   )}
@@ -425,7 +414,7 @@ export function StormPromoModal() {
           {viewState === 'success' && (
             <div className="mt-4 sm:mt-5 text-center space-y-3.5 py-2">
               <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto animate-bounce">
-                <CheckCircle2 className="w-6 h-6" />
+                <Icon name="check-circle" className="w-6 h-6" />
               </div>
 
               <div>
@@ -446,7 +435,7 @@ export function StormPromoModal() {
                   href={PHONE_HREF}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider bg-brand-blue hover:bg-sky-500 text-white shadow-lg transition-colors cursor-pointer"
                 >
-                  <Phone className="w-4 h-4" />
+                  <Icon name="phone" className="w-4 h-4" />
                   <span>Call {PHONE_NUMBER} Now</span>
                 </a>
                 <button

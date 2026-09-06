@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { projects } from '@/lib/data/projects';
@@ -78,7 +78,7 @@ export function FeaturedProjects() {
               </span>
 
               <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/15 shadow-sm">
-                <MapPin className="w-3 h-3 text-brand-blue" />
+                <Icon name="map-pin" className="w-3 h-3 text-brand-blue" />
                 <span>{project.city}, CA</span>
               </span>
             </div>
@@ -118,7 +118,7 @@ export function FeaturedProjects() {
               {/* Global Website Button Style */}
               <div className="w-full py-3 px-5 rounded-xl bg-brand-blue text-white group-hover:brightness-110 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md group-hover:shadow-brand-blue/30">
                 <span>View Case Study</span>
-                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                <Icon name="arrow-right" className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
               </div>
             </div>
           </Link>
@@ -130,7 +130,7 @@ export function FeaturedProjects() {
         <Link href="/projects">
           <span className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue hover:text-white border border-slate-200/80 hover:border-brand-blue text-[#0B1E33] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer">
             <span>Explore All Completed Projects</span>
-            <ArrowRight className="w-4 h-4" />
+            <Icon name="arrow-right" className="w-4 h-4" />
           </span>
         </Link>
       </div>

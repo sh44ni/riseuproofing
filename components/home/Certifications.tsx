@@ -1,7 +1,5 @@
-'use client';
-
 import Image from 'next/image';
-import { ShieldCheck, CheckCircle2, ExternalLink, ArrowRight, Award } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { LICENSE_NUMBER } from '@/lib/utils';
@@ -125,7 +123,8 @@ export function Certifications() {
               <div className="space-y-2 pt-3 border-t border-slate-100 mb-4">
                 {cert.bullets.map((b) => (
                   <div key={b} className="flex items-center gap-2 text-xs text-[var(--text-secondary)] text-left">
-                    <CheckCircle2
+                    <Icon
+                      name="check-circle"
                       className="w-3.5 h-3.5 flex-shrink-0 text-emerald-600"
                     />
                     <span className="leading-tight font-medium">{b}</span>
@@ -137,10 +136,10 @@ export function Certifications() {
             {/* Bottom Link with External Link Icon */}
             <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue transition-colors w-full">
               <div className="flex items-center gap-1.5 text-emerald-700">
-                <ShieldCheck className="w-3.5 h-3.5" />
+                <Icon name="shield-check" className="w-3.5 h-3.5" />
                 <span className="text-[11px]">Verified Partner</span>
               </div>
-              <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+              <Icon name="external-link" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </div>
           </a>
           );
@@ -190,7 +189,7 @@ export function Certifications() {
             className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-brand-blue/30 hover:scale-105 active:scale-95 flex-shrink-0 cursor-pointer"
           >
             <span>Ask About Warranty</span>
-            <ArrowRight className="w-4 h-4" />
+            <Icon name="arrow-right" className="w-4 h-4" />
           </a>
         </div>
       </div>

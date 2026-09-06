@@ -1,16 +1,6 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Phone,
-  ClipboardCheck,
-  ArrowRight,
-  ShieldCheck,
-  Users,
-  Sparkles,
-  CheckCircle2,
-} from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { Container } from '@/components/shared/Container';
 import { PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
 
@@ -59,17 +49,17 @@ export function FinalCTA() {
               {/* Trust Specs Strip */}
               <div className="flex flex-wrap items-center gap-3.5 text-xs text-white/75 mb-6">
                 <span className="inline-flex items-center gap-1.5 font-medium text-white/90">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#EAA636]" />
+                  <Icon name="shield-check" className="w-3.5 h-3.5 text-[#EAA636]" />
                   <span>CA Lic #{LICENSE_NUMBER}</span>
                 </span>
                 <span className="text-white/30">•</span>
                 <span className="inline-flex items-center gap-1.5 font-medium text-white/90">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue" />
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-brand-blue" />
                   <span>100% Itemized Quotes</span>
                 </span>
                 <span className="text-white/30">•</span>
                 <span className="inline-flex items-center gap-1.5 font-medium text-white/90">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-[#10B981]" />
                   <span>0% Down Financing</span>
                 </span>
               </div>
@@ -78,9 +68,9 @@ export function FinalCTA() {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Link href="/contact" className="flex-1 sm:flex-initial">
                   <span className="inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-brand-blue/30 transition-all w-full cursor-pointer">
-                    <ClipboardCheck className="w-4 h-4" />
+                    <Icon name="clipboard-check" className="w-4 h-4" />
                     <span>Request Free Estimate</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <Icon name="arrow-right" className="w-4 h-4" />
                   </span>
                 </Link>
 
@@ -88,7 +78,7 @@ export function FinalCTA() {
                   href={PHONE_HREF}
                   className="inline-flex items-center justify-center gap-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider py-3.5 px-5 rounded-xl backdrop-blur-md transition-all group/phone cursor-pointer"
                 >
-                  <Phone className="w-4 h-4 text-brand-blue group-hover/phone:scale-110 transition-transform" />
+                  <Icon name="phone" className="w-4 h-4 text-brand-blue group-hover/phone:scale-110 transition-transform" />
                   <span>{PHONE_NUMBER}</span>
                 </a>
               </div>
@@ -112,7 +102,7 @@ export function FinalCTA() {
             {/* Top Badge */}
             <div className="relative z-10 mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#EAA636] bg-black/60 backdrop-blur-md border border-white/15 shadow-md">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Icon name="sparkles" className="w-3.5 h-3.5" />
                 <span>Now Hiring In SoCal</span>
               </span>
             </div>
@@ -130,11 +120,11 @@ export function FinalCTA() {
               {/* 2 Bullet Points */}
               <div className="space-y-2 py-3 border-y border-white/10 mb-6">
                 <div className="flex items-center gap-2 text-xs text-white/85">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#EAA636] flex-shrink-0" />
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-[#EAA636] flex-shrink-0" />
                   <span>Top Industry Compensation &amp; 401(k)</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-white/85">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#EAA636] flex-shrink-0" />
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-[#EAA636] flex-shrink-0" />
                   <span>Year-Round Steady Projects &amp; Gear</span>
                 </div>
               </div>
@@ -142,9 +132,9 @@ export function FinalCTA() {
               {/* Action Button */}
               <Link href="/careers" className="w-full block">
                 <span className="inline-flex items-center justify-center gap-2 w-full py-3 px-5 rounded-xl bg-white/10 hover:bg-[#EAA636] hover:text-[#0B1E33] text-white border border-white/20 hover:border-[#EAA636] font-bold text-xs uppercase tracking-wider transition-all shadow-md group/btn cursor-pointer">
-                  <Users className="w-4 h-4 text-[#EAA636] group-hover/btn:text-[#0B1E33] transition-colors" />
+                  <Icon name="users" className="w-4 h-4 text-[#EAA636] group-hover/btn:text-[#0B1E33] transition-colors" />
                   <span>View Open Positions</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                  <Icon name="arrow-right" className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                 </span>
               </Link>
             </div>

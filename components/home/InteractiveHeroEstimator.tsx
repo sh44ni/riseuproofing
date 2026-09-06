@@ -2,19 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import {
-  Home,
-  Wrench,
-  Building2,
-  Sun,
-  CheckCircle2,
-  ArrowRight,
-  ArrowLeft,
-  Phone,
-  Calculator,
-  ShieldCheck,
-  Sparkles,
-} from 'lucide-react';
+import { Icon, type IconName } from '@/components/shared/Icon';
 import { cn, PHONE_HREF, PHONE_NUMBER } from '@/lib/utils';
 
 type ServiceId = 'residential' | 'repair' | 'commercial' | 'solar';
@@ -29,7 +17,7 @@ const SERVICE_OPTIONS: {
   id: ServiceId;
   label: string;
   shortLabel: string;
-  icon: React.ComponentType<{ className?: string }>;
+  iconName: IconName;
   badge: string;
   iconBgLight: string;
   iconBgDark: string;
@@ -39,7 +27,7 @@ const SERVICE_OPTIONS: {
     id: 'residential',
     label: 'Tile / Shingle Roof',
     shortLabel: 'Tile / Shingle',
-    icon: Home,
+    iconName: 'home',
     badge: 'Popular',
     iconBgLight: 'bg-sky-50 text-sky-600 border border-sky-100',
     iconBgDark: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
@@ -53,7 +41,7 @@ const SERVICE_OPTIONS: {
     id: 'repair',
     label: 'Leak & Tile Repair',
     shortLabel: 'Leak & Repair',
-    icon: Wrench,
+    iconName: 'wrench',
     badge: 'Same-Day',
     iconBgLight: 'bg-amber-50 text-amber-600 border border-amber-100',
     iconBgDark: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
@@ -67,7 +55,7 @@ const SERVICE_OPTIONS: {
     id: 'commercial',
     label: 'Commercial Flat Roof',
     shortLabel: 'Commercial Flat',
-    icon: Building2,
+    iconName: 'building',
     badge: 'TPO / BUR',
     iconBgLight: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
     iconBgDark: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
@@ -81,7 +69,7 @@ const SERVICE_OPTIONS: {
     id: 'solar',
     label: 'Solar + Roofing',
     shortLabel: 'Solar + Roof',
-    icon: Sun,
+    iconName: 'sun',
     badge: 'Save 30%',
     iconBgLight: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
     iconBgDark: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
@@ -172,7 +160,7 @@ export function InteractiveHeroEstimator() {
         )}
       >
         <div className="w-12 h-12 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
-          <CheckCircle2 className="w-6 h-6" />
+          <Icon name="check-circle" className="w-6 h-6" />
         </div>
         <span className="text-[10.5px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-0.5 rounded-full border border-emerald-200 inline-block mb-2">
           Estimate Confirmed
@@ -200,7 +188,7 @@ export function InteractiveHeroEstimator() {
               href={PHONE_HREF}
               className="inline-flex items-center gap-1.5 text-sm sm:text-base font-bold text-brand-blue hover:underline transition-all mt-0.5"
             >
-              <Phone className="w-4 h-4" />
+              <Icon name="phone" className="w-4 h-4" />
               <span>Call {PHONE_NUMBER}</span>
             </a>
           </div>
@@ -246,7 +234,7 @@ export function InteractiveHeroEstimator() {
                   : 'bg-white/10 text-brand-blue border border-white/15'
               )}
             >
-              <Calculator className="w-5 h-5" />
+              <Icon name="calculator" className="w-5 h-5" />
             </div>
             <div>
               <h3 className={cn('text-base sm:text-lg font-bold tracking-tight leading-tight', isLight ? 'text-[#0B1E33]' : 'text-white')}>
@@ -306,7 +294,6 @@ export function InteractiveHeroEstimator() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
                 {SERVICE_OPTIONS.map((item) => {
-                  const Icon = item.icon;
                   const isSelected = service === item.id;
                   return (
                     <button
@@ -349,7 +336,7 @@ export function InteractiveHeroEstimator() {
                             : item.iconBgDark
                         )}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon name={item.iconName} className="w-4 h-4" />
                       </div>
 
                       <span className={cn('text-xs sm:text-[13px] font-bold leading-snug', isLight ? 'text-[#0B1E33]' : 'text-white')}>
@@ -454,7 +441,7 @@ export function InteractiveHeroEstimator() {
                 className="bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-md shadow-brand-blue/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
               >
                 <span>Get Itemized Quote</span>
-                <ArrowRight className="w-4 h-4" />
+                <Icon name="arrow-right" className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -570,16 +557,16 @@ export function InteractiveHeroEstimator() {
                 )}
                 aria-label="Back to step 1"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <Icon name="arrow-left" className="w-4 h-4" />
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="flex-1 bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-md shadow-brand-blue/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
               >
-                <ShieldCheck className="w-4 h-4 text-white" />
+                <Icon name="shield-check" className="w-4 h-4 text-white" />
                 <span>{submitting ? 'Generating Proposal...' : 'Calculate My Proposal'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <Icon name="arrow-right" className="w-4 h-4" />
               </button>
             </div>
           </form>

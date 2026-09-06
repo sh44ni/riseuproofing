@@ -83,10 +83,59 @@ export async function getPublicReviews(): Promise<EnrichedReview[]> {
   }
 }
 
+let lastAutoSyncCheck = 0;
+const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Automatically triggers daily background synchronization if more than 24 hours have passed since the last sync.
+ */
+export async function triggerDailySyncIfStale(): Promise<void> {
+  const now = Date.now();
+  if (now - lastAutoSyncCheck < 900_000) return; // check at most once every 15 minutes
+  lastAutoSyncCheck = now;
+
+  try {
+    const rows = await query<{ key: string; value: any }>(
+      `SELECT key, value FROM app_settings WHERE key IN ('google_reviews_auth', 'yelp_reviews_auth')`
+    );
+    const googleSetting = rows.find((r) => r.key === 'google_reviews_auth')?.value;
+    const yelpSetting = rows.find((r) => r.key === 'yelp_reviews_auth')?.value;
+
+    const lastGoogleSync = googleSetting?.last_synced_at ? new Date(googleSetting.last_synced_at).getTime() : 0;
+    const lastYelpSync = yelpSetting?.last_synced_at ? new Date(yelpSetting.last_synced_at).getTime() : 0;
+
+    const googleStale = Boolean(googleSetting?.refresh_token && (!lastGoogleSync || now - lastGoogleSync >= TWENTY_FOUR_HOURS_MS));
+    const yelpStale = Boolean(yelpSetting?.api_key && (!lastYelpSync || now - lastYelpSync >= TWENTY_FOUR_HOURS_MS));
+
+    if (googleStale || yelpStale) {
+      // Fire-and-forget in background without blocking user request
+      (async () => {
+        try {
+          if (googleStale) {
+            const { syncGoogleReviews } = await import('@/lib/google-reviews');
+            await syncGoogleReviews();
+          }
+          if (yelpStale) {
+            const { syncYelpReviews } = await import('@/lib/yelp-reviews');
+            await syncYelpReviews();
+          }
+        } catch (err) {
+          console.warn('[triggerDailySyncIfStale execution failed]:', err);
+        }
+      })();
+    }
+  } catch (err) {
+    console.warn('[triggerDailySyncIfStale check failed]:', err);
+  }
+}
+
 /**
  * Fetch aggregated review counts and ratings dynamically from Neon DB and Yelp metadata
  */
 export async function getReviewStats(): Promise<ReviewStats> {
+  // Check if daily background sync is needed
+  triggerDailySyncIfStale().catch(() => {});
+
   try {
     const statsQuery = query<{
       source: string | null;

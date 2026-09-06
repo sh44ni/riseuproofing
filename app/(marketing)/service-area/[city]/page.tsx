@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, ArrowRight, ShieldCheck, Phone, ClipboardCheck, MapPin, Star } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { getServiceAreaBySlug, getAllServiceAreaSlugs } from '@/lib/data/serviceAreas';
 import { services } from '@/lib/data/services';
 import { buildMetadata, buildFAQJsonLd } from '@/lib/seo/metadata';
@@ -76,7 +76,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
           {area.neighborhoods && area.neighborhoods.length > 0 && (
             <div className="glass-card-interactive rounded-2xl p-5 mb-10 border border-slate-200/80 shadow-xs">
               <h2 className="text-sm font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-brand-blue" />
+                <Icon name="map-pin" className="w-4 h-4 text-brand-blue" />
                 <span>{area.name} Communities &amp; Neighborhoods Served</span>
               </h2>
               <div className="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
@@ -101,7 +101,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                 className="glass-card-interactive rounded-2xl p-5 flex items-center gap-3.5 border border-slate-200/80 hover:border-brand-blue/30 shadow-xs transition-all group"
               >
                 <div className="w-9 h-9 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                  <CheckCircle2 className="w-5 h-5" />
+                  <Icon name="check-circle" className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
@@ -111,7 +111,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                     {service.shortDescription}
                   </p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
+                <Icon name="arrow-right" className="w-4 h-4 text-slate-400 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
               </Link>
             ))}
           </div>
@@ -158,13 +158,13 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/contact">
                 <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
-                  <ClipboardCheck className="w-4 h-4" />
+                  <Icon name="clipboard-check" className="w-4 h-4" />
                   <span>Request Free Estimate</span>
                 </span>
               </Link>
               <a href={PHONE_HREF}>
                 <span className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all shadow-xs">
-                  <Phone className="w-4 h-4 text-brand-blue" />
+                  <Icon name="phone" className="w-4 h-4 text-brand-blue" />
                   <span>Call {PHONE_NUMBER}</span>
                 </span>
               </a>

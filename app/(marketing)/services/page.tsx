@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Search, Building2, Sun, Hammer, ArrowRight, ShieldCheck, CheckCircle2, Shield, Layers, Wrench } from 'lucide-react';
+import { Icon, type IconName } from '@/components/shared/Icon';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { services } from '@/lib/data/services';
 import { Section } from '@/components/shared/Container';
@@ -14,8 +14,15 @@ export const metadata: Metadata = buildMetadata({
   path: '/services',
 });
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home, Search, Building2, Sun, Hammer, Shield, Layers, Wrench,
+const ICON_NAME_MAP: Record<string, IconName> = {
+  Home: 'home',
+  Search: 'search',
+  Building2: 'building',
+  Sun: 'sun',
+  Hammer: 'hammer',
+  Shield: 'shield',
+  Layers: 'layers',
+  Wrench: 'wrench',
 };
 
 export default function ServicesPage() {
@@ -32,7 +39,7 @@ export default function ServicesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {services.map((service) => {
-          const Icon = ICON_MAP[service.icon] || Home;
+          const iconName = ICON_NAME_MAP[service.icon] || 'home';
           const topIncludes = service.includes.slice(0, 3);
 
           return (
@@ -59,7 +66,7 @@ export default function ServicesPage() {
                 {/* Icon & Title */}
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-brand-blue border border-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                    <Icon className="w-5 h-5" />
+                    <Icon name={iconName} className="w-5 h-5" />
                   </div>
                   <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
                     {service.name}
@@ -74,7 +81,7 @@ export default function ServicesPage() {
                 <ul className="space-y-1.5 mb-5">
                   {topIncludes.map((item) => (
                     <li key={item} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" />
+                      <Icon name="check-circle" className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -82,7 +89,7 @@ export default function ServicesPage() {
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue group-hover:text-[#1C88DD] transition-colors">
                   <span>View Specifications &amp; Pricing</span>
-                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                  <Icon name="arrow-right" className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </Link>
@@ -105,7 +112,7 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-[var(--text-secondary)] leading-relaxed">
             <div className="space-y-4">
               <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-brand-blue flex-shrink-0" />
+                <Icon name="shield-check" className="w-5 h-5 text-brand-blue flex-shrink-0" />
                 Dual-Trade Synergy: Roofing &amp; Solar Under One Roof
               </h3>
               <p>
@@ -118,7 +125,7 @@ export default function ServicesPage() {
 
             <div className="space-y-4">
               <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-brand-blue flex-shrink-0" />
+                <Icon name="check-circle" className="w-5 h-5 text-brand-blue flex-shrink-0" />
                 Transparent Pricing &amp; Free Comprehensive Estimates
               </h3>
               <p>

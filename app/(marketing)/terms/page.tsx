@@ -5,7 +5,7 @@ import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { COMPANY_NAME, LICENSE_NUMBER, PHONE_NUMBER, PHONE_HREF } from '@/lib/utils';
 import Link from 'next/link';
-import { Scale, Phone, Mail } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Terms of Service | Rise Up Roofing & Construction',
@@ -30,7 +30,7 @@ export default function TermsPage() {
         <div className="glass-card-hero rounded-2xl p-6 sm:p-8 border border-slate-200/80 bg-blue-50/30">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 text-brand-blue flex items-center justify-center flex-shrink-0">
-              <Scale className="w-5 h-5" />
+              <Icon name="scale" className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">Contractor Licensing &amp; Legal Entity</h2>
@@ -119,11 +119,11 @@ export default function TermsPage() {
             </div>
             <div className="space-y-1">
               <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-brand-blue" />
+                <Icon name="phone" className="w-3.5 h-3.5 text-brand-blue" />
                 <a href={PHONE_HREF} className="font-bold text-brand-blue hover:underline">{PHONE_NUMBER}</a>
               </p>
               <p className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-brand-blue" />
+                <Icon name="mail" className="w-3.5 h-3.5 text-brand-blue" />
                 <a href="mailto:info@riseuproofing.com" className="font-bold text-brand-blue hover:underline">info@riseuproofing.com</a>
               </p>
               <p className="pt-1 text-slate-500">

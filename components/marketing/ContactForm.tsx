@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Icon } from '@/components/shared/Icon';
 import { PHONE_HREF, PHONE_NUMBER } from '@/lib/utils';
 
 export function ContactForm() {
@@ -39,7 +39,7 @@ export function ContactForm() {
       {submitted ? (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-9 h-9" />
+            <Icon name="check-circle" className="w-9 h-9" />
           </div>
           <h3 className="text-2xl font-extrabold text-[var(--text-primary)] mb-2">
             Request Confirmed!
@@ -55,7 +55,7 @@ export function ContactForm() {
               href={PHONE_HREF}
               className="inline-flex items-center gap-2 text-sm font-bold text-brand-blue hover:text-[#1C88DD] transition-colors"
             >
-              <Phone className="w-4 h-4" />
+              <Icon name="phone" className="w-4 h-4" />
               <span>Call our dispatch desk at {PHONE_NUMBER}</span>
             </a>
           </div>
@@ -162,7 +162,7 @@ export function ContactForm() {
             className="w-full bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider py-4 px-8 rounded-xl shadow-xl shadow-brand-blue/30 transition-all flex items-center justify-center gap-2 cursor-pointer hover:brightness-110 disabled:opacity-75"
           >
             <span>{submitting ? 'Submitting Request...' : 'Send Free Estimate Request'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <Icon name="arrow-right" className="w-4 h-4" />
           </button>
 
           <div className="pt-2 flex items-center justify-center gap-4 text-[11px] text-[var(--text-muted)]">
