@@ -12,11 +12,14 @@ import { Tooltip } from '@/components/shared/Tooltip';
 const SERVICES = [
   { label: 'Residential Roofing', href: '/services/residential' },
   { label: 'Roof Leak Repair', href: '/services/repairs' },
+  { label: 'Tile Roofing & Relay', href: '/services/tile-roofing' },
+  { label: 'Standing Seam Metal', href: '/services/metal-roofing' },
+  { label: 'Siding Installation & Repair', href: '/services/siding' },
   { label: 'Home & Room Additions', href: '/services/home-additions' },
   { label: 'ADU Construction Contractors', href: '/services/adu-construction' },
   { label: 'Commercial Flat Roofing', href: '/services/commercial' },
   { label: 'Solar Roofing Integration', href: '/services/solar' },
-  { label: 'General Construction & Siding', href: '/services/construction' },
+  { label: 'General Construction & Framing', href: '/services/construction' },
 ];
 
 const COMPANY_LINKS = [

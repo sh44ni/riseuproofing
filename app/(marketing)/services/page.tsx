@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Search, Building2, Sun, Hammer, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Home, Search, Building2, Sun, Hammer, ArrowRight, ShieldCheck, CheckCircle2, Shield, Layers, Wrench } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { services } from '@/lib/data/services';
 import { Section } from '@/components/shared/Container';
@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home, Search, Building2, Sun, Hammer,
+  Home, Search, Building2, Sun, Hammer, Shield, Layers, Wrench,
 };
 
 export default function ServicesPage() {

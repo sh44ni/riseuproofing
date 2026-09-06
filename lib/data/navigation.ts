@@ -5,6 +5,8 @@ import {
   Sun,
   Wrench,
   Hammer,
+  Shield,
+  Layers,
 } from 'lucide-react';
 
 /* ─── Service Navigation Items ─── */
@@ -18,6 +20,9 @@ export interface ServiceNavItem {
 export const SERVICES_NAV: ServiceNavItem[] = [
   { label: 'Residential Roofing', href: '/services/residential', icon: Home, desc: 'Tile relays & shingle replacements' },
   { label: 'Roof Leak Repair', href: '/services/repairs', icon: Wrench, desc: 'Emergency leaks & storm diagnostics' },
+  { label: 'Tile Roofing & Relay', href: '/services/tile-roofing', icon: Shield, desc: 'Spanish clay & concrete tile relays' },
+  { label: 'Standing Seam Metal', href: '/services/metal-roofing', icon: Shield, desc: 'Class-A fire rated 50-yr metal' },
+  { label: 'Siding Installation', href: '/services/siding', icon: Layers, desc: 'James Hardie fiber cement & repairs' },
   { label: 'Home & Room Additions', href: '/services/home-additions', icon: Hammer, desc: 'Custom second-story & suite expansions' },
   { label: 'ADU Construction', href: '/services/adu-construction', icon: Building2, desc: 'Detached ADUs & garage conversions' },
   { label: 'Commercial Roofing', href: '/services/commercial', icon: Building2, desc: 'TPO single-ply & roof coatings' },
@@ -41,10 +46,11 @@ export const SERVICES_MEGA_MENU: MegaMenuColumn[] = [
     icon: Home,
     color: 'text-brand-blue bg-blue-500/10',
     href: '/services/residential',
-    description: 'Tile relays, shingle replacements & rapid emergency leak repairs.',
+    description: 'Tile relays, standing seam metal, shingle replacements & rapid leak repairs.',
     items: [
-      { label: 'Tile Roof Underlayment & Relay', href: '/services/residential' },
+      { label: 'Tile Roof Installation & Relay', href: '/services/tile-roofing' },
       { label: 'Emergency Roof Leak Repair', href: '/services/repairs' },
+      { label: 'Standing Seam Metal Roofing', href: '/services/metal-roofing' },
       { label: 'Architectural Shingle Roofing', href: '/services/residential' },
     ],
   },
@@ -57,6 +63,7 @@ export const SERVICES_MEGA_MENU: MegaMenuColumn[] = [
     items: [
       { label: 'TPO Membrane Flat Roofing', href: '/services/commercial' },
       { label: 'Silicone & Elastomeric Coatings', href: '/services/commercial' },
+      { label: 'Solar Roofing & Battery Systems', href: '/services/solar' },
       { label: 'Solar Panel Detach & Reset', href: '/services/solar' },
     ],
   },
@@ -65,10 +72,11 @@ export const SERVICES_MEGA_MENU: MegaMenuColumn[] = [
     icon: Hammer,
     color: 'text-emerald-400 bg-emerald-500/10',
     href: '/services/construction',
-    description: 'Custom home additions, detached ADUs, garage conversions & framing.',
+    description: 'Custom home additions, detached ADUs, fiber cement siding & framing.',
     items: [
       { label: 'Home & Room Additions', href: '/services/home-additions' },
       { label: 'ADU Construction Contractors', href: '/services/adu-construction' },
+      { label: 'James Hardie Siding Replacement', href: '/services/siding' },
       { label: 'Patio Covers & General Framing', href: '/services/construction' },
     ],
   },
