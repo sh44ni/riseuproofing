@@ -95,6 +95,29 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </div>
             </div>
 
+            {/* Detailed Project Story / Problem & Engineering */}
+            {project.challengeAndContext && (
+              <div className="glass-card-interactive rounded-2xl p-6 sm:p-8 mb-8 border border-slate-200/80 shadow-xs">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-3">
+                  The Problem &amp; Local Climate Challenge
+                </h2>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {project.challengeAndContext}
+                </p>
+              </div>
+            )}
+
+            {project.solutionAndEngineering && (
+              <div className="glass-card-interactive rounded-2xl p-6 sm:p-8 mb-8 border border-slate-200/80 shadow-xs">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-3">
+                  Technical Solution &amp; Engineering Execution
+                </h2>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {project.solutionAndEngineering}
+                </p>
+              </div>
+            )}
+
             {/* Gallery */}
             {project.gallery.length > 1 && (
               <div>

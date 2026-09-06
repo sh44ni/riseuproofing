@@ -89,6 +89,48 @@ export default function ServicesPage() {
           );
         })}
       </div>
+
+      {/* Educational Guide Section */}
+      <div className="mt-16 sm:mt-20 border-t border-slate-200/80 pt-12">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center sm:text-left">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-blue">
+              Expert Craftsmanship &amp; Engineering
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mt-1.5 tracking-tight">
+              Full-Service Roofing &amp; Exterior Construction in San Diego County
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-[var(--text-secondary)] leading-relaxed">
+            <div className="space-y-4">
+              <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-brand-blue flex-shrink-0" />
+                Dual-Trade Synergy: Roofing &amp; Solar Under One Roof
+              </h3>
+              <p>
+                Property owners searching for reliable roofing and solar companies near me frequently face coordination challenges when hiring separate contractors for photovoltaic arrays and roofing assemblies. When solar panels must be temporarily removed for reroofing or leak mitigation, improper handling can void panel warranties or puncture newly laid underlayment.
+              </p>
+              <p>
+                Rise Up Roofing &amp; Construction bridges this gap with in-house C-39 roofing and certified electrical expertise. From turnkey solar detach-reset workflows during concrete tile relayments to unified roof-solar installations, our synchronized crews safeguard your building envelope and clean-energy production under a single, accountable warranty.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-brand-blue flex-shrink-0" />
+                Transparent Pricing &amp; Free Comprehensive Estimates
+              </h3>
+              <p>
+                We believe premium craftsmanship should always remain accessible. Homeowners and facility managers seeking affordable roofing san diego county can count on Rise Up for transparent, itemized bids without hidden contingencies or high-pressure sales tactics.
+              </p>
+              <p>
+                We provide free roofing estimates san diego county utilizing high-resolution aerial drone diagnostic imagery and moisture-meter assessments. As trusted local roofers san diego county, our team evaluates decking soundness, flashing integrity, ridge vent airflow, and underlayment elasticity to recommend engineered solutions—whether targeted repairs, preventative maintenance, or complete multi-ply replacements.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </Section>
   );
 }

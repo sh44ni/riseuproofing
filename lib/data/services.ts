@@ -29,6 +29,21 @@ export const services: Service[] = [
       { title: 'Professional Installation', description: 'Our licensed crews install your new roof with precision, following manufacturer specifications for warranty compliance.' },
       { title: 'Final Walkthrough', description: 'We inspect every detail, clean the property, and register your manufacturer warranty before project sign-off.' },
     ],
+        detailedOverview: {
+      heading: 'Premier Residential Roofing in San Diego CA',
+      subheading: 'Complete roof replacements, concrete tile underlayment relays, and architectural shingle systems engineered for Southern California homes.',
+      paragraphs: [
+        'Investing in a residential roof replacement is one of the most critical structural decisions a San Diego homeowner can make. As one of the top roofing companies in San Diego CA, Rise Up Roofing & Construction delivers master-crafted residential roofing systems designed to withstand intense coastal marine fog, inland valley heat, and Santa Ana winds. Whether you require a complete tear-off or a specialized tile relayment, our experienced team provides precision craftsmanship that protects your family and enhances curb appeal.',
+        'As a certified shingle roof contractor and Owens Corning Preferred installer, we install high-performance architectural shingles featuring SureNail technology and 130 MPH wind resistance. For Spanish and Mediterranean residences, we are leading local roofers in San Diego County specializing in concrete tile underlayment replacement, salvaging your original tiles while replacing brittle felt paper with high-temperature synthetic membranes. We adhere strictly to California Building Code CRC R908 and Title 24 energy mandates, ensuring every roof is energy-efficient and code-certified.',
+        'From your initial free drone roof inspection through final city sign-off and magnetic nail sweep, our customer-first approach eliminates stress. We provide transparent, itemized estimates with competitive zero-down financing options, and back every new residential roof with non-prorated 50-year manufacturer system warranties and our own written workmanship guarantee.',
+      ],
+      highlights: [
+        { title: 'Owens Corning Preferred Contractor', description: 'Certified installation backed by non-prorated 50-year manufacturer system warranties.' },
+        { title: 'Coastal & Inland Microclimate Engineering', description: 'Dual-layer high-temperature underlayments and algae-resistant architectural shingles.' },
+        { title: 'Full California Title 24 & Code Compliance', description: 'Strict adherence to California Building Code CRC R908 with 100% city inspection pass rates.' },
+        { title: 'Transparent Pricing & Flexible Financing', description: 'Upfront itemized quotes with competitive zero-down financing plans starting at $299/month.' },
+      ],
+    },
     faqs: [
       { question: 'How long does a typical roof replacement take?', answer: 'Most residential roof replacements are completed in 1–3 days depending on the size and complexity of the roof. Tile relayments may take 3–5 days.' },
       { question: 'Do you handle permits?', answer: 'Yes, we pull all required permits and schedule city inspections as part of every project. This is included in your proposal.' },
@@ -120,6 +135,21 @@ export const services: Service[] = [
       { title: 'Quality Installation', description: 'Our commercial crews install with precision, including heat-welded seams and proper drainage systems.' },
       { title: 'Warranty & Maintenance', description: 'Your commercial roof is registered for manufacturer warranty and we offer ongoing maintenance programs.' },
     ],
+        detailedOverview: {
+      heading: 'Commercial Roofing San Diego & Industrial Roofing Services',
+      subheading: 'Energy Star TPO single-ply systems, elastomeric silicone roof coatings, and flat roof maintenance with zero business disruption.',
+      paragraphs: [
+        'Commercial buildings, industrial warehouses, and multi-tenant facilities demand commercial roofing in San Diego engineered for longevity, energy efficiency, and watertight reliability. At Rise Up Roofing & Construction, our commercial division specializes in single-ply thermoplastic polyolefin (TPO) membranes, elastomeric roof restorations, and built-up roof repair across North County and Greater San Diego. We partner with commercial property managers, business owners, and HOAs to deliver superior low-slope performance while keeping business operations fully operational.',
+        'Flat roofs throughout Southern California face severe ultraviolet breakdown, thermal shock, and ponding water around mechanical equipment. Our industrial roofing services include custom-engineered tapered polyisocyanurate insulation systems that redirect runoff directly to commercial drains and scuppers, eliminating standing water and structural dead load. We mechanically attach and robotic heat-weld 60-mil white reflective TPO membranes that comply with California Title 24 Cool Roof mandates, slashing rooftop temperatures by up to 50°F and substantially reducing air conditioning energy overhead.',
+        'For facilities with aging but structurally sound modified bitumen or metal roofs, our elastomeric silicone coating systems provide a cost-effective alternative to a full tear-off, creating a seamless, monolithic membrane backed by up to 20-year renewable warranties. From preventative commercial maintenance plans to emergency leak dispatch, Rise Up is the trusted commercial roofing contractor for Southern California businesses.',
+      ],
+      highlights: [
+        { title: 'Energy Star Reflective TPO Membranes', description: 'Robotic heat-welded seams with high tensile strength and 20-year commercial manufacturer warranty.' },
+        { title: 'Tapered Drainage Engineering', description: 'Custom polyiso slope design eliminates ponding water and complies with California Title 24 standards.' },
+        { title: 'Seamless Silicone Restorations', description: 'Cost-effective elastomeric coatings that extend commercial roof service life by 15+ years.' },
+        { title: 'Zero Operational Disruption', description: 'Flexible scheduling, phased execution, and weekend availability around your business operations.' },
+      ],
+    },
     faqs: [
       { question: 'Can you work around our business hours?', answer: 'Yes. We understand that commercial properties have unique scheduling needs. We can schedule work during off-hours or in phases to minimize disruption.' },
       { question: 'What type of commercial roofing do you install?', answer: 'We specialize in TPO membrane systems, elastomeric coatings, and built-up roofing. We will recommend the best system for your building type and budget.' },
@@ -209,6 +239,21 @@ export const services: Service[] = [
       { title: 'Quality Check', description: 'We conduct thorough quality inspections at each phase before moving to the next.' },
       { title: 'Final Walkthrough', description: 'You inspect the completed work with us and we address any items before final sign-off.' },
     ],
+        detailedOverview: {
+      heading: 'General Contractor San Diego & Exterior Construction Services',
+      subheading: 'Turnkey architectural construction, custom covered patio additions, exterior framing, and structural property improvements.',
+      paragraphs: [
+        'When planning significant exterior renovations or expanding your home\'s living space, hiring a reputable general contractor in San Diego ensures your project is completed with uncompromising structural integrity, beautiful design, and seamless city permitting. Rise Up Roofing & Construction provides comprehensive general contracting services, uniting master carpentry, architectural engineering, and licensed building expertise under one accountable roof.',
+        'Our general contractors in San Diego specialize in high-impact residential property improvements, including custom covered patio builds, second-story exterior room extensions, structural dry rot remediation, and exterior siding installations. We navigate the complete municipal permitting process across the City of San Diego, Oceanside, Carlsbad, and North County municipalities, ensuring all framing, electrical routing, and foundations meet California seismic and Wildland-Urban Interface (WUI) fire safety codes.',
+        'Whether you are looking to create an outdoor California living space with integrated LED lighting and tongue-and-groove cedar ceilings or need complete exterior construction work in San Diego, Rise Up handles every phase from initial architectural drafting to final building inspection. We pride ourselves on transparent project management, reliable scheduling, and clean, respectful job sites that respect your home.',
+      ],
+      highlights: [
+        { title: 'Full-Service General Contracting', description: 'Licensed Class B builders managing framing, carpentry, electrical, and structural engineering.' },
+        { title: 'Architectural Plans & Permitting', description: '100% municipal city permit acquisition, zoning variance, and engineering calculations handled in-house.' },
+        { title: 'California WUI Fire-Resistant Construction', description: 'Heavy-timber framing, non-combustible materials, and Class-A fire-rated exterior finishes.' },
+        { title: 'Seamless Architectural Integration', description: 'Additions and patio covers designed to match existing rooflines, pitches, and home aesthetics.' },
+      ],
+    },
     faqs: [
       { question: 'Do you handle permits for construction projects?', answer: 'Yes, we handle all permitting, engineering, and city inspections as part of every construction project.' },
       { question: 'Can you match my existing exterior?', answer: 'Yes. We take great care to match existing materials, colors, and architectural style so additions and renovations look like they were always part of the property.' },

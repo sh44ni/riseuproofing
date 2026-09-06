@@ -114,10 +114,8 @@ export default async function ReviewsPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex gap-1">
-                      {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
-                      ))}
+                    <div className="flex gap-0.5 text-amber-400 text-sm select-none" aria-label={`${review.rating} out of 5 stars`}>
+                      {'★'.repeat(review.rating)}
                     </div>
                     {review.reviewUrl ? (
                       <a
@@ -180,6 +178,46 @@ export default async function ReviewsPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* Review Assurance & Verification Section */}
+        <div className="mt-16 border-t border-slate-200/80 pt-12 mb-12">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center sm:text-left">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-blue">
+                Verified Customer Feedback
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mt-1.5 tracking-tight">
+                San Diego County&apos;s Highest-Rated Roofing &amp; Construction Specialists
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-[var(--text-secondary)] leading-relaxed">
+              <div className="space-y-4">
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
+                  Unbiased Reviews on Google Local &amp; Yelp
+                </h3>
+                <p>
+                  At Rise Up Roofing &amp; Construction, every review represents an authentic homeowner or commercial property manager who trusted us with their building envelope. We maintain a top-tier rating across Google Business and Yelp because we prioritize crystal-clear communication, proactive jobsite cleanliness, and engineered precision from start to finish.
+                </p>
+                <p>
+                  Our customers frequently highlight our dedicated project managers, daily photographic progress logs, and strict adherence to agreed project timelines. Whether replacing aging asphalt shingles in Oceanside or completing complex tile underlayment relayments in Carlsbad, our focus remains on providing a stress-free contractor experience.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
+                  Master Workmanship &amp; Ironclad Warranties
+                </h3>
+                <p>
+                  A great roofing review is earned on the roof, not in an advertising campaign. As an Owens Corning Preferred Contractor and licensed dual-trade specialist (C-39 Roofing and B General Building), our installations are executed to strict manufacturer specifications that qualify for extended 50-year non-prorated system warranties.
+                </p>
+                <p>
+                  We also eliminate finger-pointing during solar detach-and-reset procedures by managing both the photovoltaic array and roofing underlayment in-house. When North County homeowners invest in their roofs, they know Rise Up stands behind every nail, bracket, and valley metal installation with our comprehensive workmanship guarantee.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

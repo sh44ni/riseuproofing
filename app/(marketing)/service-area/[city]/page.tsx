@@ -128,6 +128,12 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
               <p>
                 With California Contractor&apos;s License #{LICENSE_NUMBER}, we are fully licensed, bonded, and insured for both roofing (C-39) and general construction (B). As an Owens Corning Preferred Contractor, we install roofing systems to exact manufacturer specifications, ensuring full warranty protection and peerless build quality.
               </p>
+              <p>
+                Every roofing installation in {area.name} is engineered to meet or exceed California Title 24 Cool Roof energy efficiency mandates, Class A fire-retardant standards, and local municipal wind resistance requirements. Our project coordination team manages the complete building permit process from initial submission through final municipal sign-off, giving you complete peace of mind.
+              </p>
+              <p>
+                From premium synthetic felt underlayment relays on classic concrete tile roofs to complete Owens Corning architectural shingle replacements and commercial flat roof membranes, we back our work with non-prorated manufacturer warranties and Rise Up&apos;s ironclad workmanship guarantee. We also offer certified solar detach-and-reset services so your solar investment remains protected throughout your roof project.
+              </p>
             </div>
           </div>
 

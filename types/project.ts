@@ -8,6 +8,8 @@ export interface Project {
   afterImage: string;
   gallery: string[];
   scopeOfWork: string;
+  challengeAndContext?: string;
+  solutionAndEngineering?: string;
   materialsUsed: string[];
   clientQuote?: { text: string; author: string };
 }

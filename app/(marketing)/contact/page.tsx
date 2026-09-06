@@ -103,6 +103,68 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* 4-Step Inspection & Free Estimate Guide */}
+      <div className="mt-16 sm:mt-20 border-t border-slate-200/80 pt-12 max-w-6xl mx-auto">
+        <div className="text-center sm:text-left mb-8">
+          <span className="text-xs font-bold uppercase tracking-wider text-brand-blue">
+            Transparent Contractor Process
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mt-1.5 tracking-tight">
+            What to Expect During Your Free Roofing Estimate
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 space-y-3">
+            <span className="w-7 h-7 rounded-lg bg-blue-50 text-brand-blue font-extrabold text-xs flex items-center justify-center border border-blue-100">
+              01
+            </span>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
+              Digital Satellite Pre-Scan
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Before our field tech arrives, we pull high-precision satellite roof pitch and square footage measurements to prepare preliminary structural calculations.
+            </p>
+          </div>
+
+          <div className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 space-y-3">
+            <span className="w-7 h-7 rounded-lg bg-blue-50 text-brand-blue font-extrabold text-xs flex items-center justify-center border border-blue-100">
+              02
+            </span>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
+              Aerial Drone &amp; Attic Audit
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              We conduct a 4K aerial drone scan and physical walk-through to inspect flashing, tile underlayment elasticity, ventilation gaps, and deck moisture.
+            </p>
+          </div>
+
+          <div className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 space-y-3">
+            <span className="w-7 h-7 rounded-lg bg-blue-50 text-brand-blue font-extrabold text-xs flex items-center justify-center border border-blue-100">
+              03
+            </span>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
+              Itemized Line-Item Bid
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              You receive a transparent proposal detailing labor, underlayment specs, flashing replacements, and Title 24 compliance options with zero hidden costs.
+            </p>
+          </div>
+
+          <div className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 space-y-3">
+            <span className="w-7 h-7 rounded-lg bg-blue-50 text-brand-blue font-extrabold text-xs flex items-center justify-center border border-blue-100">
+              04
+            </span>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
+              Rapid Permitting &amp; Execution
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Upon agreement, we pull all municipal permits, schedule material staging, and assign a dedicated project manager to ensure clean, on-time completion.
+            </p>
+          </div>
+        </div>
+      </div>
     </Section>
   );
 }

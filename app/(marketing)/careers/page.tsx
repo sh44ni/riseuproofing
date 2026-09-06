@@ -67,6 +67,47 @@ export default function CareersPage() {
           </Link>
         ))}
       </div>
+
+      {/* Why Build Your Career with Rise Up */}
+      <div className="mt-16 sm:mt-20 border-t border-slate-200/80 pt-12 max-w-5xl mx-auto">
+        <div className="text-center sm:text-left mb-8">
+          <span className="text-xs font-bold uppercase tracking-wider text-brand-blue">
+            Our Culture &amp; Values
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mt-1.5 tracking-tight">
+            Why Build Your Career at Rise Up Roofing &amp; Construction
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+          <div className="glass-card-interactive rounded-2xl p-6 border border-slate-200/80 space-y-2.5">
+            <h3 className="text-base font-bold text-[var(--text-primary)]">
+              Consistent Year-Round Projects
+            </h3>
+            <p>
+              Unlike seasonal roofing operations, our strong pipeline of residential replacements, commercial maintenance, and solar detach-reset projects across San Diego County keeps our crews working steadily all 12 months without seasonal layoffs.
+            </p>
+          </div>
+
+          <div className="glass-card-interactive rounded-2xl p-6 border border-slate-200/80 space-y-2.5">
+            <h3 className="text-base font-bold text-[var(--text-primary)]">
+              Safety-First Jobsite Culture
+            </h3>
+            <p>
+              We invest heavily in OSHA safety compliance, modern fall-arrest equipment, top-tier power tools, and dedicated staging. We ensure every technician and apprentice returns home safely every single day.
+            </p>
+          </div>
+
+          <div className="glass-card-interactive rounded-2xl p-6 border border-slate-200/80 space-y-2.5">
+            <h3 className="text-base font-bold text-[var(--text-primary)]">
+              Defined Advancement Pathways
+            </h3>
+            <p>
+              We promote from within. Whether starting as an apprentice installer, canvasser, or sales representative, we sponsor manufacturer certifications and trade licensing to guide your progression into leadership and project management.
+            </p>
+          </div>
+        </div>
+      </div>
     </Section>
   );
 }

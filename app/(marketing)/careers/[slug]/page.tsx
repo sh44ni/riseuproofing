@@ -98,6 +98,28 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ s
                   </li>
                 ))}
               </ul>
+
+              <h3 className="text-lg font-bold text-[var(--text-primary)] mt-8 mb-4">
+                What We Offer &amp; Why You&apos;ll Thrive Here
+              </h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)]">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong>Top-Tier Industry Compensation:</strong> Competitive hourly base, overtime availability, and milestone-based performance bonuses.</span>
+                </li>
+                <li className="flex items-start gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)]">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong>Year-Round Stability:</strong> Predictable, continuous work schedule throughout San Diego County without winter weather layoffs.</span>
+                </li>
+                <li className="flex items-start gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)]">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong>Safety &amp; Equipment:</strong> Full company-supplied PPE, modern fall-arrest rigs, and premium commercial-grade tooling.</span>
+                </li>
+                <li className="flex items-start gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)]">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong>Professional Advancement:</strong> Paid manufacturer certifications (Owens Corning, Title 24 cool roof systems) and career pathways to leadership.</span>
+                </li>
+              </ul>
             </div>
           </div>
 

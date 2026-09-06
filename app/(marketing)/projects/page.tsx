@@ -61,7 +61,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         })}
       </div>
 
-      {/* Solar Category Educational Overview Banner */}
+      {/* Category Educational Overview Banners (SEO & Content Expansion) */}
       {category === 'solar' && (
         <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50/90 via-sky-50/60 to-white border border-blue-100/90 shadow-sm">
           <div className="flex items-center gap-2.5 mb-3 text-brand-blue font-bold text-xs uppercase tracking-wider">
@@ -72,7 +72,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             Solar Panel Detach, Roof Replacement &amp; Waterproof Reset
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed mb-6">
-            When replacing your roof or restoring deteriorated tile underlayment, existing solar photovoltaic systems require certified handling. Rise Up Roofing provides specialized solar detach and reset services, coordinating safe electrical decoupling, careful panel storage, comprehensive roof deck replacement, and watertight reinstallation. Every penetration is flashed with engineered stanchion boots to protect your home against water intrusion while safeguarding your solar equipment warranties.
+            When replacing your roof or restoring deteriorated tile underlayment, existing solar photovoltaic systems require certified handling. Rise Up Roofing provides specialized solar panel removal and reinstall services across San Diego County, coordinating safe electrical decoupling, careful panel storage, comprehensive roof deck replacement, and watertight reinstallation. Every penetration is flashed with engineered stanchion boots to protect your home against water intrusion while safeguarding your solar equipment warranties.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
@@ -86,6 +86,122 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Warranties Fully Protected</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {category === 'repairs' && (
+        <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-50/90 via-teal-50/60 to-white border border-emerald-100/90 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3 text-emerald-700 font-bold text-xs uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Emergency Leak Mitigation Specialists</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
+            Emergency Roof Leak Repair &amp; Tile Restoration Projects
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-6">
+            From persistent tile roof underlayment leaks to storm damage and broken terracotta tile restoration, Rise Up Roofing provides rapid-response roof leak repair across San Diego County. Our certified technicians utilize thermal infrared scanning to track water damage to its origin, performing surgical deck repairs, synthetic underlayment replacement, and color-matched tile relays that permanently stop leaks without requiring an unnecessary full reroof.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Same-Day Emergency Dispatch</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Thermal Infrared Tracing</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Written Workmanship Warranty</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {category === 'residential' && (
+        <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50/90 via-slate-50/60 to-white border border-blue-100/90 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3 text-brand-blue font-bold text-xs uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-brand-blue" />
+            <span>Residential Roofing Craftsmanship</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
+            Residential Roof Replacement &amp; Concrete Tile Relay Projects
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-6">
+            Explore our portfolio of completed residential roofing systems across North County and Greater San Diego. From Owens Corning architectural shingle roof installations in coastal Oceanside to Mediterranean concrete tile relayments in Carlsbad, every project is engineered for Southern California microclimates. We install SBS-modified high-temperature underlayments, continuous ridge ventilation, and heavy-gauge valley flashings backed by 50-year non-prorated manufacturer system warranties.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <span>Owens Corning Preferred</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <span>California Title 24 Compliant</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Lifetime Shingle Warranties</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {category === 'commercial' && (
+        <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-white border border-amber-100/90 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3 text-amber-700 font-bold text-xs uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-amber-600" />
+            <span>Commercial Low-Slope Systems</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
+            Commercial Flat Roofing &amp; Industrial Restoration Projects
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-6">
+            Rise Up delivers high-performance commercial roofing across San Diego, specializing in Energy Star reflective white TPO single-ply membranes, commercial flat roof replacement, and elastomeric silicone roof coatings. We solve complex roof drainage challenges with custom tapered polyiso insulation, eliminating ponding water and dramatically lowering commercial building cooling costs without disrupting day-to-day business operations.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span>Energy Star Cool Roofs</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span>20-Year Commercial Warranty</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Zero Operational Downtime</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {category === 'construction' && (
+        <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-50/90 via-purple-50/40 to-white border border-indigo-100/90 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3 text-indigo-700 font-bold text-xs uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            <span>Licensed General Contracting</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
+            General Construction, Siding &amp; Home Addition Projects
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-6">
+            As licensed general contractors in San Diego, we build custom exterior renovations that increase living space and boost property value. Our team manages complete engineering calculations, municipal city permitting, and construction for covered patio additions, James Hardie fiber cement siding installations, and exterior structural renovations built to California wildfire interface and coastal building standards.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+              <span>Structural Engineering &amp; Plans</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+              <span>City Permitting Handled 100%</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Class-A Fire Rated Materials</span>
             </div>
           </div>
         </div>
