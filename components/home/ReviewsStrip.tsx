@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Star, CheckCircle2, MapPin, ExternalLink } from 'lucide-react';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
-import { reviews, getAverageRating } from '@/lib/data/reviews';
+import { reviews, getAverageRating, type EnrichedReview } from '@/lib/data/reviews';
 import { cn } from '@/lib/utils';
 import { Tooltip } from '@/components/shared/Tooltip';
 
@@ -39,14 +39,17 @@ function YelpLogo({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function ReviewsStrip() {
+export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedReview[] }) {
+  const reviewList = initialReviews && initialReviews.length > 0 ? initialReviews : reviews;
   const [platformFilter, setPlatformFilter] = useState<'all' | 'google' | 'yelp'>('all');
-  const avgRating = getAverageRating();
+  const avgRating = getAverageRating(reviewList);
+  const googleCount = reviewList.filter((r) => r.source === 'google').length;
+  const yelpCount = reviewList.filter((r) => r.source === 'yelp').length;
 
   const filteredReviews =
     platformFilter === 'all'
-      ? reviews
-      : reviews.filter((r) => r.source === platformFilter);
+      ? reviewList
+      : reviewList.filter((r) => r.source === platformFilter);
 
   return (
     <Section alternate={true} id="reviews">
@@ -137,7 +140,7 @@ export function ReviewsStrip() {
               : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/30 shadow-2xs'
           )}
         >
-          All Reviews ({reviews.length})
+          All Reviews ({reviewList.length})
         </button>
 
         <button
@@ -151,7 +154,7 @@ export function ReviewsStrip() {
           )}
         >
           <GoogleLogo className="w-3.5 h-3.5" />
-          <span>Google (4.9★)</span>
+          <span>Google ({googleCount > 0 ? googleCount : '4.9★'})</span>
         </button>
 
         <button
@@ -165,23 +168,23 @@ export function ReviewsStrip() {
           )}
         >
           <YelpLogo className="w-3.5 h-3.5" />
-          <span>Yelp (5.0★)</span>
+          <span>Yelp ({yelpCount > 0 ? yelpCount : '5.0★'})</span>
         </button>
       </div>
 
       {/* Reviews Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {filteredReviews.map((review) => {
+        {filteredReviews.map((review, idx) => {
           const isGoogle = review.source === 'google';
-          const initials = review.author
+          const initials = (review.author || 'Customer')
             .split(' ')
-            .map((n) => n[0])
+            .map((n: string) => n[0])
             .slice(0, 2)
             .join('');
 
           return (
             <div
-              key={review.author}
+              key={`${review.author}-${idx}`}
               className="bg-white rounded-3xl p-6 sm:p-7 flex flex-col justify-between border border-slate-100/80 hover:border-brand-blue/30 transition-all duration-300 relative group shadow-[0_1px_3px_rgba(11,30,51,0.04),0_8px_24px_-4px_rgba(11,30,51,0.07),0_24px_48px_-8px_rgba(11,30,51,0.04)] hover:shadow-[0_8px_24px_-4px_rgba(47,159,227,0.11),0_1px_3px_rgba(11,30,51,0.04)] hover:-translate-y-0.5 overflow-hidden"
             >
               {/* Accent top on hover */}
@@ -190,9 +193,17 @@ export function ReviewsStrip() {
                 {/* Header: Author Avatar + Name + Platform Badge */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-xs font-bold text-brand-blue shadow-2xs flex-shrink-0">
-                      {initials}
-                    </div>
+                    {review.authorPhoto ? (
+                      <img
+                        src={review.authorPhoto}
+                        alt={review.author}
+                        className="w-10 h-10 rounded-full object-cover border border-blue-100 shadow-2xs flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-xs font-bold text-brand-blue shadow-2xs flex-shrink-0">
+                        {initials}
+                      </div>
+                    )}
                     <div>
                       <h4 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
                         {review.author}
@@ -231,9 +242,19 @@ export function ReviewsStrip() {
                 </div>
 
                 {/* Review Quote */}
-                <p className="text-xs sm:text-[13px] text-[var(--text-secondary)] leading-relaxed italic mb-5">
+                <p className="text-xs sm:text-[13px] text-[var(--text-secondary)] leading-relaxed italic mb-4">
                   &ldquo;{review.text}&rdquo;
                 </p>
+
+                {/* Owner Reply if present */}
+                {review.ownerReply && (
+                  <div className="mb-4 p-3 bg-slate-50 rounded-2xl border border-slate-100 text-[11px] text-[var(--text-secondary)]">
+                    <p className="font-bold text-[10px] uppercase tracking-wider text-brand-blue mb-1">
+                      Response from Rise Up Roofing:
+                    </p>
+                    <p className="italic leading-relaxed">&ldquo;{review.ownerReply}&rdquo;</p>
+                  </div>
+                )}
               </div>
 
               {/* Bottom Verification Footer */}

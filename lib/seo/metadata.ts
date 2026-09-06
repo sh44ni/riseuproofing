@@ -11,12 +11,49 @@ interface MetadataOptions {
 const BASE_URL = 'https://riseuproofing.com';
 
 export function buildMetadata({ title, description, path, ogImage }: MetadataOptions): Metadata {
-  const fullTitle = `${title} | ${COMPANY_NAME} | San Diego County`;
+  // Strip redundant tags or existing suffixes to construct clean, high-impact titles
+  const baseTitle = title
+    .replace(/\s*\|\s*San Diego Roofing Case Study.*$/i, '')
+    .replace(/\s*\|\s*San Diego Roofing Experts.*$/i, '')
+    .replace(/\s*\|\s*San Diego Roofing & Construction.*$/i, '')
+    .replace(/\s*\|\s*5-Star San Diego Roofing.*$/i, '')
+    .replace(/\s*\|\s*Join Rise Up Roofing San Diego.*$/i, '')
+    .replace(/\s*\|\s*San Diego Roofing.*$/i, '')
+    .replace(/\s*[—|-]\s*Careers\s*\|\s*Rise Up Roofing.*$/i, '')
+    .replace(/\s*\|\s*Rise Up Roofing & Construction.*$/i, '')
+    .replace(/\s*\|\s*Rise Up Roofing.*$/i, '')
+    .replace(/\s*\|\s*San Diego County.*$/i, '')
+    .trim();
+
+  let fullTitle: string;
+  if (title.includes('Rise Up Roofing')) {
+    // If title already had branded suffix like "Roofing & Construction in Oceanside, CA | Rise Up Roofing"
+    fullTitle = title.replace(/\s*\|\s*Rise Up Roofing & Construction\s*\|\s*San Diego County/i, '').trim();
+    if (!fullTitle.includes('Rise Up')) {
+      fullTitle = `${fullTitle} | Rise Up Roofing`;
+    }
+  } else {
+    // If appending full brand name keeps it under 65 chars, use full brand name; otherwise use short brand name
+    const candidate = `${baseTitle} | ${COMPANY_NAME}`;
+    if (candidate.length <= 65) {
+      fullTitle = candidate;
+    } else {
+      fullTitle = `${baseTitle} | Rise Up Roofing`;
+    }
+  }
+
+  // Strict safety cap at 70 characters
+  if (fullTitle.length > 70) {
+    fullTitle = `${baseTitle.slice(0, 70 - 19)} | Rise Up Roofing`;
+  }
+
   const url = `${BASE_URL}${path}`;
   const image = ogImage || `${BASE_URL}/og-image.jpg`;
 
   return {
-    title: fullTitle,
+    title: {
+      absolute: fullTitle,
+    },
     description,
     alternates: { canonical: url },
     openGraph: {
@@ -47,22 +84,23 @@ export function buildLocalBusinessJsonLd() {
     email: 'info@riseuproofing.com',
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'San Diego',
+      streetAddress: '2182 S El Camino Real',
+      addressLocality: 'Oceanside',
       addressRegion: 'CA',
-      postalCode: '92101',
+      postalCode: '92054',
       addressCountry: 'US',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: 32.7157,
-      longitude: -117.1611,
+      latitude: 33.1812,
+      longitude: -117.3395,
     },
     areaServed: {
       '@type': 'County',
       name: 'San Diego County',
     },
     priceRange: '$$',
-    openingHours: 'Mo-Fr 07:00-18:00, Sa 08:00-14:00',
+    openingHours: 'Mo-Su 00:00-24:00',
     sameAs: [
       'https://www.google.com/maps/place/Rise+Up+Roofing+%26+Construction',
       'https://www.yelp.com/biz/rise-up-roofing-and-construction',
@@ -150,8 +188,10 @@ export function buildJobPostingJsonLd(job: {
       '@type': 'Place',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'San Diego',
+        streetAddress: '2182 S El Camino Real',
+        addressLocality: 'Oceanside',
         addressRegion: 'CA',
+        postalCode: '92054',
         addressCountry: 'US',
       },
     },

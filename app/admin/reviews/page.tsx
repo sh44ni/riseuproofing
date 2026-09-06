@@ -21,6 +21,7 @@ import {
   Globe,
   Award,
   TrendingUp,
+  RefreshCw,
 } from 'lucide-react';
 
 interface ReviewItem {
@@ -40,6 +41,10 @@ interface ReviewItem {
   customer_phone?: string;
   customer_email?: string;
   job_number?: string;
+  google_review_id?: string;
+  author_photo?: string;
+  owner_reply?: string;
+  original_time?: string;
 }
 
 interface SummaryStats {
@@ -64,6 +69,25 @@ export default function ReviewsPage() {
   const [ratingFilter, setRatingFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
+  // Google Reviews Auto-Sync State
+  const [googleSync, setGoogleSync] = useState<{
+    isConnected: boolean;
+    businessName: string | null;
+    lastSyncedAt: string | null;
+    lastSyncStatus: string | null;
+    lastSyncCount: number;
+    lastError: string | null;
+  }>({
+    isConnected: false,
+    businessName: null,
+    lastSyncedAt: null,
+    lastSyncStatus: null,
+    lastSyncCount: 0,
+    lastError: null,
+  });
+  const [syncingGoogle, setSyncingGoogle] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Send Request Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,9 +115,70 @@ export default function ReviewsPage() {
     }
   };
 
+  const fetchGoogleStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/google-sync');
+      if (res.ok) {
+        const data = await res.json();
+        setGoogleSync(data);
+      }
+    } catch (err) {
+      console.error('Failed to load Google sync status', err);
+    }
+  };
+
   useEffect(() => {
     fetchReviews();
+    fetchGoogleStatus();
+
+    // Check query params for Google auth feedback
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('google_connected')) {
+        const synced = params.get('synced');
+        setSyncFeedback({
+          type: 'success',
+          message: `Google Account successfully authorized! ${synced ? `${synced} reviews synchronized.` : ''}`,
+        });
+        window.history.replaceState({}, '', window.location.pathname);
+      } else if (params.get('google_error')) {
+        setSyncFeedback({
+          type: 'error',
+          message: `Google authentication notice: ${decodeURIComponent(params.get('google_error') || '')}`,
+        });
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
   }, []);
+
+  const handleManualGoogleSync = async () => {
+    setSyncingGoogle(true);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch('/api/admin/google-sync', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setSyncFeedback({
+          type: 'success',
+          message: data.message || `Successfully synchronized ${data.syncedCount} reviews!`,
+        });
+        await fetchReviews();
+        await fetchGoogleStatus();
+      } else {
+        setSyncFeedback({
+          type: 'error',
+          message: data.error || data.message || 'Synchronization failed',
+        });
+      }
+    } catch (err: any) {
+      setSyncFeedback({
+        type: 'error',
+        message: err.message || 'Network error executing sync',
+      });
+    } finally {
+      setSyncingGoogle(false);
+    }
+  };
 
   const handleCopyLink = (token: string) => {
     const url = `${window.location.origin}/review/${token}`;
@@ -209,6 +294,94 @@ export default function ReviewsPage() {
         >
           <Plus size={16} /> Send Review Request
         </button>
+      </div>
+
+      {/* Sync Feedback Toast/Notice */}
+      {syncFeedback && (
+        <div
+          className={`p-3.5 rounded-xl border text-xs flex items-center justify-between ${
+            syncFeedback.type === 'success'
+              ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
+              : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+          }`}
+        >
+          <span>{syncFeedback.message}</span>
+          <button
+            onClick={() => setSyncFeedback(null)}
+            className="p-1 hover:text-white transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Google Business Profile Auto-Sync Panel */}
+      <div className="p-4 rounded-[18px] admin-card border border-white/[0.08] bg-gradient-to-r from-[#111923] to-[#14202e] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+            <Globe className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-[#f0f2f5]">
+                {googleSync.businessName || 'Google Business Profile Sync'}
+              </h2>
+              {googleSync.isConnected ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Auto-Sync Active (Weekly Mondays 3AM UTC)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                  Not Connected
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[#8a95a5] mt-0.5">
+              {googleSync.isConnected ? (
+                <>
+                  Last Synced:{' '}
+                  {googleSync.lastSyncedAt
+                    ? new Date(googleSync.lastSyncedAt).toLocaleString('en-US')
+                    : 'Awaiting initial sync'}{' '}
+                  • {googleSync.lastSyncCount} reviews synced from Google
+                </>
+              ) : (
+                'Connect your Google account (marc@riseuprac.com) once to enable automatic weekly review synchronization.'
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+          {googleSync.isConnected ? (
+            <>
+              <button
+                onClick={handleManualGoogleSync}
+                disabled={syncingGoogle}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                <RefreshCw size={13} className={syncingGoogle ? 'animate-spin' : ''} />
+                <span>{syncingGoogle ? 'Syncing...' : 'Sync Reviews Now'}</span>
+              </button>
+              <a
+                href="/api/admin/google-auth"
+                className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] text-xs font-semibold transition-all"
+                title="Reconnect Google Account"
+              >
+                Reconnect
+              </a>
+            </>
+          ) : (
+            <a
+              href="/api/admin/google-auth"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all"
+            >
+              <Globe size={14} />
+              <span>Connect Google Account</span>
+            </a>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -381,12 +554,29 @@ export default function ReviewsPage() {
                   </div>
 
                   {/* Customer & City */}
-                  <div>
-                    <h3 className="text-base font-black text-[#f0f2f5]">{r.customer_name}</h3>
-                    <div className="flex items-center gap-2 text-xs text-[#8a95a5] mt-0.5">
-                      <span>{r.customer_city || 'San Diego County, CA'}</span>
-                      <span>•</span>
-                      <span className="text-[#d4a447] font-semibold">{r.service_type || 'Roofing Service'}</span>
+                  <div className="flex items-center gap-3">
+                    {r.author_photo ? (
+                      <img
+                        src={r.author_photo}
+                        alt={r.customer_name}
+                        className="w-10 h-10 rounded-full object-cover border border-white/10 shadow-xs flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {r.customer_name
+                          .split(' ')
+                          .map(n => n[0])
+                          .slice(0, 2)
+                          .join('')}
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="text-base font-black text-[#f0f2f5]">{r.customer_name}</h3>
+                      <div className="flex items-center gap-2 text-xs text-[#8a95a5] mt-0.5">
+                        <span>{r.customer_city || 'San Diego County, CA'}</span>
+                        <span>•</span>
+                        <span className="text-[#d4a447] font-semibold">{r.service_type || 'Roofing Service'}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -394,6 +584,16 @@ export default function ReviewsPage() {
                   <div className="mt-3 p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] text-xs text-[#c8cfd8] leading-relaxed italic">
                     "{r.feedback || 'Homeowner submitted star rating without additional comments.'}"
                   </div>
+
+                  {/* Owner Reply if present */}
+                  {r.owner_reply && (
+                    <div className="mt-2.5 p-3 rounded-[14px] bg-blue-950/20 border border-blue-500/20 text-xs text-blue-200">
+                      <span className="font-bold text-[10px] uppercase tracking-wider text-blue-400 block mb-0.5">
+                        Rise Up Response:
+                      </span>
+                      "{r.owner_reply}"
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom Actions */}

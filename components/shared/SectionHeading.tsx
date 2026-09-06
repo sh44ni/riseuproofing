@@ -6,6 +6,7 @@ interface SectionHeadingProps {
   subtitle?: string;
   centered?: boolean;
   className?: string;
+  as?: 'h1' | 'h2';
 }
 
 export function SectionHeading({
@@ -14,6 +15,7 @@ export function SectionHeading({
   subtitle,
   centered = true,
   className,
+  as: HeadingTag = 'h2',
 }: SectionHeadingProps) {
   return (
     <div className={cn('mb-10 lg:mb-14', centered && 'text-center', className)}>
@@ -24,13 +26,13 @@ export function SectionHeading({
           </span>
         </div>
       )}
-      <h2
+      <HeadingTag
         className={cn(
           'text-2xl sm:text-3xl lg:text-[2.375rem] font-extrabold tracking-tight mb-4 text-[var(--text-primary)] leading-[1.15]'
         )}
       >
         {title}
-      </h2>
+      </HeadingTag>
       {subtitle && (
         <p
           className={cn(

@@ -24,8 +24,9 @@ export default function ServicesPage() {
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Services' }]} />
       
       <SectionHeading
-        label="Our Services"
-        title="Complete Roofing &amp; Construction Solutions"
+        as="h1"
+        label="Our Capabilities"
+        title="Our Roofing &amp; Construction Services"
         subtitle="From complete roof replacements and tile relays to commercial flat roofing and emergency leak detection, our licensed team delivers professional results built for coastal longevity."
       />
 

@@ -14,7 +14,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: {
     default: `${COMPANY_NAME} | San Diego County Roofing Experts`,
-    template: `%s | ${COMPANY_NAME} | San Diego County`,
+    template: `%s | ${COMPANY_NAME}`,
   },
   description: 'San Diego County\'s trusted roofing and construction company. Residential, commercial, solar roofing, repairs, and general construction. Licensed, bonded & insured. Free estimates.',
   metadataBase: new URL('https://riseuproofing.com'),

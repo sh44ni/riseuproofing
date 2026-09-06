@@ -8,9 +8,12 @@ import { ReviewsStrip } from '@/components/home/ReviewsStrip';
 import { Certifications } from '@/components/home/Certifications';
 import { FinalCTA } from '@/components/home/FinalCTA';
 import { buildReviewJsonLd } from '@/lib/seo/metadata';
-import { reviews } from '@/lib/data/reviews';
+import { getPublicReviews } from '@/lib/reviews-server';
 
-export default function HomePage() {
+export const revalidate = 3600;
+
+export default async function HomePage() {
+  const reviews = await getPublicReviews();
   const reviewJsonLd = buildReviewJsonLd(reviews);
 
   return (
@@ -25,10 +28,9 @@ export default function HomePage() {
       <WhyRiseUp />
       <FeaturedProjects />
       <ProjectsMap />
-      <ReviewsStrip />
+      <ReviewsStrip initialReviews={reviews} />
       <Certifications />
       <FinalCTA />
     </>
   );
 }
-

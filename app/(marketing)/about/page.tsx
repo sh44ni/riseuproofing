@@ -46,8 +46,9 @@ export default function AboutPage() {
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
       
       <SectionHeading
+        as="h1"
         label="Our Heritage"
-        title="San Diego's Trusted Roofing Specialists"
+        title="About Rise Up Roofing & Construction"
         subtitle={`${COMPANY_NAME} has been protecting homes and commercial properties across San Diego County for over 25 years with master craftsmanship.`}
       />
 

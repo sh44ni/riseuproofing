@@ -20,6 +20,7 @@ export default function ServiceAreaPage() {
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Service Areas' }]} />
       
       <SectionHeading
+        as="h1"
         label="Local Coverage"
         title="San Diego County Service Areas"
         subtitle="We provide expert roofing and construction services across all North County coastal, inland, and greater San Diego communities."

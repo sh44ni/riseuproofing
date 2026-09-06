@@ -20,13 +20,21 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     ? projects.filter((p) => p.category.toLowerCase() === category.toLowerCase())
     : projects;
 
+  const currentCategory = projectCategories.find((c) => c.value === category);
+  const h1Title = !category || category === 'all'
+    ? 'Our Roofing & Construction Projects'
+    : category === 'repairs'
+    ? 'Roof Repair Projects'
+    : `${currentCategory?.label || category} Roofing Projects`;
+
   return (
     <Section alternate={false} className="pt-32 sm:pt-36">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Projects' }]} />
       
       <SectionHeading
+        as="h1"
         label="Our Portfolio"
-        title="San Diego County Roofing Showcase"
+        title={h1Title}
         subtitle="Explore our completed roofing, tile relay, commercial flat roofing, and general construction projects. Every home is protected with master craftsmanship."
       />
 

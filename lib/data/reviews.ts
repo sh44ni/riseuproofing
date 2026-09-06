@@ -74,12 +74,12 @@ export const reviews: EnrichedReview[] = [
   },
 ];
 
-export function getAverageRating(): number {
-  const total = reviews.reduce((sum, r) => sum + r.rating, 0);
-  return Math.round((total / reviews.length) * 10) / 10;
+export function getAverageRating(reviewList: Review[] = reviews): number {
+  if (!reviewList.length) return 5.0;
+  const total = reviewList.reduce((sum, r) => sum + r.rating, 0);
+  return Math.round((total / reviewList.length) * 10) / 10;
 }
 
-export function getReviewCount(): number {
-  return reviews.length;
+export function getReviewCount(reviewList: Review[] = reviews): number {
+  return reviewList.length;
 }
-

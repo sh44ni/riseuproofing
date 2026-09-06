@@ -19,8 +19,9 @@ export default function CareersPage() {
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Careers' }]} />
       
       <SectionHeading
+        as="h1"
         label="Join Our Crew"
-        title="Build Your Career With Rise Up Roofing"
+        title="Careers at Rise Up Roofing"
         subtitle="We are growing fast across San Diego County and looking for master craftsmen and project leaders who take pride in their work. Top industry compensation, growth, and a team that feels like family."
       />
 
