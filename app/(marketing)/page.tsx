@@ -8,12 +8,12 @@ import { ReviewsStrip } from '@/components/home/ReviewsStrip';
 import { Certifications } from '@/components/home/Certifications';
 import { FinalCTA } from '@/components/home/FinalCTA';
 import { buildReviewJsonLd } from '@/lib/seo/metadata';
-import { getPublicReviews } from '@/lib/reviews-server';
+import { getPublicReviews, getReviewStats } from '@/lib/reviews-server';
 
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const reviews = await getPublicReviews();
+  const [reviews, stats] = await Promise.all([getPublicReviews(), getReviewStats()]);
   const reviewJsonLd = buildReviewJsonLd(reviews);
 
   return (
@@ -22,13 +22,13 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewJsonLd) }}
       />
-      <Hero />
+      <Hero initialReviews={reviews} stats={stats} />
       <TrustBar />
       <ServicesOverview />
-      <WhyRiseUp />
+      <WhyRiseUp stats={stats} />
       <FeaturedProjects />
       <ProjectsMap />
-      <ReviewsStrip initialReviews={reviews} />
+      <ReviewsStrip initialReviews={reviews} stats={stats} />
       <Certifications />
       <FinalCTA />
     </>

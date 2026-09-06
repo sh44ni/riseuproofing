@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import { Star, Quote, CheckCircle2 } from 'lucide-react';
 import { buildMetadata, buildReviewJsonLd } from '@/lib/seo/metadata';
 import { getAverageRating, getReviewCount } from '@/lib/data/reviews';
-import { getPublicReviews } from '@/lib/reviews-server';
+import { getPublicReviews, getReviewStats } from '@/lib/reviews-server';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
-import { YELP_REVIEWS_URL } from '@/lib/utils';
+import { YELP_REVIEWS_URL, GOOGLE_REVIEWS_URL } from '@/lib/utils';
 
 export const revalidate = 3600;
 
@@ -49,9 +49,9 @@ function YelpLogo({ className = 'w-3.5 h-3.5' }: { className?: string }) {
 }
 
 export default async function ReviewsPage() {
-  const reviewList = await getPublicReviews();
-  const avgRating = getAverageRating(reviewList);
-  const count = getReviewCount(reviewList);
+  const [reviewList, stats] = await Promise.all([getPublicReviews(), getReviewStats()]);
+  const avgRating = stats.averageRating ? stats.averageRating.toFixed(1) : getAverageRating(reviewList);
+  const count = stats.totalCount || getReviewCount(reviewList);
   const reviewJsonLd = buildReviewJsonLd(reviewList);
 
   return (
@@ -85,7 +85,7 @@ export default async function ReviewsPage() {
               <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-semibold">
                 Based on{' '}
                 <span className="text-[var(--text-primary)] font-bold">
-                  {count}+ Verified Homeowner Reviews
+                  {count} Verified Homeowner Reviews
                 </span>
               </p>
               <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
@@ -222,22 +222,22 @@ export default async function ReviewsPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://www.google.com/maps/place/Rise+Up+Roofing+%26+Construction"
+            href={stats.googleUrl || GOOGLE_REVIEWS_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-xs"
           >
             <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span>Read All Google Reviews</span>
+            <span>Read Google Reviews ({stats.googleRating ? stats.googleRating.toFixed(1) : '5.0'} ★)</span>
           </a>
           <a
-            href={YELP_REVIEWS_URL}
+            href={stats.yelpUrl || YELP_REVIEWS_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-xs"
           >
             <YelpLogo className="w-4 h-4" />
-            <span>Read All Yelp Reviews</span>
+            <span>See all {stats.yelpTotalCount} on Yelp</span>
           </a>
         </div>
       </Section>

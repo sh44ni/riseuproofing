@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, CheckCircle2, MapPin, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { Star, CheckCircle2, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { reviews, getAverageRating, type EnrichedReview } from '@/lib/data/reviews';
-import { cn, YELP_REVIEWS_URL } from '@/lib/utils';
+import type { ReviewStats } from '@/lib/reviews-server';
+import { cn, YELP_REVIEWS_URL, GOOGLE_REVIEWS_URL } from '@/lib/utils';
 import { Tooltip } from '@/components/shared/Tooltip';
 
 function GoogleLogo({ className = 'w-4 h-4' }: { className?: string }) {
@@ -39,17 +41,30 @@ function YelpLogo({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedReview[] }) {
+export function ReviewsStrip({
+  initialReviews,
+  stats,
+}: {
+  initialReviews?: EnrichedReview[];
+  stats?: ReviewStats;
+}) {
   const reviewList = initialReviews && initialReviews.length > 0 ? initialReviews : reviews;
   const [platformFilter, setPlatformFilter] = useState<'all' | 'google' | 'yelp'>('all');
-  const avgRating = getAverageRating(reviewList);
-  const googleCount = reviewList.filter((r) => r.source === 'google').length;
-  const yelpCount = reviewList.filter((r) => r.source === 'yelp').length;
+  const avgRating = stats?.averageRating ? stats.averageRating.toFixed(1) : getAverageRating(reviewList);
+  const googleCount = stats?.googleCount ?? reviewList.filter((r) => r.source === 'google').length;
+  const yelpCount = stats?.yelpCount ?? reviewList.filter((r) => r.source === 'yelp').length;
+  const yelpTotalCount = stats?.yelpTotalCount ?? (yelpCount > 0 ? yelpCount : 1);
+  const googleRating = stats?.googleRating ? stats.googleRating.toFixed(1) : '5.0';
+  const yelpRating = stats?.yelpRating ? stats.yelpRating.toFixed(1) : '5.0';
+  const totalCount = stats?.totalCount ?? reviewList.length;
 
   const filteredReviews =
     platformFilter === 'all'
       ? reviewList
       : reviewList.filter((r) => r.source === platformFilter);
+
+  // Strictly display only 3 reviews on the homepage as requested
+  const displayedReviews = filteredReviews.slice(0, 3);
 
   return (
     <Section alternate={true} id="reviews">
@@ -62,7 +77,7 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
       {/* Interactive Platform Trust Header Strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
         {/* Google Score Box */}
-        <Tooltip content="Read 85+ verified 5-star customer reviews on Google" className="w-full">
+        <Tooltip content={`Read verified customer reviews on Google`} className="w-full">
           <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 hover:border-brand-blue/30 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] hover:-translate-y-0.5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-50 p-2 border border-slate-100 flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -70,14 +85,14 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-[var(--text-primary)] text-base">4.9</span>
+                  <span className="font-extrabold text-[var(--text-primary)] text-base">{googleRating}</span>
                   <div className="flex text-amber-400">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star key={s} className="w-3 h-3 fill-amber-400" />
                     ))}
                   </div>
                 </div>
-                <p className="text-[11px] text-[var(--text-muted)] font-medium">85+ Google Reviews</p>
+                <p className="text-[11px] text-[var(--text-muted)] font-medium">{googleCount} Google Reviews</p>
               </div>
             </div>
             <span className="text-[10px] uppercase font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
@@ -95,14 +110,14 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-[var(--text-primary)] text-base">5.0</span>
+                  <span className="font-extrabold text-[var(--text-primary)] text-base">{yelpRating}</span>
                   <div className="flex text-amber-400">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star key={s} className="w-3 h-3 fill-amber-400" />
                     ))}
                   </div>
                 </div>
-                <p className="text-[11px] text-[var(--text-muted)] font-medium">38+ Yelp Reviews</p>
+                <p className="text-[11px] text-[var(--text-muted)] font-medium">{yelpTotalCount} Yelp Reviews</p>
               </div>
             </div>
             <span className="text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
@@ -112,7 +127,7 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
         </Tooltip>
 
         {/* Combined Score Box */}
-        <Tooltip content="Combined average rating across all major customer review platforms" className="w-full">
+        <Tooltip content={`Combined average rating based on ${totalCount} verified reviews`} className="w-full">
           <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100/80 hover:border-brand-blue/30 transition-all duration-300 w-full cursor-help shadow-[0_1px_3px_rgba(11,30,51,0.04),0_6px_18px_-4px_rgba(11,30,51,0.07)] hover:-translate-y-0.5">
             <div>
               <div className="flex items-baseline gap-1.5">
@@ -140,7 +155,7 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
               : 'bg-white text-[#475569] border-slate-200/80 hover:border-brand-blue/30 shadow-2xs'
           )}
         >
-          All Reviews ({reviewList.length})
+          All Reviews ({totalCount})
         </button>
 
         <button
@@ -154,7 +169,7 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
           )}
         >
           <GoogleLogo className="w-3.5 h-3.5" />
-          <span>Google ({googleCount > 0 ? googleCount : '4.9★'})</span>
+          <span>Google ({googleCount > 0 ? googleCount : `${googleRating}★`})</span>
         </button>
 
         <button
@@ -168,13 +183,13 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
           )}
         >
           <YelpLogo className="w-3.5 h-3.5" />
-          <span>Yelp ({yelpCount > 0 ? yelpCount : '5.0★'})</span>
+          <span>Yelp ({yelpTotalCount > 0 ? yelpTotalCount : `${yelpRating}★`})</span>
         </button>
       </div>
 
-      {/* Reviews Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {filteredReviews.map((review, idx) => {
+      {/* Reviews Grid (Limited to 3) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {displayedReviews.map((review, idx) => {
           const isGoogle = review.source === 'google';
           const initials = (review.author || 'Customer')
             .split(' ')
@@ -284,27 +299,38 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
         })}
       </div>
 
+      {/* View All Reviews Primary Navigation CTA */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+        <Link
+          href="/reviews"
+          className="inline-flex items-center justify-center gap-2.5 bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider px-8 py-3.5 rounded-2xl transition-all shadow-md hover:shadow-lg hover:brightness-105 active:scale-[0.98] group"
+        >
+          <span>View All {totalCount} Verified Reviews</span>
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+
       {/* External Review Links */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         <a
-          href="https://www.google.com/maps/place/Rise+Up+Roofing+%26+Construction"
+          href={stats?.googleUrl || GOOGLE_REVIEWS_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue text-[#0B1E33] hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"
         >
           <GoogleLogo className="w-4 h-4" />
-          <span>Read All Google Reviews (4.9 ★)</span>
+          <span>Read All Google Reviews ({googleRating} ★)</span>
           <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
         </a>
 
         <a
-          href={YELP_REVIEWS_URL}
+          href={stats?.yelpUrl || YELP_REVIEWS_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue text-[#0B1E33] hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"
         >
           <YelpLogo className="w-4 h-4" />
-          <span>Read All Yelp Reviews (5.0 ★)</span>
+          <span>See all {yelpTotalCount} on Yelp ({yelpRating} ★)</span>
           <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
         </a>
       </div>

@@ -363,7 +363,7 @@ export function MobileNav() {
               <div className="flex items-center gap-2">
                 <span>Customer Reviews</span>
                 <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-300 bg-amber-500/20 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                  <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" /> 4.9★
+                  <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" /> 5.0★
                 </span>
               </div>
               <ChevronRight className="w-4 h-4 text-white/30" />

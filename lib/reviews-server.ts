@@ -1,5 +1,19 @@
 import { query } from '@/lib/db';
 import { reviews, type EnrichedReview } from '@/lib/data/reviews';
+import { GOOGLE_REVIEWS_URL, YELP_REVIEWS_URL } from '@/lib/utils';
+import type { YelpAuthSettings } from '@/lib/yelp-reviews';
+
+export interface ReviewStats {
+  totalCount: number;
+  averageRating: number;
+  googleCount: number;
+  yelpCount: number;
+  yelpTotalCount: number;
+  yelpRating: number;
+  googleRating: number;
+  yelpUrl: string;
+  googleUrl: string;
+}
 
 /**
  * Fetch published reviews from Neon database with graceful fallback to curated defaults
@@ -68,3 +82,83 @@ export async function getPublicReviews(): Promise<EnrichedReview[]> {
     return reviews;
   }
 }
+
+/**
+ * Fetch aggregated review counts and ratings dynamically from Neon DB and Yelp metadata
+ */
+export async function getReviewStats(): Promise<ReviewStats> {
+  try {
+    const statsQuery = query<{
+      source: string | null;
+      cnt: string;
+      avg_rating: string;
+    }>(
+      `SELECT COALESCE(source, 'direct') as source, COUNT(*)::text as cnt, AVG(rating)::text as avg_rating
+       FROM reviews
+       WHERE status = 'published'
+       GROUP BY source`
+    );
+
+    const yelpSettingsQuery = query<{ value: YelpAuthSettings }>(
+      `SELECT value FROM app_settings WHERE key = 'yelp_reviews_auth'`
+    );
+
+    const [statsRows, yelpRows] = await Promise.all([statsQuery, yelpSettingsQuery]);
+
+    let totalCount = 0;
+    let sumRating = 0;
+    let googleCount = 0;
+    let yelpCount = 0;
+    let googleRatingSum = 0;
+
+    if (statsRows && statsRows.length > 0) {
+      for (const row of statsRows) {
+        const count = parseInt(row.cnt, 10) || 0;
+        const avg = parseFloat(row.avg_rating) || 5.0;
+        totalCount += count;
+        sumRating += avg * count;
+
+        if (row.source === 'google') {
+          googleCount = count;
+          googleRatingSum = avg * count;
+        } else if (row.source === 'yelp') {
+          yelpCount = count;
+        }
+      }
+    }
+
+    const yelpSettings = yelpRows?.[0]?.value || {};
+    const yelpTotalCount = yelpSettings.business_review_count || (yelpCount > 0 ? yelpCount : 1);
+    const yelpRating = yelpSettings.business_rating ? Number(yelpSettings.business_rating.toFixed(1)) : 5.0;
+    const yelpUrl = yelpSettings.business_url || YELP_REVIEWS_URL;
+
+    const averageRating = totalCount > 0 ? Number((sumRating / totalCount).toFixed(1)) : 5.0;
+    const googleRating = googleCount > 0 ? Number((googleRatingSum / googleCount).toFixed(1)) : 5.0;
+
+    return {
+      totalCount: totalCount > 0 ? totalCount : reviews.length,
+      averageRating: averageRating || 5.0,
+      googleCount: googleCount > 0 ? googleCount : reviews.filter((r) => r.source === 'google').length,
+      yelpCount: yelpCount > 0 ? yelpCount : reviews.filter((r) => r.source === 'yelp').length,
+      yelpTotalCount,
+      yelpRating,
+      googleRating,
+      yelpUrl,
+      googleUrl: GOOGLE_REVIEWS_URL,
+    };
+  } catch (err) {
+    console.warn('[getReviewStats] Database query failed, using static reviews fallback:', err);
+    return {
+      totalCount: reviews.length,
+      averageRating: 5.0,
+      googleCount: reviews.filter((r) => r.source === 'google').length,
+      yelpCount: reviews.filter((r) => r.source === 'yelp').length,
+      yelpTotalCount: 1,
+      yelpRating: 5.0,
+      googleRating: 5.0,
+      yelpUrl: YELP_REVIEWS_URL,
+      googleUrl: GOOGLE_REVIEWS_URL,
+    };
+  }
+}
+

@@ -34,7 +34,7 @@ const ROUTE_LABELS: Record<string, string> = {
 const ROUTE_TITLES: Record<string, string> = {
   services: 'Our Services',
   projects: 'Our Projects',
-  reviews: 'Reviews (4.9★)',
+  reviews: 'Reviews (5.0★)',
   about: 'About Rise Up',
   contact: 'Free Estimate',
   careers: 'Careers',
@@ -189,8 +189,8 @@ export function Header() {
               <div className="flex text-amber-400">
                 <Star className="w-3.5 h-3.5 fill-amber-400" />
               </div>
-              <span className="font-bold text-white">4.9 / 5.0</span>
-              <span className="text-white/70 hidden sm:inline">(120+ Reviews)</span>
+              <span className="font-bold text-white">5.0 / 5.0</span>
+              <span className="text-white/70 hidden sm:inline">(Verified Reviews)</span>
             </Link>
 
             <span className="hidden sm:inline-block text-white/30">|</span>

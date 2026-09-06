@@ -13,8 +13,11 @@ import {
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { LICENSE_NUMBER } from '@/lib/utils';
+import type { ReviewStats } from '@/lib/reviews-server';
 
-export function WhyRiseUp() {
+export function WhyRiseUp({ stats }: { stats?: ReviewStats }) {
+  const ratingText = stats?.averageRating ? stats.averageRating.toFixed(1) : '5.0';
+  const reviewsLabel = stats?.totalCount ? `${stats.totalCount} Verified Reviews` : 'Verified Reviews';
   return (
     <Section id="why-us" alternate={true}>
       <SectionHeading
@@ -137,10 +140,10 @@ export function WhyRiseUp() {
               </div>
               <div>
                 <span className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight block">
-                  4.9 / 5.0
+                  {ratingText} / 5.0
                 </span>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mt-1 block">
-                  120+ Verified Reviews
+                  {reviewsLabel}
                 </span>
               </div>
             </div>

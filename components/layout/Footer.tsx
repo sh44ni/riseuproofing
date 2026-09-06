@@ -4,7 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Phone, Mail, ArrowUpRight, ShieldCheck, Sparkles, ChevronDown } from 'lucide-react';
-import { PHONE_HREF, PHONE_NUMBER, COMPANY_NAME, LICENSE_NUMBER, cn } from '@/lib/utils';
+import {
+  PHONE_HREF,
+  PHONE_NUMBER,
+  COMPANY_NAME,
+  LICENSE_NUMBER,
+  cn,
+  GOOGLE_REVIEWS_URL,
+  YELP_REVIEWS_URL,
+} from '@/lib/utils';
 import { Container } from '@/components/shared/Container';
 import { TOP_CITIES } from '@/lib/data/navigation';
 import { Tooltip } from '@/components/shared/Tooltip';
@@ -105,9 +113,9 @@ export function Footer() {
                 {/* Frosted Floating Platform Dock */}
                 <div className="inline-flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/10 shadow-lg">
                   {/* Google */}
-                  <Tooltip content="Google Business Profile & 4.9★ Reviews">
+                  <Tooltip content="Google Business Profile & 5.0★ Reviews">
                     <a
-                      href="https://www.google.com/maps"
+                      href={GOOGLE_REVIEWS_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="Google Business Profile"
@@ -122,7 +130,7 @@ export function Footer() {
                   {/* Yelp */}
                   <Tooltip content="5.0★ Verified Reviews on Yelp">
                     <a
-                      href="https://www.yelp.com"
+                      href={YELP_REVIEWS_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="Yelp Reviews"

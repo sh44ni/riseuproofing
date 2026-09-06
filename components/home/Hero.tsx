@@ -20,6 +20,8 @@ import {
   GOOGLE_REVIEWS_URL,
   YELP_REVIEWS_URL,
 } from '@/lib/utils';
+import type { EnrichedReview } from '@/lib/data/reviews';
+import type { ReviewStats } from '@/lib/reviews-server';
 import { InteractiveHeroEstimator } from './InteractiveHeroEstimator';
 
 function GoogleIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
@@ -53,23 +55,51 @@ function YelpIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   );
 }
 
-export function Hero() {
+export function Hero({
+  initialReviews,
+  stats,
+}: {
+  initialReviews?: EnrichedReview[];
+  stats?: ReviewStats;
+}) {
   const [proofIndex, setProofIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
+  const [randomReview, setRandomReview] = useState<EnrichedReview | null>(
+    initialReviews && initialReviews.length > 0 ? initialReviews[0] : null
+  );
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Pick a random review on client mount to avoid hydration mismatch
+  useEffect(() => {
+    if (initialReviews && initialReviews.length > 0) {
+      const idx = Math.floor(Math.random() * initialReviews.length);
+      setRandomReview(initialReviews[idx]);
+    }
+  }, [initialReviews]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setIsFading(true);
       const timer = setTimeout(() => {
-        setProofIndex((prev) => (prev === 0 ? 1 : 0));
+        setProofIndex((prev) => {
+          const next = prev === 0 ? 1 : 0;
+          if (next === 1 && initialReviews && initialReviews.length > 0) {
+            setRandomReview((current) => {
+              if (initialReviews.length === 1) return initialReviews[0];
+              const others = initialReviews.filter((r) => r.text !== current?.text);
+              const pool = others.length > 0 ? others : initialReviews;
+              return pool[Math.floor(Math.random() * pool.length)];
+            });
+          }
+          return next;
+        });
         setIsFading(false);
       }, 400); // 400ms crossfade
       return () => clearTimeout(timer);
     }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [initialReviews]);
 
   return (
     <section className="always-dark relative w-full overflow-hidden bg-[#0B1B2B] min-h-[100dvh] flex flex-col justify-center">
@@ -153,7 +183,7 @@ export function Hero() {
             
             <div
               aria-live="polite"
-              className="min-h-[22px] flex items-center justify-center min-w-[210px] sm:min-w-[230px]"
+              className="min-h-[22px] flex items-center justify-center min-w-[210px] sm:min-w-[240px] max-w-[320px] sm:max-w-[460px] overflow-hidden"
             >
               <div
                 className={`transition-opacity duration-400 ease-in-out flex items-center gap-1.5 text-xs sm:text-[13px] ${
@@ -161,21 +191,30 @@ export function Hero() {
                 }`}
               >
                 {proofIndex === 0 ? (
-                  <div className="flex items-center gap-1.5 font-bold text-white">
+                  <div className="flex items-center gap-1.5 font-bold text-white whitespace-nowrap">
                     <div className="flex items-center text-amber-400 gap-0.5" aria-hidden="true">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Star key={s} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <span className="font-extrabold text-white">4.9/5</span>
+                    <span className="font-extrabold text-white">
+                      {stats?.averageRating ? stats.averageRating.toFixed(1) : '5.0'}/5
+                    </span>
                     <span className="text-white/40">•</span>
-                    <span className="text-white/85 font-medium">120+ reviews</span>
+                    <span className="text-white/85 font-medium">
+                      {stats?.totalCount ? `${stats.totalCount} verified reviews` : 'Verified Reviews'}
+                    </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 font-medium text-white/90">
-                    <span className="italic">&ldquo;Fast, professional, no pressure.&rdquo;</span>
-                    <span className="text-white/40">&mdash;</span>
-                    <span className="text-white/75 text-[11px] sm:text-xs">Verified Google Review</span>
+                  <div className="flex items-center gap-1.5 font-medium text-white/90 min-w-0">
+                    <span className="italic truncate max-w-[140px] sm:max-w-[260px]">
+                      &ldquo;{randomReview?.text || 'Prompt, clean, and reliable service.'}&rdquo;
+                    </span>
+                    <span className="text-white/40 flex-shrink-0">&mdash;</span>
+                    <span className="text-white/75 text-[11px] sm:text-xs whitespace-nowrap flex-shrink-0">
+                      {randomReview?.author ? `${randomReview.author.split(' ')[0]} (` : 'Verified ('}
+                      {randomReview?.source === 'yelp' ? 'Yelp' : 'Google'})
+                    </span>
                   </div>
                 )}
               </div>
@@ -185,7 +224,7 @@ export function Hero() {
 
             <div className="hidden sm:flex items-center gap-2">
               <a
-                href={GOOGLE_REVIEWS_URL}
+                href={stats?.googleUrl || GOOGLE_REVIEWS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Read our reviews on Google"
@@ -196,7 +235,7 @@ export function Hero() {
               </a>
 
               <a
-                href={YELP_REVIEWS_URL}
+                href={stats?.yelpUrl || YELP_REVIEWS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Read our reviews on Yelp"
