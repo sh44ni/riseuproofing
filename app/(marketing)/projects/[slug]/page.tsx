@@ -151,6 +151,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </div>
               )}
 
+              {/* Quality & Workmanship Standards */}
+              <div className="glass-chip rounded-2xl p-4 mb-6 border border-slate-200/80">
+                <h4 className="text-xs font-bold text-[var(--text-primary)] mb-1.5 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
+                  <span>Licensed &amp; Insured Craftsmanship</span>
+                </h4>
+                <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                  Supervised on-site by master roofing professionals in full compliance with California Title 24 energy and building codes. Every project includes municipal permitting, thorough magnetic nail sweep cleanup, and official manufacturer warranty registration.
+                </p>
+              </div>
+
               <Link href="/contact" className="block">
                 <span className="w-full inline-flex items-center justify-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
                   <ClipboardCheck className="w-4 h-4" />

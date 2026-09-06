@@ -74,6 +74,15 @@ export function buildMetadata({ title, description, path, ogImage }: MetadataOpt
   };
 }
 
+export const BUSINESS_ADDRESS = {
+  '@type': 'PostalAddress',
+  streetAddress: '2182 S El Camino Real',
+  addressLocality: 'Oceanside',
+  addressRegion: 'CA',
+  postalCode: '92054',
+  addressCountry: 'US',
+};
+
 export function buildLocalBusinessJsonLd() {
   return {
     '@context': 'https://schema.org',
@@ -82,14 +91,7 @@ export function buildLocalBusinessJsonLd() {
     url: BASE_URL,
     telephone: '+17606221230',
     email: 'info@riseuproofing.com',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: '2182 S El Camino Real',
-      addressLocality: 'Oceanside',
-      addressRegion: 'CA',
-      postalCode: '92054',
-      addressCountry: 'US',
-    },
+    address: BUSINESS_ADDRESS,
     geo: {
       '@type': 'GeoCoordinates',
       latitude: 33.1812,
@@ -122,6 +124,9 @@ export function buildServiceJsonLd(service: { name: string; shortDescription: st
     provider: {
       '@type': 'RoofingContractor',
       name: COMPANY_NAME,
+      url: BASE_URL,
+      telephone: '+17606221230',
+      address: BUSINESS_ADDRESS,
     },
     areaServed: {
       '@type': 'County',
@@ -146,11 +151,15 @@ export function buildFAQJsonLd(faqs: { question: string; answer: string }[]) {
 }
 
 export function buildReviewJsonLd(reviews: { author: string; rating: number; text: string }[]) {
-  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / (reviews.length || 1);
   return {
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
+    '@type': 'RoofingContractor',
     name: COMPANY_NAME,
+    url: BASE_URL,
+    telephone: '+17606221230',
+    priceRange: '$$',
+    address: BUSINESS_ADDRESS,
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: avgRating.toFixed(1),
@@ -186,14 +195,7 @@ export function buildJobPostingJsonLd(job: {
     },
     jobLocation: {
       '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: '2182 S El Camino Real',
-        addressLocality: 'Oceanside',
-        addressRegion: 'CA',
-        postalCode: '92054',
-        addressCountry: 'US',
-      },
+      address: BUSINESS_ADDRESS,
     },
     url: `${BASE_URL}/careers/${job.slug}`,
     datePosted: new Date().toISOString().split('T')[0],

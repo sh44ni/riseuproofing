@@ -58,8 +58,18 @@ export const projects: Project[] = [
       'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/b74eb4347_Screenshot2026-02-11at01-50-10Capsheetisabadideafortileunderlaymentr_Roofing.png',
       'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/799506366_pdf71xg7mv8y.jpg',
     ],
-    scopeOfWork: 'Removed tiles in the affected area, inspected and replaced rotted deck and deteriorated underlayment, installed new synthetic underlayment, reinstalled and realigned tiles, and performed final leak test.',
-    materialsUsed: ['Plywood Sheathing', 'Synthetic Underlayment', 'Concrete Tiles', 'Flashing'],
+    scopeOfWork: 'Carefully detached concrete barrel tiles across the active leak zone to expose deteriorated felt paper. Removed compromised roof decking, repaired damaged structural rafters, and installed two layers of heavy-duty synthetic high-temperature underlayment with self-adhering ice-and-water shield along the valleys. Reinstalled, fastened, and aligned original concrete tiles with stainless steel fasteners, sealed all flashing junctions, and conducted comprehensive 30-minute water pressure testing to ensure 100% moisture-tight seal.',
+    materialsUsed: [
+      '1/2" CDX Structural Plywood Sheathing',
+      'Dual-Layer Synthetic High-Temp Underlayment',
+      'Self-Adhering Ice & Water Shield Membrane',
+      'Heavy-Gauge Galvanized Valley Metal',
+      'Stainless Steel Tile Fasteners & Polyurethane Sealant',
+    ],
+    clientQuote: {
+      text: 'We dealt with persistent leaks after winter storms until Rise Up found the torn underlayment beneath our tile roof. They repaired the decking, replaced the underlayment, and our ceiling has stayed bone-dry ever since.',
+      author: 'Arthur Henderson',
+    },
   },
   {
     slug: 'sd-solar-tile-repair',
@@ -113,8 +123,17 @@ export const projects: Project[] = [
     beforeImage: img('photo-1503387762-592deb58ef4e'),
     afterImage: img('photo-1564540583246-934409427776'),
     gallery: [img('photo-1503387762-592deb58ef4e'), img('photo-1486718448742-163732cd1544'), img('photo-1564540583246-934409427776')],
-    scopeOfWork: 'Complete roof surface cleaning, repair of all cracks and blisters, primer application, elastomeric coating application, reinforcement of seams and penetrations, and final inspection with maintenance report.',
-    materialsUsed: ['Elastomeric Roof Coating', 'Primer', 'Seam Reinforcement Tape', 'Sealant'],
+    scopeOfWork: 'Complete commercial roof restoration on a low-slope industrial facility in Escondido. Performed industrial high-pressure surface decontamination and substrate moisture scanning to eliminate trapped dampness. Repaired all membrane fissures, weathered seams, and ponding-prone sections with polyester fabric reinforcement. Applied high-solids elastomeric silicone coating offering 90%+ solar reflectance and superior ponding water resistance, extending the building roof service life by over 15 years while dramatically decreasing summer cooling energy expenses. Conducted a comprehensive post-cure elastomeric membrane adhesion test and provided facility managers with a documented 10-year renewed roof warranty.',
+    materialsUsed: [
+      'High-Solids 100% Silicone Roof Coating',
+      'Thermoplastic Substrate Primer',
+      'Spun-Bonded Polyester Seam Reinforcement Fabric',
+      'Industrial-Grade Polyurethane Joint Sealant',
+    ],
+    clientQuote: {
+      text: 'The commercial coating system saved our company over thirty thousand dollars compared to a complete roof replacement. Building temperatures dropped immediately and the team worked seamlessly without interrupting operations.',
+      author: 'David Miller, Operations Manager',
+    },
   },
   {
     slug: 'oceanside-siding',
@@ -138,8 +157,44 @@ export const projects: Project[] = [
     beforeImage: img('photo-1518780664697-55e3ad937233'),
     afterImage: img('photo-1503387762-592deb58ef4e'),
     gallery: [img('photo-1503387762-592deb58ef4e'), img('photo-1518780664697-55e3ad937233'), img('photo-1600596542815-ffad4c1539a9')],
-    scopeOfWork: 'Site preparation and permitting, structural post and beam installation, roof deck construction, roofing material installation, electrical and ceiling fan installation, painting and final inspection.',
-    materialsUsed: ['Structural Posts & Beams', 'Roof Decking', 'Composition Roofing', 'Electrical', 'Paint'],
+    scopeOfWork: 'Complete custom covered patio build in San Diego, including structural engineering, city permitting, and excavation. Erected heavy-timber support posts and laminated header beams tied into the primary residence fascia. Framed a tongue-and-groove cedar ceiling with integrated weatherproof electrical conduit, recessed dimmable LED can lights, and outdoor ceiling fan wiring. Finished exterior with Class-A fire-rated architectural shingles matching the existing house roof and installed custom heavy-gauge metal drip edge flashing.',
+    materialsUsed: [
+      'Pressure-Treated Structural Posts & Header Beams',
+      'Select Tongue & Groove Cedar Decking',
+      'Class-A Owens Corning Architectural Shingles',
+      'Weather-Rated Recessed LED Lighting & Fan Boxes',
+      'Heavy-Gauge Powder-Coated Drip Edge Flashing',
+    ],
+    clientQuote: {
+      text: 'Our custom covered patio turned our backyard into an outdoor oasis. Rise Up handled all the city permits and matched the materials and pitch to our house roof flawlessly. The craftsmanship is first-rate.',
+      author: 'Greg & Elena Vasquez',
+    },
+  },
+  {
+    slug: 'carlsbad-solar-detach-reset',
+    title: 'Solar Panel Detach, Roof Replacement & Reset',
+    category: 'solar',
+    city: 'Carlsbad',
+    coordinates: { lat: 33.1650, lng: -117.3400 },
+    beforeImage: 'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/a02ece6dd_is-this-a-huge-issue-sunrun-installed-solar-panels-and-i-v0-8ow9kre8m9dg1.png',
+    afterImage: img('photo-1513694203232-719a280e022f'),
+    gallery: [
+      'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/a02ece6dd_is-this-a-huge-issue-sunrun-installed-solar-panels-and-i-v0-8ow9kre8m9dg1.png',
+      img('photo-1513694203232-719a280e022f'),
+      img('photo-1600585154340-be6161a56a0c'),
+    ],
+    scopeOfWork: 'Comprehensive solar detach and reset combined with complete residential reroofing in Carlsbad. Safely decoupled, labeled, and stored 28 rooftop solar modules, removed existing degraded roofing layers down to bare decking, inspected and replaced damaged plywood sheathing, installed premium synthetic underlayment and new architectural shingles, flashed all mounting stanchions with waterproof boots, and reinstalled, wired, and verified solar system performance to match peak pre-construction output.',
+    materialsUsed: [
+      'Owens Corning Duration Architectural Shingles',
+      'High-Temperature Synthetic Underlayment',
+      'Universal Solar Stanchion Flashing Boots',
+      'Stainless Steel Solar Mounting Hardware',
+      'Dual-Shield Waterproof Conduit Flashing',
+    ],
+    clientQuote: {
+      text: 'Having our solar panels detached and reinstalled during our roof replacement was completely stress-free with Rise Up. They handled the entire process in-house and had our solar generating power again immediately.',
+      author: 'Steven Martinez',
+    },
   },
 ];
 

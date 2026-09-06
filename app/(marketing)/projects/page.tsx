@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight, ShieldCheck, Sun, CheckCircle2 } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { projects, projectCategories } from '@/lib/data/projects';
 import { Section } from '@/components/shared/Container';
@@ -60,6 +60,36 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           );
         })}
       </div>
+
+      {/* Solar Category Educational Overview Banner */}
+      {category === 'solar' && (
+        <div className="max-w-4xl mx-auto mb-12 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50/90 via-sky-50/60 to-white border border-blue-100/90 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3 text-brand-blue font-bold text-xs uppercase tracking-wider">
+            <Sun className="w-4 h-4 text-amber-500 animate-pulse" />
+            <span>Solar Roofing Specialists • San Diego County</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-brand-navy mb-3">
+            Solar Panel Detach, Roof Replacement &amp; Waterproof Reset
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-6">
+            When replacing your roof or restoring deteriorated tile underlayment, existing solar photovoltaic systems require certified handling. Rise Up Roofing provides specialized solar detach and reset services, coordinating safe electrical decoupling, careful panel storage, comprehensive roof deck replacement, and watertight reinstallation. Every penetration is flashed with engineered stanchion boots to protect your home against water intrusion while safeguarding your solar equipment warranties.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <span>Safe Electrical Decoupling</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <span>Watertight Boot Flashing</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>Warranties Fully Protected</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
