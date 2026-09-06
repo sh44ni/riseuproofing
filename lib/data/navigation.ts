@@ -7,6 +7,7 @@ import {
   Hammer,
   Shield,
   Layers,
+  Search,
 } from 'lucide-react';
 
 /* ─── Service Navigation Items ─── */
@@ -18,6 +19,7 @@ export interface ServiceNavItem {
 }
 
 export const SERVICES_NAV: ServiceNavItem[] = [
+  { label: 'Roof Inspection & Diagnostics', href: '/services/roof-inspection', icon: Search, desc: '12-point drone & thermal surveys' },
   { label: 'Residential Roofing', href: '/services/residential', icon: Home, desc: 'Tile relays & shingle replacements' },
   { label: 'Roof Leak Repair', href: '/services/repairs', icon: Wrench, desc: 'Emergency leaks & storm diagnostics' },
   { label: 'Tile Roofing & Relay', href: '/services/tile-roofing', icon: Shield, desc: 'Spanish clay & concrete tile relays' },
@@ -48,6 +50,7 @@ export const SERVICES_MEGA_MENU: MegaMenuColumn[] = [
     href: '/services/residential',
     description: 'Tile relays, standing seam metal, shingle replacements & rapid leak repairs.',
     items: [
+      { label: 'Roof Inspection & Diagnostics', href: '/services/roof-inspection' },
       { label: 'Tile Roof Installation & Relay', href: '/services/tile-roofing' },
       { label: 'Emergency Roof Leak Repair', href: '/services/repairs' },
       { label: 'Standing Seam Metal Roofing', href: '/services/metal-roofing' },
@@ -93,6 +96,7 @@ export const TOP_CITIES: CityNavItem[] = [
   { name: 'Oceanside', slug: 'oceanside' },
   { name: 'Carlsbad', slug: 'carlsbad' },
   { name: 'Encinitas', slug: 'encinitas' },
+  { name: 'Vista', slug: 'vista' },
   { name: 'San Marcos', slug: 'san-marcos' },
   { name: 'Escondido', slug: 'escondido' },
   { name: 'La Jolla', slug: 'la-jolla' },

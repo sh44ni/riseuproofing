@@ -102,10 +102,10 @@ export const projects: Project[] = [
     category: 'repairs',
     city: 'San Diego',
     coordinates: { lat: 32.7200, lng: -117.1700 },
-    beforeImage: 'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/fda047c81_snow-is-melting-roof-starts-leaking-v0-xq366c2qnpig1.png',
+    beforeImage: img('photo-1590381105924-c72589b9ef3f'),
     afterImage: 'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/799506366_pdf71xg7mv8y.jpg',
     gallery: [
-      'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/fda047c81_snow-is-melting-roof-starts-leaking-v0-xq366c2qnpig1.png',
+      img('photo-1590381105924-c72589b9ef3f'),
       'https://media.base44.com/images/public/6a31e780b3e1f7196231adc3/a591f0bc5_how-does-this-underlayment-look-replace-it-all-or-does-it-v0-bz6s2mwlw5jd1.png',
     ],
     scopeOfWork: 'Emergency attic moisture investigation, drywall protection, and comprehensive roof leak repair in San Diego. Identified hidden valley infiltration, replaced soaked fiberglass insulation, repaired rotted roof decking, installed premium synthetic underlayment, and reinstalled field tiles with proper overlap and ridge seals.',

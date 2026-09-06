@@ -4,11 +4,16 @@
 
 ## Services
 
-- [Residential Roofing](https://riseuprac.com/services/residential): Complete roof replacements, architectural shingles, and tile underlayment relayment.
-- [Roof Repairs & Leak Diagnostics](https://riseuprac.com/services/repairs): 24/7 emergency dispatch, thermal imaging leak detection, and structural storm repairs.
-- [Commercial Flat Roofing](https://riseuprac.com/services/commercial): TPO, PVC, and modified bitumen single-ply commercial flat roofing systems.
+- [Roof Inspection & Diagnostics](https://riseuprac.com/services/roof-inspection): Certified 12-point physical & 4K drone roof inspections, attic moisture tracing, and escrow certifications.
+- [Residential Roofing](https://riseuprac.com/services/residential): Complete roof replacements, Owens Corning architectural shingles, and Title 24 cool-roof systems.
+- [Roof Repairs & Leak Diagnostics](https://riseuprac.com/services/repairs): 24/7 same-day emergency leak dispatch, broken tile replacement, and underlayment waterproofing.
+- [Tile Roofing & Relay](https://riseuprac.com/services/tile-roofing): Concrete and Spanish clay tile lift-and-reset (relay) with 50-year synthetic underlayments.
+- [Standing Seam Metal Roofing](https://riseuprac.com/services/metal-roofing): Non-combustible Class-A fire-rated architectural standing seam and stone-coated steel.
+- [Commercial Flat Roofing](https://riseuprac.com/services/commercial): TPO single-ply membranes, elastomeric silicone roof coatings, and industrial roof repairs.
 - [Solar Roofing Integration](https://riseuprac.com/services/solar): Seamless rooftop solar panel detach/reset and high-efficiency solar roof installations.
-- [General Construction & Siding](https://riseuprac.com/services/construction): Exterior home remodeling, dry rot restoration, framing, fascia, and siding.
+- [General Construction & Decks](https://riseuprac.com/services/construction): Custom patio covers, Trex composite decks, room additions, siding, and framing.
+- [Home Additions](https://riseuprac.com/services/home-additions): Second-story expansions, primary suite extensions, and architectural framing.
+- [ADU Construction](https://riseuprac.com/services/adu-construction): Turnkey detached ADUs, garage conversions, and California granny flats.
 
 ## Key Links
 

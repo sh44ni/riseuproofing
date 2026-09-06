@@ -20,7 +20,7 @@ export const serviceAreas: ServiceArea[] = [
     seoDescription: 'Trusted San Diego CA roofing company. 5-star tile relay, shingle replacement, leak repairs, and solar roofing. Free roofing estimates throughout San Diego County.',
     h1: 'Premier Roofing Contractor in San Diego, CA',
     intro: 'Looking for trusted, 5-star roofing companies in San Diego, CA? Rise Up Roofing & Construction delivers master-grade residential and commercial roofing, emergency roof leak repair, tile underlayment replacement, solar roofing, and custom home additions throughout San Diego County. Backed by California Contractor\'s License #1096492 and Owens Corning Preferred Contractor status, our work includes up to 50-year manufacturer warranties and free, transparent roofing estimates.',
-    neighborhoods: ['Pacific Beach', 'La Jolla', 'North Park', 'Point Loma', 'Ocean Beach', 'Clairemont', 'Mission Hills', 'Downtown San Diego', 'Hillcrest', 'Tierrasanta', 'Del Cerro', 'Mission Valley'],
+    neighborhoods: ['Pacific Beach', 'La Jolla', 'North Park', 'Point Loma', 'Ocean Beach', 'Clairemont', 'Mira Mesa', 'Fairbanks Ranch', 'Mission Hills', 'Downtown San Diego', 'Hillcrest', 'Tierrasanta', 'Del Cerro', 'Mission Valley'],
     faqs: [
       {
         question: 'How much does a roof replacement cost in San Diego, CA?',
@@ -29,6 +29,14 @@ export const serviceAreas: ServiceArea[] = [
       {
         question: 'Do you offer free roofing estimates in San Diego County?',
         answer: 'Yes. We provide 100% free, no-obligation roof inspections and written estimates across all San Diego neighborhoods. Our inspectors examine your roof surface, attic ventilation, flashing points, and underlayment condition, providing a comprehensive photo report.',
+      },
+      {
+        question: 'Do you offer specialized re-roofing in Mira Mesa and Fairbanks Ranch?',
+        answer: 'Yes. In Mira Mesa, we specialize in complete re-roof tear-offs and high-wind architectural shingle upgrades for established homes built in the 1970s and 1980s. In luxury communities like Fairbanks Ranch, our master tile craftsmen perform delicate tile lift-and-resets, replacing deteriorated organic felt with dual-ply high-temperature synthetic underlayments to meet strict fire-safety and HOA architectural standards.',
+      },
+      {
+        question: 'What roof financing options are available in San Diego?',
+        answer: 'We provide flexible roof financing in San Diego with zero-down payment options, low monthly installments starting at $299/month, and terms up to 15 years. Whether you need an emergency repair or a complete roof replacement, our quick pre-approval process ensures your home is protected without upfront financial strain.',
       },
       {
         question: 'How does San Diego’s coastal climate impact roof longevity?',
@@ -48,10 +56,10 @@ export const serviceAreas: ServiceArea[] = [
     slug: 'oceanside',
     name: 'Oceanside',
     county: 'San Diego',
-    seoTitle: 'Roofing Contractor Oceanside CA | Rise Up Roofing',
-    seoDescription: 'Trusted roofing contractor in Oceanside, CA. Headquartered on El Camino Real. Tile relay, shingle replacement, and emergency roof repairs. Free estimates.',
-    h1: 'Premier Roofing Contractor in Oceanside, CA',
-    intro: 'Headquartered right here in Oceanside on South El Camino Real, Rise Up Roofing & Construction is Oceanside\'s hometown roofing and general contracting expert. From coastal beach bungalows in South O and historic Townsite homes to tile-roofed residences across Rancho Del Oro and Fire Mountain, our licensed craftsmen provide fast emergency leak response, 50-year synthetic tile relays, solar reroofing, and whole-home exterior additions. Licensed, bonded, and fully insured under California License #1096492.',
+    seoTitle: 'Roofing Company Oceanside CA | Local Oceanside Roofers',
+    seoDescription: 'Top-rated roofing company in Oceanside, CA. Headquartered on S El Camino Real. Tile relay, shingle replacement, and emergency roof repairs. Free estimates.',
+    h1: 'Premier Roofing Company in Oceanside, CA',
+    intro: 'Headquartered right here in Oceanside on South El Camino Real, Rise Up Roofing & Construction is your premier hometown roofing company in Oceanside. From coastal beach bungalows in South O and historic Townsite homes to tile-roofed residences across Rancho Del Oro and Fire Mountain, our licensed craftsmen provide fast emergency leak response, 50-year synthetic tile relays, solar reroofing, and whole-home exterior additions. Licensed, bonded, and fully insured under California License #1096492.',
     neighborhoods: ['Rancho Del Oro', 'Fire Mountain', 'Oceanside Harbor', 'South Oceanside', 'Townsite / Downtown', 'Arrowood', 'Ivey Ranch', 'Ocean Hills', 'MiraCosta', 'Loma Alta'],
     faqs: [
       {
@@ -204,7 +212,38 @@ export const serviceAreas: ServiceArea[] = [
       },
     ],
   },
-  { slug: 'vista', name: 'Vista', county: 'San Diego' },
+  {
+    slug: 'vista',
+    name: 'Vista',
+    county: 'San Diego',
+    seoTitle: 'Vista Roofing Company | Roofing Contractors Vista CA | Rise Up',
+    seoDescription: 'Top-rated Vista roofing company. Tile underlayment replacement, Owens Corning shingles, and emergency roof repairs across Vista, Shadowridge, and Buena Creek.',
+    h1: 'Premier Roofing Contractor & Roof Repair in Vista, CA',
+    intro: 'Searching for a trusted, 5-star Vista roofing company? Located just minutes away in adjacent Oceanside, Rise Up Roofing & Construction delivers master-grade residential and commercial roofing services throughout Vista, CA. From tile roof relayments in Shadowridge and rural agricultural reroofs in Buena Creek to commercial flat roofs across the Vista Business Park, our licensed C-39 and Class B builders provide rapid leak triage, Title 24 cool-roof shingles, and comprehensive 50-year manufacturer warranties.',
+    neighborhoods: ['Shadowridge', 'Buena Creek', 'Breeze Hill', 'Foothill', 'Pechstein Reservoir', 'Vista Way', 'Olive', 'Lake San Marcos Border', 'Historic Downtown Vista'],
+    faqs: [
+      {
+        question: 'Why is Rise Up considered the top roofing company in Vista, CA?',
+        answer: 'With our corporate headquarters located immediately next door in North County, our crews provide faster emergency response times, intimate knowledge of Vista building department codes, and certified Owens Corning Preferred Contractor workmanship backed by up to 50-year non-prorated warranties.',
+      },
+      {
+        question: 'How does Vista’s inland climate affect tile and shingle roofs?',
+        answer: 'Vista experiences intense summer heat cycles where roof surface temperatures regularly exceed 150°F. Under tile roofs, conventional asphalt felt paper bakes into brittle shards after 18 to 22 years. We install commercial-grade, dual-layer SBS synthetic underlayments rated to 250°F and Title 24-compliant reflective cool shingles.',
+      },
+      {
+        question: 'Do I need a city permit for a roof replacement in Vista?',
+        answer: 'Yes. The City of Vista Community Development Department requires permits for residential and commercial reroofing to enforce California Title 24 cool-roof standards and structural load safety. Rise Up coordinates all engineering calculations, permit pulling, and on-site building inspector walkthroughs.',
+      },
+      {
+        question: 'How much does roof replacement or repair cost in Vista, CA?',
+        answer: 'Minor roof leak repairs in Vista typically range from $350 to $1,500. Complete residential roof replacements generally range between $8,500 and $17,000 for architectural shingles, and $11,500 to $25,000+ for tile roof relayment with dual synthetic underlayment. We offer 100% free drone inspections and itemized proposals.',
+      },
+      {
+        question: 'Can you perform a free drone roof inspection in Vista?',
+        answer: 'Yes. We provide 100% free, no-obligation high-resolution drone photo surveys and physical inspections across all Vista neighborhoods. You receive an interactive digital inspection report with detailed condition assessments and honest recommendations.',
+      },
+    ],
+  },
   { slug: 'san-marcos', name: 'San Marcos', county: 'San Diego' },
   { slug: 'la-jolla', name: 'La Jolla', county: 'San Diego' },
   { slug: 'del-mar', name: 'Del Mar', county: 'San Diego' },
@@ -225,7 +264,34 @@ export const serviceAreas: ServiceArea[] = [
   { slug: 'alpine', name: 'Alpine', county: 'San Diego' },
   { slug: 'spring-valley', name: 'Spring Valley', county: 'San Diego' },
   { slug: 'lemon-grove', name: 'Lemon Grove', county: 'San Diego' },
-  { slug: 'rancho-santa-fe', name: 'Rancho Santa Fe', county: 'San Diego' },
+  {
+    slug: 'rancho-santa-fe',
+    name: 'Rancho Santa Fe',
+    county: 'San Diego',
+    seoTitle: 'Rancho Santa Fe Roofing Company | Fairbanks Ranch Roofers',
+    seoDescription: 'Premier roofing company in Rancho Santa Fe & Fairbanks Ranch. Specialized luxury tile relayment, copper flashings, and standing seam metal roofing.',
+    h1: 'Luxury Roofing Contractor in Rancho Santa Fe & Fairbanks Ranch',
+    intro: 'Renowned for its rolling eucalyptus hills, private equestrian estates, and historic Spanish Revival architecture, Rancho Santa Fe and Fairbanks Ranch demand the highest caliber of architectural craftsmanship. Rise Up Roofing & Construction delivers bespoke roofing services tailored to luxury private properties—from authentic two-piece clay tile relays and custom copper valley flashings to non-combustible Class-A standing seam metal roofs engineered for maximum California wildfire defense.',
+    neighborhoods: ['The Covenant', 'Fairbanks Ranch', 'The Crosby', 'Del Mar Country Club', 'Hacienda Santa Fe', 'Rancho Del Lago', 'The Bridges', 'The Groves'],
+    faqs: [
+      {
+        question: 'How do you preserve original Spanish clay tile during a Fairbanks Ranch re-roofing?',
+        answer: 'Our signature "Tile Lift and Reset" service carefully detaches and numbers your existing clay tiles on-site. We remove the failed 20-year felt underlayment, repair any substrate dry rot, and install commercial-grade dual-ply high-temperature synthetic underlayment with custom pre-bent copper flashings. We then reinstall your original historic tiles, preserving the authentic architectural patina while delivering lifetime waterproofing.',
+      },
+      {
+        question: 'Do you comply with Rancho Santa Fe Association Art Jury & HOA requirements?',
+        answer: 'Yes. We routinely prepare comprehensive HOA submittal packages for the Rancho Santa Fe Association Art Jury and Fairbanks Ranch architectural review committees, providing material samples, color chips, and fire rating documentation for rapid approval.',
+      },
+      {
+        question: 'What roofing materials offer maximum wildfire defense in Rancho Santa Fe?',
+        answer: 'For properties in designated high-fire risk zones, Class-A fire-rated standing seam metal roofing, heavy concrete tile, and authentic clay tile with sealed anti-ember bird stops provide the ultimate protection against airborne wildfire embers and intense radiant heat.',
+      },
+      {
+        question: 'How do you handle solar detach and reset on luxury tile roofs in Rancho Santa Fe?',
+        answer: 'Our in-house solar technicians safely de-energize and remove existing photovoltaic panels prior to reroofing, store them securely on your property, install engineered tile-replacement flashing mounts, and remount and test the array for 100% watertight integrity and peak generation.',
+      },
+    ],
+  },
   { slug: 'camp-pendleton', name: 'Camp Pendleton', county: 'San Diego' },
   { slug: 'temecula', name: 'Temecula', county: 'Riverside' },
   { slug: 'murrieta', name: 'Murrieta', county: 'Riverside' },

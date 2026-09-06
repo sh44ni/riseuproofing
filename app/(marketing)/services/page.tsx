@@ -9,8 +9,8 @@ import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Our Roofing & Construction Services',
-  description: 'Residential roofing, commercial roofing, roof repairs, tile underlayment relays, solar integration, and general construction across San Diego County.',
+  title: 'Roofing Services San Diego | Residential & Commercial Roofing',
+  description: 'Premier roofing services in San Diego County. Drone roof inspections, residential replacements, emergency leak repairs, commercial TPO, and solar roofing.',
   path: '/services',
 });
 
@@ -33,8 +33,8 @@ export default function ServicesPage() {
       <SectionHeading
         as="h1"
         label="Our Capabilities"
-        title="Our Roofing &amp; Construction Services"
-        subtitle="From complete roof replacements and tile relays to commercial flat roofing and emergency leak detection, our licensed team delivers professional results built for coastal longevity."
+        title="San Diego Roofing &amp; Construction Services"
+        subtitle="From certified drone roof inspections and tile relays to commercial flat roofing and emergency leak detection, our licensed team delivers professional results built for coastal longevity."
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
