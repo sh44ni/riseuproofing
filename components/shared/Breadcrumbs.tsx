@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Icon } from '@/components/shared/Icon';
-import { cn } from '@/lib/utils';
+import { cn, BASE_URL } from '@/lib/utils';
 
-interface BreadcrumbItem {
+export interface BreadcrumbItem {
   label: string;
   href?: string;
 }
@@ -21,7 +21,7 @@ export function Breadcrumbs({ items, dark = true, className }: BreadcrumbsProps)
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      ...(item.href ? { item: `https://riseuproofing.com${item.href}` } : {}),
+      ...(item.href ? { item: `${BASE_URL}${item.href}` } : {}),
     })),
   };
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
@@ -143,7 +143,7 @@ export default function AdminLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. name@riseuproofing.com"
+                    placeholder="e.g. name@riseuprac.com"
                     required
                     className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-[#0B1E33] placeholder-slate-400 text-sm focus:outline-none focus:border-[#1878B8] focus:ring-2 focus:ring-sky-100 transition-all shadow-2xs"
                   />
@@ -211,7 +211,7 @@ export default function AdminLogin() {
             <div className="flex flex-wrap items-center justify-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setDemoAccount('owner@riseuproofing.com', 'RiseUp2025!')}
+                onClick={() => setDemoAccount('owner@riseuprac.com', 'RiseUp2025!')}
                 className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <RoleIcon role="owner" size={12} />
@@ -219,7 +219,7 @@ export default function AdminLogin() {
               </button>
               <button
                 type="button"
-                onClick={() => setDemoAccount('pm@riseuproofing.com', 'RiseUpPM2025!')}
+                onClick={() => setDemoAccount('pm@riseuprac.com', 'RiseUpPM2025!')}
                 className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <RoleIcon role="project_manager" size={12} />
@@ -227,7 +227,7 @@ export default function AdminLogin() {
               </button>
               <button
                 type="button"
-                onClick={() => setDemoAccount('sales@riseuproofing.com', 'RiseUpSales2025!')}
+                onClick={() => setDemoAccount('sales@riseuprac.com', 'RiseUpSales2025!')}
                 className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <RoleIcon role="sales_rep" size={12} />
@@ -235,7 +235,7 @@ export default function AdminLogin() {
               </button>
               <button
                 type="button"
-                onClick={() => setDemoAccount('foreman@riseuproofing.com', 'RiseUpCrew2025!')}
+                onClick={() => setDemoAccount('foreman@riseuprac.com', 'RiseUpCrew2025!')}
                 className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <RoleIcon role="field_foreman" size={12} />
@@ -243,7 +243,7 @@ export default function AdminLogin() {
               </button>
               <button
                 type="button"
-                onClick={() => setDemoAccount('office@riseuproofing.com', 'RiseUpOffice2025!')}
+                onClick={() => setDemoAccount('office@riseuprac.com', 'RiseUpOffice2025!')}
                 className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <RoleIcon role="office_admin" size={12} />

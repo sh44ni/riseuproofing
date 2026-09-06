@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
@@ -135,7 +135,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="mail" className="w-3.5 h-3.5 text-brand-blue" />
-                <a href="mailto:info@riseuproofing.com" className="font-bold text-brand-blue hover:underline">info@riseuproofing.com</a>
+                <a href="mailto:info@riseuprac.com" className="font-bold text-brand-blue hover:underline">info@riseuprac.com</a>
               </p>
               <p className="pt-1 text-slate-500">
                 <Link href="/terms" className="text-brand-blue hover:underline">View Terms of Service</Link>

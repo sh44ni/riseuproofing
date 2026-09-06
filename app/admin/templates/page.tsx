@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
@@ -50,9 +50,9 @@ const MERGE_TAGS = [
   { tag: '{city}', label: 'City', sample: 'San Diego' },
   { tag: '{service_type}', label: 'Service Type', sample: 'Roof Replacement' },
   { tag: '{date_time}', label: 'Appointment Time', sample: 'Tomorrow at 10:00 AM' },
-  { tag: '{proposal_link}', label: 'Proposal Link', sample: 'https://riseuproofing.com/proposal/EST-2026-0042' },
-  { tag: '{inspection_link}', label: 'Inspection Link', sample: 'https://riseuproofing.com/inspection/INSP-2026-0018' },
-  { tag: '{warranty_link}', label: 'Warranty Link', sample: 'https://riseuproofing.com/warranty/WAR-2026-0005' },
+  { tag: '{proposal_link}', label: 'Proposal Link', sample: 'https://riseuprac.com/proposal/EST-2026-0042' },
+  { tag: '{inspection_link}', label: 'Inspection Link', sample: 'https://riseuprac.com/inspection/INSP-2026-0018' },
+  { tag: '{warranty_link}', label: 'Warranty Link', sample: 'https://riseuprac.com/warranty/WAR-2026-0005' },
   { tag: '{review_link}', label: 'Google Review Link', sample: 'https://g.page/r/riseuproofing/review' },
   { tag: '{company_phone}', label: 'Company Phone', sample: '(619) 432-7663' },
 ];

@@ -5,7 +5,10 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import BottomNav from '@/components/admin/layout/BottomNav';
 import FAB from '@/components/admin/shared/FAB';
 
-export const metadata = { title: 'CRM Admin — Rise Up Roofing & Construction' };
+export const metadata = {
+  title: 'CRM Admin — Rise Up Roofing & Construction',
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({
   children,

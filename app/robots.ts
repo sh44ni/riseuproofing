@@ -5,8 +5,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/api/',
+      disallow: [
+        '/api/',
+        '/admin/',
+        '/inspection/',
+        '/proposal/',
+        '/warranty/',
+        '/review/',
+      ],
     },
-    sitemap: 'https://riseuproofing.com/sitemap.xml',
+    sitemap: 'https://riseuprac.com/sitemap.xml',
   };
 }

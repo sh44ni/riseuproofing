@@ -3,8 +3,7 @@ import { getAllServiceSlugs } from '@/lib/data/services';
 import { getAllProjectSlugs } from '@/lib/data/projects';
 import { getAllJobSlugs } from '@/lib/data/careers';
 import { getAllServiceAreaSlugs } from '@/lib/data/serviceAreas';
-
-const BASE_URL = 'https://riseuproofing.com';
+import { BASE_URL } from '@/lib/utils';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [

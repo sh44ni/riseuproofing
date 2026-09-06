@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getCurrentUser } from '@/lib/admin-auth';
 import crypto from 'crypto';
@@ -454,35 +454,35 @@ export async function POST(req: NextRequest) {
       const defaultUsers = [
         {
           name: 'Sam Martinez',
-          email: 'owner@riseuproofing.com',
+          email: 'owner@riseuprac.com',
           phone: '(747) 245-0035',
           role: 'owner',
           pass: ownerPass,
         },
         {
           name: 'Carlos Ramirez',
-          email: 'pm@riseuproofing.com',
+          email: 'pm@riseuprac.com',
           phone: '(818) 555-0142',
           role: 'project_manager',
           pass: 'RiseUpPM2025!',
         },
         {
           name: 'Jessica Hayes',
-          email: 'sales@riseuproofing.com',
+          email: 'sales@riseuprac.com',
           phone: '(818) 555-0199',
           role: 'sales_rep',
           pass: 'RiseUpSales2025!',
         },
         {
           name: 'Marco Silva',
-          email: 'foreman@riseuproofing.com',
+          email: 'foreman@riseuprac.com',
           phone: '(818) 555-0211',
           role: 'field_foreman',
           pass: 'RiseUpCrew2025!',
         },
         {
           name: 'Elena Rostova',
-          email: 'office@riseuproofing.com',
+          email: 'office@riseuprac.com',
           phone: '(747) 245-0035',
           role: 'office_admin',
           pass: 'RiseUpOffice2025!',

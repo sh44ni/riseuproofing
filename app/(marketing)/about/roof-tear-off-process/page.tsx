@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Icon } from '@/components/shared/Icon';
 import {
@@ -166,7 +166,7 @@ export default function RoofTearOffProcessPage() {
     headline: 'Roof Tear-Off & Removal Process in San Diego: The Complete Technical Guide',
     description:
       'Complete guide to the roof tear-off and removal process in San Diego. California Building Code CRC R908 rules, 5-phase protocol, rot repair, and costs.',
-    url: 'https://riseuproofing.com/about/roof-tear-off-process',
+    url: 'https://riseuprac.com/about/roof-tear-off-process',
     keywords: [
       'roof tear off process',
       'roof removal',

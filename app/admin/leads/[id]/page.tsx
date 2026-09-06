@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -731,7 +731,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           customerPhone={lead.phone}
           customerEmail={lead.email}
           address={lead.address}
-          proposalLink={estimates.length > 0 ? `https://riseuproofing.com/proposal/${estimates[0].id}` : undefined}
+          proposalLink={estimates.length > 0 ? `https://riseuprac.com/proposal/${estimates[0].id}` : undefined}
           defaultChannel={messageModalChannel}
           onSent={loadData}
         />

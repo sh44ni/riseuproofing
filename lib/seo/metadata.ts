@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { COMPANY_NAME } from '@/lib/utils';
+import { COMPANY_NAME, BASE_URL, CONTACT_EMAIL } from '@/lib/utils';
 
 interface MetadataOptions {
   title: string;
@@ -8,7 +8,6 @@ interface MetadataOptions {
   ogImage?: string;
 }
 
-const BASE_URL = 'https://riseuproofing.com';
 
 export function buildMetadata({ title, description, path, ogImage }: MetadataOptions): Metadata {
   // Strip redundant tags or existing suffixes to construct clean, high-impact titles
@@ -93,7 +92,7 @@ export function buildLocalBusinessJsonLd() {
     name: COMPANY_NAME,
     url: BASE_URL,
     telephone: '+17606221230',
-    email: 'info@riseuproofing.com',
+    email: CONTACT_EMAIL,
     address: BUSINESS_ADDRESS,
     geo: {
       '@type': 'GeoCoordinates',

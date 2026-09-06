@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -51,7 +51,7 @@ export default function SettingsPage() {
     company_name: 'Rise Up Roofing & Construction',
     license_cslb: '1096492',
     phone: '(619) 432-7663',
-    email: 'info@riseuproofing.com',
+    email: 'info@riseuprac.com',
     office_address: 'Escondido & San Diego County, CA',
     google_review_url: 'https://g.page/r/riseuproofing/review',
     owens_corning_id: 'OC-PREFERRED-1096492',

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Hero } from '@/components/home/Hero';
 import { TrustBar } from '@/components/home/TrustBar';
 import { ServicesOverview } from '@/components/home/ServicesOverview';
@@ -7,8 +8,15 @@ import { ProjectsMap } from '@/components/home/ProjectsMap';
 import { ReviewsStrip } from '@/components/home/ReviewsStrip';
 import { Certifications } from '@/components/home/Certifications';
 import { FinalCTA } from '@/components/home/FinalCTA';
-import { buildReviewJsonLd } from '@/lib/seo/metadata';
+import { buildMetadata, buildReviewJsonLd } from '@/lib/seo/metadata';
 import { getPublicReviews, getReviewStats } from '@/lib/reviews-server';
+
+export const metadata: Metadata = buildMetadata({
+  title: 'San Diego Roofing & Construction Experts | Free Estimates',
+  description:
+    'San Diego County\'s trusted roofing contractor. Residential & commercial roof replacement, tile relay, leak repair, solar roofing & construction. Licensed #1096492. Free estimates.',
+  path: '/',
+});
 
 export const revalidate = 3600;
 

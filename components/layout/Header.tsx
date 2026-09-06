@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -191,11 +191,11 @@ export function Header({ stats }: { stats?: ReviewStats } = {}) {
             <span className="hidden sm:inline-block text-white/30">|</span>
 
             <a
-              href="mailto:info@riseuproofing.com"
+              href="mailto:info@riseuprac.com"
               className="hidden sm:flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
             >
               <Icon name="mail" className="w-3.5 h-3.5 text-brand-blue" />
-              <span>info@riseuproofing.com</span>
+              <span>info@riseuprac.com</span>
             </a>
           </div>
         </div>

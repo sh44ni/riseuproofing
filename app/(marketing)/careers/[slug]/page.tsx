@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Icon } from '@/components/shared/Icon';
@@ -143,7 +143,7 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ s
                 </a>
 
                 <a
-                  href="mailto:careers@riseuproofing.com"
+                  href="mailto:careers@riseuprac.com"
                   className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl transition-all shadow-xs"
                 >
                   <Icon name="mail" className="w-4 h-4 text-brand-blue" />

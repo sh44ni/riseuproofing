@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Info,
 } from 'lucide-react';
+import { PHONE_NUMBER, PHONE_HREF } from '@/lib/utils';
 import { InspectionReportSkeleton } from '@/components/shared/PortalSkeletons';
 
 interface InspectionPoint {
@@ -101,10 +102,10 @@ export default function PublicInspectionPage({
           {error || 'Unable to locate this roof inspection report. Please check the URL or contact Rise Up Roofing.'}
         </p>
         <a
-          href="tel:6194327663"
+          href={PHONE_HREF}
           className="mt-6 px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm shadow-lg inline-flex items-center gap-2"
         >
-          <Phone size={15} /> Call (619) 432-7663
+          <Phone size={15} /> Call {PHONE_NUMBER}
         </a>
       </div>
     );
@@ -149,10 +150,10 @@ export default function PublicInspectionPage({
             <Printer size={14} /> Print / Save PDF
           </button>
           <a
-            href="tel:6194327663"
+            href={PHONE_HREF}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-all shadow-md cursor-pointer"
           >
-            <Phone size={14} /> Call (619) 432-7663
+            <Phone size={14} /> Call {PHONE_NUMBER}
           </a>
         </div>
       </div>
@@ -403,10 +404,10 @@ export default function PublicInspectionPage({
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <a
-                href="tel:6194327663"
+                href={PHONE_HREF}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2"
               >
-                <Phone size={16} /> Call (619) 432-7663 For Free Estimate
+                <Phone size={16} /> Call {PHONE_NUMBER} For Free Estimate
               </a>
 
               <Link

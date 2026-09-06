@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { Icon } from '@/components/shared/Icon';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
@@ -53,7 +53,7 @@ export default function ContactPage() {
               </a>
 
               <a
-                href="mailto:info@riseuproofing.com"
+                href="mailto:info@riseuprac.com"
                 className="flex items-center gap-3.5 text-[var(--text-primary)] hover:text-brand-blue transition-colors group"
               >
                 <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 group-hover:text-brand-blue transition-colors">
@@ -61,7 +61,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Email Inquiries</p>
-                  <p className="text-sm font-bold text-[var(--text-primary)]">info@riseuproofing.com</p>
+                  <p className="text-sm font-bold text-[var(--text-primary)]">info@riseuprac.com</p>
                 </div>
               </a>
 

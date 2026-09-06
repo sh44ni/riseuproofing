@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -648,7 +648,7 @@ export default function TeamManagementPage() {
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="name@riseuproofing.com"
+                    placeholder="name@riseuprac.com"
                     className="w-full bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2 text-[#0B1E33] placeholder-slate-400 focus:outline-none focus:border-[#2F9FE3] focus:bg-white shadow-2xs"
                   />
                 </div>

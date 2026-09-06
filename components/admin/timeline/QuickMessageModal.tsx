@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import BottomSheet from '../shared/BottomSheet';
@@ -64,7 +64,7 @@ export default function QuickMessageModal({
     rep_name: repName || 'Rise Up Roofing',
     address: address || 'your residence',
     date_time: dateTime,
-    proposal_link: proposalLink || 'https://riseuproofing.com/proposal',
+    proposal_link: proposalLink || 'https://riseuprac.com/proposal',
     review_link: 'https://g.page/r/rise-up-roofing/review',
   });
 

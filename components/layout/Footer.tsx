@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -83,11 +83,11 @@ export function Footer({ stats }: { stats?: ReviewStats } = {}) {
 
               <Tooltip content="Direct customer email">
                 <a
-                  href="mailto:info@riseuproofing.com"
+                  href="mailto:info@riseuprac.com"
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white text-xs border border-white/15 transition-all"
                 >
                   <Icon name="mail" className="w-3.5 h-3.5 text-brand-blue" />
-                  <span>info@riseuproofing.com</span>
+                  <span>info@riseuprac.com</span>
                 </a>
               </Tooltip>
             </div>
