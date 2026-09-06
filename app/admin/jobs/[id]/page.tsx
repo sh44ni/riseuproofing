@@ -34,6 +34,34 @@ import {
 import { STAGES } from '../page';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import JobPhotoGallery from '@/components/admin/jobs/JobPhotoGallery';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+import LifecycleStageStepper from '@/components/admin/shared/LifecycleStageStepper';
+import DurationStepper from '@/components/admin/shared/DurationStepper';
+
+const PERMIT_OPTIONS = [
+  { value: 'not_filed', label: 'Not Filed', badge: 'Not Started', badgeColor: 'slate' as const },
+  { value: 'filed', label: 'Application Filed', badge: 'Pending', badgeColor: 'sky' as const },
+  { value: 'approved', label: 'Permit Issued & Ready', badge: 'Approved', badgeColor: 'emerald' as const },
+  { value: 'inspection_scheduled', label: 'City Inspection Booked', badge: 'Scheduled', badgeColor: 'amber' as const },
+  { value: 'passed', label: 'Final Permit Passed', badge: 'Passed', badgeColor: 'emerald' as const },
+];
+
+const MATERIAL_OPTIONS = [
+  { value: 'not_ordered', label: 'PO Not Ordered', badge: 'Pending PO', badgeColor: 'slate' as const },
+  { value: 'ordered', label: 'PO Sent (ABC Supply / Beacon)', badge: 'Ordered', badgeColor: 'sky' as const },
+  { value: 'delivered', label: 'Rooftop Delivery Scheduled', badge: 'En Route', badgeColor: 'amber' as const },
+  { value: 'on_site', label: 'Materials On-Site & Verified', badge: 'Verified', badgeColor: 'emerald' as const },
+];
+
+const EXPENSE_CATEGORIES = [
+  { value: 'materials', label: 'Materials', badge: 'Supplier', badgeColor: 'sky' as const },
+  { value: 'labor', label: 'Labor Payroll', badge: 'Crew', badgeColor: 'purple' as const },
+  { value: 'dumpster', label: 'Dumpster & Waste', badge: 'Disposal', badgeColor: 'amber' as const },
+  { value: 'permits', label: 'City Permit Fees', badge: 'City', badgeColor: 'emerald' as const },
+  { value: 'equipment', label: 'Equipment Rental', badge: 'Rental', badgeColor: 'slate' as const },
+  { value: 'subcontractor', label: 'Subcontractor', badge: 'Sub', badgeColor: 'rose' as const },
+  { value: 'other', label: 'Other', badge: 'Misc', badgeColor: 'slate' as const },
+];
 
 interface JobDetail {
   id: number;
@@ -735,135 +763,147 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       {/* Main Operations Form */}
       <form onSubmit={handleSave} className="space-y-6">
         {/* Stage & Progress */}
-        <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 sm:p-6 space-y-4 shadow-xs">
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-            <Hammer size={16} className="text-[#2F9FE3]" />
-            Project Stage &amp; Lifecycle
-          </h3>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-            {STAGES.map(s => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setStatus(s.id)}
-                className={`p-2.5 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
-                  status === s.id
-                    ? 'admin-btn-gold shadow-xs'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-[#0B1E33]'
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
+        <div className="admin-card p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <Hammer size={16} className="text-[#2F9FE3]" />
+              Project Stage &amp; Lifecycle
+            </h3>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+              {STAGES.find(s => s.id === status)?.label || 'In Progress'}
+            </span>
           </div>
+
+          <LifecycleStageStepper
+            stages={STAGES}
+            currentStage={status}
+            onChange={setStatus}
+          />
         </div>
 
         {/* 3 Columns: Permits, Materials, Crew */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Permits */}
-          <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 space-y-4 shadow-xs">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <Shield size={16} className="text-[#2F9FE3]" />
-              City Permitting
-            </h3>
+          <div className="admin-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <Shield size={16} className="text-[#2F9FE3]" />
+                City Permitting
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#1878B8] border border-sky-200">
+                Stage 1
+              </span>
+            </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Permit Status</label>
-                <select
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Permit Status</label>
+                <CustomSelect
                   value={permitStatus}
-                  onChange={e => setPermitStatus(e.target.value)}
-                  className="admin-input text-xs"
-                >
-                  <option value="not_filed">Not Filed</option>
-                  <option value="filed">Application Filed</option>
-                  <option value="approved">Permit Issued &amp; Ready</option>
-                  <option value="inspection_scheduled">City Inspection Booked</option>
-                  <option value="passed">Final Permit Passed</option>
-                </select>
+                  onChange={setPermitStatus}
+                  options={PERMIT_OPTIONS}
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Permit Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g. BLD2026-04918"
-                  value={permitNumber}
-                  onChange={e => setPermitNumber(e.target.value)}
-                  className="admin-input text-xs"
-                />
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Permit Number</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="e.g. BLD2026-04918"
+                    value={permitNumber}
+                    onChange={e => setPermitNumber(e.target.value)}
+                    className="admin-input font-mono text-xs pl-3.5 pr-10"
+                  />
+                  {permitNumber && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-slate-400">
+                      SD
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Materials */}
-          <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 space-y-4 shadow-xs">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <Truck size={16} className="text-[#2F9FE3]" />
-              Materials &amp; Logistics
-            </h3>
+          <div className="admin-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <Truck size={16} className="text-[#2F9FE3]" />
+                Materials &amp; Logistics
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                Stage 2
+              </span>
+            </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Supplier Delivery</label>
-                <select
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Supplier Delivery</label>
+                <CustomSelect
                   value={materialStatus}
-                  onChange={e => setMaterialStatus(e.target.value)}
-                  className="admin-input text-xs"
-                >
-                  <option value="not_ordered">PO Not Ordered</option>
-                  <option value="ordered">PO Sent to ABC Supply / Beacon</option>
-                  <option value="delivered">Rooftop Delivery Scheduled</option>
-                  <option value="on_site">Materials On-Site &amp; Verified</option>
-                </select>
+                  onChange={setMaterialStatus}
+                  options={MATERIAL_OPTIONS}
+                />
               </div>
 
               {estimate && (
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl text-[11px] text-slate-600 space-y-1">
-                  <p><strong className="text-slate-800">Material:</strong> {estimate.material_type}</p>
-                  <p><strong className="text-slate-800">Quantity:</strong> {estimate.roof_squares} Squares</p>
+                <div className="p-3 bg-white/70 border border-slate-200/80 rounded-xl text-xs text-slate-600 space-y-1.5 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">Material Spec:</span>
+                    <span className="font-bold text-[#0B1E33]">{estimate.material_type}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">Quantity:</span>
+                    <span className="font-bold text-[#1878B8]">{estimate.roof_squares} Squares</span>
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
           {/* Crew & Schedule */}
-          <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 space-y-4 shadow-xs">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <User size={16} className="text-[#2F9FE3]" />
-              Crew &amp; Dispatch
-            </h3>
+          <div className="admin-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <User size={16} className="text-[#2F9FE3]" />
+                Crew &amp; Dispatch
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Stage 3
+              </span>
+            </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Foreman / Crew Lead</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Foreman / Crew Lead</label>
                 <input
                   type="text"
                   value={crewLead}
                   onChange={e => setCrewLead(e.target.value)}
-                  className="admin-input text-xs"
+                  placeholder="e.g. Carlos, Miguel"
+                  className="admin-input text-xs font-medium"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Start Date</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5">Start Date</label>
                   <input
                     type="date"
                     value={scheduledStart}
                     onChange={e => setScheduledStart(e.target.value)}
-                    className="admin-input text-xs"
+                    className="admin-input text-xs font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Est. Duration</label>
-                  <input
-                    type="number"
-                    min="1"
+                  <DurationStepper
                     value={estimatedDays}
-                    onChange={e => setEstimatedDays(Number(e.target.value))}
-                    className="admin-input text-xs"
+                    onChange={setEstimatedDays}
+                    min={1}
+                    max={30}
+                    unit="Days"
+                    label="Est. Duration"
                   />
                 </div>
               </div>
@@ -872,25 +912,52 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
 
         {/* On-site Notes */}
-        <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 space-y-3 shadow-xs">
-          <label className="block text-xs uppercase font-bold text-slate-500 tracking-wider">
-            Job Notes &amp; Field Instructions
-          </label>
+        <div className="admin-card p-5 sm:p-6 space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <label className="block text-xs uppercase font-bold text-slate-500 tracking-wider">
+              Job Notes &amp; Field Instructions
+            </label>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase mr-1">Quick Add:</span>
+              {[
+                'Driveway pavers protected',
+                'Pool covered with tarp',
+                'Spanish tile fragile',
+                'Solar disconnect needed',
+                'Magnetic nail sweep complete',
+              ].map(preset => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => {
+                    setNotes(prev => (prev ? `${prev}\n• ${preset}` : `• ${preset}`));
+                  }}
+                  className="text-[10px] font-semibold py-1 px-2.5 rounded-lg bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 hover:text-[#0B1E33] transition-colors cursor-pointer active:scale-95"
+                >
+                  + {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <textarea
-            rows={3}
-            placeholder="e.g. Protect driveway pavers with plywood before dumpster drop-off. Homeowner requested tile debris piled away from pool..."
+            rows={4}
+            placeholder="e.g. Protect driveway pavers with plywood before dumpster drop-off. Homeowner requested tile debris piled away from pool. Verify underlayment inspect pass before loading tile..."
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            className="admin-input text-sm resize-none"
+            className="admin-textarea text-xs sm:text-sm"
           />
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-md">
+          <div className="text-xs text-slate-500 hidden sm:block">
+            Changes apply immediately to live crew dispatch and billing milestones.
+          </div>
           <button
             type="submit"
             disabled={saving}
-            className="admin-btn-gold px-6 py-3 rounded-xl font-bold text-sm shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="admin-btn-gold w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 apple-spring-press"
           >
             <Save size={16} />
             {saving ? 'Updating Job...' : 'Save Job Progress'}
@@ -909,20 +976,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <form onSubmit={handleAddExpense} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Category</label>
-                <select
+                <CustomSelect
+                  label="Category"
                   value={expenseCategory}
-                  onChange={e => setExpenseCategory(e.target.value)}
-                  className="admin-input text-xs"
-                >
-                  <option value="materials">Materials</option>
-                  <option value="labor">Labor Payroll</option>
-                  <option value="dumpster">Dumpster &amp; Waste</option>
-                  <option value="permits">City Permit Fees</option>
-                  <option value="equipment">Equipment Rental</option>
-                  <option value="subcontractor">Subcontractor</option>
-                  <option value="other">Other</option>
-                </select>
+                  onChange={setExpenseCategory}
+                  options={EXPENSE_CATEGORIES}
+                  size="sm"
+                />
               </div>
 
               <div>
@@ -981,7 +1041,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 placeholder="Details of materials or services rendered..."
                 value={expenseNotes}
                 onChange={e => setExpenseNotes(e.target.value)}
-                className="admin-input text-xs resize-none"
+                className="admin-textarea text-xs"
               />
             </div>
 
@@ -1065,7 +1125,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 placeholder="e.g. Homeowner handed check upon tear-off completion..."
                 value={paymentNotes}
                 onChange={e => setPaymentNotes(e.target.value)}
-                className="admin-input text-xs resize-none"
+                className="admin-textarea text-xs"
               />
             </div>
 

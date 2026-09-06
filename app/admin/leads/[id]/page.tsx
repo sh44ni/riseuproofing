@@ -27,6 +27,24 @@ import StatusBadge, { PriorityLevel } from '@/components/admin/shared/StatusBadg
 import ActivityTimeline, { Activity } from '@/components/admin/timeline/ActivityTimeline';
 import LogActivitySheet from '@/components/admin/timeline/LogActivitySheet';
 import QuickMessageModal from '@/components/admin/timeline/QuickMessageModal';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+
+const STATUS_OPTIONS = [
+  { value: 'new', label: 'New Lead', badge: 'Fresh', badgeColor: 'sky' as const },
+  { value: 'contacted', label: 'Contacted', badge: 'In Touch', badgeColor: 'amber' as const },
+  { value: 'estimate_scheduled', label: 'Inspection / Est Scheduled', badge: 'Booked', badgeColor: 'purple' as const },
+  { value: 'estimate_sent', label: 'Proposal Sent', badge: 'Proposal', badgeColor: 'gold' as const },
+  { value: 'won', label: 'Won / Converted to Job', badge: 'Won', badgeColor: 'emerald' as const },
+  { value: 'lost', label: 'Lost / Disqualified', badge: 'Archived', badgeColor: 'rose' as const },
+];
+
+const ROOF_TYPE_OPTIONS = [
+  { value: 'Concrete Tile', label: 'Concrete Tile', badge: 'Tile', badgeColor: 'sky' as const },
+  { value: 'Clay Tile', label: 'Clay Tile', badge: 'Tile', badgeColor: 'amber' as const },
+  { value: 'Architectural Shingle', label: 'Architectural Shingle', badge: 'Shingle', badgeColor: 'emerald' as const },
+  { value: 'Flat / TPO', label: 'Flat / TPO', badge: 'Flat', badgeColor: 'purple' as const },
+  { value: 'Metal', label: 'Metal', badge: 'Metal', badgeColor: 'slate' as const },
+];
 
 interface LeadDetailData {
   id: number;
@@ -293,19 +311,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Status Dropdown */}
-          <div className="flex items-center gap-3 self-start sm:self-auto bg-slate-50 px-3.5 py-2 rounded-[16px] border border-slate-200/80">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pipeline:</span>
-            <select
+          <div className="w-full sm:w-60 self-start sm:self-auto">
+            <CustomSelect
               value={lead.status}
-              onChange={e => handleStatusChange(e.target.value)}
-              className="text-xs sm:text-sm font-bold bg-transparent text-[#0B1E33] outline-none cursor-pointer capitalize"
-            >
-              {STATUSES.map(s => (
-                <option key={s} value={s} className="bg-white text-[#0B1E33] capitalize">
-                  {s}
-                </option>
-              ))}
-            </select>
+              onChange={handleStatusChange}
+              options={STATUS_OPTIONS}
+              size="sm"
+            />
           </div>
         </div>
 
@@ -430,18 +442,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">Roof Type</label>
-                  <select
-                    value={specs.roof_type}
-                    onChange={e => setSpecs({ ...specs, roof_type: e.target.value })}
-                    className="admin-input text-xs"
-                  >
-                    <option value="Concrete Tile">Concrete Tile</option>
-                    <option value="Clay Tile">Clay Tile</option>
-                    <option value="Architectural Shingle">Architectural Shingle</option>
-                    <option value="Flat / TPO">Flat / TPO</option>
-                    <option value="Metal">Metal</option>
-                  </select>
+                  <CustomSelect
+                    label="Roof Type"
+                    value={specs.roof_type || 'Concrete Tile'}
+                    onChange={val => setSpecs({ ...specs, roof_type: val })}
+                    options={ROOF_TYPE_OPTIONS}
+                    size="sm"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>

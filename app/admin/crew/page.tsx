@@ -486,7 +486,7 @@ export default function CrewPage() {
                     <select
                       value={member.current_job_id || ''}
                       onChange={e => handleQuickAssign(member.id, e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-[11px] focus:outline-none focus:border-[#2F9FE3] cursor-pointer"
+                      className="admin-select w-full px-2.5 py-1.5 text-[11px] font-semibold"
                     >
                       <option value="">-- No Active Job (Standby) --</option>
                       {jobs.map(j => (
@@ -542,7 +542,7 @@ export default function CrewPage() {
               <select
                 value={role}
                 onChange={e => setRole(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
+                className="admin-select text-xs font-semibold"
               >
                 <option value="foreman">Foreman / Job Site Lead</option>
                 <option value="lead_installer">Lead Installer</option>
@@ -567,7 +567,7 @@ export default function CrewPage() {
                       .filter(Boolean)
                   )
                 }
-                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
+                className="admin-input text-xs"
               />
             </div>
 
@@ -578,7 +578,7 @@ export default function CrewPage() {
               <select
                 value={currentJobId}
                 onChange={e => setCurrentJobId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
+                className="admin-select text-xs font-semibold"
               >
                 <option value="">Standby (No active job)</option>
                 {jobs.map(j => (

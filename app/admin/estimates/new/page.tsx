@@ -22,6 +22,23 @@ import {
   PITCH_MULTIPLIERS,
   calculateRoofEstimate,
 } from '@/lib/crm-calculator';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+
+const PITCH_OPTIONS = [
+  { value: '4:12', label: '4:12 (Standard Low Pitch)', badge: 'Standard', badgeColor: 'slate' as const },
+  { value: '5:12', label: '5:12 (Low-Mid Pitch)', badge: 'Standard', badgeColor: 'slate' as const },
+  { value: '6:12', label: '6:12 (Average Residential)', badge: 'Average', badgeColor: 'sky' as const },
+  { value: '7:12', label: '7:12 (Moderate Pitch)', badge: 'Moderate', badgeColor: 'sky' as const },
+  { value: '8:12', label: '8:12 (Steep +18% labor)', badge: '+18% Labor', badgeColor: 'amber' as const },
+  { value: '9:12', label: '9:12 (Steep +25% labor)', badge: '+25% Labor', badgeColor: 'amber' as const },
+  { value: '10:12+', label: '10:12+ (Very Steep +35% labor)', badge: '+35% Labor', badgeColor: 'rose' as const },
+];
+
+const STORIES_OPTIONS = [
+  { value: '1', label: '1 Story (Ground level)', badge: 'Base', badgeColor: 'emerald' as const },
+  { value: '2', label: '2 Stories (+10% labor)', badge: '+10% Labor', badgeColor: 'amber' as const },
+  { value: '3', label: '3+ Stories (+25% labor)', badge: '+25% Labor', badgeColor: 'rose' as const },
+];
 
 export default function NewEstimatePage() {
   const router = useRouter();
@@ -272,33 +289,21 @@ export default function NewEstimatePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Roof Slope / Pitch</label>
-                <select
+                <CustomSelect
+                  label="Roof Slope / Pitch"
                   value={formData.roofPitch}
-                  onChange={e => setFormData({ ...formData, roofPitch: e.target.value })}
-                  className="admin-input w-full px-3.5 py-2.5 text-sm font-semibold"
-                >
-                  <option value="4:12">4:12 (Standard Low Pitch)</option>
-                  <option value="5:12">5:12</option>
-                  <option value="6:12">6:12 (Average Residential)</option>
-                  <option value="7:12">7:12</option>
-                  <option value="8:12">8:12 (Steep +18% labor)</option>
-                  <option value="9:12">9:12</option>
-                  <option value="10:12+">10:12+ (Very Steep +35% labor)</option>
-                </select>
+                  onChange={val => setFormData({ ...formData, roofPitch: val })}
+                  options={PITCH_OPTIONS}
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Building Stories</label>
-                <select
-                  value={formData.stories}
-                  onChange={e => setFormData({ ...formData, stories: Number(e.target.value) })}
-                  className="admin-input w-full px-3.5 py-2.5 text-sm font-semibold"
-                >
-                  <option value="1">1 Story (Ground level)</option>
-                  <option value="2">2 Stories (+10% labor)</option>
-                  <option value="3">3+ Stories (+25% labor)</option>
-                </select>
+                <CustomSelect
+                  label="Building Stories"
+                  value={String(formData.stories)}
+                  onChange={val => setFormData({ ...formData, stories: Number(val) })}
+                  options={STORIES_OPTIONS}
+                />
               </div>
             </div>
 

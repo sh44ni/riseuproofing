@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import { KanbanSkeleton } from '@/components/admin/shared/AdminSkeletons';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 export const STAGES = [
   { id: 'permit_pending', label: 'Permit Pending', color: 'border-sky-200 text-[#1878B8] bg-sky-50' },
@@ -29,6 +30,13 @@ export const STAGES = [
   { id: 'punch_list', label: 'Punch List', color: 'border-orange-200 text-orange-800 bg-orange-50' },
   { id: 'final_inspection', label: 'Final Inspection', color: 'border-indigo-200 text-indigo-700 bg-indigo-50' },
   { id: 'complete', label: 'Complete', color: 'border-emerald-200 text-emerald-800 bg-emerald-50' },
+];
+
+const SERVICE_OPTIONS = [
+  { value: 'Residential Roofing', label: 'Residential Roofing', badge: 'Shingle/Tile', badgeColor: 'sky' as const },
+  { value: 'Tile Roof Relay', label: 'Tile Roof Relay', badge: 'Specialty', badgeColor: 'amber' as const },
+  { value: 'Commercial TPO', label: 'Commercial TPO', badge: 'Commercial', badgeColor: 'purple' as const },
+  { value: 'Leak Repair', label: 'Leak Repair', badge: 'Service', badgeColor: 'rose' as const },
 ];
 
 interface Job {
@@ -401,17 +409,13 @@ export default function JobsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Service</label>
-              <select
+              <CustomSelect
+                label="Service"
                 value={manualService}
-                onChange={e => setManualService(e.target.value)}
-                className="admin-input text-sm"
-              >
-                <option value="Residential Roofing">Residential Roofing</option>
-                <option value="Tile Roof Relay">Tile Roof Relay</option>
-                <option value="Commercial TPO">Commercial TPO</option>
-                <option value="Leak Repair">Leak Repair</option>
-              </select>
+                onChange={setManualService}
+                options={SERVICE_OPTIONS}
+                size="sm"
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">Crew Lead</label>
@@ -451,17 +455,24 @@ function JobCard({
         <span className="font-mono text-[10px] font-bold text-[#1878B8] tracking-wide">
           {job.job_number}
         </span>
-        <select
-          value={job.status}
-          onChange={e => onStageChange(job.id, e.target.value)}
-          className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 cursor-pointer outline-none focus:border-[#2F9FE3]"
-        >
-          {STAGES.map(s => (
-            <option key={s.id} value={s.id} className="bg-white text-[#0B1E33]">
-              {s.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={job.status}
+            onChange={e => onStageChange(job.id, e.target.value)}
+            className="text-[10px] font-bold pl-2.5 pr-6 py-0.5 rounded-full border border-slate-200/90 bg-slate-50 hover:bg-white text-slate-700 cursor-pointer outline-none focus:border-[#2F9FE3] transition-colors appearance-none shadow-2xs"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 6px center',
+            }}
+          >
+            {STAGES.map(s => (
+              <option key={s.id} value={s.id} className="bg-white text-[#0B1E33]">
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <Link href={`/admin/jobs/${job.id}`} className="block">
