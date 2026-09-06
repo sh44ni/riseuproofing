@@ -11,7 +11,9 @@ import { Tooltip } from '@/components/shared/Tooltip';
 
 const SERVICES = [
   { label: 'Residential Roofing', href: '/services/residential' },
-  { label: 'Roof Repairs & Leaks', href: '/services/repairs' },
+  { label: 'Roof Leak Repair', href: '/services/repairs' },
+  { label: 'Home & Room Additions', href: '/services/home-additions' },
+  { label: 'ADU Construction Contractors', href: '/services/adu-construction' },
   { label: 'Commercial Flat Roofing', href: '/services/commercial' },
   { label: 'Solar Roofing Integration', href: '/services/solar' },
   { label: 'General Construction & Siding', href: '/services/construction' },

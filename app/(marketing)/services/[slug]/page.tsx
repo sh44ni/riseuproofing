@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const service = getServiceBySlug(slug);
   if (!service) return {};
   return buildMetadata({
-    title: `${service.name} | San Diego Roofing Experts`,
-    description: service.shortDescription,
+    title: service.seoTitle || `${service.name} | San Diego Roofing Experts`,
+    description: service.seoDescription || service.shortDescription,
     path: `/services/${service.slug}`,
     ogImage: service.heroImage,
   });
@@ -86,8 +86,43 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
 
+      {/* Detailed Overview & Deep Dive Section (SEO & Educational Value) */}
+      {service.detailedOverview && (
+        <Section alternate={false} className="py-12 sm:py-16">
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading
+              label="Expert Overview"
+              title={service.detailedOverview.heading}
+              subtitle={service.detailedOverview.subheading}
+              centered={false}
+            />
+            <div className="space-y-4 text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed mb-8">
+              {service.detailedOverview.paragraphs.map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
+
+            {service.detailedOverview.highlights && service.detailedOverview.highlights.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                {service.detailedOverview.highlights.map((item, i) => (
+                  <div key={i} className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+                    <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0" />
+                      <span>{item.title}</span>
+                    </h3>
+                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Section>
+      )}
+
       {/* What's Included */}
-      <Section alternate={false}>
+      <Section alternate={service.detailedOverview ? true : false}>
         <SectionHeading
           label="What's Included"
           title={`Our ${service.name} Scope of Work`}

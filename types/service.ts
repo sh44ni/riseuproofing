@@ -13,4 +13,12 @@ export interface Service {
   keyMaterials?: string[];
   accentColor?: string;
   category?: 'residential' | 'repairs' | 'commercial' | 'solar' | 'construction';
+  seoTitle?: string;
+  seoDescription?: string;
+  detailedOverview?: {
+    heading: string;
+    subheading?: string;
+    paragraphs: string[];
+    highlights?: { title: string; description: string }[];
+  };
 }

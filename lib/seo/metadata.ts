@@ -26,25 +26,28 @@ export function buildMetadata({ title, description, path, ogImage }: MetadataOpt
     .trim();
 
   let fullTitle: string;
-  if (title.includes('Rise Up Roofing')) {
-    // If title already had branded suffix like "Roofing & Construction in Oceanside, CA | Rise Up Roofing"
-    fullTitle = title.replace(/\s*\|\s*Rise Up Roofing & Construction\s*\|\s*San Diego County/i, '').trim();
-    if (!fullTitle.includes('Rise Up')) {
-      fullTitle = `${fullTitle} | Rise Up Roofing`;
-    }
+  if (title.includes('Rise Up')) {
+    // If title already has custom brand suffix
+    fullTitle = title.replace(/\s*\|\s*San Diego County/i, '').trim();
   } else {
-    // If appending full brand name keeps it under 65 chars, use full brand name; otherwise use short brand name
+    // If appending full brand name keeps it under 60 chars, use full brand name; otherwise use short brand name
     const candidate = `${baseTitle} | ${COMPANY_NAME}`;
-    if (candidate.length <= 65) {
+    if (candidate.length <= 60) {
       fullTitle = candidate;
     } else {
       fullTitle = `${baseTitle} | Rise Up Roofing`;
     }
   }
 
-  // Strict safety cap at 70 characters
-  if (fullTitle.length > 70) {
-    fullTitle = `${baseTitle.slice(0, 70 - 19)} | Rise Up Roofing`;
+  // Strict safety cap at 65 characters without cutting mid-word
+  if (fullTitle.length > 65) {
+    const cutLimit = 65 - ' | Rise Up Roofing'.length;
+    let safeBase = baseTitle;
+    if (safeBase.length > cutLimit) {
+      const lastSpace = safeBase.lastIndexOf(' ', cutLimit);
+      safeBase = lastSpace > 0 ? safeBase.slice(0, lastSpace) : safeBase.slice(0, cutLimit);
+    }
+    fullTitle = `${safeBase} | Rise Up Roofing`;
   }
 
   const url = `${BASE_URL}${path}`;
