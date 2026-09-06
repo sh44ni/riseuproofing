@@ -30,7 +30,7 @@ export default async function AdminLayout({
     // NEVER redirect to /admin/login when already serving /admin/login.
     if (isLoginPage || pathname === '') {
       return (
-        <div className="admin-theme min-h-screen bg-[#0c1117] text-[#f0f2f5]">
+        <div className="admin-theme min-h-screen bg-[#F4F8FD] text-[#0B1E33]">
           {children}
         </div>
       );
@@ -44,7 +44,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="admin-theme min-h-screen bg-[#0c1117] text-[#f0f2f5] flex flex-col lg:flex-row">
+    <div className="admin-theme min-h-screen bg-[#F4F8FD] text-[#0B1E33] flex flex-col lg:flex-row">
       <AdminSidebar user={user} />
       <main className="flex-1 min-h-screen overflow-x-hidden overflow-y-auto pt-[52px] lg:pt-0 pb-24 lg:pb-10">
         {children}

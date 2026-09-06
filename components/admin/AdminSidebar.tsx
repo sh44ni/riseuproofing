@@ -71,17 +71,17 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
     <div className="flex flex-col h-full">
       {/* Brand */}
       <div
-        className={`flex items-center gap-3 px-5 py-5 border-b border-white/[0.06] ${
+        className={`flex items-center gap-3 px-5 py-5 border-b border-slate-200/80 ${
           collapsed ? 'justify-center' : ''
         }`}
       >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4a447] to-[#c4923a] flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex-shrink-0">
-          <Zap size={16} className="text-[#f0f2f5]" />
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] flex items-center justify-center shadow-[0_2px_10px_rgba(47,159,227,0.25)] flex-shrink-0">
+          <Zap size={16} className="text-white" />
         </div>
         {!collapsed && (
           <div>
-            <p className="text-[#f0f2f5] font-bold text-sm leading-none">Rise Up</p>
-            <p className="text-[#d4a447]/70 text-[10px] font-medium uppercase tracking-widest mt-0.5">
+            <p className="text-[#112D49] font-bold text-sm leading-none">Rise Up</p>
+            <p className="text-[#2F9FE3] text-[10px] font-bold uppercase tracking-widest mt-0.5">
               Admin
             </p>
           </div>
@@ -99,23 +99,23 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative cursor-pointer
                 ${
                   active
-                    ? 'bg-[#d4a447]/[0.12] text-[#d4a447] shadow-inner'
-                    : 'text-[#8a95a5] hover:bg-white/[0.03] hover:text-[#f0f2f5]'
+                    ? 'bg-sky-50 text-[#1878B8] font-semibold shadow-2xs'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#0B1E33]'
                 }
                 ${collapsed ? 'justify-center' : ''}
               `}
               title={collapsed ? label : undefined}
             >
               {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#d4a447] rounded-r-full shadow-[0_0_8px_rgba(212,164,71,0.3)]" />
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#2F9FE3] rounded-r-full shadow-[0_0_8px_rgba(47,159,227,0.4)]" />
               )}
               <Icon
                 size={18}
-                className={`flex-shrink-0 ${active ? 'text-[#d4a447]' : ''}`}
+                className={`flex-shrink-0 ${active ? 'text-[#2F9FE3]' : 'text-slate-500 group-hover:text-[#0B1E33]'}`}
               />
               {!collapsed && <span>{label}</span>}
               {!collapsed && active && (
-                <ChevronRight size={14} className="ml-auto text-[#d4a447]/60" />
+                <ChevronRight size={14} className="ml-auto text-[#2F9FE3]/70" />
               )}
             </Link>
           );
@@ -123,12 +123,12 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       </nav>
 
       {/* User Profile & Logout Bottom Section */}
-      <div className="px-3 pb-4 space-y-2 border-t border-white/[0.06] pt-3">
+      <div className="px-3 pb-4 space-y-2 border-t border-slate-200/80 pt-3">
         {user && !collapsed && (
           <Link
             href="/admin/settings"
             title="Edit My Profile & Avatar"
-            className="px-2 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.04] hover:border-[#d4a447]/30 flex items-center gap-2.5 mb-1 transition-all group block"
+            className="px-2 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-[#2F9FE3]/40 flex items-center gap-2.5 mb-1 transition-all group block"
           >
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <UserAvatar
@@ -139,7 +139,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                 showStatus
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-[#f0f2f5] group-hover:text-[#d4a447] truncate leading-tight transition-colors">
+                <p className="text-xs font-bold text-[#0B1E33] group-hover:text-[#1878B8] truncate leading-tight transition-colors">
                   {user.name}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -166,7 +166,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
 
         <button
           onClick={handleLogout}
-          className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium text-[#8a95a5] hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 cursor-pointer ${
+          className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 cursor-pointer ${
             collapsed ? 'justify-center' : ''
           }`}
           title="Sign Out"
@@ -182,13 +182,13 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
     <>
       {/* Desktop sidebar */}
       <aside
-        className={`hidden lg:flex flex-col h-screen sticky top-0 admin-sidebar-glass border-r border-white/[0.06] transition-all duration-300 ${
+        className={`hidden lg:flex flex-col h-screen sticky top-0 admin-sidebar-glass border-r border-slate-200/80 transition-all duration-300 ${
           collapsed ? 'w-16' : 'w-56'
         }`}
       >
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-7 z-10 w-6 h-6 bg-[#1a2332] border border-white/[0.12] rounded-full flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
+          className="absolute -right-3 top-7 z-10 w-6 h-6 bg-white border border-slate-200 shadow-xs rounded-full flex items-center justify-center text-slate-500 hover:text-[#0B1E33] transition-colors cursor-pointer"
         >
           {collapsed ? <ChevronRight size={12} /> : <X size={12} />}
         </button>
@@ -196,16 +196,16 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       </aside>
 
       {/* Sleek Native Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-white/[0.06] flex items-center justify-between px-3.5 h-[52px]">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-slate-200/80 flex items-center justify-between px-3.5 h-[52px]">
         <Link href="/admin/dashboard" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#d4a447] to-[#c4923a] flex items-center justify-center shadow-[0_2px_10px_rgba(212,164,71,0.25)] flex-shrink-0 group-active:scale-95 transition-transform">
-            <Zap size={14} className="text-[#0c1117] font-black" />
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] flex items-center justify-center shadow-[0_2px_10px_rgba(47,159,227,0.25)] flex-shrink-0 group-active:scale-95 transition-transform">
+            <Zap size={14} className="text-white font-black" />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[#f0f2f5] font-black text-sm tracking-tight">
+            <span className="text-[#112D49] font-black text-sm tracking-tight">
               Rise Up
             </span>
-            <span className="px-1.5 py-0.5 rounded bg-[#d4a447]/15 border border-[#d4a447]/30 text-[#d4a447] text-[10px] font-bold uppercase tracking-wider">
+            <span className="px-1.5 py-0.5 rounded bg-sky-50 border border-sky-200 text-[#1878B8] text-[10px] font-bold uppercase tracking-wider">
               CRM
             </span>
           </div>
@@ -215,7 +215,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
           {user && (
             <Link
               href="/admin/settings"
-              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all"
+              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 active:scale-95 transition-all"
             >
               <UserAvatar
                 name={user.name}
@@ -224,10 +224,10 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                 size="sm"
                 showStatus
               />
-              <span className="text-xs font-semibold text-[#f0f2f5] max-w-[90px] truncate">
+              <span className="text-xs font-semibold text-[#0B1E33] max-w-[90px] truncate">
                 {user.name.split(' ')[0]}
               </span>
-              <RoleIcon role={user.role} size={13} className="text-[#d4a447]" />
+              <RoleIcon role={user.role} size={13} className="text-[#2F9FE3]" />
             </Link>
           )}
         </div>

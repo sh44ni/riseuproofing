@@ -18,21 +18,23 @@ import {
   Legend,
 } from 'recharts';
 
-const GOLD = '#d4a447';
-const SLATE = '#8a95a5';
-const COLORS = ['#d4a447', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
+const GOLD = '#EAA636';
+const BLUE = '#2F9FE3';
+const SLATE = '#64748B';
+const COLORS = ['#2F9FE3', '#EAA636', '#10B981', '#8B5CF6', '#F43F5E', '#EC4899', '#06B6D4', '#84CC16'];
 
 const tooltipStyle = {
-  backgroundColor: '#0c1117',
-  border: '1px solid rgba(255,255,255,0.06)',
-  borderRadius: '16px',
-  color: '#f0f2f5',
+  backgroundColor: '#FFFFFF',
+  border: '1px solid rgba(17,45,73,0.12)',
+  borderRadius: '12px',
+  color: '#0B1E33',
   fontSize: '12px',
+  boxShadow: '0 8px 24px -4px rgba(11,30,51,0.12)',
 };
 
 // Shared axis styles
-const axisStyle = { fill: '#8a95a5', fontSize: 11 };
-const gridStyle = { stroke: 'rgba(255,255,255,0.03)', strokeDasharray: '3 3' };
+const axisStyle = { fill: '#64748B', fontSize: 11 };
+const gridStyle = { stroke: 'rgba(17,45,73,0.06)', strokeDasharray: '3 3' };
 
 // ── Area Chart (visitors over time) ──────────────────────────────────────────
 interface AreaPoint { day: string; visitors?: string | number; sessions?: string | number; pageviews?: string | number; count?: string | number; }
@@ -53,15 +55,15 @@ export function AdminAreaChart({ data, keys = ['visitors'] }: { data: AreaPoint[
         <defs>
           {keys.map((k, i) => (
             <linearGradient key={k} id={`grad-${k}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS[i]} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={COLORS[i]} stopOpacity={0.02} />
+              <stop offset="5%" stopColor={COLORS[i]} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={COLORS[i]} stopOpacity={0.01} />
             </linearGradient>
           ))}
         </defs>
         <CartesianGrid {...gridStyle} />
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'rgba(255,255,255,0.06)' }} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'rgba(17,45,73,0.12)' }} />
         {keys.map((k, i) => (
           <Area
             key={k}
@@ -86,7 +88,7 @@ export function AdminBarChart({
   data,
   dataKey = 'views',
   labelKey = 'page_path',
-  color = GOLD,
+  color = BLUE,
   horizontal = false,
 }: {
   data: BarPoint[];
@@ -108,7 +110,7 @@ export function AdminBarChart({
           <CartesianGrid horizontal={false} {...gridStyle} />
           <XAxis type="number" tick={axisStyle} tickLine={false} axisLine={false} />
           <YAxis type="category" dataKey="label" tick={axisStyle} tickLine={false} axisLine={false} width={70} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(17,45,73,0.04)' }} />
           <Bar dataKey={dataKey} fill={color} radius={[0, 6, 6, 0]} maxBarSize={20} />
         </ReBarChart>
       </ResponsiveContainer>
@@ -121,7 +123,7 @@ export function AdminBarChart({
         <CartesianGrid {...gridStyle} />
         <XAxis dataKey="label" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(17,45,73,0.04)' }} />
         <Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} maxBarSize={40} />
       </ReBarChart>
     </ResponsiveContainer>
@@ -157,16 +159,16 @@ export function AdminPieChart({ data, label = 'Total' }: { data: PiePoint[]; lab
           </RePieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-2xl font-bold text-[#f0f2f5]">{total}</span>
-          <span className="text-xs text-[#8a95a5]">{label}</span>
+          <span className="text-2xl font-black text-[#0B1E33]">{total}</span>
+          <span className="text-xs font-semibold text-slate-500">{label}</span>
         </div>
       </div>
       <div className="flex flex-wrap gap-2 justify-center">
         {data.map((d, i) => (
-          <div key={d.name} className="flex items-center gap-1.5 text-xs text-[#a0aab8]">
+          <div key={d.name} className="flex items-center gap-1.5 text-xs text-slate-600">
             <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
-            <span className="capitalize">{d.name}</span>
-            <span className="text-[#5e6a7a]">({d.value})</span>
+            <span className="capitalize font-medium">{d.name}</span>
+            <span className="text-slate-400">({d.value})</span>
           </div>
         ))}
       </div>

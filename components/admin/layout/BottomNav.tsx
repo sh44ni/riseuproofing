@@ -42,7 +42,7 @@ export default function BottomNav({ user }: BottomNavProps) {
 
   return (
     <>
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 admin-bar-glass border-t border-white/[0.04] px-2 pb-[env(safe-area-inset-bottom)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 admin-bar-glass border-t border-slate-200/80 px-2 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around h-16">
           {TABS.map(({ href, label, icon: Icon }) => {
             const active =
@@ -54,21 +54,21 @@ export default function BottomNav({ user }: BottomNavProps) {
                 href={href}
                 className={`flex-1 flex flex-col items-center justify-center h-full py-1 transition-colors relative ${
                   active
-                    ? 'text-[#d4a447] font-semibold'
-                    : 'text-[#8a95a5] hover:text-[#f0f2f5]'
+                    ? 'text-[#2F9FE3] font-bold'
+                    : 'text-slate-500 hover:text-[#0B1E33]'
                 }`}
               >
                 <Icon
                   size={20}
                   className={
                     active
-                      ? 'text-[#d4a447] stroke-[2.2]'
-                      : 'text-[#8a95a5] stroke-[1.75]'
+                      ? 'text-[#2F9FE3] stroke-[2.2]'
+                      : 'text-slate-500 stroke-[1.75]'
                   }
                 />
                 <span className="text-[10px] mt-1 tracking-tight">{label}</span>
                 {active && (
-                  <span className="absolute bottom-1 w-1 h-1 bg-[#d4a447] rounded-full shadow-[0_0_8px_rgba(212,164,71,0.5)]" />
+                  <span className="absolute bottom-1 w-1 h-1 bg-[#2F9FE3] rounded-full shadow-[0_0_8px_rgba(47,159,227,0.6)]" />
                 )}
               </Link>
             );
@@ -77,7 +77,7 @@ export default function BottomNav({ user }: BottomNavProps) {
           {/* 5th Tab: More */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="flex-1 flex flex-col items-center justify-center h-full py-1 text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
+            className="flex-1 flex flex-col items-center justify-center h-full py-1 text-slate-500 hover:text-[#0B1E33] transition-colors cursor-pointer"
           >
             <MoreHorizontal size={20} className="stroke-[1.75]" />
             <span className="text-[10px] mt-1 tracking-tight">More</span>

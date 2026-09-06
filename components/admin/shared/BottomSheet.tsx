@@ -47,29 +47,29 @@ export default function BottomSheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+        className="fixed inset-0 bg-[#0B1E33]/40 backdrop-blur-xs transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Sheet Container */}
       <div
-        className={`relative w-full max-w-xl bg-[#141b24] border-t border-x border-white/[0.06] rounded-t-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.4)] flex flex-col z-10 ${maxHeight} transition-transform duration-300 ease-out`}
+        className={`relative w-full max-w-xl bg-white border-t border-x border-slate-200/80 rounded-t-[24px] shadow-[0_-8px_32px_rgba(11,30,51,0.12)] flex flex-col z-10 ${maxHeight} transition-transform duration-300 ease-out`}
         onClick={e => e.stopPropagation()}
       >
         {/* Top Handle */}
         <div className="w-full flex justify-center pt-3 pb-1 cursor-grab" onClick={onClose}>
-          <div className="w-10 h-1 rounded-full bg-[#d4a447]/30" />
+          <div className="w-10 h-1.5 rounded-full bg-slate-300 hover:bg-slate-400 transition-colors" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/[0.04] flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200/80 flex-shrink-0">
           <div>
-            <h2 className="text-lg font-bold text-[#f0f2f5] leading-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-[#8a95a5] mt-0.5">{subtitle}</p>}
+            <h2 className="text-lg font-bold text-[#0B1E33] leading-tight">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-[#0B1E33] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>

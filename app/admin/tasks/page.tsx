@@ -173,11 +173,11 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#f0f2f5] flex items-center gap-2">
-            <CheckSquare size={24} className="text-[#d4a447]" />
+          <h1 className="text-2xl font-extrabold text-[#0B1E33] flex items-center gap-2">
+            <CheckSquare size={24} className="text-[#EAA636]" />
             <span>Tasks & Follow-ups</span>
           </h1>
-          <p className="text-[#8a95a5] text-xs sm:text-sm mt-0.5">
+          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             Never miss a callback, roof estimate review, or site inspection
           </p>
         </div>
@@ -186,14 +186,14 @@ export default function TasksPage() {
           <button
             onClick={() => loadTasks(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-[#a0aab8] transition-colors cursor-pointer disabled:opacity-50"
+            className="p-2.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
+            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#EAA636]' : ''} />
           </button>
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-300 hover:to-orange-400 text-[#0c1117] font-bold rounded-xl text-xs sm:text-sm transition-all shadow-[0_2px_12px_rgba(0,0,0,0.2)] cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#EAA636] to-[#d49428] hover:from-[#f3b344] hover:to-[#d49428] text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-sm cursor-pointer active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>New Task</span>
@@ -203,30 +203,30 @@ export default function TasksPage() {
 
       {/* KPI Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Overdue</p>
-          <p className={`text-2xl font-extrabold mt-1 tabular-nums ${counts.overdue > 0 ? 'text-red-400' : 'text-[#8a95a5]'}`}>
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Overdue</p>
+          <p className={`text-2xl font-extrabold mt-1 tabular-nums ${counts.overdue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
             {counts.overdue}
           </p>
         </div>
 
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Due Today</p>
-          <p className="text-2xl font-extrabold text-[#d4a447] mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Due Today</p>
+          <p className="text-2xl font-extrabold text-[#EAA636] mt-1 tabular-nums">
             {counts.today}
           </p>
         </div>
 
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Upcoming</p>
-          <p className="text-2xl font-extrabold text-blue-400 mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Upcoming</p>
+          <p className="text-2xl font-extrabold text-[#1878B8] mt-1 tabular-nums">
             {counts.upcoming}
           </p>
         </div>
 
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Completed</p>
-          <p className="text-2xl font-extrabold text-emerald-400 mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Completed</p>
+          <p className="text-2xl font-extrabold text-emerald-600 mt-1 tabular-nums">
             {counts.completed}
           </p>
         </div>
@@ -234,15 +234,15 @@ export default function TasksPage() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="w-10 h-10 border-3 border-[#d4a447] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#8a95a5] text-sm">Loading tasks...</p>
+          <div className="w-10 h-10 border-3 border-[#2F9FE3] border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-500 text-sm">Loading tasks...</p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Overdue Tasks */}
           {grouped.overdue.length > 0 && (
-            <div className="space-y-3 bg-red-500/5 border border-red-500/20 rounded-[20px] p-5">
-              <h2 className="text-sm font-bold text-red-400 uppercase tracking-wider flex items-center gap-2">
+            <div className="space-y-3 bg-rose-50/50 border border-rose-200/80 rounded-[20px] p-5 shadow-xs">
+              <h2 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">
                 <AlertCircle size={16} />
                 Overdue Tasks ({grouped.overdue.length})
               </h2>
@@ -255,13 +255,13 @@ export default function TasksPage() {
           )}
 
           {/* Today's Tasks */}
-          <div className="space-y-3 admin-card rounded-[20px] p-5">
-            <h2 className="text-sm font-bold text-[#d4a447] uppercase tracking-wider flex items-center gap-2">
-              <Clock size={16} />
+          <div className="space-y-3 bg-white border border-slate-200/80 rounded-[20px] p-5 shadow-xs">
+            <h2 className="text-sm font-bold text-[#0B1E33] uppercase tracking-wider flex items-center gap-2">
+              <Clock size={16} className="text-[#EAA636]" />
               Today&apos;s Follow-ups ({grouped.today.length})
             </h2>
             {grouped.today.length === 0 ? (
-              <p className="text-xs text-[#5e6a7a] py-3 italic">All set for today! No pending follow-ups due.</p>
+              <p className="text-xs text-slate-400 py-3 italic">All set for today! No pending follow-ups due.</p>
             ) : (
               <div className="space-y-2.5">
                 {grouped.today.map(t => (
@@ -273,9 +273,9 @@ export default function TasksPage() {
 
           {/* Upcoming Tasks */}
           {grouped.upcoming.length > 0 && (
-            <div className="space-y-3 admin-card rounded-[20px] p-5">
-              <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                <Calendar size={16} />
+            <div className="space-y-3 bg-white border border-slate-200/80 rounded-[20px] p-5 shadow-xs">
+              <h2 className="text-sm font-bold text-[#0B1E33] uppercase tracking-wider flex items-center gap-2">
+                <Calendar size={16} className="text-[#1878B8]" />
                 Upcoming Schedule ({grouped.upcoming.length})
               </h2>
               <div className="space-y-2.5">
@@ -288,9 +288,9 @@ export default function TasksPage() {
 
           {/* Completed Tasks */}
           {grouped.completed.length > 0 && (
-            <div className="space-y-3 bg-[#141b24] border border-white/[0.04] rounded-[20px] p-5">
-              <h2 className="text-sm font-bold text-[#8a95a5] uppercase tracking-wider flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-400" />
+            <div className="space-y-3 bg-slate-50/70 border border-slate-200/80 rounded-[20px] p-5">
+              <h2 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-emerald-600" />
                 Completed ({grouped.completed.length})
               </h2>
               <div className="space-y-2.5">
@@ -312,34 +312,34 @@ export default function TasksPage() {
       >
         <form onSubmit={handleCreateTask} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Task Title *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Task Title *</label>
             <input
               type="text"
               required
               placeholder="e.g. Call homeowner about roof shingle color choices"
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 text-sm focus:outline-none focus:border-[#d4a447]"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-sm focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Due Date & Time *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Due Date & Time *</label>
               <input
                 type="datetime-local"
                 required
                 value={newDue}
                 onChange={e => setNewDue(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Priority</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Priority</label>
               <select
                 value={newPriority}
                 onChange={e => setNewPriority(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
               >
                 <option value="normal">Normal</option>
                 <option value="high">High</option>
@@ -350,20 +350,20 @@ export default function TasksPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Details (Optional)</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Details (Optional)</label>
             <textarea
               rows={2}
               placeholder="Additional instructions or notes..."
               value={newDesc}
               onChange={e => setNewDesc(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 text-xs focus:outline-none focus:border-[#d4a447]"
+              className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3] resize-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={creating}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] text-[#0c1117] font-bold text-sm shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:from-amber-300 hover:to-orange-400 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#EAA636] to-[#d49428] text-white font-bold text-sm shadow-sm hover:from-[#f3b344] hover:to-[#d49428] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <CheckSquare size={16} />
             {creating ? 'Saving...' : 'Save Task'}
@@ -391,44 +391,44 @@ function TaskCard({
     <div
       className={`flex items-start gap-3 p-3.5 sm:p-4 rounded-[16px] border transition-all ${
         isDone
-          ? 'bg-white/2 border-white/[0.04] opacity-60'
+          ? 'bg-slate-50 border-slate-200/60 opacity-60'
           : isOverdue
-          ? 'bg-red-500/[0.08] border-red-500/30'
-          : 'bg-[#1a2332] border-white/[0.06] hover:border-white/[0.12]'
+          ? 'bg-rose-50/80 border-rose-200'
+          : 'bg-white border-slate-200/80 hover:border-slate-300 shadow-2xs'
       }`}
     >
       <input
         type="checkbox"
         checked={isDone}
         onChange={e => onToggle(task.id, e.target.checked)}
-        className="mt-1 w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-amber-400 cursor-pointer flex-shrink-0"
+        className="mt-1 w-4 h-4 rounded border-slate-300 text-[#EAA636] focus:ring-[#EAA636] cursor-pointer flex-shrink-0"
       />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className={`text-sm font-semibold ${isDone ? 'line-through text-[#5e6a7a]' : 'text-[#f0f2f5]'}`}>
+          <p className={`text-sm font-semibold ${isDone ? 'line-through text-slate-400' : 'text-[#0B1E33]'}`}>
             {task.title}
           </p>
           {task.priority === 'urgent' && (
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30">
+            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
               Urgent
             </span>
           )}
           {task.priority === 'high' && (
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#d4a447]/20 text-[#d4a447] border border-[#d4a447]/30">
+            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
               High
             </span>
           )}
         </div>
 
         {task.description && (
-          <p className="text-xs text-[#8a95a5] mt-1 leading-relaxed">{task.description}</p>
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{task.description}</p>
         )}
 
-        <div className="flex items-center gap-3 mt-2 flex-wrap text-xs text-[#5e6a7a]">
+        <div className="flex items-center gap-3 mt-2 flex-wrap text-xs text-slate-400">
           <span className="flex items-center gap-1">
-            <Clock size={12} className={isOverdue ? 'text-red-400' : 'text-[#5e6a7a]'} />
-            <span className={isOverdue ? 'text-red-400 font-semibold' : ''}>
+            <Clock size={12} className={isOverdue ? 'text-rose-600' : 'text-slate-400'} />
+            <span className={isOverdue ? 'text-rose-600 font-semibold' : ''}>
               {formatDue(task.due_at)}
             </span>
           </span>
@@ -436,7 +436,7 @@ function TaskCard({
           {task.lead_name && (
             <Link
               href={`/admin/leads/${task.entity_id}`}
-              className="flex items-center gap-1 text-amber-400/80 hover:text-[#e8c06a] transition-colors font-medium"
+              className="flex items-center gap-1 text-[#1878B8] hover:text-[#0B1E33] transition-colors font-medium"
             >
               <User size={12} />
               <span>{task.lead_name}</span>

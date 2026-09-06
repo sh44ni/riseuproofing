@@ -56,10 +56,10 @@ interface ActiveJobOption {
 }
 
 const ROLES = [
-  { id: 'foreman', label: 'Foreman', color: 'bg-[#d4a447]/12 text-[#d4a447] border-[#d4a447]/25' },
-  { id: 'lead_installer', label: 'Lead Installer', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
-  { id: 'laborer', label: 'Laborer / Staging', color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
-  { id: 'sales', label: 'Sales / Inspection', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' },
+  { id: 'foreman', label: 'Foreman', color: 'bg-amber-50 text-amber-800 border-amber-200' },
+  { id: 'lead_installer', label: 'Lead Installer', color: 'bg-sky-50 text-[#1878B8] border-sky-200' },
+  { id: 'laborer', label: 'Laborer / Staging', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { id: 'sales', label: 'Sales / Inspection', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
 ];
 
 export default function CrewPage() {
@@ -223,14 +223,14 @@ export default function CrewPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
+          <div className="p-2.5 rounded-[16px] bg-amber-50 border border-amber-200 text-[#d49428]">
             <HardHat size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0B1E33]">
               Roofing Crew &amp; Dispatch Roster
             </h1>
-            <p className="text-xs sm:text-sm text-[#8a95a5]">
+            <p className="text-xs sm:text-sm text-slate-500">
               Manage field personnel, foreman assignments, and job site dispatch
             </p>
           </div>
@@ -243,15 +243,15 @@ export default function CrewPage() {
               fetchCrew();
             }}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.06] bg-[#141b24] hover:bg-[#1a2332] text-xs font-semibold text-[#a0aab8] transition-all duration-300 ease-out cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition-all duration-300 ease-out cursor-pointer"
           >
-            <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
+            <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#EAA636]' : ''} />
             Refresh
           </button>
 
           <button
             onClick={openAddModal}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#e8c06a] hover:to-[#c4923a] text-[#0c1117] font-bold text-xs shadow-[0_2px_12px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#EAA636] to-[#d49428] hover:from-[#f3b344] hover:to-[#d49428] text-white font-bold text-xs shadow-sm transition-all duration-300 ease-out cursor-pointer"
           >
             <Plus size={15} /> Add Team Member
           </button>
@@ -260,45 +260,45 @@ export default function CrewPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Total Crew</span>
-            <Users size={15} className="text-[#d4a447]" />
+            <Users size={15} className="text-[#d49428]" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.totalCrew}</div>
-          <div className="text-xs text-[#8a95a5] mt-1">{summary.activeCount} active on roster</div>
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.totalCrew}</div>
+          <div className="text-xs text-slate-500 mt-1">{summary.activeCount} active on roster</div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Dispatched on Jobs</span>
-            <Briefcase size={15} className="text-emerald-400" />
+            <Briefcase size={15} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.onJobCount}</div>
-          <div className="text-xs text-emerald-400 font-semibold mt-1">Currently on roof sites</div>
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.onJobCount}</div>
+          <div className="text-xs text-emerald-600 font-semibold mt-1">Currently on roof sites</div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Field Foremen</span>
-            <Shield size={15} className="text-blue-400" />
+            <Shield size={15} className="text-[#1878B8]" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.foremenCount}</div>
-          <div className="text-xs text-blue-400 font-semibold mt-1">OSHA &amp; site leads</div>
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.foremenCount}</div>
+          <div className="text-xs text-[#1878B8] font-semibold mt-1">OSHA &amp; site leads</div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Installers &amp; Stagers</span>
-            <HardHat size={15} className="text-purple-400" />
+            <HardHat size={15} className="text-purple-600" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.installerCount}</div>
-          <div className="text-xs text-purple-400 font-semibold mt-1">Certified applicators</div>
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.installerCount}</div>
+          <div className="text-xs text-purple-600 font-semibold mt-1">Certified applicators</div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-3 sm:p-4 rounded-[16px] admin-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
             { id: 'all', label: 'All Roles' },
@@ -312,8 +312,8 @@ export default function CrewPage() {
               onClick={() => setRoleFilter(tab.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ease-out whitespace-nowrap cursor-pointer ${
                 roleFilter === tab.id
-                  ? 'bg-[#d4a447] text-[#0c1117] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
-                  : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
+                  ? 'bg-[#EAA636] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200/80'
               }`}
             >
               {tab.label}
@@ -322,34 +322,34 @@ export default function CrewPage() {
         </div>
 
         <div className="relative flex-1 sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a95a5]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search name, phone, skill..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-400 text-xs focus:outline-none focus:border-[#d4a447]"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:bg-white focus:ring-1 focus:ring-[#2F9FE3]"
           />
         </div>
       </div>
 
       {/* Crew Grid */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-[#5e6a7a] gap-3">
-          <RefreshCw size={24} className="animate-spin text-[#d4a447]" />
-          <span className="text-xs font-semibold">Loading crew roster...</span>
+        <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
+          <RefreshCw size={24} className="animate-spin text-[#EAA636]" />
+          <span className="text-xs font-semibold text-slate-500">Loading crew roster...</span>
         </div>
       ) : filteredCrew.length === 0 ? (
-        <div className="py-16 text-center rounded-[16px] border border-white/[0.04] bg-[#141b24]/40">
-          <HardHat size={36} className="mx-auto text-slate-600 mb-3" />
-          <h3 className="text-sm font-bold text-[#f0f2f5] mb-1">No Crew Members Found</h3>
-          <p className="text-xs text-[#8a95a5] max-w-sm mx-auto">
+        <div className="py-16 text-center rounded-[16px] border border-slate-200/80 bg-white shadow-xs">
+          <HardHat size={36} className="mx-auto text-slate-400 mb-3" />
+          <h3 className="text-sm font-bold text-[#0B1E33] mb-1">No Crew Members Found</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
             {search ? 'Try adjusting your search query.' : 'Add your first roofing team member.'}
           </p>
           <div className="mt-4">
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#d4a447] text-[#0c1117] text-xs font-bold shadow-[0_2px_12px_rgba(0,0,0,0.2)]"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#EAA636] to-[#d49428] hover:from-[#f3b344] hover:to-[#d49428] text-white text-xs font-bold shadow-sm"
             >
               <Plus size={14} /> Add Crew Member
             </button>
@@ -364,13 +364,13 @@ export default function CrewPage() {
             return (
               <div
                 key={member.id}
-                className="p-5 rounded-[20px] admin-card space-y-4 hover:border-white/[0.12] transition-all duration-300 ease-out shadow-[0_2px_12px_rgba(0,0,0,0.2)] flex flex-col justify-between"
+                className="p-5 rounded-[20px] bg-white border border-slate-200/80 space-y-4 hover:border-slate-300 hover:shadow-md transition-all duration-300 ease-out shadow-xs flex flex-col justify-between"
               >
                 <div>
                   {/* Top row: Name & Role Badge */}
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="text-base font-black text-[#f0f2f5]">{member.name}</h3>
+                      <h3 className="text-base font-black text-[#0B1E33]">{member.name}</h3>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span
                           className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${roleMeta.color}`}
@@ -378,7 +378,7 @@ export default function CrewPage() {
                           {roleMeta.label}
                         </span>
                         {!member.active && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1a2332] text-[#5e6a7a] border border-white/[0.04]">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
                             Inactive
                           </span>
                         )}
@@ -388,14 +388,14 @@ export default function CrewPage() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEditModal(member)}
-                        className="p-1.5 rounded-lg text-[#8a95a5] hover:text-[#f0f2f5] hover:bg-[#1a2332] transition-all duration-300 ease-out"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-300 ease-out"
                         title="Edit Crew Member"
                       >
                         <Edit2 size={14} />
                       </button>
                       <button
                         onClick={() => handleDelete(member.id)}
-                        className="p-1.5 rounded-lg text-[#5e6a7a] hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-300 ease-out"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all duration-300 ease-out"
                         title="Delete"
                       >
                         <Trash2 size={14} />
@@ -408,13 +408,13 @@ export default function CrewPage() {
                     <div className="flex items-center gap-2 pt-3">
                       <a
                         href={`tel:${member.phone.replace(/\D/g, '')}`}
-                        className="flex-1 py-1.5 px-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-300 ease-out"
+                        className="flex-1 py-1.5 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-300 ease-out"
                       >
                         <Phone size={13} /> {member.phone}
                       </a>
                       <a
                         href={`sms:${member.phone.replace(/\D/g, '')}`}
-                        className="p-1.5 px-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-out"
+                        className="p-1.5 px-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#1878B8] border border-sky-200 text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-out"
                         title="Send SMS"
                       >
                         <MessageSquare size={13} />
@@ -428,7 +428,7 @@ export default function CrewPage() {
                       {member.skills.map((s, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.04] text-[10px] text-[#a0aab8] capitalize"
+                          className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] text-slate-600 capitalize font-medium"
                         >
                           {s}
                         </span>
@@ -438,44 +438,44 @@ export default function CrewPage() {
 
                   {/* Notes */}
                   {member.notes && (
-                    <p className="text-xs text-[#8a95a5] pt-2 italic line-clamp-2">
+                    <p className="text-xs text-slate-500 pt-2 italic line-clamp-2">
                       &quot;{member.notes}&quot;
                     </p>
                   )}
                 </div>
 
                 {/* Job Dispatch Status Card */}
-                <div className="pt-3 border-t border-white/[0.04] space-y-2">
+                <div className="pt-3 border-t border-slate-100 space-y-2">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-semibold text-[#8a95a5] uppercase tracking-wider">
+                    <span className="font-semibold text-slate-400 uppercase tracking-wider">
                       Current Dispatch
                     </span>
                     {isAssigned ? (
-                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <span className="text-emerald-700 font-bold flex items-center gap-1">
                         <CheckCircle2 size={12} /> Assigned
                       </span>
                     ) : (
-                      <span className="text-[#5e6a7a] font-semibold">Standby / Unassigned</span>
+                      <span className="text-slate-400 font-semibold">Standby / Unassigned</span>
                     )}
                   </div>
 
                   {isAssigned && member.job_number && (
-                    <div className="p-2.5 rounded-xl bg-[#0a0f14] border border-white/[0.04] text-xs space-y-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-0.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-[#d4a447]">
+                        <span className="font-mono font-bold text-[#1878B8]">
                           {member.job_number}
                         </span>
                         <Link
                           href={`/admin/jobs/${member.current_job_id}`}
-                          className="text-[#8a95a5] hover:text-[#f0f2f5] flex items-center gap-1 text-[11px]"
+                          className="text-slate-500 hover:text-[#0B1E33] flex items-center gap-1 text-[11px]"
                         >
                           View Job <ExternalLink size={10} />
                         </Link>
                       </div>
-                      <div className="font-semibold text-[#f0f2f5] truncate">
+                      <div className="font-semibold text-[#0B1E33] truncate">
                         {member.current_job_customer}
                       </div>
-                      <div className="text-[#8a95a5] text-[11px] truncate flex items-center gap-1">
+                      <div className="text-slate-500 text-[11px] truncate flex items-center gap-1">
                         <MapPin size={10} /> {member.current_job_address}, {member.current_job_city}
                       </div>
                     </div>
@@ -486,7 +486,7 @@ export default function CrewPage() {
                     <select
                       value={member.current_job_id || ''}
                       onChange={e => handleQuickAssign(member.id, e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-[11px] focus:outline-none focus:border-[#d4a447] cursor-pointer"
+                      className="w-full px-2.5 py-1.5 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-[11px] focus:outline-none focus:border-[#2F9FE3] cursor-pointer"
                     >
                       <option value="">-- No Active Job (Standby) --</option>
                       {jobs.map(j => (
@@ -514,35 +514,35 @@ export default function CrewPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Full Name</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Carlos Ramirez"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Mobile Phone</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone</label>
                 <input
                   type="text"
                   placeholder="(760) 555-0199"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Role</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Role</label>
               <select
                 value={role}
                 onChange={e => setRole(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
               >
                 <option value="foreman">Foreman / Job Site Lead</option>
                 <option value="lead_installer">Lead Installer</option>
@@ -552,7 +552,7 @@ export default function CrewPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Skills &amp; Certifications (Comma-separated)
               </label>
               <input
@@ -567,18 +567,18 @@ export default function CrewPage() {
                       .filter(Boolean)
                   )
                 }
-                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Assign to Active Job
               </label>
               <select
                 value={currentJobId}
                 onChange={e => setCurrentJobId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447]"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
               >
                 <option value="">Standby (No active job)</option>
                 {jobs.map(j => (
@@ -590,13 +590,13 @@ export default function CrewPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Notes</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Notes</label>
               <textarea
                 rows={2}
                 placeholder="e.g. Owens Corning certified applicator. Fluent in Spanish & English."
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] text-xs focus:outline-none focus:border-[#d4a447] resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3] resize-none"
               />
             </div>
 
@@ -604,7 +604,7 @@ export default function CrewPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#e8c06a] hover:to-[#c4923a] text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] transition-all duration-300 ease-out cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#EAA636] to-[#d49428] hover:from-[#f3b344] hover:to-[#d49428] text-white font-bold text-xs shadow-sm transition-all duration-300 ease-out cursor-pointer disabled:opacity-50"
               >
                 {submitting ? 'Saving...' : editingMember ? 'Update Team Member' : 'Add to Crew Roster'}
               </button>

@@ -45,24 +45,24 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-[16px] admin-card border-none">
+    <div className="overflow-x-auto rounded-[16px] admin-card border border-slate-200/80 bg-white shadow-xs">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/[0.06] bg-white/[0.03]">
+          <tr className="border-b border-slate-200/80 bg-slate-50/80">
             {['Lead / Contact', 'Priority', 'Service & Roof', 'Location', 'Date', 'Status', 'Actions'].map(h => (
               <th
                 key={h}
-                className="text-left px-4 py-3 text-[#8a95a5] font-semibold text-[11px] uppercase tracking-widest whitespace-nowrap admin-section-label"
+                className="text-left px-4 py-3 text-slate-500 font-bold text-[11px] uppercase tracking-wider whitespace-nowrap admin-section-label"
               >
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.04]">
+        <tbody className="divide-y divide-slate-100">
           {leads.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-4 py-12 text-center text-[#5e6a7a] text-sm">
+              <td colSpan={7} className="px-4 py-12 text-center text-slate-500 text-sm">
                 No matching leads found
               </td>
             </tr>
@@ -70,38 +70,38 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
           {leads.map(lead => (
             <React.Fragment key={lead.id}>
               <tr
-                className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
                 onClick={() => setExpanded(expanded === lead.id ? null : lead.id)}
               >
                 {/* Name & Contact */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#d4a447] to-[#c4923a] flex items-center justify-center text-[#0c1117] font-bold text-xs flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-xs">
                         {lead.full_name ? lead.full_name[0].toUpperCase() : '?'}
                       </div>
                       {lead.priority === 'hot' && (
-                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-[#0c1117] admin-pulse-gold" />
+                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white admin-pulse-gold" />
                       )}
                     </div>
                     <div>
                       <Link
                         href={`/admin/leads/${lead.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="text-[#f0f2f5] font-medium hover:text-[#d4a447] transition-colors flex items-center gap-1"
+                        className="text-[#0B1E33] font-bold hover:text-[#1878B8] transition-colors flex items-center gap-1"
                       >
                         <span>{lead.full_name}</span>
-                        <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#8a95a5]" />
+                        <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
                       </Link>
                       <div className="flex items-center gap-2 mt-0.5">
                         {lead.phone && (
-                          <span className="text-[#8a95a5] text-xs flex items-center gap-1">
-                            <Phone size={10} className="text-[#5e6a7a]" />
+                          <span className="text-slate-500 text-xs flex items-center gap-1">
+                            <Phone size={10} className="text-slate-400" />
                             {lead.phone}
                           </span>
                         )}
                         {lead.email && (
-                          <span className="text-[#5e6a7a] text-xs truncate max-w-[140px]">
+                          <span className="text-slate-400 text-xs truncate max-w-[140px]">
                             {lead.email}
                           </span>
                         )}
@@ -115,17 +115,17 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
                   {lead.priority ? (
                     <StatusBadge priority={lead.priority} size="sm" />
                   ) : (
-                    <span className="text-[#5e6a7a] text-xs">—</span>
+                    <span className="text-slate-400 text-xs">—</span>
                   )}
                 </td>
 
                 {/* Service & Roof Specs */}
                 <td className="px-4 py-3">
                   <div className="space-y-0.5">
-                    <p className="text-[#f0f2f5] capitalize font-medium">{lead.service_type ?? 'Roofing'}</p>
+                    <p className="text-[#0B1E33] capitalize font-semibold">{lead.service_type ?? 'Roofing'}</p>
                     {lead.roof_sqf && lead.roof_sqf > 0 && (
-                      <p className="text-[#8a95a5] text-xs flex items-center gap-1">
-                        <Home size={11} className="text-[#5e6a7a]" />
+                      <p className="text-slate-500 text-xs flex items-center gap-1">
+                        <Home size={11} className="text-slate-400" />
                         {lead.roof_sqf.toLocaleString()} sq ft {lead.roof_type ? `(${lead.roof_type})` : ''}
                       </p>
                     )}
@@ -133,21 +133,21 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
                 </td>
 
                 {/* Location */}
-                <td className="px-4 py-3 text-[#a0aab8]">
+                <td className="px-4 py-3 text-slate-600">
                   {lead.address || lead.zip ? (
-                    <div className="flex items-center gap-1 text-xs text-[#8a95a5] max-w-[160px] truncate">
-                      <MapPin size={11} className="text-[#5e6a7a] flex-shrink-0" />
+                    <div className="flex items-center gap-1 text-xs text-slate-500 max-w-[160px] truncate">
+                      <MapPin size={11} className="text-slate-400 flex-shrink-0" />
                       <span className="truncate">{lead.address ? `${lead.address}${lead.zip ? `, ${lead.zip}` : ''}` : `ZIP ${lead.zip}`}</span>
                     </div>
                   ) : (
-                    <span className="text-[#5e6a7a] text-xs">—</span>
+                    <span className="text-slate-400 text-xs">—</span>
                   )}
                 </td>
 
                 {/* Date */}
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-1 text-[#8a95a5] whitespace-nowrap text-xs">
-                    <Clock size={11} className="text-[#5e6a7a]" />
+                  <div className="flex items-center gap-1 text-slate-500 whitespace-nowrap text-xs">
+                    <Clock size={11} className="text-slate-400" />
                     <span>{formatDate(lead.created_at)}</span>
                   </div>
                 </td>
@@ -161,10 +161,10 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
                       onStatusChange(lead.id, e.target.value);
                     }}
                     onClick={e => e.stopPropagation()}
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full border border-white/[0.06] bg-[#1a2332] text-[#f0f2f5] cursor-pointer outline-none hover:border-white/[0.12]"
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-700 cursor-pointer outline-none hover:border-slate-300"
                   >
                     {STATUSES.map(s => (
-                      <option key={s} value={s} className="bg-[#141b24] text-[#f0f2f5] capitalize">
+                      <option key={s} value={s} className="bg-white text-slate-800 capitalize">
                         {s}
                       </option>
                     ))}
@@ -177,11 +177,11 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
                     <Link
                       href={`/admin/leads/${lead.id}`}
                       onClick={e => e.stopPropagation()}
-                      className="px-2.5 py-1 rounded-[8px] bg-[#d4a447]/10 hover:bg-[#d4a447]/20 text-[#d4a447] text-xs font-semibold transition-colors"
+                      className="px-2.5 py-1 rounded-[8px] bg-sky-50 hover:bg-sky-100 text-[#1878B8] border border-sky-200 text-xs font-bold transition-colors"
                     >
                       Detail
                     </Link>
-                    <span className="text-[#5e6a7a] text-xs w-4 inline-block text-center">
+                    <span className="text-slate-400 text-xs w-4 inline-block text-center">
                       {expanded === lead.id ? '▲' : '▼'}
                     </span>
                   </div>
@@ -190,31 +190,31 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
 
               {/* Accordion Quick Preview */}
               {expanded === lead.id && (
-                <tr key={`${lead.id}-detail`} className="bg-[#141b24]/50">
-                  <td colSpan={7} className="px-6 py-4 border-t border-white/[0.04]">
+                <tr key={`${lead.id}-detail`} className="bg-slate-50/80">
+                  <td colSpan={7} className="px-6 py-4 border-t border-slate-200/60">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                       {lead.address && (
                         <div>
-                          <p className="text-[#5e6a7a] mb-0.5 font-medium">Address</p>
-                          <p className="text-[#f0f2f5]">{lead.address}{lead.zip ? `, ${lead.zip}` : ''}</p>
+                          <p className="text-slate-500 mb-0.5 font-bold uppercase tracking-wider text-[10px]">Address</p>
+                          <p className="text-[#0B1E33] font-medium">{lead.address}{lead.zip ? `, ${lead.zip}` : ''}</p>
                         </div>
                       )}
                       {lead.roof_type && (
                         <div>
-                          <p className="text-[#5e6a7a] mb-0.5 font-medium">Roof Material</p>
-                          <p className="text-[#f0f2f5]">{lead.roof_type}</p>
+                          <p className="text-slate-500 mb-0.5 font-bold uppercase tracking-wider text-[10px]">Roof Material</p>
+                          <p className="text-[#0B1E33] font-medium">{lead.roof_type}</p>
                         </div>
                       )}
                       {lead.notes && (
                         <div>
-                          <p className="text-[#5e6a7a] mb-0.5 font-medium">Internal Notes</p>
-                          <p className="text-[#f0f2f5]">{lead.notes}</p>
+                          <p className="text-slate-500 mb-0.5 font-bold uppercase tracking-wider text-[10px]">Internal Notes</p>
+                          <p className="text-[#0B1E33] font-medium">{lead.notes}</p>
                         </div>
                       )}
                       {lead.message && (
                         <div className="col-span-2">
-                          <p className="text-[#5e6a7a] mb-0.5 font-medium">Client Submission Message</p>
-                          <p className="text-[#f0f2f5]">{lead.message}</p>
+                          <p className="text-slate-500 mb-0.5 font-bold uppercase tracking-wider text-[10px]">Client Submission Message</p>
+                          <p className="text-[#0B1E33] font-medium">{lead.message}</p>
                         </div>
                       )}
                     </div>

@@ -349,14 +349,14 @@ export default function ReviewsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
+          <div className="p-2.5 rounded-[16px] bg-sky-50 border border-sky-200/80 text-[#1878B8]">
             <Star size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0B1E33]">
               Reputation &amp; Google Review Engine
             </h1>
-            <p className="text-xs sm:text-sm text-[#8a95a5] mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
               Automated 5-star Google review generation with private feedback resolution.
             </p>
           </div>
@@ -368,7 +368,7 @@ export default function ReviewsPage() {
             setFormData({ customerName: '', customerCity: 'Carlsbad', serviceType: 'Roof Replacement', leadId: '' });
             setIsModalOpen(true);
           }}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-300 hover:to-orange-400 text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] active:scale-95 transition-all cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#EAA636] hover:bg-[#d49428] text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer"
         >
           <Plus size={16} /> Send Review Request
         </button>
@@ -379,14 +379,14 @@ export default function ReviewsPage() {
         <div
           className={`p-3.5 rounded-xl border text-xs flex items-center justify-between ${
             syncFeedback.type === 'success'
-              ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-              : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
           }`}
         >
           <span>{syncFeedback.message}</span>
           <button
             onClick={() => setSyncFeedback(null)}
-            className="p-1 hover:text-white transition-colors"
+            className="p-1 hover:text-slate-900 transition-colors"
           >
             <X size={14} />
           </button>
@@ -394,28 +394,28 @@ export default function ReviewsPage() {
       )}
 
       {/* Google Business Profile Auto-Sync Panel */}
-      <div className="p-4 rounded-[18px] admin-card border border-white/[0.08] bg-gradient-to-r from-[#111923] to-[#14202e] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+      <div className="p-4 rounded-[18px] bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-            <Globe className="w-5 h-5 text-blue-400" />
+          <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-200/80 flex items-center justify-center flex-shrink-0">
+            <Globe className="w-5 h-5 text-[#1878B8]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[#f0f2f5]">
+              <h2 className="text-sm font-bold text-[#0B1E33]">
                 {googleSync.businessName || 'Google Business Profile Sync'}
               </h2>
               {googleSync.isConnected ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Auto-Sync Active (Weekly Mondays 3AM UTC)
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                   Not Connected
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[#8a95a5] mt-0.5">
+            <p className="text-[11px] text-slate-500 mt-0.5">
               {googleSync.isConnected ? (
                 <>
                   Last Synced:{' '}
@@ -437,14 +437,14 @@ export default function ReviewsPage() {
               <button
                 onClick={handleManualGoogleSync}
                 disabled={syncingGoogle}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#1878B8] border border-sky-200/80 font-bold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-2xs"
               >
                 <RefreshCw size={13} className={syncingGoogle ? 'animate-spin' : ''} />
                 <span>{syncingGoogle ? 'Syncing...' : 'Sync Reviews Now'}</span>
               </button>
               <a
                 href="/api/admin/google-auth"
-                className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] text-xs font-semibold transition-all"
+                className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-[#0B1E33] border border-slate-200/80 text-xs font-semibold transition-all shadow-2xs"
                 title="Reconnect Google Account"
               >
                 Reconnect
@@ -453,7 +453,7 @@ export default function ReviewsPage() {
           ) : (
             <a
               href="/api/admin/google-auth"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2F9FE3] hover:bg-[#1878B8] text-white font-bold text-xs shadow-xs transition-all"
             >
               <Globe size={14} />
               <span>Connect Google Account</span>
@@ -463,33 +463,33 @@ export default function ReviewsPage() {
       </div>
 
       {/* Yelp Business Profile Auto-Sync Panel */}
-      <div className="p-4 rounded-[18px] admin-card border border-white/[0.08] bg-gradient-to-r from-[#1b1418] to-[#20141a] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+      <div className="p-4 rounded-[18px] bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-[#d32323]/10 border border-[#d32323]/25 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200/80 flex items-center justify-center flex-shrink-0">
             <YelpLogo className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-sm font-bold text-[#f0f2f5]">
+              <h2 className="text-sm font-bold text-[#0B1E33]">
                 {yelpSync.businessName || 'Yelp Business Profile Sync'}
               </h2>
               {yelpSync.isConnected ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Yelp Fusion Connected (Weekly Sync Active)
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                   Not Configured
                 </span>
               )}
               {yelpSync.businessRating && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#d32323]/15 text-[#ff6b6b] border border-[#d32323]/30">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                   ★ {yelpSync.businessRating.toFixed(1)} ({yelpSync.businessReviewCount} on Yelp)
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[#8a95a5] mt-0.5">
+            <p className="text-[11px] text-slate-500 mt-0.5">
               {yelpSync.isConnected ? (
                 <>
                   Last Synced:{' '}
@@ -510,7 +510,7 @@ export default function ReviewsPage() {
           <button
             onClick={handleManualYelpSync}
             disabled={syncingYelp}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#d32323]/20 hover:bg-[#d32323]/30 text-[#ff8e8e] border border-[#d32323]/40 font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 font-bold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-2xs"
           >
             <RefreshCw size={13} className={syncingYelp ? 'animate-spin' : ''} />
             <span>{syncingYelp ? 'Syncing...' : 'Sync Yelp Reviews Now'}</span>
@@ -520,7 +520,7 @@ export default function ReviewsPage() {
               href={yelpSync.businessUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] text-xs font-semibold transition-all"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-[#0B1E33] border border-slate-200/80 text-xs font-semibold transition-all shadow-2xs"
               title="View on Yelp"
             >
               <span>View Listing</span>
@@ -532,56 +532,56 @@ export default function ReviewsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Average Rating</span>
-            <Star size={15} className="text-[#d4a447] fill-amber-400" />
+            <Star size={15} className="text-[#EAA636] fill-amber-400" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5] flex items-center gap-1.5">
-            {summary.avgRating} <span className="text-sm font-semibold text-[#8a95a5]">/ 5.0</span>
+          <div className="text-2xl font-black text-[#0B1E33] flex items-center gap-1.5">
+            {summary.avgRating} <span className="text-sm font-semibold text-slate-400">/ 5.0</span>
           </div>
-          <div className="text-xs text-emerald-400 font-semibold mt-1">Excellent Reputation</div>
+          <div className="text-xs text-emerald-700 font-semibold mt-1">Excellent Reputation</div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>5-Star Promoters</span>
-            <TrendingUp size={15} className="text-emerald-400" />
+            <TrendingUp size={15} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.fiveStarPct}%</div>
-          <div className="text-xs text-[#8a95a5] font-medium mt-1">{summary.totalReviews} Total Verified</div>
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.fiveStarPct}%</div>
+          <div className="text-xs text-slate-500 font-medium mt-1">{summary.totalReviews} Total Verified</div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Google Profile Boost</span>
-            <Globe size={15} className="text-cyan-400" />
+            <Globe size={15} className="text-[#1878B8]" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.googleClickedCount}</div>
-          <div className="text-xs text-cyan-400 font-semibold mt-1">Confirmed Google Clicks</div>
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.googleClickedCount}</div>
+          <div className="text-xs text-sky-700 font-semibold mt-1">Confirmed Google Clicks</div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Private Escalations</span>
-            <AlertTriangle size={15} className="text-rose-400" />
+            <AlertTriangle size={15} className="text-rose-600" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">{summary.escalatedCount}</div>
-          <div className="text-xs text-rose-400 font-semibold mt-1">
+          <div className="text-2xl font-black text-[#0B1E33]">{summary.escalatedCount}</div>
+          <div className="text-xs text-rose-700 font-semibold mt-1">
             {summary.escalatedCount > 0 ? 'Requires Owner Follow-up' : 'Zero Active Complaints'}
           </div>
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="p-4 rounded-[16px] admin-card flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'all'
-                ? 'bg-[#d4a447] text-[#0c1117] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
-                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
+                ? 'bg-[#EAA636] text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200/60'
             }`}
           >
             All Reviews
@@ -590,8 +590,8 @@ export default function ReviewsPage() {
             onClick={() => setStatusFilter('published')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'published'
-                ? 'bg-emerald-500 text-[#f0f2f5] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
-                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200/60'
             }`}
           >
             Published on Website
@@ -600,8 +600,8 @@ export default function ReviewsPage() {
             onClick={() => setStatusFilter('escalated')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
               statusFilter === 'escalated'
-                ? 'bg-rose-500 text-[#f0f2f5] shadow-[0_1px_4px_rgba(0,0,0,0.15)]'
-                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200/60'
             }`}
           >
             <AlertTriangle size={12} /> Needs Attention
@@ -612,7 +612,7 @@ export default function ReviewsPage() {
           <select
             value={ratingFilter}
             onChange={e => setRatingFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-xs text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
+            className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-[#0B1E33] focus:outline-none focus:border-[#2F9FE3] shadow-2xs"
           >
             <option value="all">All Star Ratings</option>
             <option value="5">5 Stars Only ★★★★★</option>
@@ -621,13 +621,13 @@ export default function ReviewsPage() {
           </select>
 
           <div className="relative flex-1 md:w-52">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a95a5]" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search customer, city..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 text-xs focus:outline-none focus:border-[#d4a447]"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 text-xs focus:outline-none focus:border-[#2F9FE3] shadow-2xs"
             />
           </div>
         </div>
@@ -635,14 +635,14 @@ export default function ReviewsPage() {
 
       {/* Reviews Feed */}
       {loading ? (
-        <div className="p-12 text-center text-[#8a95a5] text-sm flex items-center justify-center gap-2">
-          <Sparkles size={16} className="text-[#d4a447] animate-spin" /> Loading customer reviews...
+        <div className="p-12 text-center text-slate-500 text-sm flex items-center justify-center gap-2">
+          <Sparkles size={16} className="text-[#1878B8] animate-spin" /> Loading customer reviews...
         </div>
       ) : filteredReviews.length === 0 ? (
-        <div className="p-12 text-center rounded-[20px] admin-card">
-          <Star size={36} className="text-[#4a5568] mx-auto mb-3" />
-          <h3 className="text-[#f0f2f5] font-bold text-base">No Reviews Found</h3>
-          <p className="text-[#8a95a5] text-xs mt-1">Send your first review request to a completed roofing job.</p>
+        <div className="p-12 text-center rounded-[20px] bg-white border border-slate-200/80 shadow-xs">
+          <Star size={36} className="text-slate-300 mx-auto mb-3" />
+          <h3 className="text-[#0B1E33] font-bold text-base">No Reviews Found</h3>
+          <p className="text-slate-500 text-xs mt-1">Send your first review request to a completed roofing job.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -654,10 +654,10 @@ export default function ReviewsPage() {
             return (
               <div
                 key={r.id}
-                className={`p-5 rounded-[20px] border transition-all flex flex-col justify-between ${
+                className={`p-5 rounded-[20px] border transition-all flex flex-col justify-between shadow-xs ${
                   isEscalated
-                    ? 'bg-rose-950/20 border-rose-500/40'
-                    : 'bg-[#141b24] border-white/[0.06] hover:border-[#d4a447]/25'
+                    ? 'bg-rose-50/50 border-rose-300'
+                    : 'bg-white border-slate-200/80 hover:border-sky-300'
                 }`}
               >
                 <div>
@@ -670,23 +670,23 @@ export default function ReviewsPage() {
                           size={16}
                           className={
                             star <= r.rating
-                              ? 'text-[#d4a447] fill-amber-400'
-                              : 'text-[#4a5568]'
+                              ? 'text-[#EAA636] fill-amber-400'
+                              : 'text-slate-200'
                           }
                         />
                       ))}
-                      <span className="text-xs font-bold text-[#f0f2f5] ml-1.5">{r.rating}.0</span>
+                      <span className="text-xs font-bold text-[#0B1E33] ml-1.5">{r.rating}.0</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       {r.source === 'yelp' && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#d32323]/20 text-[#ff8e8e] border border-[#d32323]/30 text-[10px] font-bold flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold flex items-center gap-1">
                           <YelpLogo className="w-2.5 h-2.5" /> Yelp
                         </span>
                       )}
 
                       {(r.source === 'google' || r.google_clicked) && (
-                        <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full bg-sky-50 text-[#1878B8] border border-sky-200 text-[10px] font-bold flex items-center gap-1">
                           <Globe size={10} /> Google
                         </span>
                       )}
@@ -694,10 +694,10 @@ export default function ReviewsPage() {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           isPublished
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : isEscalated
-                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                            : 'bg-[#d4a447]/20 text-[#d4a447] border border-[#d4a447]/30'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-amber-50 text-amber-800 border border-amber-200'
                         }`}
                       >
                         {r.status}
@@ -711,10 +711,10 @@ export default function ReviewsPage() {
                       <img
                         src={r.author_photo}
                         alt={r.customer_name}
-                        className="w-10 h-10 rounded-full object-cover border border-white/10 shadow-xs flex-shrink-0"
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-2xs flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-sky-50 border border-sky-200 text-[#1878B8] flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {r.customer_name
                           .split(' ')
                           .map(n => n[0])
@@ -723,24 +723,24 @@ export default function ReviewsPage() {
                       </div>
                     )}
                     <div>
-                      <h3 className="text-base font-black text-[#f0f2f5]">{r.customer_name}</h3>
-                      <div className="flex items-center gap-2 text-xs text-[#8a95a5] mt-0.5">
+                      <h3 className="text-base font-black text-[#0B1E33]">{r.customer_name}</h3>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                         <span>{r.customer_city || 'San Diego County, CA'}</span>
                         <span>•</span>
-                        <span className="text-[#d4a447] font-semibold">{r.service_type || 'Roofing Service'}</span>
+                        <span className="text-[#1878B8] font-semibold">{r.service_type || 'Roofing Service'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Feedback Quote */}
-                  <div className="mt-3 p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] text-xs text-[#c8cfd8] leading-relaxed italic">
+                  <div className="mt-3 p-3.5 rounded-[16px] bg-slate-50 border border-slate-200/80 text-xs text-slate-700 leading-relaxed italic">
                     "{r.feedback || 'Homeowner submitted star rating without additional comments.'}"
                   </div>
 
                   {/* Owner Reply if present */}
                   {r.owner_reply && (
-                    <div className="mt-2.5 p-3 rounded-[14px] bg-blue-950/20 border border-blue-500/20 text-xs text-blue-200">
-                      <span className="font-bold text-[10px] uppercase tracking-wider text-blue-400 block mb-0.5">
+                    <div className="mt-2.5 p-3 rounded-[14px] bg-sky-50 border border-sky-200 text-xs text-[#1878B8]">
+                      <span className="font-bold text-[10px] uppercase tracking-wider text-[#1878B8] block mb-0.5">
                         Rise Up Response:
                       </span>
                       "{r.owner_reply}"
@@ -749,13 +749,13 @@ export default function ReviewsPage() {
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="pt-4 mt-4 border-t border-white/[0.04] flex items-center justify-between gap-2">
+                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleStatusToggle(r.id, r.status)}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                       isPublished
-                        ? 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5]'
-                        : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'
+                        ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80'
+                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                     }`}
                   >
                     {isPublished ? 'Unpublish' : 'Publish to Website'}
@@ -765,11 +765,11 @@ export default function ReviewsPage() {
                     {r.review_token && (
                       <button
                         onClick={() => handleCopyLink(r.review_token!)}
-                        className="p-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#a0aab8] text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/60 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
                         title="Copy Public Review Portal Link"
                       >
                         {copiedToken === r.review_token ? (
-                          <Check size={13} className="text-emerald-400" />
+                          <Check size={13} className="text-emerald-600" />
                         ) : (
                           <Copy size={13} />
                         )}
@@ -781,7 +781,7 @@ export default function ReviewsPage() {
                         href={r.yelp_review_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#ff8e8e] transition-colors"
+                        className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors"
                         title="View Review on Yelp"
                       >
                         <ExternalLink size={13} />
@@ -792,7 +792,7 @@ export default function ReviewsPage() {
                       <Link
                         href={`/review/${r.review_token}`}
                         target="_blank"
-                        className="p-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-cyan-300 transition-colors"
+                        className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#1878B8] border border-sky-200 transition-colors"
                         title="View Homeowner Review Page"
                       >
                         <ExternalLink size={13} />
@@ -801,7 +801,7 @@ export default function ReviewsPage() {
 
                     <button
                       onClick={() => handleDelete(r.id)}
-                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer"
                       title="Delete Review"
                     >
                       <Trash2 size={13} />
@@ -817,19 +817,19 @@ export default function ReviewsPage() {
       {/* Modal: Send Review Request */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-sm backdrop-blur-sm backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setIsModalOpen(false)} />
 
-          <div className="relative w-full max-w-lg bg-[#141b24] border border-white/[0.10] rounded-[20px] p-6 sm:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.4)] z-10 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-[20px] p-6 sm:p-8 shadow-2xl z-10 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-400/10 text-[#d4a447]">
+                <div className="p-2 rounded-xl bg-amber-50 text-[#EAA636] border border-amber-200/80">
                   <Star size={20} />
                 </div>
-                <h2 className="text-lg font-black text-[#f0f2f5]">Send Google Review Request</h2>
+                <h2 className="text-lg font-black text-[#0B1E33]">Send Google Review Request</h2>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -837,22 +837,22 @@ export default function ReviewsPage() {
 
             {requestResult ? (
               <div className="space-y-4 text-center py-2">
-                <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
                   <CheckCircle2 size={32} />
                 </div>
-                <h3 className="text-base font-bold text-[#f0f2f5]">Review Request Created!</h3>
-                <p className="text-xs text-[#8a95a5]">
+                <h3 className="text-base font-bold text-[#0B1E33]">Review Request Created!</h3>
+                <p className="text-xs text-slate-500">
                   Share this personalized link with {requestResult.review.customer_name} via SMS or Email:
                 </p>
 
-                <div className="p-3 rounded-[16px] bg-[#0c1117] border border-[#d4a447]/25 flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs text-[#d4a447] truncate">{requestResult.link}</span>
+                <div className="p-3 rounded-[16px] bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs text-[#1878B8] truncate">{requestResult.link}</span>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(requestResult.link);
                       alert('Copied to clipboard!');
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-[#d4a447] text-[#0c1117] font-bold text-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
+                    className="px-3 py-1.5 rounded-lg bg-[#EAA636] text-white font-bold text-xs flex items-center gap-1 cursor-pointer flex-shrink-0 shadow-xs"
                   >
                     <Copy size={12} /> Copy
                   </button>
@@ -861,7 +861,7 @@ export default function ReviewsPage() {
                 <div className="pt-3">
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#f0f2f5] font-semibold text-xs transition-colors"
+                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors"
                   >
                     Done
                   </button>
@@ -870,35 +870,35 @@ export default function ReviewsPage() {
             ) : (
               <form onSubmit={handleSendRequest} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-semibold text-[#a0aab8] mb-1">Customer Full Name</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Customer Full Name</label>
                   <input
                     type="text"
                     placeholder="e.g. Richard Henderson"
                     value={formData.customerName}
                     onChange={e => setFormData({ ...formData, customerName: e.target.value })}
                     required
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] placeholder-slate-500 focus:outline-none focus:border-[#d4a447]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 focus:outline-none focus:border-[#2F9FE3] focus:bg-white shadow-2xs"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-[#a0aab8] mb-1">City / Region</label>
+                    <label className="block font-semibold text-slate-700 mb-1">City / Region</label>
                     <input
                       type="text"
                       placeholder="e.g. Oceanside"
                       value={formData.customerCity}
                       onChange={e => setFormData({ ...formData, customerCity: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] placeholder-slate-400 focus:outline-none focus:border-[#2F9FE3] focus:bg-white shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-[#a0aab8] mb-1">Service Type</label>
+                    <label className="block font-semibold text-slate-700 mb-1">Service Type</label>
                     <select
                       value={formData.serviceType}
                       onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1a2332] border border-white/[0.06] text-[#f0f2f5] focus:outline-none focus:border-[#d4a447]"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] focus:outline-none focus:border-[#2F9FE3] focus:bg-white shadow-2xs"
                     >
                       <option value="Roof Replacement">Roof Replacement</option>
                       <option value="Tile Relayment">Tile Relayment</option>
@@ -908,24 +908,24 @@ export default function ReviewsPage() {
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04] space-y-1.5 text-[#8a95a5]">
-                  <span className="font-bold text-[#a0aab8] block">How Reputation Gating Works:</span>
+                <div className="p-3.5 rounded-[16px] bg-slate-50 border border-slate-200/80 space-y-1.5 text-slate-600">
+                  <span className="font-bold text-slate-800 block">How Reputation Gating Works:</span>
                   <p>• If homeowner selects 5 Stars, they are prompted to submit directly to Google Business.</p>
                   <p>• If homeowner selects 1-3 Stars, feedback is sent privately to the owner to resolve.</p>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/[0.06]">
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#a0aab8] font-bold cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submittingRequest}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-300 hover:to-orange-400 text-[#0c1117] font-bold shadow-[0_4px_16px_rgba(0,0,0,0.25)] transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-6 py-2.5 rounded-xl bg-[#EAA636] hover:bg-[#d49428] text-white font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                   >
                     <Send size={13} /> {submittingRequest ? 'Generating...' : 'Generate Review Link'}
                   </button>

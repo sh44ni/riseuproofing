@@ -157,15 +157,15 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
   }
 
   return (
-    <div className="admin-card p-5 sm:p-6 space-y-5 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+    <div className="admin-card p-5 sm:p-6 space-y-5 shadow-xs border-slate-200/80">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.04] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
         <div>
-          <h3 className="text-base font-bold text-[#f0f2f5] uppercase tracking-wider flex items-center gap-2">
-            <Camera size={18} className="text-cyan-400" />
+          <h3 className="text-base font-bold text-[#0B1E33] uppercase tracking-wider flex items-center gap-2">
+            <Camera size={18} className="text-[#1878B8]" />
             Field Photo Documentation
           </h3>
-          <p className="text-xs text-[#8a95a5]">
+          <p className="text-xs text-slate-500">
             Before, tear-off, building inspection passings, and final warranty imagery
           </p>
         </div>
@@ -174,7 +174,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
           <button
             type="button"
             onClick={() => setIsUploadOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#1878B8] border border-sky-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Plus size={14} />
             Add Field Photo
@@ -191,8 +191,8 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
             onClick={() => setPhaseFilter(p.id)}
             className={`px-3 py-1 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               phaseFilter === p.id
-                ? 'bg-cyan-500 text-[#0c1117] shadow-[0_2px_12px_rgba(0,0,0,0.2)]'
-                : 'bg-[#1a2332] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.04]'
+                ? 'bg-[#1878B8] text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200/80 hover:bg-slate-50'
             }`}
           >
             {p.label}
@@ -202,14 +202,14 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
 
       {/* Photos Grid */}
       {loading ? (
-        <div className="py-12 flex flex-col items-center justify-center text-[#5e6a7a] gap-2">
-          <RefreshCw size={20} className="animate-spin text-cyan-400" />
+        <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
+          <RefreshCw size={20} className="animate-spin text-[#1878B8]" />
           <span className="text-xs font-semibold">Loading photos...</span>
         </div>
       ) : photos.length === 0 ? (
-        <div className="p-8 rounded-[16px] border border-dashed border-white/[0.06] text-center space-y-2">
-          <ImageIcon size={32} className="mx-auto text-[#5e6a7a]" />
-          <p className="text-xs text-[#8a95a5]">
+        <div className="p-8 rounded-[16px] border border-dashed border-slate-200 bg-slate-50/50 text-center space-y-2">
+          <ImageIcon size={32} className="mx-auto text-slate-400" />
+          <p className="text-xs text-slate-500">
             No photos uploaded for this phase yet. Click &quot;Add Field Photo&quot; to take photos on-site.
           </p>
         </div>
@@ -219,7 +219,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
             <div
               key={p.id}
               onClick={() => setActiveLightboxPhoto(p)}
-              className="group relative rounded-[16px] overflow-hidden bg-[#0c1117] border border-white/[0.06] aspect-square cursor-pointer hover:border-cyan-400/50 transition-all shadow-[0_2px_12px_rgba(0,0,0,0.2)]"
+              className="group relative rounded-[16px] overflow-hidden bg-slate-100 border border-slate-200/80 aspect-square cursor-pointer hover:border-[#1878B8]/60 transition-all shadow-xs"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -229,10 +229,10 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
               />
 
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0c1117] via-transparent to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E33]/90 via-transparent to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
 
               {/* Phase Badge */}
-              <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#141b24]/90 text-cyan-400 border border-white/[0.06] uppercase tracking-wider backdrop-blur-sm">
+              <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-[#0B1E33] border border-slate-200/80 uppercase tracking-wider backdrop-blur-sm shadow-xs">
                 {p.phase}
               </span>
 
@@ -240,7 +240,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
               <button
                 type="button"
                 onClick={e => handleDeletePhoto(p.id, e)}
-                className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-[#8a95a5] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/90 text-slate-500 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-xs"
                 title="Delete Photo"
               >
                 <Trash2 size={13} />
@@ -249,11 +249,11 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
               {/* Caption & Date at bottom */}
               <div className="absolute bottom-2 left-2 right-2 text-left">
                 {p.caption && (
-                  <p className="text-xs font-semibold text-[#f0f2f5] truncate drop-shadow">
+                  <p className="text-xs font-semibold text-white truncate drop-shadow">
                     {p.caption}
                   </p>
                 )}
-                <span className="text-[10px] text-[#8a95a5] font-mono">
+                <span className="text-[10px] text-slate-300 font-mono">
                   {new Date(p.created_at).toLocaleDateString()}
                 </span>
               </div>
@@ -275,13 +275,13 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
         >
           <form onSubmit={handleUploadSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Project Phase
               </label>
               <select
                 value={uploadPhase}
                 onChange={e => setUploadPhase(e.target.value)}
-                className="admin-input text-xs focus:border-cyan-400 w-full px-3 py-2 rounded-xl"
+                className="admin-input text-xs w-full px-3 py-2 rounded-xl"
               >
                 <option value="before">Before Starting (Initial Condition)</option>
                 <option value="during">Tear-Off &amp; Underlayment (In Progress)</option>
@@ -293,7 +293,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
 
             {/* Camera / File Capture */}
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Take Photo or Select File
               </label>
               <input
@@ -309,15 +309,15 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 py-3 px-3 rounded-xl bg-[#1a2332] hover:bg-[#1a2332]/80 border border-white/[0.06] text-[#f0f2f5] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  className="flex-1 py-3 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200/80 text-[#0B1E33] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
-                  <Camera size={16} className="text-cyan-400" />
+                  <Camera size={16} className="text-[#1878B8]" />
                   Take Photo / Browse File
                 </button>
               </div>
 
               {fileDataUrl && (
-                <div className="mt-2 relative rounded-xl overflow-hidden border border-cyan-500/30 max-h-48 bg-black">
+                <div className="mt-2 relative rounded-xl overflow-hidden border border-sky-300 max-h-48 bg-slate-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={fileDataUrl}
@@ -327,7 +327,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
                   <button
                     type="button"
                     onClick={() => setFileDataUrl(null)}
-                    className="absolute top-2 right-2 p-1 rounded-full bg-black/70 text-white"
+                    className="absolute top-2 right-2 p-1 rounded-full bg-slate-800 text-white"
                   >
                     <X size={14} />
                   </button>
@@ -338,7 +338,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
             {/* Direct Web URL Alternative */}
             {!fileDataUrl && (
               <div>
-                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Or Paste Image URL (Drone / Cloud Link)
                 </label>
                 <input
@@ -346,13 +346,13 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
                   placeholder="https://images.unsplash.com/... or cloud link"
                   value={photoUrl}
                   onChange={e => setPhotoUrl(e.target.value)}
-                  className="admin-input text-xs focus:border-cyan-400 w-full px-3 py-2 rounded-xl"
+                  className="admin-input text-xs w-full px-3 py-2 rounded-xl"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Caption / Observation
               </label>
               <input
@@ -360,7 +360,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
                 placeholder="e.g. South slope valley flashing installed with Owens Corning Ice & Water barrier"
                 value={caption}
                 onChange={e => setCaption(e.target.value)}
-                className="admin-input text-xs focus:border-cyan-400 w-full px-3 py-2 rounded-xl"
+                className="admin-input text-xs w-full px-3 py-2 rounded-xl"
               />
             </div>
 
@@ -368,7 +368,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
               <button
                 type="submit"
                 disabled={uploading}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="admin-btn-blue w-full py-3 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <Upload size={14} />
                 {uploading ? 'Uploading...' : 'Save to Project Documentation'}
@@ -381,7 +381,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
       {/* Lightbox Modal */}
       {activeLightboxPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-[#0B1E33]/80 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setActiveLightboxPhoto(null)}
         >
           <div
@@ -391,7 +391,7 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
             <button
               type="button"
               onClick={() => setActiveLightboxPhoto(null)}
-              className="absolute -top-10 right-0 p-1.5 rounded-full bg-white/[0.06] text-[#f0f2f5] hover:bg-white/[0.12] transition-colors"
+              className="absolute -top-10 right-0 p-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
             >
               <X size={20} />
             </button>
@@ -400,19 +400,19 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
             <img
               src={activeLightboxPhoto.url}
               alt={activeLightboxPhoto.caption || 'Expanded roof photo'}
-              className="max-h-[80vh] max-w-full rounded-[16px] object-contain border border-white/[0.06] shadow-[0_8px_40px_rgba(0,0,0,0.4)]"
+              className="max-h-[80vh] max-w-full rounded-[16px] object-contain border border-white/20 shadow-2xl"
             />
 
             <div className="mt-3 text-center">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 uppercase tracking-wider">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/90 text-[#0B1E33] border border-white/20 uppercase tracking-wider">
                 {activeLightboxPhoto.phase} Phase
               </span>
               {activeLightboxPhoto.caption && (
-                <p className="text-sm font-semibold text-[#f0f2f5] mt-1">
+                <p className="text-sm font-semibold text-white mt-1">
                   {activeLightboxPhoto.caption}
                 </p>
               )}
-              <span className="text-xs text-[#8a95a5] font-mono">
+              <span className="text-xs text-slate-300 font-mono">
                 Uploaded {new Date(activeLightboxPhoto.created_at).toLocaleString()} by {activeLightboxPhoto.uploaded_by}
               </span>
             </div>

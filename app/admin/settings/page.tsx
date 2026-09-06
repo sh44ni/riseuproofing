@@ -258,15 +258,15 @@ export default function SettingsPage() {
   ];
 
   const renderProfileSection = () => (
-    <div className="p-6 rounded-[20px] admin-card border border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.3)] bg-[#141b24]">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/[0.06] gap-3">
+    <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-[#d4a447]/20 text-[#d4a447] flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#1878B8] border border-sky-200/80 flex items-center justify-center">
             <UserIcon size={18} />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[#f0f2f5]">My Profile &amp; Avatar</h2>
-            <p className="text-xs text-[#8a95a5]">
+            <h2 className="text-base font-bold text-[#0B1E33]">My Profile &amp; Avatar</h2>
+            <p className="text-xs text-slate-500">
               Manage your personal portrait photo, contact information, and role identity
             </p>
           </div>
@@ -279,19 +279,19 @@ export default function SettingsPage() {
       </div>
 
       {profileSuccess && (
-        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
           <CheckCircle2 size={15} /> Profile updated successfully! Changes reflect across the CRM.
         </div>
       )}
       {profileError && (
-        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
+        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold">
           <AlertCircle size={15} /> {profileError}
         </div>
       )}
 
       <form onSubmit={handleSaveProfile} className="mt-5 space-y-5">
         {/* Avatar Section */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl bg-[#0a0f14] border border-white/[0.05]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
           <div className="relative flex-shrink-0">
             <UserAvatar
               name={profileName || profile?.name || 'User'}
@@ -304,7 +304,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => setShowProfileAvatarPicker(true)}
-              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-[#d4a447] text-[#0c1117] hover:bg-amber-400 shadow-md transition-all cursor-pointer"
+              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-[#EAA636] text-white hover:bg-[#d49428] shadow-md transition-all cursor-pointer"
               title="Change Photo"
             >
               <Camera size={14} className="stroke-[2.5]" />
@@ -312,35 +312,35 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-1.5 flex-1 min-w-0">
-            <div className="text-sm font-bold text-[#f0f2f5] flex items-center gap-2">
+            <div className="text-sm font-bold text-[#0B1E33] flex items-center gap-2">
               <span>Portrait Photo</span>
               {profileAvatarUrl ? (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
                   Custom Portrait Active
                 </span>
               ) : (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-[#8a95a5] border border-white/[0.08] font-semibold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/80 font-semibold">
                   Initial Monogram
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#8a95a5]">
+            <p className="text-xs text-slate-500">
               Choose from 10 realistic contractor portraits, upload any photo from your device (auto-compressed), or paste an external image link.
             </p>
             <div className="flex items-center gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => setShowProfileAvatarPicker(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] border border-white/[0.08] text-[#f0f2f5] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
               >
-                <Camera size={13} className="text-[#d4a447]" />
+                <Camera size={13} className="text-[#1878B8]" />
                 Change Photo
               </button>
               {profileAvatarUrl && (
                 <button
                   type="button"
                   onClick={() => setProfileAvatarUrl(null)}
-                  className="px-3 py-1.5 text-xs text-[#8a95a5] hover:text-red-400 font-medium cursor-pointer transition-colors"
+                  className="px-3 py-1.5 text-xs text-slate-500 hover:text-rose-600 font-medium cursor-pointer transition-colors"
                 >
                   Remove Photo
                 </button>
@@ -352,35 +352,35 @@ export default function SettingsPage() {
         {/* Form Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div>
-            <label className="block text-[#a0aab8] font-semibold mb-1">Display Name</label>
+            <label className="block text-slate-700 font-semibold mb-1">Display Name</label>
             <input
               type="text"
               required
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
               placeholder="Your Full Name"
-              className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-[#a0aab8] font-semibold mb-1">Direct Phone Number</label>
+            <label className="block text-slate-700 font-semibold mb-1">Direct Phone Number</label>
             <input
               type="tel"
               value={profilePhone}
               onChange={(e) => setProfilePhone(e.target.value)}
               placeholder="(818) 555-0100"
-              className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-[#a0aab8] font-semibold mb-1">Email Address</label>
+            <label className="block text-slate-700 font-semibold mb-1">Email Address</label>
             <input
               type="email"
               disabled
               value={profile?.email || ''}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0f14]/80 border border-white/[0.04] text-[#5e6a7a] cursor-not-allowed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200/80 text-slate-400 cursor-not-allowed"
               title="Email is fixed to your account login"
             />
           </div>
@@ -390,7 +390,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={savingProfile}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-amber-400 hover:to-orange-400 text-[#0c1117] font-bold text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] shadow-[0_4px_20px_rgba(212,164,71,0.12)] disabled:opacity-50 cursor-pointer flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-[#EAA636] hover:bg-[#d49428] text-white font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-2"
           >
             <Save size={14} />
             {savingProfile ? 'Saving...' : 'Save Profile Changes'}
@@ -404,23 +404,23 @@ export default function SettingsPage() {
     return (
       <div className="space-y-8 pb-24 md:pb-12 max-w-6xl mx-auto admin-fade-in">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#f0f2f5] flex items-center gap-2.5">
-            <Settings size={26} className="text-[#d4a447]" />
+          <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] flex items-center gap-2.5">
+            <Settings size={26} className="text-[#1878B8]" />
             Personal Settings &amp; Profile
           </h1>
-          <p className="text-xs sm:text-sm text-[#8a95a5] mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Manage your personal portrait photo, contact details, and role credentials.
           </p>
         </div>
 
         {renderProfileSection()}
 
-        <div className="p-8 max-w-2xl mx-auto text-center my-6 space-y-3 bg-[#141b24] border border-white/[0.06] rounded-[20px]">
-          <div className="w-12 h-12 rounded-[14px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447] flex items-center justify-center mx-auto shadow-[0_4px_16px_rgba(212,164,71,0.08)]">
+        <div className="p-8 max-w-2xl mx-auto text-center my-6 space-y-3 bg-white border border-slate-200/80 rounded-[20px] shadow-xs">
+          <div className="w-12 h-12 rounded-[14px] bg-amber-50 border border-amber-200/80 text-[#EAA636] flex items-center justify-center mx-auto shadow-2xs">
             <ShieldCheck size={24} />
           </div>
-          <h3 className="text-base font-black text-[#f0f2f5]">Company &amp; System Settings Restricted</h3>
-          <p className="text-xs text-[#8a95a5] leading-relaxed">
+          <h3 className="text-base font-black text-[#0B1E33]">Company &amp; System Settings Restricted</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
             CRM pricing configurations, database health monitors, and system backups can only be accessed by the primary Owner / Qualifier.
           </p>
         </div>
@@ -442,18 +442,18 @@ export default function SettingsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#f0f2f5] flex items-center gap-2.5">
-            <Settings size={26} className="text-[#d4a447]" />
+          <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] flex items-center gap-2.5">
+            <Settings size={26} className="text-[#1878B8]" />
             CRM Settings &amp; Operations Hub
           </h1>
-          <p className="text-xs sm:text-sm text-[#8a95a5] mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Configure business license information, default estimator pricing, accounting backups, and database monitoring.
           </p>
         </div>
 
         {dbHealth && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold self-start sm:self-auto shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold self-start sm:self-auto shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Neon DB Latency: {dbHealth.latencyMs}ms
           </div>
         )}
@@ -464,14 +464,14 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 admin-fade-in-1">
         {/* Card 1: Company Profile & License */}
-        <div className="p-6 rounded-[20px] admin-card space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
-            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-              <Building2 size={18} className="text-[#d4a447]" />
+        <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+              <Building2 size={18} className="text-[#1878B8]" />
               Company Profile &amp; CSLB Credentials
             </h2>
             {companySuccess && (
-              <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+              <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
                 <CheckCircle2 size={14} /> Saved!
               </span>
             )}
@@ -479,76 +479,76 @@ export default function SettingsPage() {
 
           <form onSubmit={handleSaveCompany} className="space-y-3.5 text-xs">
             <div>
-              <label className="block text-[#a0aab8] font-semibold mb-1">Company Legal Name</label>
+              <label className="block text-slate-700 font-semibold mb-1">Company Legal Name</label>
               <input
                 type="text"
                 value={companyProfile.company_name}
                 onChange={e => setCompanyProfile({ ...companyProfile, company_name: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">California License (CSLB)</label>
+                <label className="block text-slate-700 font-semibold mb-1">California License (CSLB)</label>
                 <input
                   type="text"
                   value={companyProfile.license_cslb}
                   onChange={e => setCompanyProfile({ ...companyProfile, license_cslb: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Owens Corning ID</label>
+                <label className="block text-slate-700 font-semibold mb-1">Owens Corning ID</label>
                 <input
                   type="text"
                   value={companyProfile.owens_corning_id}
                   onChange={e => setCompanyProfile({ ...companyProfile, owens_corning_id: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Primary Phone</label>
+                <label className="block text-slate-700 font-semibold mb-1">Primary Phone</label>
                 <input
                   type="text"
                   value={companyProfile.phone}
                   onChange={e => setCompanyProfile({ ...companyProfile, phone: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Notification Email</label>
+                <label className="block text-slate-700 font-semibold mb-1">Notification Email</label>
                 <input
                   type="email"
                   value={companyProfile.email}
                   onChange={e => setCompanyProfile({ ...companyProfile, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[#a0aab8] font-semibold mb-1">Google Business Review Link</label>
+              <label className="block text-slate-700 font-semibold mb-1">Google Business Review Link</label>
               <input
                 type="text"
                 value={companyProfile.google_review_url}
                 onChange={e => setCompanyProfile({ ...companyProfile, google_review_url: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono text-[11px]"
+                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono text-[11px]"
               />
             </div>
 
             <div>
-              <label className="block text-[#a0aab8] font-semibold mb-1">Service Region / Office</label>
+              <label className="block text-slate-700 font-semibold mb-1">Service Region / Office</label>
               <input
                 type="text"
                 value={companyProfile.office_address}
                 onChange={e => setCompanyProfile({ ...companyProfile, office_address: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none"
               />
             </div>
 
@@ -565,14 +565,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Card 2: Estimator & Pricing Defaults */}
-        <div className="p-6 rounded-[20px] admin-card space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
-            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-              <DollarSign size={18} className="text-[#d4a447]" />
+        <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+              <DollarSign size={18} className="text-[#1878B8]" />
               Estimator &amp; Pricing Baseline Rates
             </h2>
             {pricingSuccess && (
-              <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+              <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
                 <CheckCircle2 size={14} /> Saved!
               </span>
             )}
@@ -581,81 +581,81 @@ export default function SettingsPage() {
           <form onSubmit={handleSavePricing} className="space-y-3.5 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Target Gross Margin (%)</label>
+                <label className="block text-slate-700 font-semibold mb-1">Target Gross Margin (%)</label>
                 <input
                   type="number"
                   value={pricingDefaults.target_margin_pct}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, target_margin_pct: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Labor Rate ($/Square)</label>
+                <label className="block text-slate-700 font-semibold mb-1">Labor Rate ($/Square)</label>
                 <input
                   type="number"
                   value={pricingDefaults.labor_rate_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, labor_rate_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Dumpster Flat Fee ($)</label>
+                <label className="block text-slate-700 font-semibold mb-1">Dumpster Flat Fee ($)</label>
                 <input
                   type="number"
                   value={pricingDefaults.dumpster_flat_fee}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, dumpster_flat_fee: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">City Building Permit ($)</label>
+                <label className="block text-slate-700 font-semibold mb-1">City Building Permit ($)</label>
                 <input
                   type="number"
                   value={pricingDefaults.permit_base_fee}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, permit_base_fee: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Shingle Material ($/sq)</label>
+                <label className="block text-slate-700 font-semibold mb-1">Shingle Material ($/sq)</label>
                 <input
                   type="number"
                   value={pricingDefaults.default_shingle_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, default_shingle_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">Tile Material ($/sq)</label>
+                <label className="block text-slate-700 font-semibold mb-1">Tile Material ($/sq)</label>
                 <input
                   type="number"
                   value={pricingDefaults.default_tile_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, default_tile_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[#a0aab8] font-semibold mb-1">TPO Flat ($/sq)</label>
+                <label className="block text-slate-700 font-semibold mb-1">TPO Flat ($/sq)</label>
                 <input
                   type="number"
                   value={pricingDefaults.default_tpo_per_sq}
                   onChange={e => setPricingDefaults({ ...pricingDefaults, default_tpo_per_sq: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#f0f2f5] focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl admin-input text-[#0B1E33] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
-            <p className="text-[11px] text-[#5e6a7a] italic">
+            <p className="text-[11px] text-slate-500 italic">
               These values populate the instant cost calculator wizard when building proposals for homeowners.
             </p>
 
@@ -673,14 +673,14 @@ export default function SettingsPage() {
       </div>
 
       {/* 1-Click Data Backup & CSV Exports Section */}
-      <div className="p-6 rounded-[20px] admin-card space-y-4 admin-fade-in-2">
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+      <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4 admin-fade-in-2">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-              <FileSpreadsheet size={18} className="text-emerald-400" />
+            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+              <FileSpreadsheet size={18} className="text-emerald-600" />
               1-Click Data Backup &amp; Accounting CSV Exports
             </h2>
-            <p className="text-xs text-[#8a95a5] mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Instantly export CRM records in standard RFC 4180 CSV format for QuickBooks, Excel, or offline compliance.
             </p>
           </div>
@@ -692,15 +692,15 @@ export default function SettingsPage() {
               key={type}
               href={`/api/admin/export?type=${type}`}
               download
-              className="p-4 rounded-[16px] bg-[#0a0f14] hover:bg-[#141b24] border border-white/[0.04] hover:border-[#d4a447]/30 transition-all flex items-start justify-between group cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_16px_rgba(212,164,71,0.08)]"
+              className="p-4 rounded-[16px] bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 hover:border-sky-300 transition-all flex items-start justify-between group cursor-pointer shadow-2xs"
             >
               <div>
-                <span className="text-sm font-bold text-[#f0f2f5] group-hover:text-[#e8c06a] transition-colors block">
+                <span className="text-sm font-bold text-[#0B1E33] group-hover:text-[#1878B8] transition-colors block">
                   {label}
                 </span>
-                <span className="text-[11px] text-[#8a95a5] mt-0.5 block">{desc}</span>
+                <span className="text-[11px] text-slate-500 mt-0.5 block">{desc}</span>
               </div>
-              <div className="p-2 rounded-xl bg-white/[0.03] group-hover:bg-[#d4a447] group-hover:text-[#0c1117] text-[#8a95a5] transition-all flex-shrink-0">
+              <div className="p-2 rounded-xl bg-white group-hover:bg-[#2F9FE3] group-hover:text-white text-slate-500 border border-slate-200/60 transition-all flex-shrink-0 shadow-2xs">
                 <Download size={14} />
               </div>
             </a>
@@ -709,21 +709,21 @@ export default function SettingsPage() {
       </div>
 
       {/* Live Neon PostgreSQL Database Health Monitor */}
-      <div className="p-6 rounded-[20px] admin-card space-y-4 admin-fade-in-3">
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+      <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4 admin-fade-in-3">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-              <Database size={18} className="text-cyan-400" />
+            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+              <Database size={18} className="text-[#1878B8]" />
               Live Database Health &amp; Table Telemetry
             </h2>
-            <p className="text-xs text-[#8a95a5] mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Neon Serverless PostgreSQL connection status and real-time record volumes across all 16 tables.
             </p>
           </div>
 
           <button
             onClick={fetchSettings}
-            className="p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200/80 transition-colors cursor-pointer shadow-2xs"
             title="Refresh table metrics"
           >
             <RefreshCw size={14} />
@@ -731,18 +731,18 @@ export default function SettingsPage() {
         </div>
 
         {loadingData ? (
-          <div className="p-8 text-center text-[#8a95a5] text-xs flex items-center justify-center gap-2">
-            <Sparkles size={14} className="text-[#d4a447] admin-shimmer" /> Querying table metrics...
+          <div className="p-8 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+            <Sparkles size={14} className="text-[#1878B8] animate-spin" /> Querying table metrics...
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {tableStats.map(t => (
-              <div key={t.table} className="p-3.5 rounded-[16px] bg-[#0a0f14] border border-white/[0.04]">
-                <span className="font-mono text-xs font-bold text-[#d4a447] block truncate">
+              <div key={t.table} className="p-3.5 rounded-[16px] bg-slate-50 border border-slate-200/80">
+                <span className="font-mono text-xs font-bold text-[#1878B8] block truncate">
                   {t.table}
                 </span>
-                <div className="text-xl font-black text-[#f0f2f5] mt-1">{t.count}</div>
-                <span className="text-[10px] text-[#5e6a7a] line-clamp-1 mt-0.5" title={t.desc}>
+                <div className="text-xl font-black text-[#0B1E33] mt-1">{t.count}</div>
+                <span className="text-[10px] text-slate-500 line-clamp-1 mt-0.5" title={t.desc}>
                   {t.label}
                 </span>
               </div>
@@ -752,11 +752,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Security & Password Change */}
-      <div className="p-6 rounded-[20px] admin-card space-y-4 admin-fade-in-4">
-        <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-          <Lock size={18} className="text-[#d4a447]" /> Security &amp; Admin Password
+      <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4 admin-fade-in-4">
+        <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+          <Lock size={18} className="text-[#1878B8]" /> Security &amp; Admin Password
         </h2>
-        <p className="text-[#8a95a5] text-xs">
+        <p className="text-slate-500 text-xs">
           Verify and generate a new secure password for the CRM administrative session.
         </p>
 
@@ -767,14 +767,14 @@ export default function SettingsPage() {
             { id: 'confirm', label: 'Confirm New Password', val: confirmPw, set: setConfirmPw },
           ].map(f => (
             <div key={f.id}>
-              <label htmlFor={f.id} className="block font-semibold text-[#a0aab8] mb-1">{f.label}</label>
+              <label htmlFor={f.id} className="block font-semibold text-slate-700 mb-1">{f.label}</label>
               <input
                 id={f.id}
                 type="password"
                 value={f.val}
                 onChange={e => f.set(e.target.value)}
                 required
-                className="w-full admin-input rounded-xl px-3.5 py-2.5 text-[#f0f2f5] focus:outline-none"
+                className="w-full admin-input rounded-xl px-3.5 py-2.5 text-[#0B1E33] focus:outline-none"
               />
             </div>
           ))}
@@ -782,8 +782,8 @@ export default function SettingsPage() {
           {pwMsg && (
             <div className={`flex items-start gap-2 text-xs rounded-xl px-3.5 py-2.5 border ${
               pwMsg.type === 'ok'
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                : 'bg-red-500/10 text-red-400 border-red-500/20'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border-rose-200'
             }`}>
               {pwMsg.type === 'ok' ? <CheckCircle2 size={14} className="flex-shrink-0 mt-0.5" /> : <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />}
               {pwMsg.text}

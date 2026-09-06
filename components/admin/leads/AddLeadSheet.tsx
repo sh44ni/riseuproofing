@@ -101,18 +101,18 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-xs font-medium">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold">
             {error}
           </div>
         )}
 
         {/* Contact Info */}
         <div className="space-y-3">
-          <h4 className="text-xs uppercase font-bold tracking-wider text-[#8a95a5]">
+          <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500">
             Contact Information
           </h4>
           <div>
-            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Full Name *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
             <input
               type="text"
               required
@@ -125,7 +125,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Phone *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Phone *</label>
               <input
                 type="tel"
                 required
@@ -136,7 +136,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Email</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
               <input
                 type="email"
                 placeholder="name@example.com"
@@ -150,16 +150,16 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
         {/* Project & Source */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-xs uppercase font-bold tracking-wider text-[#8a95a5]">
+          <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500">
             Project & Pipeline
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Service Type</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Service Type</label>
               <select
                 value={formData.serviceType}
                 onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl cursor-pointer"
               >
                 {SERVICE_TYPES.map(s => (
                   <option key={s} value={s}>
@@ -169,11 +169,11 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Lead Source</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Lead Source</label>
               <select
                 value={formData.leadSource}
                 onChange={e => setFormData({ ...formData, leadSource: e.target.value })}
-                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl"
+                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl cursor-pointer"
               >
                 {LEAD_SOURCES.map(s => (
                   <option key={s.value} value={s.value}>
@@ -187,12 +187,12 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
         {/* Roofing Specs */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-xs uppercase font-bold tracking-wider text-[#8a95a5]">
+          <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500">
             Property Specifications (Roofing)
           </h4>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Est. SQF</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Est. SQF</label>
               <input
                 type="number"
                 placeholder="2500"
@@ -202,11 +202,11 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Roof Type</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Roof Type</label>
               <select
                 value={formData.roofType}
                 onChange={e => setFormData({ ...formData, roofType: e.target.value })}
-                className="admin-input text-sm w-full px-3 py-2 rounded-xl"
+                className="admin-input text-sm w-full px-3 py-2 rounded-xl cursor-pointer"
               >
                 <option value="Concrete Tile">Concrete Tile</option>
                 <option value="Clay Tile">Clay Tile</option>
@@ -216,11 +216,11 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Stories</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Stories</label>
               <select
                 value={formData.stories}
                 onChange={e => setFormData({ ...formData, stories: e.target.value })}
-                className="admin-input text-sm w-full px-3 py-2 rounded-xl"
+                className="admin-input text-sm w-full px-3 py-2 rounded-xl cursor-pointer"
               >
                 <option value="1">1 Story</option>
                 <option value="2">2 Stories</option>
@@ -231,7 +231,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Address / City</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Address / City</label>
               <input
                 type="text"
                 placeholder="e.g. 1245 Grand Ave, Escondido"
@@ -241,7 +241,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#a0aab8] mb-1">ZIP Code</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">ZIP Code</label>
               <input
                 type="text"
                 placeholder="92025"
@@ -253,7 +253,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Project Notes</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Project Notes</label>
             <textarea
               rows={2}
               placeholder="e.g. Active leak in master bedroom ceiling; needs urgent inspection..."
@@ -269,7 +269,7 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
           <button
             type="submit"
             disabled={loading}
-            className="admin-btn-gold text-sm font-bold shadow-[0_4px_16px_rgba(0,0,0,0.25)] w-full py-3 px-4 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="admin-btn-blue text-sm font-bold shadow-[0_4px_16px_rgba(47,159,227,0.25)] w-full py-3 px-4 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <UserPlus size={18} />
             {loading ? 'Creating Lead...' : 'Save & Calculate Score'}

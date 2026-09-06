@@ -93,8 +93,8 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="py-32 flex flex-col items-center justify-center text-[#5e6a7a] gap-3">
-        <RefreshCw size={28} className="animate-spin text-[#d4a447]" />
+      <div className="py-32 flex flex-col items-center justify-center text-slate-500 gap-3">
+        <RefreshCw size={28} className="animate-spin text-[#2F9FE3]" />
         <span className="text-sm font-semibold">Generating Executive Reports...</span>
       </div>
     );
@@ -130,14 +130,14 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-[16px] bg-[#d4a447]/10 border border-[#d4a447]/20 text-[#d4a447]">
+          <div className="p-2.5 rounded-[16px] bg-sky-50 border border-sky-200/80 text-[#1878B8]">
             <BarChart3 size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#f0f2f5]">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0B1E33]">
               Executive Analytics & Insights
             </h1>
-            <p className="text-xs sm:text-sm text-[#8a95a5]">
+            <p className="text-xs sm:text-sm text-slate-500">
               Pipeline conversion funnel, territory market share & cash flow forecasting
             </p>
           </div>
@@ -149,63 +149,63 @@ export default function ReportsPage() {
             fetchReports();
           }}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/[0.06] bg-[#141b24] hover:bg-[#1a2332] text-xs font-semibold text-[#a0aab8] transition-colors self-start sm:self-auto cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors self-start sm:self-auto cursor-pointer shadow-2xs"
         >
-          <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
+          <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#1878B8]' : ''} />
           Reload Data
         </button>
       </div>
 
       {/* Top Level Executive Summary Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Total Booked</span>
-            <DollarSign size={15} className="text-emerald-400" />
+            <DollarSign size={15} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">
+          <div className="text-2xl font-black text-[#0B1E33]">
             ${summary.totalContractValue.toLocaleString()}
           </div>
-          <div className="text-xs text-emerald-400 font-semibold mt-1">
+          <div className="text-xs text-emerald-700 font-semibold mt-1">
             ${summary.totalCollected.toLocaleString()} collected
           </div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Win / Close Rate</span>
-            <Award size={15} className="text-[#d4a447]" />
+            <Award size={15} className="text-[#EAA636]" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">
+          <div className="text-2xl font-black text-[#0B1E33]">
             {summary.winRatePct}%
           </div>
-          <div className="text-xs text-[#d4a447] font-semibold mt-1">
+          <div className="text-xs text-amber-700 font-semibold mt-1">
             {summary.totalJobs} signed from {summary.totalLeads} leads
           </div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Realized Margin</span>
-            <TrendingUp size={15} className="text-cyan-400" />
+            <TrendingUp size={15} className="text-[#1878B8]" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">
+          <div className="text-2xl font-black text-[#0B1E33]">
             {summary.realizedMarginPct}%
           </div>
-          <div className="text-xs text-cyan-400 font-semibold mt-1">
+          <div className="text-xs text-sky-700 font-semibold mt-1">
             Target: 38% - 42% gross
           </div>
         </div>
 
-        <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#8a95a5] mb-1 flex items-center justify-between">
+        <div className="p-4 rounded-[16px] admin-card shadow-xs">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Net Job Profit</span>
-            <CheckCircle2 size={15} className="text-emerald-400" />
+            <CheckCircle2 size={15} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-[#f0f2f5]">
+          <div className="text-2xl font-black text-[#0B1E33]">
             ${summary.totalProfit.toLocaleString()}
           </div>
-          <div className="text-xs text-[#8a95a5] mt-1">
+          <div className="text-xs text-slate-500 mt-1">
             After ${summary.totalExpenses.toLocaleString()} expenses
           </div>
         </div>
@@ -213,17 +213,17 @@ export default function ReportsPage() {
 
       {/* Section 1: Sales Conversion Funnel */}
       <div className="p-5 sm:p-6 rounded-[16px] admin-card space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-white/[0.04] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-4">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#f0f2f5] flex items-center gap-2">
-              <TrendingUp size={18} className="text-[#d4a447]" />
+            <h2 className="text-base sm:text-lg font-bold text-[#0B1E33] flex items-center gap-2">
+              <TrendingUp size={18} className="text-[#1878B8]" />
               Roofing Sales & Production Pipeline Funnel
             </h2>
-            <p className="text-xs text-[#8a95a5]">
+            <p className="text-xs text-slate-500">
               Lead progression through qualification, inspection, quote closing, and project sign-off
             </p>
           </div>
-          <div className="text-xs font-mono text-[#d4a447] bg-amber-400/10 px-3 py-1 rounded-full self-start border border-[#d4a447]/15">
+          <div className="text-xs font-mono font-bold text-[#1878B8] bg-sky-50 px-3 py-1 rounded-full self-start border border-sky-200/80">
             Overall Win Rate: {summary.winRatePct}%
           </div>
         </div>
@@ -236,39 +236,39 @@ export default function ReportsPage() {
             return (
               <div key={stage.stage} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 font-semibold text-[#c8cfd8]">
-                    <span className="w-5 h-5 rounded-full bg-[#1a2332] text-[#8a95a5] text-[10px] flex items-center justify-center font-mono">
+                  <div className="flex items-center gap-2 font-semibold text-slate-700">
+                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[10px] flex items-center justify-center font-mono border border-slate-200/60">
                       {idx + 1}
                     </span>
                     <span>{stage.stage}</span>
                     {isBottleneck && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                         <AlertTriangle size={10} /> {stage.dropoffPct}% Drop
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-3 font-mono">
-                    <span className="text-[#f0f2f5] font-bold">{stage.count}</span>
-                    <span className="text-[#8a95a5] text-[11px] w-12 text-right">
+                    <span className="text-[#0B1E33] font-bold">{stage.count}</span>
+                    <span className="text-slate-500 text-[11px] w-12 text-right">
                       {stage.conversionPct}%
                     </span>
                   </div>
                 </div>
 
-                <div className="h-3 w-full bg-[#0c1117] rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
+                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       idx === 0
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                        ? 'bg-gradient-to-r from-blue-500 to-sky-500'
                         : idx === 1
-                        ? 'bg-gradient-to-r from-cyan-500 to-teal-500'
+                        ? 'bg-gradient-to-r from-sky-500 to-teal-500'
                         : idx === 2
                         ? 'bg-gradient-to-r from-teal-500 to-amber-500'
                         : idx === 3
-                        ? 'bg-gradient-to-r from-[#d4a447] to-[#c4923a]'
+                        ? 'bg-gradient-to-r from-[#EAA636] to-[#d49428]'
                         : idx === 4
                         ? 'bg-gradient-to-r from-orange-500 to-emerald-500'
-                        : 'bg-gradient-to-r from-emerald-500 to-green-400'
+                        : 'bg-gradient-to-r from-emerald-500 to-green-500'
                     }`}
                     style={{ width: `${widthPct}%` }}
                   />
@@ -281,64 +281,64 @@ export default function ReportsPage() {
 
       {/* Section 2: Cash Flow Forecast & Projections */}
       <div className="p-5 sm:p-6 rounded-[16px] admin-card space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-white/[0.04] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-4">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#f0f2f5] flex items-center gap-2">
-              <Calendar size={18} className="text-[#d4a447]" />
+            <h2 className="text-base sm:text-lg font-bold text-[#0B1E33] flex items-center gap-2">
+              <Calendar size={18} className="text-[#1878B8]" />
               Cash Flow Forecast (30 / 60 / 90 Days)
             </h2>
-            <p className="text-xs text-[#8a95a5]">
+            <p className="text-xs text-slate-500">
               Anticipated cash inflows from milestone invoicing across active jobs in progress
             </p>
           </div>
-          <div className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full self-start border border-emerald-500/20">
+          <div className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full self-start border border-emerald-200">
             Total Pipeline: ${forecast.totalForecast.toLocaleString()}
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 pt-2">
           {/* Overdue */}
-          <div className="p-4 rounded-xl bg-[#0a0f14] border border-rose-500/20">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-rose-400">
+          <div className="p-4 rounded-xl bg-rose-50/50 border border-rose-200/80">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-rose-700">
               Overdue / Past Due
             </span>
-            <div className="text-xl font-black text-[#f0f2f5] mt-1">
+            <div className="text-xl font-black text-[#0B1E33] mt-1">
               ${forecast.overdue.toLocaleString()}
             </div>
-            <div className="text-[11px] text-[#8a95a5] mt-0.5">Immediate follow-up needed</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Immediate follow-up needed</div>
           </div>
 
           {/* Next 30 Days */}
-          <div className="p-4 rounded-xl bg-[#0a0f14] border border-[#d4a447]/20">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#d4a447]">
+          <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200/80">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-amber-800">
               Next 30 Days
             </span>
-            <div className="text-xl font-black text-[#f0f2f5] mt-1">
+            <div className="text-xl font-black text-[#0B1E33] mt-1">
               ${forecast.next30.toLocaleString()}
             </div>
-            <div className="text-[11px] text-[#8a95a5] mt-0.5">Tear-off & dry-in stages</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Tear-off & dry-in stages</div>
           </div>
 
           {/* 31-60 Days */}
-          <div className="p-4 rounded-xl bg-[#0a0f14] border border-cyan-500/20">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400">
+          <div className="p-4 rounded-xl bg-sky-50/50 border border-sky-200/80">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-sky-800">
               31 – 60 Days
             </span>
-            <div className="text-xl font-black text-[#f0f2f5] mt-1">
+            <div className="text-xl font-black text-[#0B1E33] mt-1">
               ${forecast.days31to60.toLocaleString()}
             </div>
-            <div className="text-[11px] text-[#8a95a5] mt-0.5">Final inspection passings</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Final inspection passings</div>
           </div>
 
           {/* 61-90 Days */}
-          <div className="p-4 rounded-xl bg-[#0a0f14] border border-indigo-500/20">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">
+          <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-200/80">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-800">
               61 – 90 Days
             </span>
-            <div className="text-xl font-black text-[#f0f2f5] mt-1">
+            <div className="text-xl font-black text-[#0B1E33] mt-1">
               ${forecast.days61to90.toLocaleString()}
             </div>
-            <div className="text-[11px] text-[#8a95a5] mt-0.5">Future starts & warranty signoffs</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Future starts & warranty signoffs</div>
           </div>
         </div>
       </div>
@@ -347,18 +347,18 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Territory / City Market Share */}
         <div className="p-5 sm:p-6 rounded-[16px] admin-card space-y-4">
-          <div className="border-b border-white/[0.04] pb-3">
-            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-              <MapPin size={17} className="text-[#d4a447]" />
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+              <MapPin size={17} className="text-[#1878B8]" />
               Territory & City Revenue Breakdown
             </h2>
-            <p className="text-xs text-[#8a95a5]">
+            <p className="text-xs text-slate-500">
               Contract value and completed jobs across San Diego & Riverside County
             </p>
           </div>
 
           {territory.length === 0 ? (
-            <div className="text-xs text-[#8a95a5] py-6 text-center">
+            <div className="text-xs text-slate-400 py-6 text-center">
               No city revenue logged yet. Start converting estimates to jobs!
             </div>
           ) : (
@@ -367,22 +367,22 @@ export default function ReportsPage() {
                 return (
                   <div
                     key={t.city}
-                    className="p-3 rounded-xl bg-[#0a0f14] border border-white/[0.04] space-y-1"
+                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <div className="font-bold text-[#f0f2f5] flex items-center gap-1.5">
+                      <div className="font-bold text-[#0B1E33] flex items-center gap-1.5">
                         <span>{t.city}</span>
-                        <span className="text-[10px] text-[#8a95a5] font-normal">
+                        <span className="text-[10px] text-slate-500 font-normal">
                           ({t.jobCount} project{t.jobCount !== 1 ? 's' : ''})
                         </span>
                       </div>
-                      <div className="font-bold text-[#d4a447] font-mono">
+                      <div className="font-bold text-[#1878B8] font-mono">
                         ${t.totalRevenue.toLocaleString()}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#8a95a5]">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
                       <span>Avg Ticket: ${t.avgTicket.toLocaleString()}</span>
-                      <span className="text-emerald-400">{t.completedCount} completed</span>
+                      <span className="text-emerald-700 font-semibold">{t.completedCount} completed</span>
                     </div>
                   </div>
                 );
@@ -393,18 +393,18 @@ export default function ReportsPage() {
 
         {/* Roofing Service / Material Breakdown */}
         <div className="p-5 sm:p-6 rounded-[16px] admin-card space-y-4">
-          <div className="border-b border-white/[0.04] pb-3">
-            <h2 className="text-base font-bold text-[#f0f2f5] flex items-center gap-2">
-              <Layers size={17} className="text-[#d4a447]" />
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+              <Layers size={17} className="text-[#1878B8]" />
               Service & Material Mix
             </h2>
-            <p className="text-xs text-[#8a95a5]">
+            <p className="text-xs text-slate-500">
               Revenue distribution across shingles, tile, flat roofs & repairs
             </p>
           </div>
 
           {services.length === 0 ? (
-            <div className="text-xs text-[#8a95a5] py-6 text-center">
+            <div className="text-xs text-slate-400 py-6 text-center">
               No material breakdown available yet.
             </div>
           ) : (
@@ -414,23 +414,23 @@ export default function ReportsPage() {
                 return (
                   <div
                     key={s.materialType}
-                    className="p-3 rounded-xl bg-[#0a0f14] border border-white/[0.04] space-y-2"
+                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-[#f0f2f5]">{s.materialType}</span>
-                      <span className="font-bold text-emerald-400 font-mono">
+                      <span className="font-bold text-[#0B1E33]">{s.materialType}</span>
+                      <span className="font-bold text-emerald-700 font-mono">
                         ${s.totalRevenue.toLocaleString()} ({pct}%)
                       </span>
                     </div>
 
-                    <div className="h-2 w-full bg-[#141b24] rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-slate-200/80 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#d4a447] to-[#c4923a] rounded-full"
+                        className="h-full bg-gradient-to-r from-[#2F9FE3] to-[#1878B8] rounded-full"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-[#8a95a5]">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
                       <span>{s.jobCount} project{s.jobCount !== 1 ? 's' : ''}</span>
                       <span>Avg: ${s.avgContract.toLocaleString()}</span>
                     </div>

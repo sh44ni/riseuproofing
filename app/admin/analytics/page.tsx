@@ -73,17 +73,17 @@ const PRESET_OPTIONS = [
 ];
 
 const EVENT_ICONS: Record<string, { icon: typeof Activity; color: string; bg: string }> = {
-  pageview:       { icon: Eye,           color: 'text-blue-400',    bg: 'bg-blue-500/15' },
-  click:          { icon: MousePointer2, color: 'text-slate-400',   bg: 'bg-slate-500/15' },
-  button_click:   { icon: Target,        color: 'text-amber-400',   bg: 'bg-amber-500/15' },
-  nav_click:      { icon: Navigation,    color: 'text-purple-400',  bg: 'bg-purple-500/15' },
-  call:           { icon: Phone,         color: 'text-emerald-400', bg: 'bg-emerald-500/15' },
-  form_start:     { icon: Layers,        color: 'text-cyan-400',    bg: 'bg-cyan-500/15' },
-  form_submit:    { icon: Zap,           color: 'text-green-400',   bg: 'bg-green-500/15' },
-  scroll:         { icon: TrendingDown,  color: 'text-slate-400',   bg: 'bg-slate-500/15' },
-  session_end:    { icon: Clock,         color: 'text-slate-500',   bg: 'bg-slate-500/10' },
-  outbound_link:  { icon: ArrowUpRight,  color: 'text-pink-400',    bg: 'bg-pink-500/15' },
-  tab_switch:     { icon: RefreshCw,     color: 'text-slate-500',   bg: 'bg-slate-500/10' },
+  pageview:       { icon: Eye,           color: 'text-sky-600',     bg: 'bg-sky-50' },
+  click:          { icon: MousePointer2, color: 'text-slate-600',   bg: 'bg-slate-100' },
+  button_click:   { icon: Target,        color: 'text-amber-700',   bg: 'bg-amber-50' },
+  nav_click:      { icon: Navigation,    color: 'text-purple-600',  bg: 'bg-purple-50' },
+  call:           { icon: Phone,         color: 'text-emerald-700', bg: 'bg-emerald-50' },
+  form_start:     { icon: Layers,        color: 'text-cyan-700',    bg: 'bg-cyan-50' },
+  form_submit:    { icon: Zap,           color: 'text-emerald-700', bg: 'bg-emerald-50' },
+  scroll:         { icon: TrendingDown,  color: 'text-slate-600',   bg: 'bg-slate-100' },
+  session_end:    { icon: Clock,         color: 'text-slate-500',   bg: 'bg-slate-100' },
+  outbound_link:  { icon: ArrowUpRight,  color: 'text-pink-600',    bg: 'bg-pink-50' },
+  tab_switch:     { icon: RefreshCw,     color: 'text-slate-500',   bg: 'bg-slate-100' },
 };
 
 const DEVICE_ICONS: Record<string, typeof Activity> = {
@@ -122,7 +122,7 @@ function buildQuery(preset: string, customFrom: string, customTo: string): strin
   return `preset=${preset}`;
 }
 
-function MetricCard({ label, value, sub, icon: Icon, color = 'text-amber-400' }: {
+function MetricCard({ label, value, sub, icon: Icon, color = 'text-[#1878B8]' }: {
   label: string;
   value: string | number;
   sub?: string;
@@ -130,12 +130,12 @@ function MetricCard({ label, value, sub, icon: Icon, color = 'text-amber-400' }:
   color?: string;
 }) {
   return (
-    <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 space-y-1">
+    <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-slate-400 text-xs font-semibold">{label}</span>
+        <span className="text-slate-500 text-xs font-semibold">{label}</span>
         <Icon size={16} className={color} />
       </div>
-      <p className="text-2xl font-black text-white tabular-nums">{value}</p>
+      <p className="text-2xl font-black text-[#0B1E33] tabular-nums">{value}</p>
       {sub && <p className="text-xs text-slate-500">{sub}</p>}
     </div>
   );
@@ -224,23 +224,23 @@ function AnalyticsContent() {
       {/* Page Title & Main Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-            <BarChart3 size={26} className="text-amber-400" />
+          <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] flex items-center gap-2.5">
+            <BarChart3 size={26} className="text-[#1878B8]" />
             Website &amp; Marketing Hub
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Unified analytics, customer search traffic, inbound phone tracking, and click heatmaps.
           </p>
         </div>
 
         {/* 3 Main Segmented Tabs */}
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-900 border border-white/10 self-start md:self-auto overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 border border-slate-200/80 self-start md:self-auto overflow-x-auto shadow-2xs">
           <button
             onClick={() => setActiveMainTab('traffic')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeMainTab === 'traffic'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-[#0B1E33] shadow-xs border border-slate-200/60'
+                : 'text-slate-600 hover:text-[#0B1E33]'
             }`}
           >
             <Globe size={14} /> Traffic &amp; Visitors
@@ -249,8 +249,8 @@ function AnalyticsContent() {
             onClick={() => setActiveMainTab('calls')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeMainTab === 'calls'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-[#0B1E33] shadow-xs border border-slate-200/60'
+                : 'text-slate-600 hover:text-[#0B1E33]'
             }`}
           >
             <Phone size={14} /> Call Tracking
@@ -259,8 +259,8 @@ function AnalyticsContent() {
             onClick={() => setActiveMainTab('heatmaps')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeMainTab === 'heatmaps'
-                ? 'bg-amber-400 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-[#0B1E33] shadow-xs border border-slate-200/60'
+                : 'text-slate-600 hover:text-[#0B1E33]'
             }`}
           >
             <Flame size={14} /> Click Heatmaps
@@ -272,7 +272,7 @@ function AnalyticsContent() {
       {activeMainTab === 'traffic' && (
         <div className="space-y-6">
           {/* Controls Bar */}
-          <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-2xl bg-slate-900 border border-white/10">
+          <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div className="flex gap-1.5 flex-wrap">
               {PRESET_OPTIONS.map(opt => (
                 <button
@@ -280,8 +280,8 @@ function AnalyticsContent() {
                   onClick={() => setPreset(opt.value)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     preset === opt.value
-                      ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-[#EAA636] text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-[#0B1E33] hover:bg-slate-50 border border-transparent'
                   }`}
                 >
                   {opt.label}
@@ -292,10 +292,10 @@ function AnalyticsContent() {
             <button
               onClick={loadTraffic}
               disabled={loadingTraffic}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-600 hover:text-[#0B1E33] transition-colors cursor-pointer shadow-2xs"
               title="Refresh traffic data"
             >
-              <RefreshCw size={14} className={loadingTraffic ? 'animate-spin text-amber-400' : ''} />
+              <RefreshCw size={14} className={loadingTraffic ? 'animate-spin text-[#1878B8]' : ''} />
             </button>
           </div>
 
@@ -303,38 +303,38 @@ function AnalyticsContent() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-                    <Skeleton className="w-24 h-3" />
-                    <Skeleton className="w-20 h-7 rounded-lg" />
+                  <div key={i} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
+                    <Skeleton className="w-24 h-3 bg-slate-200" />
+                    <Skeleton className="w-20 h-7 rounded-lg bg-slate-200" />
                   </div>
                 ))}
               </div>
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+              <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                  <Skeleton className="w-48 h-5" />
-                  <Skeleton className="w-24 h-4" />
+                  <Skeleton className="w-48 h-5 bg-slate-200" />
+                  <Skeleton className="w-24 h-4 bg-slate-200" />
                 </div>
-                <Skeleton className="w-full h-72 rounded-2xl" />
+                <Skeleton className="w-full h-72 rounded-2xl bg-slate-200" />
               </div>
             </div>
           ) : data ? (
             <>
               {/* Top KPIs */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <MetricCard label="Total Pageviews" value={totalPageviews.toLocaleString()} icon={Eye} color="text-blue-400" />
-                <MetricCard label="Unique Sessions" value={(data.totalSessions || 0).toLocaleString()} icon={Users} color="text-amber-400" />
-                <MetricCard label="Lead Conversion" value={`${data.conversionRate}%`} icon={Target} color="text-emerald-400" />
-                <MetricCard label="Bounce Rate" value={`${data.bounceRate}%`} icon={TrendingDown} color="text-purple-400" />
+                <MetricCard label="Total Pageviews" value={totalPageviews.toLocaleString()} icon={Eye} color="text-sky-600" />
+                <MetricCard label="Unique Sessions" value={(data.totalSessions || 0).toLocaleString()} icon={Users} color="text-[#EAA636]" />
+                <MetricCard label="Lead Conversion" value={`${data.conversionRate}%`} icon={Target} color="text-emerald-600" />
+                <MetricCard label="Bounce Rate" value={`${data.bounceRate}%`} icon={TrendingDown} color="text-purple-600" />
               </div>
 
               {/* Sub-tabs: Overview vs Activity Feed */}
-              <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+              <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2">
                 <button
                   onClick={() => setTrafficSubTab('overview')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     trafficSubTab === 'overview'
-                      ? 'bg-white/10 text-white'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#0B1E33] shadow-xs border border-slate-200/80'
+                      : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   Performance Overview
@@ -343,8 +343,8 @@ function AnalyticsContent() {
                   onClick={() => setTrafficSubTab('activity')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     trafficSubTab === 'activity'
-                      ? 'bg-white/10 text-white'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#0B1E33] shadow-xs border border-slate-200/80'
+                      : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   Live Activity Feed
@@ -354,63 +354,63 @@ function AnalyticsContent() {
               {trafficSubTab === 'overview' ? (
                 <div className="space-y-6">
                   {/* Daily Pageviews Area Chart */}
-                  <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                    <h3 className="text-sm font-bold text-white mb-4">Traffic Trend Over Time</h3>
+                  <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                    <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Traffic Trend Over Time</h3>
                     {data.dailyPageviews.length > 0 ? (
                       <AdminAreaChart data={data.dailyPageviews} keys={['pageviews', 'sessions']} />
                     ) : (
-                      <p className="text-slate-500 text-xs py-10 text-center">No traffic recorded for this date range.</p>
+                      <p className="text-slate-400 text-xs py-10 text-center">No traffic recorded for this date range.</p>
                     )}
                   </div>
 
                   {/* Top Pages & Device Breakdown */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                      <h3 className="text-sm font-bold text-white mb-4">Top Landing Pages</h3>
+                    <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                      <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Top Landing Pages</h3>
                       {data.topPages.length > 0 ? (
-                        <AdminBarChart data={data.topPages} dataKey="views" labelKey="page_path" horizontal color="#F59E0B" />
+                        <AdminBarChart data={data.topPages} dataKey="views" labelKey="page_path" horizontal color="#2F9FE3" />
                       ) : (
-                        <p className="text-slate-500 text-xs py-8 text-center">No pageview data</p>
+                        <p className="text-slate-400 text-xs py-8 text-center">No pageview data</p>
                       )}
                     </div>
 
-                    <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                      <h3 className="text-sm font-bold text-white mb-4">Visitor Devices</h3>
+                    <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                      <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Visitor Devices</h3>
                       {data.deviceBreakdown.length > 0 ? (
                         <AdminPieChart
                           data={data.deviceBreakdown.map(d => ({ name: d.device_type, value: parseInt(d.count) }))}
                           label="Devices"
                         />
                       ) : (
-                        <p className="text-slate-500 text-xs py-8 text-center">No device data</p>
+                        <p className="text-slate-400 text-xs py-8 text-center">No device data</p>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
                 /* Activity Feed */
-                <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                  <h3 className="text-sm font-bold text-white mb-4">Recent User Interactions</h3>
-                  <div className="divide-y divide-white/5 space-y-1">
+                <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                  <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Recent User Interactions</h3>
+                  <div className="divide-y divide-slate-100 space-y-1">
                     {data.activityFeed.slice(0, 20).map(item => {
-                      const cfg = EVENT_ICONS[item.event_type] ?? { icon: Activity, color: 'text-slate-400', bg: 'bg-slate-500/10' };
+                      const cfg = EVENT_ICONS[item.event_type] ?? { icon: Activity, color: 'text-slate-600', bg: 'bg-slate-100' };
                       const Icon = cfg.icon;
                       const DevIcon = DEVICE_ICONS[item.device_type] ?? Monitor;
 
                       return (
-                        <div key={item.id} className="pt-2 pb-2 flex items-center justify-between gap-3 text-xs">
+                        <div key={item.id} className="pt-2.5 pb-2.5 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
                           <div className="flex items-center gap-2.5">
                             <div className={`p-1.5 rounded-lg ${cfg.bg} ${cfg.color}`}>
                               <Icon size={14} />
                             </div>
                             <div>
-                              <span className="font-bold text-white capitalize">{item.event_type.replace('_', ' ')}</span>
-                              <span className="text-slate-400 ml-1.5">{item.page_path}</span>
-                              {item.city && <span className="text-slate-500 ml-1">({item.city})</span>}
+                              <span className="font-bold text-[#0B1E33] capitalize">{item.event_type.replace('_', ' ')}</span>
+                              <span className="text-slate-600 ml-1.5">{item.page_path}</span>
+                              {item.city && <span className="text-slate-400 ml-1">({item.city})</span>}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 text-slate-500 flex-shrink-0">
+                          <div className="flex items-center gap-2 text-slate-400 flex-shrink-0">
                             <DevIcon size={12} />
                             <span>{timeAgo(item.created_at)}</span>
                           </div>
@@ -429,7 +429,7 @@ function AnalyticsContent() {
       {activeMainTab === 'calls' && (
         <div className="space-y-6">
           {/* Controls Bar */}
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-white/10">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div className="flex gap-2">
               {[7, 30, 90].map(d => (
                 <button
@@ -437,8 +437,8 @@ function AnalyticsContent() {
                   onClick={() => setCallsDays(d)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     callsDays === d
-                      ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-400 hover:text-white border border-white/5'
+                      ? 'bg-[#EAA636] text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-[#0B1E33] border border-slate-200/60 hover:bg-slate-50'
                   }`}
                 >
                   {d} Days
@@ -449,9 +449,9 @@ function AnalyticsContent() {
             <button
               onClick={loadCalls}
               disabled={loadingCalls}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-600 hover:text-[#0B1E33] transition-colors cursor-pointer shadow-2xs"
             >
-              <RefreshCw size={14} className={loadingCalls ? 'animate-spin text-amber-400' : ''} />
+              <RefreshCw size={14} className={loadingCalls ? 'animate-spin text-[#1878B8]' : ''} />
             </button>
           </div>
 
@@ -459,80 +459,80 @@ function AnalyticsContent() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-                    <Skeleton className="w-24 h-3" />
-                    <Skeleton className="w-16 h-7 rounded-lg" />
+                  <div key={i} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
+                    <Skeleton className="w-24 h-3 bg-slate-200" />
+                    <Skeleton className="w-16 h-7 rounded-lg bg-slate-200" />
                   </div>
                 ))}
               </div>
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
-                <Skeleton className="w-48 h-5" />
-                <Skeleton className="w-full h-64 rounded-2xl" />
+              <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+                <Skeleton className="w-48 h-5 bg-slate-200" />
+                <Skeleton className="w-full h-64 rounded-2xl bg-slate-200" />
               </div>
             </div>
           ) : callsData ? (
             <>
               {/* Call KPIs */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <MetricCard label={`Total Calls (${callsDays}d)`} value={totalCalls} icon={Phone} color="text-amber-400" />
-                <MetricCard label="Best Source Page" value={callsData.byPage[0]?.page_path || '/'} icon={Target} color="text-emerald-400" />
-                <MetricCard label="Top Device" value={callsData.byDevice[0]?.device_type || 'Mobile'} icon={Smartphone} color="text-blue-400" />
+                <MetricCard label={`Total Calls (${callsDays}d)`} value={totalCalls} icon={Phone} color="text-emerald-600" />
+                <MetricCard label="Best Source Page" value={callsData.byPage[0]?.page_path || '/'} icon={Target} color="text-sky-600" />
+                <MetricCard label="Top Device" value={callsData.byDevice[0]?.device_type || 'Mobile'} icon={Smartphone} color="text-[#EAA636]" />
               </div>
 
               {/* Daily Calls Trend */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                <h3 className="text-sm font-bold text-white mb-4">Phone Clicks Over Time</h3>
+              <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Phone Clicks Over Time</h3>
                 {callsData.daily.length > 0 ? (
                   <AdminAreaChart data={callsData.daily} keys={['count']} />
                 ) : (
-                  <p className="text-slate-500 text-xs py-10 text-center">No inbound call clicks recorded yet.</p>
+                  <p className="text-slate-400 text-xs py-10 text-center">No inbound call clicks recorded yet.</p>
                 )}
               </div>
 
               {/* Calls by Page & Device */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                  <h3 className="text-sm font-bold text-white mb-4">Calls Generated by Page</h3>
+                <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                  <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Calls Generated by Page</h3>
                   {callsData.byPage.length > 0 ? (
-                    <AdminBarChart data={callsData.byPage} dataKey="count" labelKey="page_path" horizontal color="#F59E0B" />
+                    <AdminBarChart data={callsData.byPage} dataKey="count" labelKey="page_path" horizontal color="#2F9FE3" />
                   ) : (
-                    <p className="text-slate-500 text-xs py-8 text-center">No call page data</p>
+                    <p className="text-slate-400 text-xs py-8 text-center">No call page data</p>
                   )}
                 </div>
 
-                <div className="p-6 rounded-3xl bg-slate-900 border border-white/10">
-                  <h3 className="text-sm font-bold text-white mb-4">Caller Devices</h3>
+                <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+                  <h3 className="text-sm font-bold text-[#0B1E33] mb-4">Caller Devices</h3>
                   {callsDeviceData.length > 0 ? (
                     <AdminPieChart data={callsDeviceData} label="Calls" />
                   ) : (
-                    <p className="text-slate-500 text-xs py-8 text-center">No caller device data</p>
+                    <p className="text-slate-400 text-xs py-8 text-center">No caller device data</p>
                   )}
                 </div>
               </div>
 
               {/* Recent Call Log Table */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-3">
-                <h3 className="text-sm font-bold text-white">Recent Inbound Phone Clicks</h3>
+              <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+                <h3 className="text-sm font-bold text-[#0B1E33]">Recent Inbound Phone Clicks</h3>
                 {callsData.recent.length === 0 ? (
-                  <p className="text-slate-500 text-xs py-6 text-center">No phone click events yet.</p>
+                  <p className="text-slate-400 text-xs py-6 text-center">No phone click events yet.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-white/10 text-slate-400 font-bold uppercase">
+                        <tr className="border-b border-slate-200/80 text-slate-500 font-bold uppercase">
                           <th className="text-left py-2 px-3">Time</th>
                           <th className="text-left py-2 px-3">Page Clicked</th>
                           <th className="text-left py-2 px-3">Device</th>
                           <th className="text-left py-2 px-3">Location</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-slate-100">
                         {callsData.recent.map(c => (
-                          <tr key={c.id} className="hover:bg-white/5 transition-colors">
-                            <td className="py-2.5 px-3 text-slate-300 whitespace-nowrap">{formatDate(c.created_at)}</td>
-                            <td className="py-2.5 px-3 font-semibold text-amber-400">{c.page_path}</td>
-                            <td className="py-2.5 px-3 capitalize text-slate-300">{c.device_type}</td>
-                            <td className="py-2.5 px-3 text-slate-400">{[c.city, c.country].filter(Boolean).join(', ') || 'California'}</td>
+                          <tr key={c.id} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap">{formatDate(c.created_at)}</td>
+                            <td className="py-2.5 px-3 font-semibold text-[#1878B8]">{c.page_path}</td>
+                            <td className="py-2.5 px-3 capitalize text-slate-700">{c.device_type}</td>
+                            <td className="py-2.5 px-3 text-slate-500">{[c.city, c.country].filter(Boolean).join(', ') || 'California'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -549,13 +549,13 @@ function AnalyticsContent() {
       {activeMainTab === 'heatmaps' && (
         <div className="space-y-6">
           {/* Controls Bar */}
-          <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-2xl bg-slate-900 border border-white/10">
+          <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative">
                 <select
                   value={selectedPage}
                   onChange={e => setSelectedPage(e.target.value)}
-                  className="bg-slate-800 border border-white/10 text-white text-xs rounded-xl px-3 py-2 pr-7 focus:outline-none focus:border-amber-400 cursor-pointer"
+                  className="bg-white border border-slate-200/80 text-[#0B1E33] text-xs rounded-xl px-3 py-2 pr-7 focus:outline-none focus:border-[#2F9FE3] cursor-pointer shadow-2xs"
                 >
                   {(heatmapData?.pages ?? []).map(p => (
                     <option key={p.page_path} value={p.page_path}>
@@ -573,8 +573,8 @@ function AnalyticsContent() {
                     onClick={() => setHeatmapDays(d)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       heatmapDays === d
-                        ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                        : 'text-slate-400 hover:text-white border border-white/5'
+                        ? 'bg-[#EAA636] text-white font-bold shadow-xs'
+                        : 'text-slate-600 hover:text-[#0B1E33] border border-slate-200/60 hover:bg-slate-50'
                     }`}
                   >
                     {d}d
@@ -586,27 +586,27 @@ function AnalyticsContent() {
             <button
               onClick={loadHeatmap}
               disabled={loadingHeatmap}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-600 hover:text-[#0B1E33] transition-colors cursor-pointer shadow-2xs"
             >
-              <RefreshCw size={14} className={loadingHeatmap ? 'animate-spin text-amber-400' : ''} />
+              <RefreshCw size={14} className={loadingHeatmap ? 'animate-spin text-[#1878B8]' : ''} />
             </button>
           </div>
 
           {loadingHeatmap ? (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2 p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+              <div className="xl:col-span-2 p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                  <Skeleton className="w-56 h-5" />
-                  <Skeleton className="w-24 h-4" />
+                  <Skeleton className="w-56 h-5 bg-slate-200" />
+                  <Skeleton className="w-24 h-4 bg-slate-200" />
                 </div>
-                <Skeleton className="w-full h-96 rounded-2xl" />
+                <Skeleton className="w-full h-96 rounded-2xl bg-slate-200" />
               </div>
               <div className="space-y-4">
-                <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
-                  <Skeleton className="w-40 h-5" />
+                <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+                  <Skeleton className="w-40 h-5 bg-slate-200" />
                   <div className="space-y-2">
                     {[1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} className="w-full h-8 rounded-xl" />
+                      <Skeleton key={i} className="w-full h-8 rounded-xl bg-slate-200" />
                     ))}
                   </div>
                 </div>
@@ -615,12 +615,12 @@ function AnalyticsContent() {
           ) : heatmapData ? (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               {/* Heatmap Canvas */}
-              <div className="xl:col-span-2 p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
+              <div className="xl:col-span-2 p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white">
-                    Interaction Heatmap: <span className="text-amber-400">{selectedPage}</span>
+                  <h3 className="text-sm font-bold text-[#0B1E33]">
+                    Interaction Heatmap: <span className="text-[#1878B8]">{selectedPage}</span>
                   </h3>
-                  <span className="text-xs text-slate-400">{heatmapData.clicks.length} Click Points</span>
+                  <span className="text-xs text-slate-500">{heatmapData.clicks.length} Click Points</span>
                 </div>
                 <div className="overflow-x-auto">
                   <HeatmapCanvas
@@ -633,10 +633,10 @@ function AnalyticsContent() {
               </div>
 
               {/* Most Clicked Elements */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 space-y-4">
-                <h3 className="text-sm font-bold text-white">Most Clicked Elements</h3>
+              <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+                <h3 className="text-sm font-bold text-[#0B1E33]">Most Clicked Elements</h3>
                 {heatmapData.topElements.length === 0 ? (
-                  <p className="text-slate-500 text-xs py-8 text-center">No click data yet</p>
+                  <p className="text-slate-400 text-xs py-8 text-center">No click data yet</p>
                 ) : (
                   <div className="space-y-3">
                     {heatmapData.topElements.map((el, i) => {
@@ -645,14 +645,14 @@ function AnalyticsContent() {
                       return (
                         <div key={i} className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-300 truncate max-w-[70%]" title={el.element}>
+                            <span className="text-slate-700 font-medium truncate max-w-[70%]" title={el.element}>
                               {el.element}
                             </span>
-                            <span className="text-amber-400 font-bold">{el.count}</span>
+                            <span className="text-[#1878B8] font-bold">{el.count}</span>
                           </div>
-                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                              className="h-full bg-gradient-to-r from-[#2F9FE3] to-[#1878B8] rounded-full"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -673,8 +673,8 @@ function AnalyticsContent() {
 export default function AnalyticsPage() {
   return (
     <Suspense fallback={
-      <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-        <RefreshCw size={14} className="text-amber-400 animate-spin" /> Loading Web Hub...
+      <div className="p-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+        <RefreshCw size={14} className="text-[#1878B8] animate-spin" /> Loading Web Hub...
       </div>
     }>
       <AnalyticsContent />

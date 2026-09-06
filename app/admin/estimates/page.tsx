@@ -49,12 +49,12 @@ interface Summary {
 const STATUS_FILTERS = ['all', 'draft', 'sent', 'viewed', 'accepted', 'declined'];
 
 const STATUS_BADGES: Record<string, { bg: string; text: string; border: string }> = {
-  draft: { bg: 'bg-slate-500/20', text: 'text-[#a0aab8]', border: 'border-slate-500/30' },
-  sent: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30' },
-  viewed: { bg: 'bg-[#d4a447]/15', text: 'text-[#d4a447]', border: 'border-[#d4a447]/25' },
-  accepted: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-  declined: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
-  expired: { bg: 'bg-slate-600/20', text: 'text-[#8a95a5]', border: 'border-slate-600/30' },
+  draft: { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' },
+  sent: { bg: 'bg-sky-50', text: 'text-[#1878B8]', border: 'border-sky-200' },
+  viewed: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' },
+  accepted: { bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200' },
+  declined: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
+  expired: { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200' },
 };
 
 export default function EstimatesPage() {
@@ -105,11 +105,11 @@ export default function EstimatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#f0f2f5] flex items-center gap-2">
-            <FileText size={24} className="text-[#d4a447]" />
+          <h1 className="text-2xl font-extrabold text-[#0B1E33] flex items-center gap-2">
+            <FileText size={24} className="text-[#EAA636]" />
             <span>Estimates & Proposals</span>
           </h1>
-          <p className="text-[#8a95a5] text-xs sm:text-sm mt-0.5">
+          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             Create itemized roofing proposals with digital signatures & 0% APR financing
           </p>
         </div>
@@ -118,15 +118,15 @@ export default function EstimatesPage() {
           <button
             onClick={() => loadEstimates(true)}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] text-[#a0aab8] transition-all duration-300 ease-out cursor-pointer disabled:opacity-50"
+            className="p-2.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-all duration-300 ease-out cursor-pointer disabled:opacity-50"
             title="Refresh"
           >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#d4a447]' : ''} />
+            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#EAA636]' : ''} />
           </button>
 
           <Link
             href="/admin/estimates/new"
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#e8c06a] hover:to-[#c4923a] text-[#0c1117] font-bold rounded-xl text-xs sm:text-sm transition-all duration-300 ease-out shadow-[0_2px_12px_rgba(0,0,0,0.2)] cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#EAA636] to-[#d49428] hover:from-[#f3b344] hover:to-[#d49428] text-white font-bold rounded-xl text-xs sm:text-sm transition-all duration-300 ease-out shadow-sm cursor-pointer active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>New Estimate</span>
@@ -136,46 +136,46 @@ export default function EstimatesPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Total Proposals</p>
-          <p className="text-2xl font-extrabold text-[#f0f2f5] mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Proposals</p>
+          <p className="text-2xl font-extrabold text-[#0B1E33] mt-1 tabular-nums">
             {summary.totalCount}
           </p>
         </div>
 
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Total Pipeline Value</p>
-          <p className="text-2xl font-extrabold text-[#d4a447] mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Pipeline Value</p>
+          <p className="text-2xl font-extrabold text-[#EAA636] mt-1 tabular-nums">
             ${Math.round(summary.pipelineValue).toLocaleString()}
           </p>
         </div>
 
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Accepted Deals</p>
-          <p className="text-2xl font-extrabold text-emerald-400 mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Accepted Deals</p>
+          <p className="text-2xl font-extrabold text-emerald-600 mt-1 tabular-nums">
             {summary.acceptedCount}
           </p>
         </div>
 
-        <div className="admin-card rounded-[16px] p-4">
-          <p className="text-[11px] font-semibold text-[#8a95a5] uppercase tracking-wider">Signed Contract Value</p>
-          <p className="text-2xl font-extrabold text-emerald-400 mt-1 tabular-nums">
+        <div className="bg-white border border-slate-200/80 shadow-xs rounded-[16px] p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Signed Contract Value</p>
+          <p className="text-2xl font-extrabold text-emerald-600 mt-1 tabular-nums">
             ${Math.round(summary.acceptedValue).toLocaleString()}
           </p>
         </div>
       </div>
 
       {/* Filter Chips */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none bg-[#141b24] p-3 rounded-[16px] border border-white/[0.06]">
-        <Filter size={14} className="text-[#5e6a7a] ml-1 mr-1 flex-shrink-0" />
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none bg-white p-3 rounded-[16px] border border-slate-200/80 shadow-xs">
+        <Filter size={14} className="text-slate-400 ml-1 mr-1 flex-shrink-0" />
         {STATUS_FILTERS.map(f => (
           <button
             key={f}
             onClick={() => setStatusFilter(f)}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all duration-300 ease-out cursor-pointer ${
               statusFilter === f
-                ? 'bg-[#d4a447]/15 text-[#d4a447] border border-[#d4a447]/30 shadow-inner'
-                : 'text-[#8a95a5] border border-white/[0.06] hover:border-white/[0.12] hover:text-[#f0f2f5]'
+                ? 'bg-[#EAA636] text-white shadow-xs'
+                : 'text-slate-600 border border-slate-200/80 hover:border-slate-300 hover:text-[#0B1E33] bg-slate-50'
             }`}
           >
             {f}
@@ -186,19 +186,19 @@ export default function EstimatesPage() {
       {/* Estimates List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <div className="w-10 h-10 border-3 border-[#d4a447] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#8a95a5] text-sm">Loading estimates...</p>
+          <div className="w-10 h-10 border-3 border-[#2F9FE3] border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-500 text-sm">Loading estimates...</p>
         </div>
       ) : estimates.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-[#141b24]/40 rounded-[20px] border border-white/[0.04] space-y-3">
-          <FileText size={32} className="mx-auto text-slate-600" />
-          <h3 className="text-lg font-bold text-[#f0f2f5]">No estimates found</h3>
-          <p className="text-[#8a95a5] text-xs max-w-sm mx-auto">
+        <div className="text-center py-16 px-4 bg-white rounded-[20px] border border-slate-200/80 shadow-xs space-y-3">
+          <FileText size={32} className="mx-auto text-slate-400" />
+          <h3 className="text-lg font-bold text-[#0B1E33]">No estimates found</h3>
+          <p className="text-slate-500 text-xs max-w-sm mx-auto">
             Build your first roofing quote using the 4-step calculator wizard.
           </p>
           <Link
             href="/admin/estimates/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4a447] text-[#0c1117] font-bold text-xs rounded-xl hover:bg-[#d4a447] transition-all duration-300 ease-out"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#EAA636] to-[#d49428] hover:from-[#f3b344] hover:to-[#d49428] text-white font-bold text-xs rounded-xl shadow-sm transition-all duration-300 ease-out"
           >
             <Plus size={14} /> Create Estimate
           </Link>
@@ -213,15 +213,15 @@ export default function EstimatesPage() {
               return (
                 <div
                   key={est.id}
-                  className="admin-card rounded-[16px] p-4 space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.15)]"
+                  className="bg-white border border-slate-200/80 rounded-[16px] p-4 space-y-3 shadow-xs hover:border-slate-300 transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[11px] font-bold text-[#d4a447] uppercase tracking-wider font-mono">
+                      <span className="text-[11px] font-bold text-[#1878B8] uppercase tracking-wider font-mono">
                         {est.estimate_number}
                       </span>
-                      <h3 className="text-[#f0f2f5] font-bold text-base mt-0.5">{est.customer_name}</h3>
-                      <p className="text-xs text-[#8a95a5]">
+                      <h3 className="text-[#0B1E33] font-bold text-base mt-0.5">{est.customer_name}</h3>
+                      <p className="text-xs text-slate-500">
                         {est.customer_address ? `${est.customer_address}${est.customer_city ? `, ${est.customer_city}` : ''}` : 'No address'}
                       </p>
                     </div>
@@ -232,21 +232,21 @@ export default function EstimatesPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between py-2 border-y border-white/[0.04] text-xs text-[#a0aab8]">
+                  <div className="flex items-center justify-between py-2 border-y border-slate-100 text-xs text-slate-600">
                     <span className="flex items-center gap-1">
-                      <Home size={12} className="text-[#5e6a7a]" />
+                      <Home size={12} className="text-slate-400" />
                       {est.roof_squares} Squares
                     </span>
-                    <span className="truncate max-w-[140px] text-[#8a95a5]">{est.material_type}</span>
+                    <span className="truncate max-w-[140px] text-slate-500">{est.material_type}</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
                     <div>
-                      <p className="text-lg font-black text-[#f0f2f5] tabular-nums">
+                      <p className="text-lg font-black text-[#0B1E33] tabular-nums">
                         ${Number(est.total).toLocaleString()}
                       </p>
                       {est.monthly_payment && (
-                        <p className="text-[11px] text-[#d4a447]/80 font-medium">
+                        <p className="text-[11px] text-[#1878B8] font-medium">
                           as low as ${est.monthly_payment}/mo
                         </p>
                       )}
@@ -255,7 +255,7 @@ export default function EstimatesPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/admin/estimates/${est.id}`}
-                        className="px-3 py-1.5 rounded-xl bg-[#d4a447]/10 hover:bg-[#d4a447]/15 text-[#d4a447] font-semibold text-xs border border-[#d4a447]/20 transition-all duration-300 ease-out"
+                        className="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#1878B8] font-semibold text-xs border border-sky-200 transition-all duration-300 ease-out"
                       >
                         View Details
                       </Link>
@@ -267,44 +267,44 @@ export default function EstimatesPage() {
           </div>
 
           {/* Desktop Table */}
-          <div className="hidden lg:block overflow-x-auto rounded-[16px] border border-white/[0.06] bg-[#141b24]/50">
+          <div className="hidden lg:block overflow-x-auto rounded-[16px] border border-slate-200/80 bg-white shadow-xs">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/[0.06] bg-white/2">
+                <tr className="border-b border-slate-200/80 bg-slate-50/80">
                   {['Estimate #', 'Customer', 'Specs', 'Material', 'Contract Total', 'Financing', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-[#8a95a5] font-semibold text-xs uppercase tracking-wider whitespace-nowrap">
+                    <th key={h} className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {estimates.map(est => {
                   const badge = STATUS_BADGES[est.status] || STATUS_BADGES.draft;
 
                   return (
-                    <tr key={est.id} className="hover:bg-white/3 transition-all duration-300 ease-out">
-                      <td className="px-4 py-3 font-mono font-bold text-[#d4a447] text-xs">
+                    <tr key={est.id} className="hover:bg-slate-50/60 transition-all duration-300 ease-out">
+                      <td className="px-4 py-3 font-mono font-bold text-[#1878B8] text-xs">
                         {est.estimate_number}
                       </td>
                       <td className="px-4 py-3">
-                        <Link href={`/admin/estimates/${est.id}`} className="text-[#f0f2f5] font-semibold hover:text-[#d4a447] transition-all duration-300 ease-out">
+                        <Link href={`/admin/estimates/${est.id}`} className="text-[#0B1E33] font-semibold hover:text-[#1878B8] transition-all duration-300 ease-out">
                           {est.customer_name}
                         </Link>
                         {est.customer_city && (
-                          <p className="text-[#5e6a7a] text-xs">{est.customer_city}</p>
+                          <p className="text-slate-400 text-xs">{est.customer_city}</p>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-[#a0aab8] text-xs">
+                      <td className="px-4 py-3 text-slate-600 text-xs">
                         {est.roof_squares} sq ({Number(est.roof_squares) * 100} sq ft)
                       </td>
-                      <td className="px-4 py-3 text-[#a0aab8] text-xs truncate max-w-[160px]">
+                      <td className="px-4 py-3 text-slate-600 text-xs truncate max-w-[160px]">
                         {est.material_type}
                       </td>
-                      <td className="px-4 py-3 font-bold text-[#f0f2f5] tabular-nums">
+                      <td className="px-4 py-3 font-bold text-[#0B1E33] tabular-nums">
                         ${Number(est.total).toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-[#d4a447]/90 text-xs font-semibold tabular-nums">
+                      <td className="px-4 py-3 text-slate-600 text-xs font-semibold tabular-nums">
                         {est.monthly_payment ? `$${est.monthly_payment}/mo` : '—'}
                       </td>
                       <td className="px-4 py-3">
@@ -317,7 +317,7 @@ export default function EstimatesPage() {
                       <td className="px-4 py-3 text-right">
                         <Link
                           href={`/admin/estimates/${est.id}`}
-                          className="px-3 py-1 rounded-lg bg-[#d4a447]/10 hover:bg-[#d4a447]/15 text-[#d4a447] text-xs font-semibold transition-all duration-300 ease-out"
+                          className="px-3 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-[#1878B8] text-xs font-semibold border border-sky-200 transition-all duration-300 ease-out"
                         >
                           Manage
                         </Link>

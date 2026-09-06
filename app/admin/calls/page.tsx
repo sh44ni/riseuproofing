@@ -11,7 +11,7 @@ export default function CallsRedirectPage() {
   }, [router]);
 
   return (
-    <div className="p-12 text-center text-slate-400 text-xs">
+    <div className="p-12 text-center text-slate-500 text-xs">
       Redirecting to Inbound Call Tracker in Web &amp; Marketing Hub...
     </div>
   );

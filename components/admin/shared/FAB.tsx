@@ -67,7 +67,7 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
       {/* Dim overlay when open */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
           onClick={() => setOpen(false)}
         />
       )}
@@ -83,10 +83,10 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
               onClick={handleNewEstimate}
               className="flex items-center gap-2 group cursor-pointer"
             >
-              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
                 New Estimate
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-[#d4a447] hover:bg-[#c4923a] text-[#0c1117] shadow-[0_4px_16px_rgba(212,164,71,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 font-bold">
+              <div className="w-11 h-11 rounded-[14px] bg-[#EAA636] hover:bg-[#D97706] text-white shadow-[0_4px_16px_rgba(234,166,54,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 font-bold">
                 <FileText size={18} />
               </div>
             </button>
@@ -97,10 +97,10 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
               onClick={handleAddTask}
               className="flex items-center gap-2 group cursor-pointer"
             >
-              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
                 Add Task
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-purple-600 hover:bg-purple-500 text-[#f0f2f5] shadow-[0_4px_16px_rgba(168,85,247,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+              <div className="w-11 h-11 rounded-[14px] bg-purple-600 hover:bg-purple-500 text-white shadow-[0_4px_16px_rgba(168,85,247,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
                 <CheckSquare size={18} />
               </div>
             </button>
@@ -111,10 +111,10 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
               onClick={handleLogCall}
               className="flex items-center gap-2 group cursor-pointer"
             >
-              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
                 Log Call
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-emerald-600 hover:bg-emerald-500 text-[#f0f2f5] shadow-[0_4px_16px_rgba(16,185,129,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+              <div className="w-11 h-11 rounded-[14px] bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_4px_16px_rgba(16,185,129,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
                 <PhoneCall size={18} />
               </div>
             </button>
@@ -125,10 +125,10 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
               onClick={handleAddLead}
               className="flex items-center gap-2 group cursor-pointer"
             >
-              <span className="bg-[#1a2332] text-[#f0f2f5] text-xs font-semibold px-3 py-1.5 rounded-[10px] border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md group-hover:bg-[#222d3d] transition-colors">
+              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
                 New Lead
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-blue-600 hover:bg-blue-500 text-[#f0f2f5] shadow-[0_4px_16px_rgba(59,130,246,0.25)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+              <div className="w-11 h-11 rounded-[14px] bg-[#2F9FE3] hover:bg-[#1878B8] text-white shadow-[0_4px_16px_rgba(47,159,227,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
                 <UserPlus size={18} />
               </div>
             </button>
@@ -139,8 +139,8 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`w-14 h-14 rounded-[18px] bg-gradient-to-br from-[#d4a447] to-[#c4923a] text-[#0c1117] font-bold shadow-[0_4px_24px_rgba(212,164,71,0.25)] flex items-center justify-center transition-all duration-300 ease-out z-50 hover:scale-105 active:scale-95 cursor-pointer border border-[#d4a447]/40 ${
-            open ? 'rotate-45 shadow-[0_8px_40px_rgba(212,164,71,0.4)]' : ''
+          className={`w-14 h-14 rounded-[18px] bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] text-white font-bold shadow-[0_4px_20px_rgba(47,159,227,0.35)] flex items-center justify-center transition-all duration-300 ease-out z-50 hover:scale-105 active:scale-95 cursor-pointer border border-[#2F9FE3]/40 ${
+            open ? 'rotate-45 shadow-[0_8px_30px_rgba(47,159,227,0.5)]' : ''
           }`}
           aria-label="Quick actions"
           aria-expanded={open}

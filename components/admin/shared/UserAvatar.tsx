@@ -77,10 +77,10 @@ export default function UserAvatar({
   return (
     <div className={`relative inline-flex flex-shrink-0 select-none ${className}`}>
       <div
-        className={`relative overflow-hidden rounded-full flex items-center justify-center border border-white/[0.12] shadow-sm ${sizeCfg.container} ${
+        className={`relative overflow-hidden rounded-full flex items-center justify-center border border-slate-200/90 shadow-2xs ${sizeCfg.container} ${
           hasValidPhoto
-            ? 'bg-[#141b24]'
-            : 'bg-gradient-to-br from-[#1a2332] to-[#141b24] text-[#d4a447]'
+            ? 'bg-slate-100'
+            : 'bg-gradient-to-br from-sky-50 to-blue-100 text-[#1878B8]'
         }`}
       >
         {hasValidPhoto ? (
@@ -92,7 +92,7 @@ export default function UserAvatar({
             loading="lazy"
           />
         ) : (
-          <span className="font-black tracking-wider leading-none text-[#d4a447]">
+          <span className="font-black tracking-wider leading-none text-[#1878B8]">
             {initial}
           </span>
         )}
@@ -101,8 +101,8 @@ export default function UserAvatar({
       {/* Online Status Dot */}
       {showStatus && (
         <span
-          className={`absolute rounded-full border-2 border-[#0c1117] ring-1 ring-emerald-400/40 ${
-            statusOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'
+          className={`absolute rounded-full border-2 border-white ring-1 ring-emerald-500/40 ${
+            statusOnline ? 'bg-emerald-500' : 'bg-slate-400'
           } ${sizeCfg.status}`}
           title={statusOnline ? 'Active Now' : 'Offline'}
         />
@@ -111,7 +111,7 @@ export default function UserAvatar({
       {/* Mini Role Badge Icon */}
       {showRoleBadge && (
         <span
-          className={`absolute rounded-full border border-white/20 bg-[#0c1117] flex items-center justify-center shadow-md ${roleCfg.badgeColor} ${sizeCfg.badge}`}
+          className={`absolute rounded-full border border-slate-200 bg-white flex items-center justify-center shadow-2xs ${roleCfg.badgeColor} ${sizeCfg.badge}`}
           title={roleCfg.label}
         >
           <RoleIcon role={safeRole} size={sizeCfg.badgeIcon} />

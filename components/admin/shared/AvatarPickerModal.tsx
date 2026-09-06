@@ -92,22 +92,22 @@ export default function AvatarPickerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg bg-[#141b24] border border-white/[0.08] rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B1E33]/40 backdrop-blur-xs">
+      <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-[24px] shadow-[0_16px_48px_rgba(11,30,51,0.16)] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#d4a447]/15 border border-[#d4a447]/30 flex items-center justify-center text-[#d4a447]">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-[#EAA636]">
               <Camera size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-black text-[#f0f2f5]">Choose Avatar Photo</h3>
-              <p className="text-[11px] text-[#8a95a5]">Upload, paste URL, or pick from executive gallery</p>
+              <h3 className="text-sm font-black text-[#0B1E33]">Choose Avatar Photo</h3>
+              <p className="text-[11px] text-slate-500">Upload, paste URL, or pick from executive gallery</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-[#0B1E33] transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -116,7 +116,7 @@ export default function AvatarPickerModal({
         {/* Modal Body */}
         <div className="p-5 overflow-y-auto space-y-5">
           {/* Live Preview Card */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-[#0c1117] border border-white/[0.06]">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-[#F4F8FD] border border-slate-200/80">
             <div className="flex items-center gap-3.5">
               <UserAvatar
                 name={userName}
@@ -127,11 +127,11 @@ export default function AvatarPickerModal({
                 showRoleBadge
               />
               <div>
-                <p className="text-sm font-bold text-[#f0f2f5]">{userName}</p>
+                <p className="text-sm font-bold text-[#0B1E33]">{userName}</p>
                 <div className="mt-1">
                   <RoleBadge role={userRole} size="xs" />
                 </div>
-                <p className="text-[10px] text-[#8a95a5] mt-1">
+                <p className="text-[10px] text-slate-500 mt-1">
                   {selectedUrl ? 'Custom photo selected' : 'Initial monogram fallback'}
                 </p>
               </div>
@@ -141,7 +141,7 @@ export default function AvatarPickerModal({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
                 title="Remove photo"
               >
                 <Trash2 size={12} />
@@ -151,17 +151,17 @@ export default function AvatarPickerModal({
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0c1117] border border-white/[0.04]">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200/80">
             <button
               type="button"
               onClick={() => setTab('gallery')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 tab === 'gallery'
-                  ? 'bg-[#d4a447] text-[#0c1117] shadow-sm'
-                  : 'text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-white text-[#0B1E33] shadow-xs'
+                  : 'text-slate-500 hover:text-[#0B1E33]'
               }`}
             >
-              <Sparkles size={13} />
+              <Sparkles size={13} className={tab === 'gallery' ? 'text-[#EAA636]' : ''} />
               Gallery Presets
             </button>
             <button
@@ -169,8 +169,8 @@ export default function AvatarPickerModal({
               onClick={() => setTab('upload')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 tab === 'upload'
-                  ? 'bg-[#d4a447] text-[#0c1117] shadow-sm'
-                  : 'text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-white text-[#0B1E33] shadow-xs'
+                  : 'text-slate-500 hover:text-[#0B1E33]'
               }`}
             >
               <Upload size={13} />
@@ -181,8 +181,8 @@ export default function AvatarPickerModal({
               onClick={() => setTab('url')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 tab === 'url'
-                  ? 'bg-[#d4a447] text-[#0c1117] shadow-sm'
-                  : 'text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-white text-[#0B1E33] shadow-xs'
+                  : 'text-slate-500 hover:text-[#0B1E33]'
               }`}
             >
               <LinkIcon size={13} />
@@ -193,7 +193,7 @@ export default function AvatarPickerModal({
           {/* Tab 1: Curated Gallery */}
           {tab === 'gallery' && (
             <div className="space-y-3">
-              <p className="text-xs text-[#8a95a5]">
+              <p className="text-xs text-slate-600">
                 Select a high-resolution portrait matching your team member's role:
               </p>
               <div className="grid grid-cols-5 gap-2.5">
@@ -206,14 +206,14 @@ export default function AvatarPickerModal({
                       onClick={() => setSelectedUrl(p.url)}
                       className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group cursor-pointer ${
                         isSelected
-                          ? 'border-[#d4a447] ring-2 ring-[#d4a447]/30 scale-105 shadow-[0_0_12px_rgba(212,164,71,0.3)]'
-                          : 'border-white/[0.08] hover:border-white/30'
+                          ? 'border-[#EAA636] ring-2 ring-[#EAA636]/30 scale-105 shadow-xs'
+                          : 'border-slate-200 hover:border-slate-400'
                       }`}
                     >
                       <img src={p.url} alt={p.label} className="w-full h-full object-cover" />
                       {isSelected && (
-                        <div className="absolute inset-0 bg-[#d4a447]/30 flex items-center justify-center">
-                          <div className="w-5 h-5 rounded-full bg-[#d4a447] text-[#0c1117] flex items-center justify-center shadow-md">
+                        <div className="absolute inset-0 bg-[#EAA636]/20 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-[#EAA636] text-white flex items-center justify-center shadow-xs">
                             <Check size={12} strokeWidth={3} />
                           </div>
                         </div>
@@ -237,16 +237,16 @@ export default function AvatarPickerModal({
               />
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="p-8 border-2 border-dashed border-white/[0.12] hover:border-[#d4a447]/60 rounded-2xl bg-[#0c1117]/60 hover:bg-[#0c1117] transition-all cursor-pointer flex flex-col items-center justify-center space-y-2 group"
+                className="p-8 border-2 border-dashed border-slate-300 hover:border-[#1878B8] rounded-2xl bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer flex flex-col items-center justify-center space-y-2 group"
               >
-                <div className="w-12 h-12 rounded-full bg-white/[0.04] group-hover:bg-[#d4a447]/15 border border-white/[0.08] group-hover:border-[#d4a447]/30 flex items-center justify-center text-[#8a95a5] group-hover:text-[#d4a447] transition-all">
+                <div className="w-12 h-12 rounded-full bg-white group-hover:bg-sky-50 border border-slate-200 group-hover:border-sky-200 flex items-center justify-center text-slate-500 group-hover:text-[#1878B8] transition-all">
                   <Upload size={20} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-[#f0f2f5] group-hover:text-[#d4a447] transition-colors">
+                  <p className="text-xs font-bold text-[#0B1E33] group-hover:text-[#1878B8] transition-colors">
                     {uploading ? 'Compressing photo...' : 'Click to upload image'}
                   </p>
-                  <p className="text-[10px] text-[#8a95a5] mt-0.5">PNG, JPG, or WEBP (auto-scaled for high performance)</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">PNG, JPG, or WEBP (auto-scaled for high performance)</p>
                 </div>
               </div>
             </div>
@@ -255,14 +255,14 @@ export default function AvatarPickerModal({
           {/* Tab 3: Custom URL */}
           {tab === 'url' && (
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-[#a0aab8]">Image Web URL</label>
+              <label className="block text-xs font-bold text-slate-700">Image Web URL</label>
               <div className="flex gap-2">
                 <input
                   type="url"
                   value={customUrl}
                   onChange={(e) => setCustomUrl(e.target.value)}
                   placeholder="https://example.com/avatar.jpg"
-                  className="flex-1 bg-[#0c1117] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-[#f0f2f5] placeholder-slate-600 focus:outline-none focus:border-[#d4a447]"
+                  className="admin-input flex-1 px-3 py-2 text-xs rounded-xl"
                 />
                 <button
                   type="button"
@@ -271,7 +271,7 @@ export default function AvatarPickerModal({
                       setSelectedUrl(customUrl.trim());
                     }
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-[#f0f2f5] text-xs font-bold transition cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0B1E33] text-xs font-bold transition cursor-pointer"
                 >
                   Apply
                 </button>
@@ -281,18 +281,18 @@ export default function AvatarPickerModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-2.5 px-5 py-3.5 border-t border-white/[0.06] bg-[#0c1117]/50">
+        <div className="flex items-center justify-end gap-2.5 px-5 py-3.5 border-t border-slate-200/80 bg-slate-50/80">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] text-[#a0aab8] text-xs font-semibold transition cursor-pointer"
+            className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#d4a447] to-[#c4923a] hover:from-[#c4923a] hover:to-[#b8873a] text-[#0c1117] text-xs font-black shadow-[0_2px_12px_rgba(212,164,71,0.25)] transition-all cursor-pointer active:scale-95"
+            className="admin-btn-gold px-5 py-2 rounded-xl text-xs font-bold shadow-xs cursor-pointer active:scale-95"
           >
             Confirm Avatar
           </button>

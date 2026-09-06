@@ -46,33 +46,33 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
     {
       title: 'Field Operations',
       items: [
-        { href: '/admin/calendar', label: 'Operations Calendar', icon: Calendar, color: 'text-[#d4a447]', bg: 'bg-[#d4a447]/10' },
-        { href: '/admin/inspections', label: 'Roof Inspections', icon: ClipboardCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-        { href: '/admin/crew', label: 'Crew & Dispatch', icon: HardHat, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-        { href: '/admin/warranties', label: '50-Yr Warranties', icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+        { href: '/admin/calendar', label: 'Operations Calendar', icon: Calendar, color: 'text-amber-700', bg: 'bg-amber-100' },
+        { href: '/admin/inspections', label: 'Roof Inspections', icon: ClipboardCheck, color: 'text-emerald-700', bg: 'bg-emerald-100' },
+        { href: '/admin/crew', label: 'Crew & Dispatch', icon: HardHat, color: 'text-orange-700', bg: 'bg-orange-100' },
+        { href: '/admin/warranties', label: '50-Yr Warranties', icon: ShieldCheck, color: 'text-teal-700', bg: 'bg-teal-100' },
       ],
     },
     {
       title: 'Sales & Cash Flow',
       items: [
-        { href: '/admin/finances', label: 'Finances & Invoices', icon: DollarSign, color: 'text-teal-400', bg: 'bg-teal-500/10' },
-        { href: '/admin/reports', label: 'Executive Reports', icon: PieChart, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-        { href: '/admin/tasks', label: 'Tasks & Follow-ups', icon: CheckSquare, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+        { href: '/admin/finances', label: 'Finances & Invoices', icon: DollarSign, color: 'text-emerald-700', bg: 'bg-emerald-100' },
+        { href: '/admin/reports', label: 'Executive Reports', icon: PieChart, color: 'text-indigo-700', bg: 'bg-indigo-100' },
+        { href: '/admin/tasks', label: 'Tasks & Follow-ups', icon: CheckSquare, color: 'text-purple-700', bg: 'bg-purple-100' },
       ],
     },
     {
       title: 'Customer & Marketing',
       items: [
-        { href: '/admin/reviews', label: 'Customer Reviews', icon: Star, color: 'text-[#d4a447]', bg: 'bg-[#d4a447]/10' },
-        { href: '/admin/templates', label: 'Template Studio', icon: MessageSquareCode, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-        { href: '/admin/analytics', label: 'Web & Marketing', icon: BarChart3, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+        { href: '/admin/reviews', label: 'Customer Reviews', icon: Star, color: 'text-amber-700', bg: 'bg-amber-100' },
+        { href: '/admin/templates', label: 'Template Studio', icon: MessageSquareCode, color: 'text-cyan-700', bg: 'bg-cyan-100' },
+        { href: '/admin/analytics', label: 'Web & Marketing', icon: BarChart3, color: 'text-blue-700', bg: 'bg-blue-100' },
       ],
     },
     {
       title: 'System & Security',
       items: [
-        { href: '/admin/users', label: 'Team & Roles', icon: ShieldCheck, color: 'text-[#d4a447]', bg: 'bg-[#d4a447]/10' },
-        { href: '/admin/settings', label: 'CRM Settings & Backup', icon: Settings, color: 'text-[#a0aab8]', bg: 'bg-white/[0.03]' },
+        { href: '/admin/users', label: 'Team & Roles', icon: ShieldCheck, color: 'text-sky-700', bg: 'bg-sky-100' },
+        { href: '/admin/settings', label: 'CRM Settings & Backup', icon: Settings, color: 'text-slate-700', bg: 'bg-slate-100' },
       ],
     },
   ];
@@ -86,14 +86,14 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center lg:hidden">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative w-full max-w-lg bg-[#141b24] border-t border-white/[0.06] rounded-t-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.4)] z-10 pb-8 px-5 pt-3.5 max-h-[85vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-white border-t border-slate-200/80 rounded-t-[24px] shadow-2xl z-10 pb-8 px-5 pt-3.5 max-h-[85vh] overflow-y-auto">
         {/* Drag Handle Indicator */}
-        <div className="w-12 h-1.5 rounded-full bg-[#1a2332] mx-auto mb-3" />
+        <div className="w-12 h-1.5 rounded-full bg-slate-300 mx-auto mb-3" />
 
-        <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.06] mb-4">
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 mb-4">
           {user ? (
             <Link
               href="/admin/settings"
@@ -109,7 +109,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
                 showStatus
               />
               <div className="min-w-0">
-                <h2 className="text-sm font-black text-[#f0f2f5] group-hover:text-[#d4a447] truncate transition-colors">
+                <h2 className="text-sm font-black text-[#0B1E33] group-hover:text-[#1878B8] truncate transition-colors">
                   {user.name}
                 </h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
@@ -120,16 +120,16 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
           ) : (
             <div className="flex items-center gap-3 min-w-0">
               <div className="min-w-0">
-                <h2 className="text-sm font-black text-[#f0f2f5] truncate">
+                <h2 className="text-sm font-black text-[#0B1E33] truncate">
                   Operations &amp; Management
                 </h2>
-                <p className="text-[11px] text-[#8a95a5]">Rise Up Roofing &amp; Construction CRM</p>
+                <p className="text-[11px] text-slate-500">Rise Up Roofing &amp; Construction CRM</p>
               </div>
             </div>
           )}
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-[#8a95a5] hover:text-[#f0f2f5] cursor-pointer transition-colors flex-shrink-0"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer transition-colors flex-shrink-0"
           >
             <X size={16} />
           </button>
@@ -139,7 +139,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
         <div className="space-y-4 mb-5">
           {filteredSections.map((sec) => (
             <div key={sec.title} className="space-y-1.5">
-              <span className="admin-section-label px-1 block text-[#8a95a5]">
+              <span className="admin-section-label px-1 block text-slate-500">
                 {sec.title}
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -148,12 +148,12 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
                     key={href}
                     href={href}
                     onClick={onClose}
-                    className="flex items-center gap-2.5 p-3 rounded-[16px] admin-card transition-all group cursor-pointer"
+                    className="flex items-center gap-2.5 p-3 rounded-[16px] admin-card bg-white border border-slate-200/80 hover:border-sky-300 hover:bg-slate-50/70 transition-all group cursor-pointer shadow-xs"
                   >
                     <div className={`w-9 h-9 rounded-xl ${bg} ${color} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
                       <Icon size={18} />
                     </div>
-                    <span className="text-xs font-semibold text-[#f0f2f5] leading-tight">
+                    <span className="text-xs font-semibold text-[#0B1E33] leading-tight">
                       {label}
                     </span>
                   </Link>
@@ -166,7 +166,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
         {/* Logout button */}
         <button
           onClick={handleLogout}
-          className="w-full py-3 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          className="w-full py-3 px-4 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <LogOut size={15} />
           Sign Out ({user?.name || 'Admin'})

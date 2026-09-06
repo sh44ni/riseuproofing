@@ -570,51 +570,56 @@ section:not(.always-dark) .ambient-orb-secondary {
 }
 
 /* ============================================================
-   ADMIN PANEL — "Obsidian & Gold" Luxury Theme System
+   ADMIN PANEL — "Coastal Architectural Daylight" Light Theme
    ============================================================ */
 
 .admin-theme {
-  /* Surface depth system (layered obsidian) */
-  --admin-bg-base: #0c1117;
-  --admin-bg-card: #141b24;
-  --admin-bg-card-hover: #1a2332;
-  --admin-bg-input: #0a0f14;
-  --admin-bg-elevated: #1e2736;
-  --admin-bg-surface-subtle: rgba(255, 255, 255, 0.02);
+  /* Surface depth system (crisp daylight) */
+  --admin-bg-base: #F4F8FD;
+  --admin-bg-card: #FFFFFF;
+  --admin-bg-card-hover: #F8FAFC;
+  --admin-bg-input: #FFFFFF;
+  --admin-bg-elevated: #FFFFFF;
+  --admin-bg-surface-subtle: rgba(17, 45, 73, 0.03);
 
-  /* Premium gold accent spectrum */
-  --admin-gold: #d4a447;
-  --admin-gold-light: #e8c06a;
-  --admin-gold-soft: rgba(212, 164, 71, 0.12);
-  --admin-gold-glow: rgba(212, 164, 71, 0.20);
-  --admin-gold-border: rgba(212, 164, 71, 0.28);
+  /* Brand accent spectrum */
+  --admin-blue: #2F9FE3;
+  --admin-blue-hover: #1878B8;
+  --admin-gold: #EAA636;
+  --admin-gold-light: #FCD34D;
+  --admin-gold-soft: rgba(234, 166, 54, 0.12);
+  --admin-gold-glow: rgba(234, 166, 54, 0.20);
+  --admin-gold-border: rgba(234, 166, 54, 0.35);
 
-  /* Text hierarchy */
-  --admin-text-primary: #f0f2f5;
-  --admin-text-secondary: #a0aab8;
-  --admin-text-muted: #5e6a7a;
-  --admin-text-gold: #d4a447;
+  /* Text hierarchy (deep slate navy, high contrast) */
+  --admin-text-primary: #0B1E33;
+  --admin-text-secondary: #1E3A52;
+  --admin-text-muted: #64748B;
+  --admin-text-gold: #B45309;
 
-  /* Refined border system */
-  --admin-border: rgba(255, 255, 255, 0.06);
-  --admin-border-hover: rgba(255, 255, 255, 0.12);
-  --admin-border-subtle: rgba(255, 255, 255, 0.04);
+  /* Refined light border system */
+  --admin-border: rgba(17, 45, 73, 0.09);
+  --admin-border-hover: rgba(17, 45, 73, 0.18);
+  --admin-border-subtle: rgba(17, 45, 73, 0.05);
 
-  /* Premium shadow stack */
+  /* Premium light shadow stack */
   --admin-shadow-card:
-    0 1px 2px rgba(0, 0, 0, 0.30),
-    0 4px 16px rgba(0, 0, 0, 0.20),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 1px 3px rgba(11, 30, 51, 0.04),
+    0 6px 16px -2px rgba(11, 30, 51, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   --admin-shadow-elevated:
-    0 8px 32px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 4px 12px rgba(11, 30, 51, 0.05),
+    0 16px 36px -4px rgba(11, 30, 51, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --admin-shadow-gold:
-    0 4px 24px rgba(212, 164, 71, 0.12),
-    0 1px 4px rgba(212, 164, 71, 0.08);
+    0 4px 20px rgba(234, 166, 54, 0.18),
+    0 1px 4px rgba(234, 166, 54, 0.10);
   --admin-shadow-gold-intense:
-    0 4px 24px rgba(212, 164, 71, 0.25),
-    0 8px 40px rgba(212, 164, 71, 0.15);
+    0 6px 24px rgba(234, 166, 54, 0.30),
+    0 12px 36px rgba(234, 166, 54, 0.15);
+  --admin-shadow-blue:
+    0 4px 20px rgba(47, 159, 227, 0.20),
+    0 1px 4px rgba(47, 159, 227, 0.12);
 }
 
 /* --- Premium Admin Card Base --- */
@@ -623,8 +628,7 @@ section:not(.always-dark) .ambient-orb-secondary {
   border: 1px solid var(--admin-border);
   border-radius: 16px;
   box-shadow: var(--admin-shadow-card);
-  backdrop-filter: blur(12px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .admin-card:hover {
@@ -634,7 +638,7 @@ section:not(.always-dark) .ambient-orb-secondary {
   transform: translateY(-1px);
 }
 
-/* Interactive variant with gold accent on hover */
+/* Interactive variant with brand blue / gold accent on hover */
 .admin-card-gold:hover {
   border-color: var(--admin-gold-border);
   box-shadow: var(--admin-shadow-gold);
@@ -643,28 +647,27 @@ section:not(.always-dark) .ambient-orb-secondary {
 /* --- Premium Admin Inputs --- */
 .admin-input {
   background: var(--admin-bg-input);
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--admin-border-hover);
   border-radius: 10px;
   color: var(--admin-text-primary);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: all 0.25s ease;
+  box-shadow: 0 1px 2px rgba(11, 30, 51, 0.03);
+  transition: all 0.2s ease;
 }
 
 .admin-input:focus {
-  border-color: var(--admin-gold);
+  border-color: #2F9FE3;
   box-shadow:
-    0 0 0 3px rgba(212, 164, 71, 0.12),
-    inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    0 0 0 3px rgba(47, 159, 227, 0.18),
+    0 1px 2px rgba(11, 30, 51, 0.04);
   outline: none;
 }
 
 .admin-input::placeholder {
-  color: var(--admin-text-muted);
+  color: #94A3B8;
 }
 
 /* --- Premium Admin Badges --- */
 .admin-badge {
-  backdrop-filter: blur(8px);
   border-radius: 8px;
   font-weight: 600;
   font-size: 11px;
@@ -675,9 +678,8 @@ section:not(.always-dark) .ambient-orb-secondary {
 
 /* --- Premium Admin Button --- */
 .admin-btn-gold {
-  background: linear-gradient(135deg, #d4a447 0%, #c4923a 50%, #d4a447 100%);
-  background-size: 200% 200%;
-  color: #0c1117;
+  background: linear-gradient(135deg, #EAA636 0%, #D97706 100%);
+  color: #FFFFFF;
   font-weight: 700;
   border-radius: 12px;
   box-shadow: var(--admin-shadow-gold);
@@ -687,20 +689,34 @@ section:not(.always-dark) .ambient-orb-secondary {
 .admin-btn-gold:hover {
   box-shadow: var(--admin-shadow-gold-intense);
   transform: translateY(-1px);
-  background-position: 100% 100%;
+}
+
+.admin-btn-blue {
+  background: linear-gradient(135deg, #2F9FE3 0%, #1878B8 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow-blue);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-btn-blue:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
 /* --- Glassmorphic Sidebar --- */
 .admin-sidebar-glass {
-  background: rgba(14, 18, 24, 0.92);
-  backdrop-filter: blur(32px) saturate(180%);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(28px) saturate(180%);
   border-right: 1px solid var(--admin-border);
 }
 
 /* --- Glassmorphic Top/Bottom Bar --- */
 .admin-bar-glass {
-  background: rgba(12, 17, 23, 0.88);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 /* --- Section Header Label --- */
@@ -717,32 +733,32 @@ section:not(.always-dark) .ambient-orb-secondary {
   height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.06) 20%,
-    rgba(212, 164, 71, 0.10) 50%,
-    rgba(255, 255, 255, 0.06) 80%,
+    rgba(17, 45, 73, 0.08) 20%,
+    rgba(47, 159, 227, 0.20) 50%,
+    rgba(17, 45, 73, 0.08) 80%,
     transparent 100%
   );
 }
 
 /* --- Admin Scrollbar Override --- */
 .admin-theme ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 .admin-theme ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(17, 45, 73, 0.04);
   border-radius: 999px;
 }
 
 .admin-theme ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(212, 164, 71, 0.4) 0%, rgba(212, 164, 71, 0.2) 100%);
+  background: rgba(17, 45, 73, 0.18);
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .admin-theme ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(212, 164, 71, 0.6) 0%, rgba(212, 164, 71, 0.35) 100%);
+  background: rgba(47, 159, 227, 0.5);
 }
 
 /* --- Admin Animations --- */
@@ -768,16 +784,16 @@ section:not(.always-dark) .ambient-orb-secondary {
 
 @keyframes adminPulseGold {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(212, 164, 71, 0);
+    box-shadow: 0 0 0 0 rgba(234, 166, 54, 0);
   }
   50% {
-    box-shadow: 0 0 12px 2px rgba(212, 164, 71, 0.15);
+    box-shadow: 0 0 10px 2px rgba(234, 166, 54, 0.25);
   }
 }
 
 @keyframes adminGlow {
   0%, 100% {
-    opacity: 0.5;
+    opacity: 0.6;
   }
   50% {
     opacity: 1;
@@ -797,9 +813,9 @@ section:not(.always-dark) .ambient-orb-secondary {
 .admin-shimmer {
   background: linear-gradient(
     90deg,
-    var(--admin-bg-card) 0%,
-    rgba(255, 255, 255, 0.04) 50%,
-    var(--admin-bg-card) 100%
+    #F1F5F9 0%,
+    #FFFFFF 50%,
+    #F1F5F9 100%
   );
   background-size: 200% 100%;
   animation: adminShimmer 2s ease-in-out infinite;
@@ -811,7 +827,7 @@ section:not(.always-dark) .ambient-orb-secondary {
 
 /* Admin gold gradient text */
 .admin-text-gold-gradient {
-  background: linear-gradient(135deg, #e8c06a 0%, #d4a447 50%, #c4923a 100%);
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

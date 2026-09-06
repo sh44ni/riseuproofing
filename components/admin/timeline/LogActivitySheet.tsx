@@ -94,14 +94,14 @@ export default function LogActivitySheet({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-xs font-medium">
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-medium">
             {error}
           </div>
         )}
 
         {/* Activity Type Selector */}
         <div>
-          <label className="block text-xs font-semibold text-[#a0aab8] mb-2 uppercase tracking-wider">
+          <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
             Activity Type
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -110,8 +110,8 @@ export default function LogActivitySheet({
               onClick={() => setActivityType('call')}
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'call'
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs'
+                  : 'border-slate-200 text-slate-600 hover:text-[#0B1E33] bg-white hover:bg-slate-50'
               }`}
             >
               <Phone size={16} className="mb-1" />
@@ -122,8 +122,8 @@ export default function LogActivitySheet({
               onClick={() => setActivityType('note')}
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'note'
-                  ? 'bg-purple-500/20 text-purple-400 border-purple-500/40'
-                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-purple-50 text-purple-800 border-purple-300 shadow-xs'
+                  : 'border-slate-200 text-slate-600 hover:text-[#0B1E33] bg-white hover:bg-slate-50'
               }`}
             >
               <FileText size={16} className="mb-1" />
@@ -134,8 +134,8 @@ export default function LogActivitySheet({
               onClick={() => setActivityType('text')}
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'text'
-                  ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
-                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-sky-50 text-[#1878B8] border-sky-300 shadow-xs'
+                  : 'border-slate-200 text-slate-600 hover:text-[#0B1E33] bg-white hover:bg-slate-50'
               }`}
             >
               <MessageSquare size={16} className="mb-1" />
@@ -146,8 +146,8 @@ export default function LogActivitySheet({
               onClick={() => setActivityType('visit')}
               className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 activityType === 'visit'
-                  ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
-                  : 'border-white/[0.06] text-[#8a95a5] hover:text-[#f0f2f5]'
+                  ? 'bg-rose-50 text-rose-800 border-rose-300 shadow-xs'
+                  : 'border-slate-200 text-slate-600 hover:text-[#0B1E33] bg-white hover:bg-slate-50'
               }`}
             >
               <MapPin size={16} className="mb-1" />
@@ -161,7 +161,7 @@ export default function LogActivitySheet({
           <div className="space-y-3 pt-1">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Call Outcome</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Call Outcome</label>
                 <select
                   value={outcome}
                   onChange={e => setOutcome(e.target.value)}
@@ -175,7 +175,7 @@ export default function LogActivitySheet({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Duration (minutes)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Duration (minutes)</label>
                 <input
                   type="number"
                   min="0"
@@ -191,7 +191,7 @@ export default function LogActivitySheet({
 
         {/* Team Member */}
         <div>
-          <label className="block text-xs font-semibold text-[#a0aab8] mb-1">Logged By</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Logged By</label>
           <input
             type="text"
             value={performedBy}
@@ -202,7 +202,7 @@ export default function LogActivitySheet({
 
         {/* Notes */}
         <div>
-          <label className="block text-xs font-semibold text-[#a0aab8] mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {activityType === 'call' ? 'Call Discussion Notes' : 'Details / Notes'}
           </label>
           <textarea
