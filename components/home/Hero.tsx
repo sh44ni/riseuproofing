@@ -72,7 +72,7 @@ export function Hero({
           muted
           playsInline
           poster="/videos/hero-poster.webp"
-          preload="auto"
+          preload="metadata"
           onLoadedMetadata={() => {
             if (videoRef.current) videoRef.current.playbackRate = 0.45;
           }}

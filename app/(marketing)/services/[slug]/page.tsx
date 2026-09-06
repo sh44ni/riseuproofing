@@ -229,7 +229,41 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         </Section>
       )}
 
-      {/* Service CTA Banner */}
+      {/* Related Services Internal Linking */}
+      <Section>
+        <SectionHeading
+          label="Explore More Capabilities"
+          title="Related Roofing & Construction Services"
+          subtitle="Explore complementary services designed to protect and enhance your Southern California property."
+          centered={true}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+          {services
+            .filter((s) => s.slug !== slug)
+            .slice(0, 4)
+            .map((s) => (
+              <Link
+                key={s.slug}
+                href={`/services/${s.slug}`}
+                className="group p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-brand-blue/50 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors mb-2">
+                    {s.name}
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                    {s.shortDescription}
+                  </p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue">
+                  <span>Learn More</span>
+                  <Icon name="arrow-right" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            ))}
+        </div>
+      </Section>
+
       <section className="py-16 bg-[#F4F8FD] border-t border-slate-200/80 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="glass-card-hero rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-md">

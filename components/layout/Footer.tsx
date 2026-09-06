@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -27,6 +27,8 @@ const SERVICES = [
   { label: 'Home & Room Additions', href: '/services/home-additions' },
   { label: 'ADU Construction Contractors', href: '/services/adu-construction' },
   { label: 'Commercial Flat Roofing', href: '/services/commercial' },
+  { label: 'Modified Bitumen & BUR', href: '/services/modified-bitumen' },
+  { label: 'Silicone Roof Coatings', href: '/services/roof-coating' },
   { label: 'Solar Roofing Integration', href: '/services/solar' },
   { label: 'General Construction & Framing', href: '/services/construction' },
 ];

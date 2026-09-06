@@ -18,6 +18,24 @@ export const metadata: Metadata = {
   },
   description: 'San Diego County\'s trusted roofing and construction company. Residential, commercial, solar roofing, repairs, and general construction. Licensed, bonded & insured. Free estimates.',
   metadataBase: new URL('https://riseuprac.com'),
+  keywords: [
+    'roofing contractor san diego',
+    'san diego roofing company',
+    'roof repair san diego',
+    'tile roof repair san diego',
+    'commercial roofing san diego',
+    'roof replacement oceanside ca',
+    'roof inspection san diego',
+  ],
+  authors: [{ name: COMPANY_NAME }],
+  creator: COMPANY_NAME,
+  publisher: COMPANY_NAME,
+  category: 'Roofing and Construction Services',
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
   verification: {
     google: 'google127c05be5b9b38a9',
   },
@@ -35,9 +53,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const localBusinessJsonLd = buildLocalBusinessJsonLd();
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: COMPANY_NAME,
+    url: 'https://riseuprac.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://riseuprac.com/services?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
 
   return (
     <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
+      <head>
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.google-analytics.com" />
+      </head>
       <body className="antialiased">
         {/* Google tag (gtag.js) */}
         <Script
@@ -59,6 +92,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         {/* Rich analytics tracking — pageviews, clicks, scroll, forms, CTAs, session duration, UTMs */}
         <Script src="/tracker.js" strategy="afterInteractive" />

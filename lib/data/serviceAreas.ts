@@ -247,23 +247,414 @@ export const serviceAreas: ServiceArea[] = [
   { slug: 'san-marcos', name: 'San Marcos', county: 'San Diego' },
   { slug: 'la-jolla', name: 'La Jolla', county: 'San Diego' },
   { slug: 'del-mar', name: 'Del Mar', county: 'San Diego' },
-  { slug: 'solana-beach', name: 'Solana Beach', county: 'San Diego' },
-  { slug: 'rancho-bernardo', name: 'Rancho Bernardo', county: 'San Diego' },
-  { slug: 'ramona', name: 'Ramona', county: 'San Diego' },
-  { slug: 'fallbrook', name: 'Fallbrook', county: 'San Diego' },
-  { slug: 'valley-center', name: 'Valley Center', county: 'San Diego' },
-  { slug: 'bonsall', name: 'Bonsall', county: 'San Diego' },
-  { slug: 'el-cajon', name: 'El Cajon', county: 'San Diego' },
-  { slug: 'la-mesa', name: 'La Mesa', county: 'San Diego' },
-  { slug: 'chula-vista', name: 'Chula Vista', county: 'San Diego' },
-  { slug: 'national-city', name: 'National City', county: 'San Diego' },
-  { slug: 'coronado', name: 'Coronado', county: 'San Diego' },
-  { slug: 'imperial-beach', name: 'Imperial Beach', county: 'San Diego' },
-  { slug: 'santee', name: 'Santee', county: 'San Diego' },
-  { slug: 'lakeside', name: 'Lakeside', county: 'San Diego' },
-  { slug: 'alpine', name: 'Alpine', county: 'San Diego' },
-  { slug: 'spring-valley', name: 'Spring Valley', county: 'San Diego' },
-  { slug: 'lemon-grove', name: 'Lemon Grove', county: 'San Diego' },
+    {
+    slug: 'solana-beach',
+    name: 'Solana Beach',
+    county: 'San Diego',
+    seoTitle: "Roofing Company Solana Beach CA | Local Coastal Roofers",
+    seoDescription: "Expert roofing contractor in Solana Beach, CA. Coastal salt-air tile relays, standing seam metal roofs, and flat roof waterproofing. Free estimates.",
+    h1: "Top-Rated Roofing Contractor in Solana Beach, CA",
+    intro: "Nestled along the scenic North County coastline, Solana Beach homes face relentless Pacific salt spray, morning marine moisture, and high UV radiation. Rise Up Roofing & Construction provides master-grade coastal roofing solutions—from marine-grade stainless flashings and clay tile relays to sleek architectural standing seam metal systems designed to withstand harsh coastal weather.",
+    neighborhoods: ["Cedros Design District","Isla Verde","Santa Fe Hills","Fletcher Cove","Solana Beach Bluffs"],
+    faqs: [
+      {
+            "question": "How do you protect roofs against coastal salt spray in Solana Beach?",
+            "answer": "We specify non-corrosive copper or marine-grade stainless steel valley flashings, stainless fasteners, and dual-layer high-temperature synthetic underlayments engineered to resist saltwater oxidation."
+      },
+      {
+            "question": "Do you offer emergency roof leak repairs in Solana Beach?",
+            "answer": "Yes, our North County coastal dispatch team is on call 24/7 with same-day emergency storm tarping and diagnostics for active leaks."
+      },
+      {
+            "question": "What is the best roofing material for Solana Beach coastal homes?",
+            "answer": "Concrete or Spanish clay tile with modern synthetic underlayment and standing seam aluminum or coated Galvalume metal offer the highest resistance to ocean air and high humidity."
+      }
+],
+  },
+    {
+    slug: 'rancho-bernardo',
+    name: 'Rancho Bernardo',
+    county: 'San Diego',
+    seoTitle: "Roofing Contractor Rancho Bernardo CA | Tile Relay & Repairs",
+    seoDescription: "Premier roofing company in Rancho Bernardo, CA. Concrete tile relay, cool-roof shingle replacement, and 24/7 leak repair. Licensed & insured #1096492.",
+    h1: "Trusted Roofing Company in Rancho Bernardo, CA",
+    intro: "Rancho Bernardo homeowners experience hot inland summer temperatures, dry Santa Ana winds, and strict HOA architectural guidelines. Rise Up Roofing specializes in HOA-compliant tile lift-and-resets, Title 24 cool-roof shingle installations, and rapid roof leak repairs throughout RB neighborhoods.",
+    neighborhoods: ["Seven Oaks","High Country West","Oaks North","Westwood","The Greens","Bernardo Heights"],
+    faqs: [
+      {
+            "question": "Can you help navigate Rancho Bernardo HOA roofing requirements?",
+            "answer": "Yes, we prepare full HOA submittal packets with manufacturer specification sheets, color approvals, and fire safety ratings for smooth architectural committee approval."
+      },
+      {
+            "question": "How much does a tile roof lift-and-reset cost in Rancho Bernardo?",
+            "answer": "A typical tile relay in Rancho Bernardo ranges from $10,500 to $22,000 depending on roof square footage, pitch, and amount of substrate repair required."
+      },
+      {
+            "question": "How do cool roofs save energy in Rancho Bernardo’s hot summers?",
+            "answer": "Title 24 cool shingles and reflective underlayments reflect up to 40% of solar radiation, reducing attic temperatures by up to 30 degrees and lowering summer AC bills."
+      }
+],
+  },
+    {
+    slug: 'ramona',
+    name: 'Ramona',
+    county: 'San Diego',
+    seoTitle: "Ramona Roofing Company | Wildfire-Resistant Roofs & Tile",
+    seoDescription: "Licensed roofing contractor in Ramona, CA. Class-A fire-rated metal roofs, tile relayment, and agricultural outbuilding roofs. Free estimates.",
+    h1: "Reliable Roofing Contractors in Ramona, CA",
+    intro: "In Ramona's rural and wildland-urban interface (WUI), roofs must endure intense backcountry summer heat, winter freezes, and elevated wildfire risks. Rise Up Roofing installs Class-A non-combustible standing seam metal, heavy concrete tile with fire-block bird stops, and durable architectural shingles.",
+    neighborhoods: ["San Diego Country Estates","Old Town Ramona","Witch Creek","Barona Mesa","Mount Woodson"],
+    faqs: [
+      {
+            "question": "What roofing materials are safest for Ramona wildfire zones?",
+            "answer": "Class-A fire-rated standing seam metal roofs and concrete tiles with enclosed metal bird stops provide the highest defense against wind-blown wildfire embers."
+      },
+      {
+            "question": "Do you work on large rural properties and estates in Ramona?",
+            "answer": "Yes, our crews are fully equipped for large equestrian estates, ranch homes, detached barns, and custom residential construction."
+      },
+      {
+            "question": "How fast can you respond to storm damage in Ramona?",
+            "answer": "We provide prompt emergency response across Ramona and San Diego Country Estates for wind tear-offs and storm leaks."
+      }
+],
+  },
+    {
+    slug: 'fallbrook',
+    name: 'Fallbrook',
+    county: 'San Diego',
+    seoTitle: "Roofing Contractor Fallbrook CA | Tile & Shingle Specialists",
+    seoDescription: "Experienced Fallbrook CA roofing company. Avocado grove estate roofing, clay tile relays, fire-rated metal, and leak repair. Free estimates.",
+    h1: "Master Roofing Contractors in Fallbrook, CA",
+    intro: "Known as the Avocado Capital of the World, Fallbrook features sprawling estates, rolling topography, and distinct microclimates. Rise Up Roofing delivers master craftsmanship for custom hillside homes, historic ranches, and residential communities throughout Fallbrook.",
+    neighborhoods: ["Live Oak Park","Pala Mesa","Morro Hills","Winterwarm","De Luz"],
+    faqs: [
+      {
+            "question": "Do you service historic ranch and custom estate roofs in Fallbrook?",
+            "answer": "Yes, our master roofers specialize in large custom properties, tile restoration, structural framing repairs, and luxury metal roofing."
+      },
+      {
+            "question": "Are your roofs rated for Fallbrook’s high wind and fire zones?",
+            "answer": "All of our installations comply with San Diego County WUI building codes, utilizing Class-A fire-rated materials and high-wind fastening patterns."
+      },
+      {
+            "question": "Do you offer free roof inspections in Fallbrook?",
+            "answer": "Yes, we provide 100% free physical and drone roof inspections with comprehensive photo reports for Fallbrook property owners."
+      }
+],
+  },
+    {
+    slug: 'valley-center',
+    name: 'Valley Center',
+    county: 'San Diego',
+    seoTitle: "Valley Center Roofing Company | Rural & Estate Roofers",
+    seoDescription: "Licensed roofing contractor in Valley Center, CA. Heavy tile replacement, fire-safe metal roofing, and leak repairs. Free estimates.",
+    h1: "Premier Roofing Contractor in Valley Center, CA",
+    intro: "Valley Center's rolling hills and agricultural valleys require robust roofing systems built for extreme temperature swings and wildfire protection. Rise Up Roofing provides heavy-duty concrete tile relays, cool-roof shingles, and custom standing seam metal roofs designed for backcountry longevity.",
+    neighborhoods: ["Lilac","Pauma Valley","Mirar de Valle","Cool Valley","Lake Wohlford"],
+    faqs: [
+      {
+            "question": "What type of roofing is recommended in Valley Center?",
+            "answer": "Class-A fire-rated concrete tile and standing seam metal roofing are ideal for Valley Center’s climate and wildfire mitigation needs."
+      },
+      {
+            "question": "Do you install solar-ready roofs in Valley Center?",
+            "answer": "Yes, we install solar-ready flashing stanchions and provide complete solar detach and reset services during reroofing."
+      },
+      {
+            "question": "How do you handle wood dry rot under old roofs?",
+            "answer": "Our licensed carpentry crews replace damaged plywood decking, rafter tails, and fascia boards before installing new waterproofing underlayment."
+      }
+],
+  },
+    {
+    slug: 'bonsall',
+    name: 'Bonsall',
+    county: 'San Diego',
+    seoTitle: "Bonsall Roofing Contractor | Equestrian Estate & Tile Roofing",
+    seoDescription: "Trusted Bonsall CA roofing company. Custom estate roofs, tile lift-and-reset, and standing seam metal. Free estimates.",
+    h1: "Expert Roofing Services in Bonsall, CA",
+    intro: "In the scenic equestrian community of Bonsall, architectural elegance and weather durability go hand in hand. Rise Up Roofing & Construction provides high-end tile relays, standing seam metal roofs, and durable asphalt shingles tailored to custom country homes and equestrian facilities.",
+    neighborhoods: ["San Luis Rey Downs","River Village","Saratoga Estates","Olive Hill","Gopher Canyon"],
+    faqs: [
+      {
+            "question": "Do you specialize in luxury tile roofs in Bonsall?",
+            "answer": "Yes, we have extensive experience lifting and resetting concrete and Spanish clay tiles with modern 50-year synthetic underlayment."
+      },
+      {
+            "question": "Can you match existing discontinued tiles in Bonsall?",
+            "answer": "Yes, we maintain an extensive bone-yard network of discontinued concrete and clay tiles to match existing patterns seamlessly during repairs."
+      },
+      {
+            "question": "Are your estimates free in Bonsall?",
+            "answer": "Yes, we provide free on-site inspections, 4K drone surveys, and transparent written estimates for Bonsall residents."
+      }
+],
+  },
+    {
+    slug: 'el-cajon',
+    name: 'El Cajon',
+    county: 'San Diego',
+    seoTitle: "Roofing Company El Cajon CA | East County Roofing Pros",
+    seoDescription: "Leading El Cajon CA roofing contractors. Cool-roof shingle replacement, tile repairs, commercial flat roofing, and emergency leak service.",
+    h1: "Top Roofing Company in El Cajon, CA",
+    intro: "El Cajon and the East County valley experience scorching summer temperatures exceeding 100°F. Rise Up Roofing delivers California Title 24 compliant cool-roof systems, thermal reflective coatings, concrete tile repairs, and commercial flat roof installations engineered to resist extreme UV exposure.",
+    neighborhoods: ["Fletcher Hills","Granite Hills","Bostonia","Rancho San Diego","Winter Gardens"],
+    faqs: [
+      {
+            "question": "How do Title 24 cool roofs help in El Cajon’s extreme heat?",
+            "answer": "Cool roofs reflect infrared sunlight rather than absorbing it, significantly reducing attic heat buildup and lowering household air conditioning energy costs by up to 25%."
+      },
+      {
+            "question": "Do you offer emergency roof leak repairs in El Cajon?",
+            "answer": "Yes, we provide 24/7 rapid emergency dispatch across El Cajon and East County during winter storms."
+      },
+      {
+            "question": "How much does a new shingle roof cost in El Cajon?",
+            "answer": "A residential shingle roof replacement in El Cajon typically ranges between $8,000 and $16,500 depending on square footage, pitch, and ventilation upgrades."
+      }
+],
+  },
+    {
+    slug: 'la-mesa',
+    name: 'La Mesa',
+    county: 'San Diego',
+    seoTitle: "La Mesa Roofing Contractor | Tile, Shingle & Flat Roofs",
+    seoDescription: "Trusted La Mesa CA roofing company. Residential roof replacement, historic tile repairs, flat roof coatings, and emergency service. Free estimates.",
+    h1: "Premier Roofing Contractor in La Mesa, CA",
+    intro: "Known as the \"Jewel of the Hills,\" La Mesa features charming mid-century ranch homes, historic bungalows, and modern hillside properties. Rise Up Roofing delivers expert craftsmanship for architectural shingles, Spanish tile relays, and flat patio roofs across La Mesa.",
+    neighborhoods: ["Mount Helix","La Mesa Village","Collier Park","Windsor Hills","Severin"],
+    faqs: [
+      {
+            "question": "Do you service historic homes in Mount Helix and La Mesa?",
+            "answer": "Yes, our craftsmen take great care with vintage architectural details, authentic clay tiles, and custom fascia trim on hillside La Mesa estates."
+      },
+      {
+            "question": "What financing options do you offer La Mesa homeowners?",
+            "answer": "We offer flexible zero-down roof financing plans with affordable monthly payments starting at $299/mo and terms up to 15 years."
+      },
+      {
+            "question": "How long does a roof replacement take in La Mesa?",
+            "answer": "Most residential shingle replacements take 2 to 3 business days, while full tile relays typically require 4 to 6 business days from tear-off to final cleanup."
+      }
+],
+  },
+    {
+    slug: 'chula-vista',
+    name: 'Chula Vista',
+    county: 'San Diego',
+    seoTitle: "Roofing Company Chula Vista CA | South Bay Roofing Experts",
+    seoDescription: "Top-rated Chula Vista CA roofing contractor. Spanish tile relay, architectural shingles, flat commercial roofs, and solar roofing. Free estimates.",
+    h1: "Reliable Roofing Company in Chula Vista, CA",
+    intro: "As the second-largest city in San Diego County, Chula Vista spans vibrant coastal neighborhoods to master-planned communities in the east. Rise Up Roofing & Construction provides full-service roofing—specializing in Eastlake and Otay Ranch tile relays, cool-roof shingles, and commercial flat roofs.",
+    neighborhoods: ["Eastlake","Otay Ranch","Rancho Del Rey","San Miguel Ranch","Sunbow","Downtown Chula Vista"],
+    faqs: [
+      {
+            "question": "Do you specialize in Otay Ranch and Eastlake tile roof repairs?",
+            "answer": "Yes, many homes built in the 1990s and 2000s in Eastlake and Otay Ranch now need tile underlayment replacements. We lift the tiles, replace the dry-rotted paper with synthetic membrane, and reinstall the original tiles."
+      },
+      {
+            "question": "Are you licensed and insured to work in Chula Vista?",
+            "answer": "Yes, we hold active CSLB License #1096492 (Class B & C-39) with full workers' compensation and general liability coverage."
+      },
+      {
+            "question": "Do you provide commercial roofing in Chula Vista?",
+            "answer": "Yes, we install TPO single-ply systems, modified bitumen, and silicone restorations on commercial buildings throughout South Bay."
+      }
+],
+  },
+    {
+    slug: 'national-city',
+    name: 'National City',
+    county: 'San Diego',
+    seoTitle: "National City Roofing Contractor | Residential & Commercial Roofs",
+    seoDescription: "Experienced National City CA roofing company. Flat roof repair, shingle replacement, and commercial roofing. Free estimates #1096492.",
+    h1: "Professional Roofing Contractor in National City, CA",
+    intro: "National City properties demand cost-effective, long-lasting roofing solutions. Rise Up Roofing provides residential shingle reroofs, flat roof silicone coatings, and commercial building membranes engineered for coastal South Bay weather.",
+    neighborhoods: ["Old Town","Las Palmas","El Toyon","Lincoln Acres","Westside"],
+    faqs: [
+      {
+            "question": "What is the most affordable roofing option in National City?",
+            "answer": "Architectural asphalt shingles provide the best balance of affordability, durability, and Class-A fire protection for residential homes."
+      },
+      {
+            "question": "Can you repair flat commercial roofs in National City?",
+            "answer": "Yes, we offer TPO heat-welded membranes and high-solids silicone coatings that waterproof flat commercial roofs without full tear-off costs."
+      },
+      {
+            "question": "Do you provide free estimates in National City?",
+            "answer": "Yes, we offer 100% free on-site inspections and detailed written estimates."
+      }
+],
+  },
+    {
+    slug: 'coronado',
+    name: 'Coronado',
+    county: 'San Diego',
+    seoTitle: "Coronado Roofing Contractor | Luxury Island Roofing Specialists",
+    seoDescription: "Elite roofing company in Coronado, CA. Historic tile restoration, copper flashing, coastal flat roofs, and standing seam metal. Free estimates.",
+    h1: "Luxury Roofing Contractor in Coronado, CA",
+    intro: "Coronado Island’s historic estates, oceanfront properties, and luxury bungalows require the utmost care and premium materials. Rise Up Roofing delivers bespoke roofing solutions—from authentic two-piece clay tile restoration and hand-soldered copper valleys to marine-grade coastal flat roof membranes.",
+    neighborhoods: ["The Village","Coronado Cays","Coronado Shores","Bayfront","Ocean Boulevard"],
+    faqs: [
+      {
+            "question": "How do you prevent salt corrosion on Coronado island roofs?",
+            "answer": "We utilize marine-grade copper or 316 stainless steel flashings, non-corrosive fasteners, and specialized salt-resistant underlayments built for island environments."
+      },
+      {
+            "question": "Do you work on historic homes in the Coronado Village?",
+            "answer": "Yes, our master craftsmen carefully preserve historic architectural details and match vintage clay tiles to meet Coronado historic preservation guidelines."
+      },
+      {
+            "question": "What flat roof systems do you recommend for Coronado coastal properties?",
+            "answer": "Seamless multi-ply TPO membranes and high-solids fluid-applied silicone systems offer total resistance to coastal ponding water and ocean humidity."
+      }
+],
+  },
+    {
+    slug: 'imperial-beach',
+    name: 'Imperial Beach',
+    county: 'San Diego',
+    seoTitle: "Imperial Beach Roofing Company | Coastal South Bay Roofers",
+    seoDescription: "Trusted roofing contractor in Imperial Beach, CA. Salt-air resistant shingles, tile repairs, and flat roof coatings. Free estimates.",
+    h1: "Quality Roofing Services in Imperial Beach, CA",
+    intro: "As the southwesternmost city in the continental US, Imperial Beach homes face constant marine fog, coastal winds, and high UV exposure. Rise Up Roofing provides durable shingle replacements, tile leak diagnostics, and roof coatings built to withstand harsh oceanfront conditions.",
+    neighborhoods: ["Seacoast Drive","Bayside","Palm City","Ream Field","Imperial Beach Pier Area"],
+    faqs: [
+      {
+            "question": "How often should oceanfront roofs in Imperial Beach be inspected?",
+            "answer": "Due to severe salt air and coastal wind, we recommend an annual inspection to catch rusting nails, cracked tiles, or degraded flashing sealant before leaks develop."
+      },
+      {
+            "question": "Do you offer emergency roof tarping in Imperial Beach?",
+            "answer": "Yes, our South Bay emergency dispatch team responds rapidly with emergency leak tarping during severe coastal winter storms."
+      },
+      {
+            "question": "What shingles resist coastal wind best in Imperial Beach?",
+            "answer": "We install Owens Corning Duration shingles featuring patented SureNail Technology, rated for up to 130 mph wind resistance."
+      }
+],
+  },
+    {
+    slug: 'santee',
+    name: 'Santee',
+    county: 'San Diego',
+    seoTitle: "Santee Roofing Contractor | Inland Heat-Resistant Roofs",
+    seoDescription: "Top-rated Santee CA roofing company. Title 24 cool shingles, tile relay, attic ventilation upgrades, and leak repairs. Free estimates.",
+    h1: "Experienced Roofing Contractor in Santee, CA",
+    intro: "Santee's warm inland climate demands energy-efficient roofing that resists prolonged sun exposure and helps keep homes cool. Rise Up Roofing specializes in cool-roof shingle replacements, concrete tile repairs, and ridge vent ventilation systems across Santee.",
+    neighborhoods: ["Carlton Hills","Riverview","Prospect","Mission Creek","Santee Lakes Area"],
+    faqs: [
+      {
+            "question": "How do attic ventilation upgrades reduce cooling costs in Santee?",
+            "answer": "Proper ridge vents and solar attic fans continuously exhaust superheated 140°+ attic air, taking pressure off your air conditioner and extending roof underlayment life."
+      },
+      {
+            "question": "How long does a tile roof underlayment last in Santee?",
+            "answer": "Traditional asphalt felt typically lasts 15 to 20 years in Santee’s heat before becoming brittle. We replace it with premium synthetic underlayment rated for 50+ years."
+      },
+      {
+            "question": "Do you provide roof repairs for minor leaks in Santee?",
+            "answer": "Yes, we handle repairs of all sizes—from single broken tiles and pipe collar leaks to full valley metal replacements."
+      }
+],
+  },
+    {
+    slug: 'lakeside',
+    name: 'Lakeside',
+    county: 'San Diego',
+    seoTitle: "Lakeside Roofing Company | Rural & Residential Roofers",
+    seoDescription: "Licensed roofing contractor in Lakeside, CA. Concrete tile relay, shingle replacement, and fire-resistant metal roofing. Free estimates.",
+    h1: "Trusted Roofing Contractors in Lakeside, CA",
+    intro: "From residential neighborhoods to rural ranches in Eucalyptus Hills, Lakeside properties need tough, fire-safe roofing systems. Rise Up Roofing delivers Class-A fire-rated asphalt shingles, heavy concrete tile relays, and standing seam metal roofs built for East County endurance.",
+    neighborhoods: ["Eucalyptus Hills","Winter Gardens","Lake Jennings Area","Riverview","Glenview"],
+    faqs: [
+      {
+            "question": "Do you install fire-rated roofs in Lakeside WUI zones?",
+            "answer": "Yes, we install non-combustible Class-A systems with enclosed bird stops and ember-resistant ridge vents that meet California Wildland-Urban Interface standards."
+      },
+      {
+            "question": "Can you work on manufactured and mobile home roofs in Lakeside?",
+            "answer": "We focus on permitted residential single-family homes, custom ranches, and commercial structures."
+      },
+      {
+            "question": "Are your estimates free for Lakeside homeowners?",
+            "answer": "Yes, we provide 100% free physical and drone roof inspections with transparent written estimates."
+      }
+],
+  },
+    {
+    slug: 'alpine',
+    name: 'Alpine',
+    county: 'San Diego',
+    seoTitle: "Alpine Roofing Contractor | Mountain & Wildfire-Safe Roofing",
+    seoDescription: "Premier roofing company in Alpine, CA. Class-A standing seam metal roofs, heavy tile replacement, and winter storm repairs. Free estimates.",
+    h1: "Mountain & Wildfire-Safe Roofing in Alpine, CA",
+    intro: "Situated in the foothills of the Cuyamaca Mountains, Alpine experiences elevated wildfire dangers, freezing winter temperatures, and intense summer sun. Rise Up Roofing provides heavy-duty Class-A standing seam metal roofs, durable concrete tile relays, and architectural cool shingles built for mountain weather.",
+    neighborhoods: ["Alpine Highlands","Palo Verde Ranch","Crown Hills","Victoria Heights","Japatul Valley"],
+    faqs: [
+      {
+            "question": "Why is standing seam metal ideal for Alpine homes?",
+            "answer": "Standing seam metal provides maximum non-combustible Class-A fire defense, sheds winter snow and heavy rain effortlessly, and lasts 50+ years with zero maintenance."
+      },
+      {
+            "question": "How do you prevent ice damming and freeze damage in Alpine winters?",
+            "answer": "We install self-adhering ice-and-water shield membranes along eaves, valleys, and flashing points to prevent freeze-thaw water intrusion."
+      },
+      {
+            "question": "Do you offer emergency storm repairs in Alpine?",
+            "answer": "Yes, our crews respond quickly to wind-damaged shingles, fallen tree branch impacts, and storm leaks throughout Alpine."
+      }
+],
+  },
+    {
+    slug: 'spring-valley',
+    name: 'Spring Valley',
+    county: 'San Diego',
+    seoTitle: "Spring Valley Roofing Company | Tile Relay & Shingle Experts",
+    seoDescription: "Top roofing contractors in Spring Valley, CA. Residential reroofing, tile repairs, and affordable roof financing. Free estimates #1096492.",
+    h1: "Expert Roofing Contractors in Spring Valley, CA",
+    intro: "Spring Valley homeowners count on Rise Up Roofing for dependable, budget-friendly roof replacements and prompt leak repairs. From La Presa to Dictionary Hill, our licensed crews deliver Owens Corning architectural shingles and master tile underlayment replacements.",
+    neighborhoods: ["La Presa","Dictionary Hill","Bancroft","Casa de Oro","Mount Helix Foothills"],
+    faqs: [
+      {
+            "question": "How much does a new roof cost in Spring Valley, CA?",
+            "answer": "Most residential shingle replacements range from $8,000 to $15,500 depending on home size, pitch, and decking condition. We provide itemized quotes with zero hidden fees."
+      },
+      {
+            "question": "Can I finance my roof replacement in Spring Valley?",
+            "answer": "Yes, we offer zero-down financing options with affordable monthly payments starting at $299/mo."
+      },
+      {
+            "question": "How quickly can you start a roofing project in Spring Valley?",
+            "answer": "Once permits are pulled, we typically begin within 7 to 14 days and complete residential replacements in 2 to 3 days."
+      }
+],
+  },
+    {
+    slug: 'lemon-grove',
+    name: 'Lemon Grove',
+    county: 'San Diego',
+    seoTitle: "Lemon Grove Roofing Contractor | Shingle & Flat Roof Experts",
+    seoDescription: "Trusted Lemon Grove CA roofing company. Affordable shingle replacement, tile repairs, and flat patio roofs. Free estimates #1096492.",
+    h1: "Reliable Roofing Company in Lemon Grove, CA",
+    intro: "Featuring the \"Best Climate on Earth,\" Lemon Grove homes still need protection from sun degradation, thermal expansion, and seasonal winter rains. Rise Up Roofing & Construction provides residential reroofing, flat garage roof coatings, and emergency leak repairs throughout Lemon Grove.",
+    neighborhoods: ["Broadway Corridor","Golden Avenue","Cipress Canyon","Mount Vernon","Downtown Lemon Grove"],
+    faqs: [
+      {
+            "question": "What is the best roofing material for Lemon Grove homes?",
+            "answer": "Owens Corning architectural cool-roof shingles offer the ideal combination of affordability, energy efficiency, and 50-year warranty coverage."
+      },
+      {
+            "question": "Do you repair leaky flat patio and garage roofs in Lemon Grove?",
+            "answer": "Yes, we install commercial-grade TPO and silicone coating systems that seal flat and low-slope roofs permanently."
+      },
+      {
+            "question": "Are you licensed and insured in Lemon Grove?",
+            "answer": "Yes, Rise Up is fully licensed (CSLB #1096492), bonded, and insured with workers' compensation and general liability coverage."
+      }
+],
+  },
   {
     slug: 'rancho-santa-fe',
     name: 'Rancho Santa Fe',
@@ -292,9 +683,78 @@ export const serviceAreas: ServiceArea[] = [
       },
     ],
   },
-  { slug: 'camp-pendleton', name: 'Camp Pendleton', county: 'San Diego' },
-  { slug: 'temecula', name: 'Temecula', county: 'Riverside' },
-  { slug: 'murrieta', name: 'Murrieta', county: 'Riverside' },
+    {
+    slug: 'camp-pendleton',
+    name: 'Camp Pendleton',
+    county: 'San Diego',
+    seoTitle: "Camp Pendleton Area Roofing Contractor | Military & Residential Roofs",
+    seoDescription: "Trusted roofing company serving Camp Pendleton, Oceanside, and North County military housing & surrounding communities. Free estimates.",
+    h1: "Roofing Services in the Camp Pendleton & Oceanside Region",
+    intro: "Located directly adjacent to MCB Camp Pendleton at our Oceanside headquarters, Rise Up Roofing proudly serves military families, veterans, and property managers throughout the base perimeter communities with fast, dependable roofing craftsmanship.",
+    neighborhoods: ["Stuart Mesa","Wire Mountain","San Luis Rey","North Coast Village","De Luz Housing Area"],
+    faqs: [
+      {
+            "question": "Do you offer military discounts for active duty and veterans?",
+            "answer": "Yes, Rise Up Roofing proudly offers discounts to active-duty service members, military veterans, and their families on full roof replacements."
+      },
+      {
+            "question": "How close is your headquarters to Camp Pendleton?",
+            "answer": "Our main office is located right in Oceanside at 2182 S El Camino Real, minutes from the Camp Pendleton main and San Luis Rey gates."
+      },
+      {
+            "question": "Can you handle emergency leaks during military deployments?",
+            "answer": "Yes, we coordinate directly with spouses, local property managers, and escrow agents with digital photo reports and online invoicing."
+      }
+],
+  },
+    {
+    slug: 'temecula',
+    name: 'Temecula',
+    county: 'Riverside',
+    seoTitle: "Temecula Roofing Contractor | Wine Country & Residential Roofs",
+    seoDescription: "Premier Temecula CA roofing company. Concrete tile relay, cool shingles, winery commercial roofs, and storm repairs. Free estimates.",
+    h1: "Top-Rated Roofing Contractor in Temecula, CA",
+    intro: "Temecula's Mediterranean climate brings intense summer heat, vineyard breezes, and cold winter mornings. Rise Up Roofing serves Temecula homeowners and commercial winery facilities with expert concrete tile underlayment replacement, Title 24 cool-roof shingles, and durable commercial membranes.",
+    neighborhoods: ["Wine Country","Harveston","Redhawk","Meadowview","Wolf Creek","Paloma del Sol"],
+    faqs: [
+      {
+            "question": "Why are tile roofs failing in Temecula master-planned communities?",
+            "answer": "Homes built 15 to 25 years ago in Redhawk, Harveston, and Paloma del Sol used standard asphalt felt that dries out beneath tiles under Temecula’s hot sun. Our tile relay replaces the paper with 50-year synthetic underlayment."
+      },
+      {
+            "question": "Do you service commercial properties and wineries in Temecula?",
+            "answer": "Yes, we install commercial TPO membranes, standing seam metal roofs, and reflective roof coatings on Temecula commercial and winery facilities."
+      },
+      {
+            "question": "Do you offer free roof inspections in Temecula?",
+            "answer": "Yes, we provide 100% free on-site roof evaluations with complete drone aerial footage."
+      }
+],
+  },
+    {
+    slug: 'murrieta',
+    name: 'Murrieta',
+    county: 'Riverside',
+    seoTitle: "Murrieta Roofing Company | Tile Relay & Shingle Replacement",
+    seoDescription: "Trusted Murrieta CA roofing contractor. Spanish tile lift-and-reset, cool-roof shingles, and 24/7 leak repairs. Free estimates #1096492.",
+    h1: "Premier Roofing Company in Murrieta, CA",
+    intro: "Murrieta has grown into one of Southern California's most desirable family communities. Rise Up Roofing delivers top-tier residential roofing across Murrieta—specializing in full tile underlayment replacements, Owens Corning architectural shingles, and storm damage repairs.",
+    neighborhoods: ["Greer Ranch","Bear Creek","Copper Canyon","The Colony","Central Park","Alta Murrieta"],
+    faqs: [
+      {
+            "question": "How much does a tile roof relay cost in Murrieta?",
+            "answer": "A tile lift-and-reset in Murrieta generally ranges from $10,000 to $21,000 depending on home size, roof slope, and tile condition. Reusing existing tiles saves thousands compared to buying new tile."
+      },
+      {
+            "question": "Do you work in gated communities like Bear Creek and Greer Ranch?",
+            "answer": "Yes, our crews routinely work in gated communities with strict HOA guidelines, adhering to all noise, parking, and architectural standards."
+      },
+      {
+            "question": "How fast can you repair an active roof leak in Murrieta?",
+            "answer": "We offer same-day emergency leak dispatch across Murrieta with emergency tarping and diagnostic inspection."
+      }
+],
+  },
 ];
 
 export function getServiceAreaBySlug(slug: string): ServiceArea | undefined {

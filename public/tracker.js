@@ -155,20 +155,27 @@
 
     // ── Scroll depth — report at 25/50/75/90/100% ─────────────────────────
     var reported = {};
+    var scrollTicking = false;
     window.addEventListener(
       'scroll',
       function () {
-        var pct = Math.round(
-          ((window.scrollY + window.innerHeight) /
-            Math.max(document.body.scrollHeight, 1)) *
-            100
-        );
-        [25, 50, 75, 90, 100].forEach(function (t) {
-          if (pct >= t && !reported[t]) {
-            reported[t] = 1;
-            send({ eventType: 'scroll', scrollPct: t });
-          }
-        });
+        if (!scrollTicking) {
+          window.requestAnimationFrame(function () {
+            var pct = Math.round(
+              ((window.scrollY + window.innerHeight) /
+                Math.max(document.body.scrollHeight, 1)) *
+                100
+            );
+            [25, 50, 75, 90, 100].forEach(function (t) {
+              if (pct >= t && !reported[t]) {
+                reported[t] = 1;
+                send({ eventType: 'scroll', scrollPct: t });
+              }
+            });
+            scrollTicking = false;
+          });
+          scrollTicking = true;
+        }
       },
       { passive: true }
     );

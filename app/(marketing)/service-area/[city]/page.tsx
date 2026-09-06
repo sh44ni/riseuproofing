@@ -35,9 +35,38 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
 
   const faqs = area.faqs || [];
   const faqJsonLd = faqs.length > 0 ? buildFAQJsonLd(faqs) : null;
+  const cityJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'RoofingContractor',
+    name: `${COMPANY_NAME} - ${area.name}`,
+    url: `https://riseuprac.com/service-area/${area.slug}`,
+    telephone: '+17606221230',
+    areaServed: {
+      '@type': 'City',
+      name: area.name,
+      containedInPlace: {
+        '@type': 'State',
+        name: 'California',
+      },
+    },
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '2182 S El Camino Real',
+      addressLocality: 'Oceanside',
+      addressRegion: 'CA',
+      postalCode: '92054',
+      addressCountry: 'US',
+    },
+    priceRange: '$$',
+    openingHours: 'Mo-Su 00:00-24:00',
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(cityJsonLd) }}
+      />
       {faqJsonLd && (
         <script
           type="application/ld+json"

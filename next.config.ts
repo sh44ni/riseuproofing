@@ -5,9 +5,14 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'media.base44.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 's3-media0.fl.yelpcdn.com' },
+      { protocol: 'https', hostname: 's3-media1.fl.yelpcdn.com' },
+      { protocol: 'https', hostname: 's3-media2.fl.yelpcdn.com' },
     ],
   },
   async headers() {

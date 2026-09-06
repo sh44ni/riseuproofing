@@ -28,6 +28,8 @@ export const SERVICES_NAV: ServiceNavItem[] = [
   { label: 'Home & Room Additions', href: '/services/home-additions', icon: Hammer, desc: 'Custom second-story & suite expansions' },
   { label: 'ADU Construction', href: '/services/adu-construction', icon: Building2, desc: 'Detached ADUs & garage conversions' },
   { label: 'Commercial Roofing', href: '/services/commercial', icon: Building2, desc: 'TPO single-ply & roof coatings' },
+  { label: 'Modified Bitumen Roofing', href: '/services/modified-bitumen', icon: Layers, desc: 'SBS/APP multi-ply commercial systems' },
+  { label: 'Roof Coating & Restoration', href: '/services/roof-coating', icon: Shield, desc: 'Seamless 100% silicone fluid coatings' },
   { label: 'Solar Roofing', href: '/services/solar', icon: Sun, desc: 'Solar integration & detach-reset' },
   { label: 'General Construction', href: '/services/construction', icon: Hammer, desc: 'Patio covers, framing & exterior builds' },
 ];
@@ -58,16 +60,16 @@ export const SERVICES_MEGA_MENU: MegaMenuColumn[] = [
     ],
   },
   {
-    category: 'Commercial & Solar',
+    category: 'Commercial & Coatings',
     icon: Building2,
     color: 'text-amber-400 bg-amber-500/10',
     href: '/services/commercial',
-    description: 'TPO single-ply membranes, elastomeric coatings & solar detach/reset.',
+    description: 'TPO single-ply, SBS modified bitumen, silicone coatings & solar.',
     items: [
-      { label: 'TPO Membrane Flat Roofing', href: '/services/commercial' },
-      { label: 'Silicone & Elastomeric Coatings', href: '/services/commercial' },
-      { label: 'Solar Roofing & Battery Systems', href: '/services/solar' },
-      { label: 'Solar Panel Detach & Reset', href: '/services/solar' },
+      { label: 'TPO Single-Ply Membrane', href: '/services/commercial' },
+      { label: 'Modified Bitumen & Built-Up', href: '/services/modified-bitumen' },
+      { label: 'Silicone & Elastomeric Coatings', href: '/services/roof-coating' },
+      { label: 'Solar Roofing & Panel Detach', href: '/services/solar' },
     ],
   },
   {
