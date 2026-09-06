@@ -19,17 +19,11 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   const area = getServiceAreaBySlug(city);
   if (!area) return {};
 
-  if (area.slug === 'san-diego') {
-    return buildMetadata({
-      title: 'San Diego Roofing Contractor | Rise Up Roofing',
-      description: 'Trusted San Diego CA roofing company. 5-star tile relay, shingle replacement, leak repairs, and solar roofing. Free roofing estimates throughout San Diego County.',
-      path: `/service-area/${area.slug}`,
-    });
-  }
-
   return buildMetadata({
-    title: `Roofing & Construction in ${area.name}, CA | Rise Up Roofing`,
-    description: `${COMPANY_NAME} provides expert roofing, tile underlayment, repairs, solar, and construction services in ${area.name}, California. Licensed, bonded & insured. Free estimates.`,
+    title: area.seoTitle || `Roofing & Construction in ${area.name}, CA | Rise Up Roofing`,
+    description:
+      area.seoDescription ||
+      `${COMPANY_NAME} provides expert roofing, tile underlayment, repairs, solar, and construction services in ${area.name}, California. Licensed, bonded & insured. Free estimates.`,
     path: `/service-area/${area.slug}`,
   });
 }
@@ -39,39 +33,8 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   const area = getServiceAreaBySlug(city);
   if (!area) notFound();
 
-  const isSanDiego = area.slug === 'san-diego';
-
-  const sanDiegoFaqs = isSanDiego
-    ? [
-        {
-          question: 'How much does a roof replacement cost in San Diego, CA?',
-          answer:
-            'In San Diego, a complete residential roof replacement generally ranges from $8,500 to $18,000 for architectural asphalt shingles, and $11,000 to $26,000+ for concrete or clay tile roof relayment with dual-layer synthetic underlayment. Final costs depend on roof square footage, pitch steepness, accessibility, and wood deck condition. Rise Up Roofing provides transparent, itemized free estimates before any work begins.',
-        },
-        {
-          question: 'Do you offer free roofing estimates in San Diego County?',
-          answer:
-            'Yes. We provide 100% free, no-obligation roof inspections and written estimates across all San Diego neighborhoods. Our inspectors examine your roof surface, attic ventilation, flashing points, and underlayment condition, providing a comprehensive photo report.',
-        },
-        {
-          question: 'How does San Diego’s coastal climate impact roof longevity?',
-          answer:
-            'San Diego properties experience intense summer ultraviolet radiation, damp morning coastal marine layers, salt-air exposure, and dry Santa Ana wind gusts. These cycles cause organic roofing felt to dry out and crack beneath tiles. We install high-temperature synthetic underlayments and corrosion-resistant flashings engineered specifically for Southern California microclimates.',
-        },
-        {
-          question: 'Can you handle solar panel detach and reset during a roof replacement?',
-          answer:
-            'Yes. Rise Up coordinates end-to-end solar detach and reset services in-house. We safely decouple your panels, store them during reroofing, install new waterproof stanchion boots, and remount and wire the system so your solar warranties remain completely protected.',
-        },
-        {
-          question: 'Is Rise Up Roofing licensed and insured in San Diego?',
-          answer:
-            'Yes, Rise Up Roofing & Construction holds active California Contractor’s License #1096492, with both C-39 Roofing and B General Building classifications. We carry comprehensive general liability insurance and workers’ compensation for complete homeowner protection.',
-        },
-      ]
-    : [];
-
-  const faqJsonLd = sanDiegoFaqs.length > 0 ? buildFAQJsonLd(sanDiegoFaqs) : null;
+  const faqs = area.faqs || [];
+  const faqJsonLd = faqs.length > 0 ? buildFAQJsonLd(faqs) : null;
 
   return (
     <>
@@ -97,15 +60,11 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--text-primary)] mb-4 tracking-tight">
-            {isSanDiego ? 'Premier Roofing Contractor in San Diego, CA' : `Roofing & Construction in ${area.name}, CA`}
+            {area.h1 || `Roofing & Construction in ${area.name}, CA`}
           </h1>
 
           <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-8 leading-relaxed">
-            {isSanDiego ? (
-              <>
-                Looking for trusted, 5-star roofing companies in San Diego, CA? {COMPANY_NAME} delivers master-grade residential and commercial roofing, emergency roof leak repair, tile underlayment replacement, solar roofing, and custom home additions throughout San Diego County. Backed by California Contractor&apos;s License #{LICENSE_NUMBER} and Owens Corning Preferred Contractor status, our work includes up to 50-year manufacturer warranties and free, transparent roofing estimates.
-              </>
-            ) : (
+            {area.intro || (
               <>
                 {COMPANY_NAME} is proud to serve homeowners and commercial property managers in {area.name}, {area.county} County. 
                 Whether you need a complete roof replacement, tile relay with 2-ply underlayment, emergency leak detection, or general construction repairs, our licensed team delivers master craftsmanship backed by 50-year manufacturer warranties.
@@ -113,15 +72,15 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             )}
           </p>
 
-          {/* San Diego Neighborhood Badges (Local Authority) */}
-          {isSanDiego && (
+          {/* Local Neighborhood Badges (Authority Signals) */}
+          {area.neighborhoods && area.neighborhoods.length > 0 && (
             <div className="glass-card-interactive rounded-2xl p-5 mb-10 border border-slate-200/80 shadow-xs">
               <h2 className="text-sm font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-brand-blue" />
-                <span>San Diego Neighborhoods Proudly Served</span>
+                <span>{area.name} Communities &amp; Neighborhoods Served</span>
               </h2>
               <div className="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
-                {['Pacific Beach', 'La Jolla', 'North Park', 'Point Loma', 'Ocean Beach', 'Clairemont', 'Mission Hills', 'Downtown San Diego', 'Hillcrest', 'Tierrasanta', 'Del Cerro', 'Mission Valley'].map((n) => (
+                {area.neighborhoods.map((n) => (
                   <span key={n} className="glass-chip px-2.5 py-1 rounded-lg">
                     {n}
                   </span>
@@ -144,7 +103,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                 <div className="w-9 h-9 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 group-hover:bg-brand-blue group-hover:text-white transition-colors">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">
                     {service.name}
                   </h3>
@@ -172,13 +131,13 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             </div>
           </div>
 
-          {/* San Diego FAQs */}
-          {isSanDiego && sanDiegoFaqs.length > 0 && (
+          {/* Local FAQs */}
+          {faqs.length > 0 && (
             <div className="mb-12">
               <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] mb-4">
-                Frequently Asked Questions About Roofing in San Diego
+                Frequently Asked Questions About Roofing in {area.name}
               </h2>
-              <FAQAccordion items={sanDiegoFaqs} />
+              <FAQAccordion items={faqs} />
             </div>
           )}
 
