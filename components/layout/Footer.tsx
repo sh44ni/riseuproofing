@@ -366,16 +366,17 @@ export function Footer() {
               &copy; {new Date().getFullYear()} {COMPANY_NAME} Inc. All rights reserved.
             </p>
 
-            {/* Powered By projekts.pk */}
-            <div className="flex items-center gap-1.5 text-xs text-white/60">
+            {/* Powered By PROJEKTS */}
+            <div className="flex items-center gap-2 text-xs text-white/55">
               <span>Powered by</span>
               <a
-                href="https://projekts.pk"
+                href="https://projektsvision.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-brand-blue font-bold transition-colors underline decoration-white/20 underline-offset-4 hover:decoration-brand-blue"
+                className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.10] border border-white/10 hover:border-brand-blue/40 text-white hover:text-brand-blue font-extrabold tracking-wider transition-all duration-200 shadow-2xs"
               >
-                projekts.pk
+                <span>PROJEKTS</span>
+                <ArrowUpRight className="w-3 h-3 text-brand-blue transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             </div>
 

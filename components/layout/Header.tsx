@@ -155,7 +155,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 animate-hero-1">
+    <header className="fixed top-0 inset-x-0 z-50">
       {/* UTILITY TIER — collapses on scroll */}
       <div
         className={cn(
@@ -206,13 +206,13 @@ export function Header() {
         </div>
       </div>
 
-      {/* MAIN NAVIGATION — Frosted Glass Bar with Clear Hierarchy */}
+      {/* MAIN NAVIGATION — Frosted Glass Bar with Generous Height & Presence */}
       <div
         className={cn(
           'w-full glass-nav-surface transition-all duration-300 backdrop-blur-2xl'
         )}
       >
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-2 sm:py-2.5 flex items-center justify-between gap-4 xl:gap-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-3 sm:py-3.5 lg:py-4 flex items-center justify-between gap-4 xl:gap-8">
           {/* Brand Logo & Mobile App Back Navigation */}
           {navInfo ? (
             <>
@@ -225,25 +225,25 @@ export function Header() {
                 <Image
                   src="/logo.svg"
                   alt="Rise Up Roofing & Construction"
-                  width={165}
-                  height={46}
+                  width={180}
+                  height={50}
                   priority
-                  className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+                  className="h-9 sm:h-10 lg:h-11 w-auto object-contain transition-transform group-hover:scale-[1.02]"
                 />
               </Link>
 
               {/* Mobile: App-like Back Button & Current View Title */}
-              <div className="lg:hidden flex items-center gap-2 min-w-0 flex-1 mr-2">
+              <div className="lg:hidden flex items-center gap-2.5 min-w-0 flex-1 mr-2">
                 <button
                   type="button"
                   onClick={handleMobileBack}
-                  className="inline-flex items-center gap-1 -ml-1 px-2.5 py-1.5 rounded-xl bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200 text-theme-primary font-bold text-xs transition-all active:scale-95 border border-slate-200/60 shadow-2xs flex-shrink-0 cursor-pointer"
+                  className="inline-flex items-center gap-1 -ml-1 px-3 py-2 rounded-xl bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200 text-theme-primary font-bold text-xs transition-all active:scale-95 border border-slate-200/60 shadow-2xs flex-shrink-0 cursor-pointer"
                   aria-label={`Go back to ${navInfo.label}`}
                 >
                   <ChevronLeft className="w-4 h-4 text-brand-blue stroke-[2.5]" />
-                  <span className="truncate max-w-[70px] sm:max-w-[100px]">{navInfo.label}</span>
+                  <span className="truncate max-w-[80px] sm:max-w-[120px]">{navInfo.label}</span>
                 </button>
-                <span className="text-xs font-extrabold text-theme-primary tracking-tight truncate">
+                <span className="text-xs sm:text-sm font-extrabold text-theme-primary tracking-tight truncate">
                   {navInfo.title}
                 </span>
               </div>
@@ -257,10 +257,10 @@ export function Header() {
               <Image
                 src="/logo.svg"
                 alt="Rise Up Roofing & Construction"
-                width={165}
-                height={46}
+                width={180}
+                height={50}
                 priority
-                className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+                className="h-9 sm:h-10 lg:h-11 w-auto object-contain transition-transform group-hover:scale-[1.02]"
               />
             </Link>
           )}
