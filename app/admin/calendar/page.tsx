@@ -119,18 +119,18 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-[16px] bg-sky-50 border border-sky-200 text-[#1878B8]">
-            <CalendarIcon size={24} />
+    <div className="space-y-6 pb-28 md:pb-14 max-w-7xl mx-auto">
+      {/* Header — Apple Liquid Glass Card */}
+      <div className="admin-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl admin-tile-blue flex items-center justify-center flex-shrink-0 shadow-[0_4px_14px_rgba(47,159,227,0.3)]">
+            <CalendarIcon size={22} className="stroke-[2.2]" />
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0B1E33]">
               Field Operations &amp; Dispatch Calendar
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
               Schedule active roof installs, supplier boom deliveries, and city permit inspections
             </p>
           </div>
@@ -143,25 +143,25 @@ export default function CalendarPage() {
               fetchEvents();
             }}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-600 shadow-xs transition-all duration-300 ease-out cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200/80 bg-white/85 hover:bg-white text-xs font-bold text-slate-700 shadow-2xs transition-all duration-200 cursor-pointer apple-spring-press"
           >
             <RefreshCw size={14} className={refreshing ? 'animate-spin text-[#2F9FE3]' : ''} />
-            Refresh
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      {/* Filter Tabs — Apple Liquid Glass Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none">
         {EVENT_TYPES.map(t => (
           <button
             key={t.id}
             type="button"
             onClick={() => setFilterType(t.id)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ease-out whitespace-nowrap cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer apple-spring-press ${
               filterType === t.id
-                ? 'admin-btn-gold shadow-xs'
-                : 'bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200 shadow-2xs'
+                ? 'admin-glass-pill-gold-active shadow-xs scale-[1.02]'
+                : 'admin-glass-pill text-slate-600 hover:text-[#0B1E33]'
             }`}
           >
             {t.label}
@@ -171,30 +171,32 @@ export default function CalendarPage() {
 
       {/* Calendar Grid & Day Detail (2 Columns on Desktop) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left (2/3): Calendar Month Grid */}
-        <div className="lg:col-span-2 p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 space-y-4 shadow-xs">
+        {/* Left (2/3): Apple Liquid Glass Calendar Month Grid */}
+        <div className="lg:col-span-2 admin-card p-5 sm:p-6 space-y-4 shadow-xs">
           {/* Calendar Month Navigation Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 className="text-lg sm:text-xl font-black text-[#0B1E33]">
+          <div className="flex items-center justify-between border-b border-slate-100/80 pb-4">
+            <h2 className="text-lg sm:text-xl font-black text-[#0B1E33] tracking-tight">
               {monthNames[month]} {year}
             </h2>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 onClick={goToToday}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 border border-slate-200 transition-all duration-300 ease-out cursor-pointer"
+                className="px-3.5 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-xs font-bold text-slate-700 border border-slate-200/60 transition-all duration-200 cursor-pointer apple-spring-press shadow-2xs"
               >
                 Today
               </button>
               <button
                 onClick={prevMonth}
-                className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200 transition-all duration-300 ease-out cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200/80 flex items-center justify-center transition-all duration-200 cursor-pointer apple-spring-press shadow-2xs"
+                aria-label="Previous Month"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={nextMonth}
-                className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-[#0B1E33] border border-slate-200 transition-all duration-300 ease-out cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200/80 flex items-center justify-center transition-all duration-200 cursor-pointer apple-spring-press shadow-2xs"
+                aria-label="Next Month"
               >
                 <ChevronRight size={16} />
               </button>
@@ -202,7 +204,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Days of Week */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1">
+          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 pb-1">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -212,14 +214,14 @@ export default function CalendarPage() {
             <span>Sat</span>
           </div>
 
-          {/* Calendar Grid Cells */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+          {/* Calendar Grid Cells — Tactile Liquid Squircles */}
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {calendarDays.map((day, idx) => {
               if (day === null) {
                 return (
                   <div
                     key={`empty-${idx}`}
-                    className="min-h-[64px] sm:min-h-[88px] rounded-xl bg-slate-50/50 border border-transparent"
+                    className="min-h-[64px] sm:min-h-[88px] rounded-2xl bg-slate-50/40 border border-transparent"
                   />
                 );
               }
@@ -233,29 +235,29 @@ export default function CalendarPage() {
                 <div
                   key={`day-${day}`}
                   onClick={() => setSelectedDateStr(dStr)}
-                  className={`min-h-[64px] sm:min-h-[88px] p-1.5 sm:p-2 rounded-xl border text-left cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between ${
+                  className={`min-h-[64px] sm:min-h-[88px] p-2 rounded-2xl border text-left cursor-pointer transition-all duration-200 flex flex-col justify-between apple-spring-press ${
                     isSelected
-                      ? 'bg-sky-50/50 border-[#2F9FE3] shadow-xs ring-2 ring-[#2F9FE3]/30'
+                      ? 'bg-gradient-to-b from-sky-500/15 via-sky-500/8 to-blue-500/5 border-[#2F9FE3] shadow-[0_4px_16px_rgba(47,159,227,0.2),inset_0_1px_1px_rgba(255,255,255,0.95)] ring-2 ring-[#2F9FE3]/40'
                       : isToday
-                      ? 'bg-amber-50/40 border-[#EAA636]/40'
-                      : 'bg-white border-slate-200/70 hover:border-slate-300 hover:bg-slate-50/50'
+                      ? 'bg-amber-50/60 border-amber-300 shadow-2xs'
+                      : 'bg-white/75 border-slate-200/80 hover:border-slate-300 hover:bg-white'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-xs font-bold ${
                         isToday
-                          ? 'w-5 h-5 rounded-full bg-[#EAA636] text-white flex items-center justify-center text-[10px]'
+                          ? 'w-6 h-6 rounded-full bg-gradient-to-br from-[#FBBF24] to-[#D97706] text-white flex items-center justify-center text-[11px] font-black shadow-[0_2px_8px_rgba(234,166,54,0.35)]'
                           : isSelected
-                          ? 'text-[#1878B8] font-black'
-                          : 'text-slate-700'
+                          ? 'w-6 h-6 rounded-full bg-[#2F9FE3] text-white flex items-center justify-center text-[11px] font-black shadow-[0_2px_8px_rgba(47,159,227,0.4)]'
+                          : 'text-slate-700 font-semibold'
                       }`}
                     >
                       {day}
                     </span>
 
                     {dayEvents.length > 0 && (
-                      <span className="text-[9px] font-mono font-bold text-slate-500 sm:hidden">
+                      <span className="text-[10px] font-mono font-black text-[#1878B8] sm:hidden">
                         {dayEvents.length}
                       </span>
                     )}
@@ -267,7 +269,7 @@ export default function CalendarPage() {
                       return (
                         <div
                           key={ev.id}
-                          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded truncate border leading-tight ${
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-lg truncate border leading-tight shadow-2xs ${
                             ev.type === 'job'
                               ? 'bg-amber-50 text-amber-800 border-amber-200'
                               : ev.type === 'delivery'
@@ -284,9 +286,9 @@ export default function CalendarPage() {
                       );
                     })}
                     {dayEvents.length > 2 && (
-                      <div className="text-[9px] text-slate-400 font-mono">
+                      <span className="text-[9px] font-bold text-slate-400 pl-1 block">
                         +{dayEvents.length - 2} more
-                      </div>
+                      </span>
                     )}
                   </div>
 
@@ -295,7 +297,7 @@ export default function CalendarPage() {
                     {dayEvents.slice(0, 3).map(ev => (
                       <span
                         key={ev.id}
-                        className={`w-1.5 h-1.5 rounded-full ${
+                        className={`w-1.5 h-1.5 rounded-full shadow-2xs ${
                           ev.type === 'job'
                             ? 'bg-[#EAA636]'
                             : ev.type === 'delivery'
@@ -314,9 +316,9 @@ export default function CalendarPage() {
         </div>
 
         {/* Right (1/3): Selected Day Event Drawer */}
-        <div className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 space-y-4 shadow-xs">
-          <div className="border-b border-slate-100 pb-3">
-            <span className="text-[10px] uppercase font-bold text-[#1878B8] tracking-wider">
+        <div className="admin-card p-5 sm:p-6 space-y-4 shadow-xs">
+          <div className="border-b border-slate-100/80 pb-3.5">
+            <span className="text-[10px] uppercase font-black text-[#0284C7] tracking-wider block">
               Selected Day Dispatch
             </span>
             <h3 className="text-lg font-black text-[#0B1E33] mt-0.5">
@@ -327,18 +329,20 @@ export default function CalendarPage() {
                 year: 'numeric',
               })}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">
               {selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? 's' : ''} scheduled
             </p>
           </div>
 
           {selectedDayEvents.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400 space-y-2">
-              <CalendarIcon size={28} className="mx-auto text-slate-300" />
-              <p>No operations scheduled on this date.</p>
+            <div className="py-12 text-center text-xs text-slate-400 space-y-2.5">
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                <CalendarIcon size={22} />
+              </div>
+              <p className="font-semibold text-slate-500">No operations scheduled on this date.</p>
               <Link
                 href="/admin/jobs"
-                className="inline-block text-[#1878B8] hover:underline font-semibold"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0284C7] hover:underline"
               >
                 Schedule a job from pipeline &rarr;
               </Link>
@@ -348,18 +352,18 @@ export default function CalendarPage() {
               {selectedDayEvents.map(ev => (
                 <div
                   key={ev.id}
-                  className="p-3.5 rounded-[16px] bg-slate-50/80 border border-slate-200/80 space-y-2"
+                  className="p-4 rounded-2xl bg-white/80 border border-slate-200/80 shadow-2xs space-y-2.5 transition-all hover:border-[#2F9FE3]/40 hover:shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <span
-                        className={`text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
+                        className={`text-[9px] font-black px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${
                           ev.type === 'job'
-                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                            ? 'bg-amber-50 text-amber-900 border-amber-200'
                             : ev.type === 'delivery'
                             ? 'bg-purple-50 text-purple-700 border-purple-200'
                             : ev.type === 'city_inspection'
-                            ? 'bg-sky-50 text-[#1878B8] border-sky-200'
+                            ? 'bg-sky-50 text-[#0284C7] border-sky-200'
                             : ev.type === 'warranty'
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                             : 'bg-cyan-50 text-cyan-700 border-cyan-200'
@@ -367,16 +371,16 @@ export default function CalendarPage() {
                       >
                         {ev.type.replace('_', ' ')}
                       </span>
-                      <h4 className="text-xs font-bold text-[#0B1E33] mt-1">{ev.title}</h4>
+                      <h4 className="text-xs font-bold text-[#0B1E33] mt-1.5">{ev.title}</h4>
                     </div>
 
                     {ev.link && (
                       <Link
                         href={ev.link}
-                        className="p-1 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-[#0B1E33]"
+                        className="p-1.5 rounded-xl bg-white border border-slate-200/80 text-slate-500 hover:text-[#0B1E33] shadow-2xs apple-spring-press"
                         title="View Details"
                       >
-                        <ExternalLink size={12} />
+                        <ExternalLink size={13} />
                       </Link>
                     )}
                   </div>
@@ -401,7 +405,7 @@ export default function CalendarPage() {
                   )}
 
                   {ev.contractValue && ev.contractValue > 0 && (
-                    <div className="text-xs font-mono font-bold text-emerald-700">
+                    <div className="text-xs font-mono font-black text-emerald-700">
                       ${ev.contractValue.toLocaleString()} Contract
                     </div>
                   )}

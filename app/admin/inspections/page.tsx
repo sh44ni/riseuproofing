@@ -132,67 +132,68 @@ export default function InspectionsPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — Apple Liquid Glass */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+        <div className="admin-card p-4 sm:p-4.5 shadow-xs">
           <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Inspections Done</span>
-            <ClipboardCheck size={15} className="text-[#2F9FE3]" />
+            <ClipboardCheck size={16} className="text-[#2F9FE3]" />
           </div>
-          <div className="text-2xl font-black text-[#0B1E33]">{summary.totalCount}</div>
-          <div className="text-xs text-slate-500 mt-1">Field reports generated</div>
+          <div className="text-2xl sm:text-3xl font-black text-[#0B1E33]">{summary.totalCount}</div>
+          <div className="text-xs text-slate-500 mt-1 font-medium">Field reports generated</div>
         </div>
 
-        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+        <div className="admin-card p-4 sm:p-4.5 shadow-xs">
           <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Avg Roof Health</span>
-            <Shield size={15} className="text-[#1878B8]" />
+            <Shield size={16} className="text-[#0284C7]" />
           </div>
-          <div className="text-2xl font-black text-[#0B1E33]">{summary.avgHealthScore}%</div>
-          <div className="text-xs text-[#1878B8] font-semibold mt-1">Overall territory condition</div>
+          <div className="text-2xl sm:text-3xl font-black text-[#0B1E33]">{summary.avgHealthScore}%</div>
+          <div className="text-xs text-[#0284C7] font-semibold mt-1">Overall territory condition</div>
         </div>
 
-        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+        <div className="admin-card p-4 sm:p-4.5 shadow-xs">
           <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
-            <span>Urgent Action Needed</span>
-            <AlertTriangle size={15} className="text-rose-500" />
+            <span>Urgent Action</span>
+            <AlertTriangle size={16} className="text-rose-500" />
           </div>
-          <div className="text-2xl font-black text-rose-600">{summary.urgentCount}</div>
+          <div className="text-2xl sm:text-3xl font-black text-rose-600">{summary.urgentCount}</div>
           <div className="text-xs text-rose-600 font-semibold mt-1">Critical leak or rot risks</div>
         </div>
 
-        <div className="p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs">
+        <div className="admin-card p-4 sm:p-4.5 shadow-xs">
           <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
             <span>Close Rate Driver</span>
-            <CheckCircle2 size={15} className="text-emerald-600" />
+            <CheckCircle2 size={16} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-emerald-700">+42%</div>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-700">+42%</div>
           <div className="text-xs text-emerald-700 font-semibold mt-1">Proposal win lift with report</div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-3 sm:p-4 rounded-[16px] bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="admin-card p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setFilterUrgent(false)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ease-out cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer apple-spring-press ${
               !filterUrgent
-                ? 'admin-btn-gold shadow-xs'
-                : 'bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200 shadow-2xs'
+                ? 'admin-glass-pill-gold-active shadow-xs'
+                : 'admin-glass-pill text-slate-600 hover:text-[#0B1E33]'
             }`}
           >
             All Inspections
           </button>
           <button
             onClick={() => setFilterUrgent(true)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ease-out cursor-pointer flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 apple-spring-press ${
               filterUrgent
-                ? 'bg-rose-500 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200 shadow-2xs'
+                ? 'bg-rose-600 text-white shadow-xs border border-rose-600'
+                : 'admin-glass-pill text-slate-600 hover:text-rose-600'
             }`}
           >
-            <AlertTriangle size={12} /> Urgent Leaks Only
+            <AlertTriangle size={13} />
+            <span>Urgent Only ({summary.urgentCount})</span>
           </button>
         </div>
 

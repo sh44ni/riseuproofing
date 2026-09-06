@@ -42,8 +42,9 @@ export default function BottomNav({ user }: BottomNavProps) {
 
   return (
     <>
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 admin-bar-glass border-t border-slate-200/80 px-2 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-16">
+      {/* Floating Apple Liquid Glass Dock on Mobile */}
+      <nav className="lg:hidden fixed bottom-2.5 left-3 right-3 max-w-md mx-auto z-40 admin-dock-glass rounded-[22px] px-2 py-1.5 transition-all duration-300">
+        <div className="flex items-center justify-around h-14">
           {TABS.map(({ href, label, icon: Icon }) => {
             const active =
               pathname === href ||
@@ -52,23 +53,23 @@ export default function BottomNav({ user }: BottomNavProps) {
               <Link
                 key={href}
                 href={href}
-                className={`flex-1 flex flex-col items-center justify-center h-full py-1 transition-colors relative ${
+                className={`flex-1 flex flex-col items-center justify-center h-full py-1 rounded-[16px] transition-all duration-200 relative group apple-spring-press ${
                   active
-                    ? 'text-[#2F9FE3] font-bold'
-                    : 'text-slate-500 hover:text-[#0B1E33]'
+                    ? 'bg-gradient-to-b from-sky-500/15 via-sky-500/10 to-blue-500/5 text-[#0284C7] font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_8px_rgba(47,159,227,0.15)]'
+                    : 'text-slate-500 hover:text-[#0B1E33] hover:bg-slate-100/50'
                 }`}
               >
                 <Icon
-                  size={20}
-                  className={
+                  size={19}
+                  className={`transition-transform duration-200 group-active:scale-90 ${
                     active
-                      ? 'text-[#2F9FE3] stroke-[2.2]'
-                      : 'text-slate-500 stroke-[1.75]'
-                  }
+                      ? 'text-[#0284C7] stroke-[2.4] drop-shadow-[0_1px_2px_rgba(47,159,227,0.3)]'
+                      : 'text-slate-500 stroke-[1.8]'
+                  }`}
                 />
-                <span className="text-[10px] mt-1 tracking-tight">{label}</span>
+                <span className="text-[10px] mt-0.5 tracking-tight font-semibold">{label}</span>
                 {active && (
-                  <span className="absolute bottom-1 w-1 h-1 bg-[#2F9FE3] rounded-full shadow-[0_0_8px_rgba(47,159,227,0.6)]" />
+                  <span className="absolute bottom-0.5 w-1 h-1 bg-[#2F9FE3] rounded-full shadow-[0_0_8px_rgba(47,159,227,0.8)]" />
                 )}
               </Link>
             );
@@ -77,10 +78,10 @@ export default function BottomNav({ user }: BottomNavProps) {
           {/* 5th Tab: More */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="flex-1 flex flex-col items-center justify-center h-full py-1 text-slate-500 hover:text-[#0B1E33] transition-colors cursor-pointer"
+            className="flex-1 flex flex-col items-center justify-center h-full py-1 rounded-[16px] text-slate-500 hover:text-[#0B1E33] hover:bg-slate-100/50 transition-all duration-200 cursor-pointer apple-spring-press"
           >
-            <MoreHorizontal size={20} className="stroke-[1.75]" />
-            <span className="text-[10px] mt-1 tracking-tight">More</span>
+            <MoreHorizontal size={19} className="stroke-[1.8]" />
+            <span className="text-[10px] mt-0.5 tracking-tight font-semibold">More</span>
           </button>
         </div>
       </nav>

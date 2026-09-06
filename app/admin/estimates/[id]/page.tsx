@@ -139,20 +139,20 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-5xl mx-auto">
-      {/* Top Breadcrumbs & Actions — Sticky on mobile */}
-      <div className="sticky top-14 lg:static z-20 -mx-4 px-4 py-2.5 lg:mx-0 lg:px-0 lg:py-0 bg-white/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none border-b border-slate-200/80 lg:border-none flex items-center justify-between gap-4">
+      {/* Top Breadcrumbs & Actions — Sleek Apple Liquid Glass Bar */}
+      <div className="sticky top-14 lg:static z-20 -mx-4 px-4 py-2 lg:mx-0 lg:px-0 lg:py-0 bg-white/80 lg:bg-transparent backdrop-blur-xl lg:backdrop-blur-none border-b border-white/80 lg:border-none flex items-center justify-between gap-4 shadow-2xs lg:shadow-none">
         <Link
           href="/admin/estimates"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-500 hover:text-[#0B1E33] transition-all duration-300 ease-out"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-[#0B1E33] px-3 py-1.5 rounded-full bg-white/85 hover:bg-white border border-slate-200/80 shadow-2xs apple-spring-press"
         >
-          <ArrowLeft size={16} />
-          Back to Estimates
+          <ArrowLeft size={14} />
+          <span>Back to Estimates</span>
         </Link>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.print()}
-            className="p-2 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-all duration-300 ease-out cursor-pointer"
+            className="p-2 rounded-xl border border-slate-200/80 bg-white/85 hover:bg-white text-slate-700 shadow-2xs apple-spring-press cursor-pointer"
             title="Print Proposal"
           >
             <Printer size={16} />
@@ -161,7 +161,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Hero Card */}
-      <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="admin-card p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">

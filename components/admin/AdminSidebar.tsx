@@ -210,22 +210,22 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
         <SidebarContent />
       </aside>
 
-      {/* Sleek Native Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-slate-200/80 flex items-center justify-between px-4 h-[56px] shadow-2xs">
-        <Link href="/admin/dashboard" className="flex items-center gap-2.5 group active:scale-95 transition-transform">
+      {/* Sleek Apple Liquid Glass Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-white/70 flex items-center justify-between px-4 h-[56px] shadow-[0_2px_12px_rgba(11,30,51,0.03)]">
+        <Link href="/admin/dashboard" className="flex items-center gap-2.5 group apple-spring-press">
           <Image
             src="/favicon.svg"
             alt="Rise Up Roofing"
             width={28}
             height={28}
             priority
-            className="h-7 w-7 object-contain drop-shadow-xs"
+            className="h-7 w-7 object-contain drop-shadow-xs group-hover:scale-105 transition-transform"
           />
           <div className="flex items-center gap-1.5">
             <span className="text-[#0B1E33] font-black text-sm tracking-tight">
               Rise Up
             </span>
-            <span className="px-1.5 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-[#0284C7] text-[10px] font-extrabold uppercase tracking-wider">
+            <span className="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/90 text-[#0284C7] text-[10px] font-extrabold uppercase tracking-wider shadow-2xs">
               CRM
             </span>
           </div>
@@ -235,7 +235,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
           {user && (
             <Link
               href="/admin/settings"
-              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs active:scale-95 transition-all"
+              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-white/85 backdrop-blur-md hover:bg-white border border-white/90 shadow-[0_2px_8px_rgba(11,30,51,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] apple-spring-press"
             >
               <UserAvatar
                 name={user.name}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Plus, UserPlus, PhoneCall, CheckSquare, FileText } from 'lucide-react';
 
 interface FABProps {
@@ -13,6 +13,20 @@ interface FABProps {
 export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Smart Context-Aware Visibility:
+  // Hide on multi-step wizards, editors, and detailed document builders so mobile inputs, steppers, and save buttons are NEVER obstructed
+  const isWizardOrEditor =
+    pathname?.startsWith('/admin/estimates/new') ||
+    pathname?.startsWith('/admin/estimates/') ||
+    pathname?.startsWith('/admin/inspections/new') ||
+    pathname?.includes('/jobs/') ||
+    pathname === '/admin/login';
+
+  if (isWizardOrEditor) {
+    return null;
+  }
 
   function handleNewEstimate() {
     setOpen(false);
@@ -72,7 +86,7 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
         />
       )}
 
-      {/* FAB Floating Container: sits above BottomNav on mobile (calc(4.75rem + safe-area)) */}
+      {/* FAB Floating Container: sits above BottomNav on mobile */}
       <div className="fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] lg:bottom-6 z-50 flex flex-col items-end gap-3 pointer-events-auto select-none">
         {/* Speed Dial Menu Items */}
         {open && (
@@ -81,12 +95,12 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
             <button
               type="button"
               onClick={handleNewEstimate}
-              className="flex items-center gap-2 group cursor-pointer"
+              className="flex items-center gap-2.5 group cursor-pointer apple-spring-press"
             >
-              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
+              <span className="bg-white/90 backdrop-blur-md text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-xl border border-white/80 shadow-[0_4px_14px_rgba(11,30,51,0.08)] group-hover:bg-white transition-colors">
                 New Estimate
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-[#EAA636] hover:bg-[#D97706] text-white shadow-[0_4px_16px_rgba(234,166,54,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 font-bold">
+              <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-[#FBBF24] via-[#EAA636] to-[#D97706] text-white shadow-[0_6px_20px_rgba(234,166,54,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30 flex items-center justify-center transition-transform group-hover:scale-105 font-bold">
                 <FileText size={18} />
               </div>
             </button>
@@ -95,12 +109,12 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
             <button
               type="button"
               onClick={handleAddTask}
-              className="flex items-center gap-2 group cursor-pointer"
+              className="flex items-center gap-2.5 group cursor-pointer apple-spring-press"
             >
-              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
+              <span className="bg-white/90 backdrop-blur-md text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-xl border border-white/80 shadow-[0_4px_14px_rgba(11,30,51,0.08)] group-hover:bg-white transition-colors">
                 Add Task
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-purple-600 hover:bg-purple-500 text-white shadow-[0_4px_16px_rgba(168,85,247,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+              <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white shadow-[0_6px_20px_rgba(168,85,247,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30 flex items-center justify-center transition-transform group-hover:scale-105">
                 <CheckSquare size={18} />
               </div>
             </button>
@@ -109,12 +123,12 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
             <button
               type="button"
               onClick={handleLogCall}
-              className="flex items-center gap-2 group cursor-pointer"
+              className="flex items-center gap-2.5 group cursor-pointer apple-spring-press"
             >
-              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
+              <span className="bg-white/90 backdrop-blur-md text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-xl border border-white/80 shadow-[0_4px_14px_rgba(11,30,51,0.08)] group-hover:bg-white transition-colors">
                 Log Call
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_4px_16px_rgba(16,185,129,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+              <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 text-white shadow-[0_6px_20px_rgba(16,185,129,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30 flex items-center justify-center transition-transform group-hover:scale-105">
                 <PhoneCall size={18} />
               </div>
             </button>
@@ -123,29 +137,29 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
             <button
               type="button"
               onClick={handleAddLead}
-              className="flex items-center gap-2 group cursor-pointer"
+              className="flex items-center gap-2.5 group cursor-pointer apple-spring-press"
             >
-              <span className="bg-white text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-[10px] border border-slate-200 shadow-md group-hover:bg-slate-50 transition-colors">
+              <span className="bg-white/90 backdrop-blur-md text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-xl border border-white/80 shadow-[0_4px_14px_rgba(11,30,51,0.08)] group-hover:bg-white transition-colors">
                 New Lead
               </span>
-              <div className="w-11 h-11 rounded-[14px] bg-[#2F9FE3] hover:bg-[#1878B8] text-white shadow-[0_4px_16px_rgba(47,159,227,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+              <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-[#38BDF8] via-[#2F9FE3] to-[#0284C7] text-white shadow-[0_6px_20px_rgba(47,159,227,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30 flex items-center justify-center transition-transform group-hover:scale-105">
                 <UserPlus size={18} />
               </div>
             </button>
           </div>
         )}
 
-        {/* Main FAB Toggle */}
+        {/* Main Apple Liquid Glass FAB Orb */}
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`w-14 h-14 rounded-[18px] bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] text-white font-bold shadow-[0_4px_20px_rgba(47,159,227,0.35)] flex items-center justify-center transition-all duration-300 ease-out z-50 hover:scale-105 active:scale-95 cursor-pointer border border-[#2F9FE3]/40 ${
-            open ? 'rotate-45 shadow-[0_8px_30px_rgba(47,159,227,0.5)]' : ''
+          className={`w-13 h-13 rounded-[20px] bg-gradient-to-br from-[#38BDF8] via-[#2F9FE3] to-[#0284C7] text-white font-bold shadow-[0_8px_25px_rgba(47,159,227,0.45),inset_0_1px_1.5px_rgba(255,255,255,0.7)] flex items-center justify-center transition-all duration-300 ease-out z-50 hover:scale-105 active:scale-90 cursor-pointer border border-white/35 ${
+            open ? 'rotate-45 shadow-[0_12px_32px_rgba(47,159,227,0.6)]' : ''
           }`}
           aria-label="Quick actions"
           aria-expanded={open}
         >
-          <Plus size={26} strokeWidth={2.5} />
+          <Plus size={24} strokeWidth={2.6} />
         </button>
       </div>
     </>

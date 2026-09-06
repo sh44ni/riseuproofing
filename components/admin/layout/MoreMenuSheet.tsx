@@ -89,16 +89,16 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative w-full max-w-lg bg-white border-t border-slate-200/80 rounded-t-[24px] shadow-2xl z-10 pb-8 px-5 pt-3.5 max-h-[85vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-white/92 backdrop-blur-2xl border-t border-white/80 rounded-t-[32px] shadow-[0_-12px_40px_rgba(11,30,51,0.15),inset_0_1px_1px_rgba(255,255,255,0.95)] z-10 pb-8 px-5 pt-3.5 max-h-[85vh] overflow-y-auto">
         {/* Drag Handle Indicator */}
-        <div className="w-12 h-1.5 rounded-full bg-slate-300 mx-auto mb-3" />
+        <div className="w-12 h-1.5 rounded-full bg-slate-300/80 mx-auto mb-3.5" />
 
-        <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 mb-4">
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/60 mb-4">
           {user ? (
             <Link
               href="/admin/settings"
               onClick={onClose}
-              className="flex items-center gap-3 min-w-0 group hover:opacity-90 transition-opacity"
+              className="flex items-center gap-3 min-w-0 group hover:opacity-90 transition-opacity apple-spring-press"
               title="Edit Profile & Avatar"
             >
               <UserAvatar
@@ -129,7 +129,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
           )}
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer transition-colors flex-shrink-0"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200/80 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer transition-colors flex-shrink-0 apple-spring-press"
           >
             <X size={16} />
           </button>
@@ -143,21 +143,24 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
                 {sec.title}
               </span>
               <div className="grid grid-cols-2 gap-2">
-                {sec.items.map(({ href, label, icon: Icon, color, bg }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={onClose}
-                    className="flex items-center gap-2.5 p-3 rounded-[16px] admin-card bg-white border border-slate-200/80 hover:border-sky-300 hover:bg-slate-50/70 transition-all group cursor-pointer shadow-xs"
-                  >
-                    <div className={`w-9 h-9 rounded-xl ${bg} ${color} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
-                      <Icon size={18} />
-                    </div>
-                    <span className="text-xs font-semibold text-[#0B1E33] leading-tight">
-                      {label}
-                    </span>
-                  </Link>
-                ))}
+                {sec.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-white/70 hover:bg-white border border-slate-200/70 hover:border-[#2F9FE3]/30 shadow-2xs hover:shadow-xs transition-all duration-200 group apple-spring-press"
+                    >
+                      <div className={`w-8 h-8 rounded-xl ${item.bg} ${item.color} flex items-center justify-center flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}>
+                        <Icon size={16} />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-[#0B1E33] truncate">
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           ))}

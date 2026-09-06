@@ -377,50 +377,55 @@ function InspectionBuilderContent() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-24 md:pb-12">
       {/* Top Breadcrumb & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="sticky top-14 lg:static z-20 -mx-4 px-4 py-2 lg:mx-0 lg:px-0 lg:py-0 bg-white/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none border-b border-slate-200/80 lg:border-none mb-2">
-            <Link
-              href="/admin/inspections"
-              className="text-xs font-semibold text-slate-500 hover:text-[#0B1E33] inline-flex items-center gap-1.5 transition-all duration-300 ease-out"
-            >
-              <ArrowLeft size={14} /> Back to Inspections
-            </Link>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#0B1E33] tracking-tight flex items-center gap-2.5">
-            <ClipboardCheck size={28} className="text-[#2F9FE3]" />
-            12-Point Roof Damage Inspection
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Conduct a standardized field inspection. Evaluates surface wear, flashing leaks, structural dry rot, and ventilation.
-          </p>
+      {/* Top Breadcrumb & Header — Clean Non-Overlapping Layout */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Link
+            href="/admin/inspections"
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-[#0B1E33] px-3.5 py-1.5 rounded-full bg-white/85 hover:bg-white border border-slate-200/80 shadow-2xs apple-spring-press"
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Inspections</span>
+          </Link>
         </div>
 
-        {/* Floating Health Score Widget (Desktop & Mobile) */}
-        <div className={`flex items-center gap-3 p-3 rounded-[16px] border shadow-xs ${
-          healthScore >= 80
-            ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800'
-            : healthScore >= 60
-            ? 'bg-amber-50/80 border-amber-200 text-amber-800'
-            : 'bg-rose-50/80 border-rose-200 text-rose-700'
-        }`}>
-          <div className="text-right">
-            <span className="text-[10px] font-bold uppercase tracking-wider block opacity-80">Live Health Score</span>
-            <span className="text-xs font-bold text-slate-600">
-              {urgentRequired ? '⚠️ Critical Hazard' : fairCount > 0 ? `${fairCount} Issues Noted` : 'All Points Clear'}
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#0B1E33] tracking-tight flex items-center gap-2.5">
+              <ClipboardCheck size={28} className="text-[#2F9FE3]" />
+              <span>12-Point Roof Damage Inspection</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Conduct a standardized field inspection. Evaluates surface wear, flashing leaks, structural dry rot, and ventilation.
+            </p>
           </div>
-          <div className="w-14 h-14 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col items-center justify-center font-black">
-            <span className="text-xl leading-none">{healthScore}%</span>
-            <span className="text-[8px] uppercase tracking-tighter opacity-70">Grade</span>
+
+          {/* Floating Health Score Widget (Apple Liquid Glass Pill) */}
+          <div className={`flex items-center gap-3.5 p-3 sm:p-3.5 rounded-2xl border shadow-xs backdrop-blur-xl ${
+            healthScore >= 80
+              ? 'bg-gradient-to-r from-emerald-50/90 via-emerald-50/60 to-white border-emerald-200/90 text-emerald-900 shadow-[0_4px_16px_rgba(16,185,129,0.12)]'
+              : healthScore >= 60
+              ? 'bg-gradient-to-r from-amber-50/90 via-amber-50/60 to-white border-amber-200/90 text-amber-900 shadow-[0_4px_16px_rgba(234,166,54,0.12)]'
+              : 'bg-gradient-to-r from-rose-50/90 via-rose-50/60 to-white border-rose-200/90 text-rose-900 shadow-[0_4px_16px_rgba(244,63,94,0.12)]'
+          }`}>
+            <div className="text-right">
+              <span className="text-[10px] font-black uppercase tracking-wider block opacity-75">Live Health Score</span>
+              <span className="text-xs font-bold">
+                {urgentRequired ? '⚠️ Critical Hazard' : fairCount > 0 ? `${fairCount} Issues Noted` : 'All Points Clear'}
+              </span>
+            </div>
+            <div className="w-13 h-13 rounded-2xl bg-white/90 border border-white/95 shadow-2xs flex flex-col items-center justify-center font-black">
+              <span className="text-xl leading-none text-[#0B1E33]">{healthScore}%</span>
+              <span className="text-[8px] uppercase tracking-tighter text-slate-400 mt-0.5">Grade</span>
+            </div>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section: Inspection Meta & Homeowner Info */}
-        <div className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+        <div className="admin-card p-5 sm:p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-black text-[#0B1E33] flex items-center gap-2">
             <User size={18} className="text-[#2F9FE3]" />
             Homeowner &amp; Inspection Details
           </h2>
@@ -433,64 +438,64 @@ function InspectionBuilderContent() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
             <div>
-              <label className="block text-slate-500 font-semibold mb-1">Customer / Property Name</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Customer / Property Name</label>
               <input
                 type="text"
                 placeholder="e.g. John Miller"
                 value={propertyData.customerName}
                 onChange={e => setPropertyData({ ...propertyData, customerName: e.target.value })}
-                className="admin-input text-xs"
+                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-slate-500 font-semibold mb-1">Phone Number</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Phone Number</label>
               <input
                 type="text"
                 placeholder="(619) 000-0000"
                 value={propertyData.customerPhone}
                 onChange={e => setPropertyData({ ...propertyData, customerPhone: e.target.value })}
-                className="admin-input text-xs"
+                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-slate-500 font-semibold mb-1">Property Address</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Property Address</label>
               <input
                 type="text"
                 placeholder="Street address"
                 value={propertyData.address}
                 onChange={e => setPropertyData({ ...propertyData, address: e.target.value })}
-                className="admin-input text-xs"
+                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-slate-500 font-semibold mb-1">Inspector Name</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Inspector Name</label>
               <input
                 type="text"
                 value={propertyData.inspectorName}
                 onChange={e => setPropertyData({ ...propertyData, inspectorName: e.target.value })}
-                className="admin-input text-xs"
+                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-slate-500 font-semibold mb-1">Inspection Date</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Inspection Date</label>
               <input
                 type="date"
                 value={propertyData.inspectionDate}
                 onChange={e => setPropertyData({ ...propertyData, inspectionDate: e.target.value })}
-                className="admin-input text-xs"
+                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-slate-500 font-semibold mb-1">Roof Type / Material</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Roof Type / Material</label>
               <select
                 value={propertyData.roofType}
                 onChange={e => setPropertyData({ ...propertyData, roofType: e.target.value })}
-                className="admin-input text-xs"
+                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
               >
                 <option value="Asphalt Shingle">Asphalt Architectural Shingle</option>
                 <option value="Concrete Tile">Concrete / Clay Tile</option>
@@ -507,15 +512,15 @@ function InspectionBuilderContent() {
           {categories.map(([categoryName, items]) => (
             <div
               key={categoryName}
-              className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4"
+              className="admin-card p-5 sm:p-6 shadow-xs space-y-4"
             >
               <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
-                    <Layers size={16} className="text-[#2F9FE3]" />
+                  <h3 className="text-base font-black text-[#0B1E33] flex items-center gap-2">
+                    <Layers size={17} className="text-[#2F9FE3]" />
                     {categoryName}
                   </h3>
-                  <span className="text-xs text-slate-500">Standard field diagnostic check</span>
+                  <span className="text-xs text-slate-500 font-medium">Standard field diagnostic check</span>
                 </div>
               </div>
 
@@ -528,75 +533,75 @@ function InspectionBuilderContent() {
                   return (
                     <div
                       key={item.id}
-                      className={`p-4 rounded-[16px] border transition-all duration-300 ease-out ${
+                      className={`p-4 rounded-2xl border transition-all duration-200 ${
                         isGood
-                          ? 'bg-slate-50/60 border-slate-200/80'
+                          ? 'bg-white/80 border-slate-200/80 shadow-2xs'
                           : isFair
-                          ? 'bg-amber-50/40 border-amber-200'
-                          : 'bg-rose-50/50 border-rose-200'
+                          ? 'bg-gradient-to-r from-amber-50/70 via-amber-50/30 to-white border-amber-300 shadow-xs'
+                          : 'bg-gradient-to-r from-rose-50/70 via-rose-50/30 to-white border-rose-300 shadow-xs'
                       }`}
                     >
                       {/* Point Header & Status Toggle Buttons */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-[#0B1E33]">{item.name}</span>
+                            <span className="font-black text-sm text-[#0B1E33]">{item.name}</span>
                             {isCritical && (
-                              <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold uppercase">
+                              <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-black uppercase">
                                 Urgent Hazard
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.description}</p>
                         </div>
 
-                        {/* 3-State Buttons: Good / Fair / Critical */}
-                        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white border border-slate-200 flex-shrink-0 shadow-2xs">
+                        {/* Apple-Grade 3-State Segmented Switch */}
+                        <div className="admin-pill-counter flex items-center gap-1 p-1 rounded-2xl bg-slate-100/90 border border-slate-200/80 flex-shrink-0 shadow-inner">
                           <button
                             type="button"
                             onClick={() => handleStatusChange(item.id, 'good')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all duration-200 flex items-center gap-1 cursor-pointer apple-spring-press ${
                               isGood
-                                ? 'bg-emerald-600 text-white shadow-xs'
+                                ? 'bg-emerald-600 text-white shadow-[0_2px_8px_rgba(16,185,129,0.35)]'
                                 : 'text-slate-500 hover:text-emerald-700'
                             }`}
                           >
                             <CheckCircle2 size={13} />
-                            Good
+                            <span>Good</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleStatusChange(item.id, 'fair')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all duration-200 flex items-center gap-1 cursor-pointer apple-spring-press ${
                               isFair
-                                ? 'bg-[#EAA636] text-white shadow-xs'
+                                ? 'bg-[#EAA636] text-white shadow-[0_2px_8px_rgba(234,166,54,0.35)]'
                                 : 'text-slate-500 hover:text-amber-800'
                             }`}
                           >
                             <AlertTriangle size={13} />
-                            Fair (-6%)
+                            <span>Fair</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleStatusChange(item.id, 'critical')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all duration-200 flex items-center gap-1 cursor-pointer apple-spring-press ${
                               isCritical
-                                ? 'bg-rose-600 text-white shadow-xs'
+                                ? 'bg-rose-600 text-white shadow-[0_2px_8px_rgba(244,63,94,0.35)]'
                                 : 'text-slate-500 hover:text-rose-700'
                             }`}
                           >
                             <XCircle size={13} />
-                            Critical (-18%)
+                            <span>Critical</span>
                           </button>
                         </div>
                       </div>
 
                       {/* Observations & Fast Tap Tags */}
-                      <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                      <div className="mt-3 pt-3 border-t border-slate-100/80 space-y-2">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[11px] font-semibold text-slate-400">Quick Observation:</span>
+                          <span className="text-[11px] font-bold text-slate-400">Quick Observation:</span>
                           {item.quickTags.map(tag => {
                             const isSelected = item.notes.includes(tag);
                             return (
@@ -604,10 +609,10 @@ function InspectionBuilderContent() {
                                 key={tag}
                                 type="button"
                                 onClick={() => handleTagToggle(item.id, tag)}
-                                className={`px-2 py-0.5 rounded-md text-[11px] transition-all duration-300 ease-out cursor-pointer ${
+                                className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer apple-spring-press ${
                                   isSelected
-                                    ? 'bg-sky-50 text-[#1878B8] border border-sky-200 font-semibold'
-                                    : 'bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200 shadow-2xs'
+                                    ? 'bg-sky-100 text-[#0284C7] border border-sky-300/80 shadow-2xs'
+                                    : 'bg-white text-slate-600 hover:text-[#0B1E33] border border-slate-200/80 shadow-2xs'
                                 }`}
                               >
                                 {tag}
@@ -621,7 +626,7 @@ function InspectionBuilderContent() {
                           placeholder="Specific observation or photo note..."
                           value={item.notes}
                           onChange={e => handleNotesChange(item.id, e.target.value)}
-                          className="admin-input text-xs"
+                          className="admin-input w-full px-3.5 py-2 text-xs font-semibold"
                         />
                       </div>
                     </div>
@@ -633,16 +638,16 @@ function InspectionBuilderContent() {
         </div>
 
         {/* Section: Overall Prognosis & Remaining Lifespan */}
-        <div className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
+        <div className="admin-card p-5 sm:p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-black text-[#0B1E33] flex items-center gap-2">
             <Clock size={18} className="text-[#2F9FE3]" />
             Lifespan Forecast &amp; Inspector Recommendations
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-[16px] bg-slate-50 border border-slate-200 space-y-2">
-              <label className="block text-xs font-semibold text-slate-600">
-                Estimated Remaining Roof Lifespan: <span className="text-[#1878B8] font-bold">{effectiveRemainingYears} Years</span>
+            <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-2.5 shadow-2xs">
+              <label className="block text-xs font-bold text-slate-700">
+                Estimated Remaining Roof Lifespan: <span className="text-[#0284C7] font-black">{effectiveRemainingYears} Years</span>
               </label>
               <input
                 type="range"
@@ -651,18 +656,18 @@ function InspectionBuilderContent() {
                 step={1}
                 value={effectiveRemainingYears}
                 onChange={e => setCustomRemainingYears(parseInt(e.target.value, 10))}
-                className="w-full accent-[#2F9FE3] cursor-pointer"
+                className="w-full accent-[#2F9FE3] cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
               />
-              <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+              <div className="flex justify-between text-[10px] text-slate-400 font-bold">
                 <span>0 Yrs (Replace Now)</span>
                 <span>10 Yrs</span>
                 <span>25 Yrs (New)</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-[16px] bg-slate-50 border border-slate-200">
-              <span className="text-xs font-semibold text-slate-600 block mb-1">Health Score Evaluation</span>
-              <p className="text-xs text-slate-500">
+            <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs">
+              <span className="text-xs font-bold text-slate-700 block mb-1">Health Score Evaluation</span>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
                 {healthScore >= 80
                   ? 'Roof is performing well. Minor routine maintenance and periodic flash sealing recommended.'
                   : healthScore >= 60
@@ -673,7 +678,7 @@ function InspectionBuilderContent() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1">
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
               General Inspector Recommendations for Homeowner
             </label>
             <textarea
@@ -681,7 +686,7 @@ function InspectionBuilderContent() {
               placeholder="e.g. Recommended complete tear-off of 2 existing layers. Replace 3 sheets of dry-rotted starter plywood near rear valley..."
               value={propertyData.notes}
               onChange={e => setPropertyData({ ...propertyData, notes: e.target.value })}
-              className="admin-input text-xs resize-none"
+              className="admin-input w-full px-3.5 py-2.5 text-xs font-medium resize-none"
             />
           </div>
         </div>
@@ -690,7 +695,7 @@ function InspectionBuilderContent() {
         <div className="flex items-center justify-between pt-2">
           <Link
             href="/admin/inspections"
-            className="px-5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold transition-all duration-300 ease-out"
+            className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/80 text-sm font-bold shadow-2xs apple-spring-press"
           >
             Cancel
           </Link>
@@ -698,10 +703,10 @@ function InspectionBuilderContent() {
           <button
             type="submit"
             disabled={submitting}
-            className="admin-btn-gold px-8 py-3 rounded-xl font-bold text-sm shadow-xs active:scale-95 transition-all duration-300 ease-out flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="admin-btn-gold px-8 py-3 text-sm shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 apple-spring-press"
           >
             <Save size={16} />
-            {submitting ? 'Generating Report...' : 'Publish & Save Inspection Report'}
+            <span>{submitting ? 'Generating Report...' : 'Publish & Save Inspection Report'}</span>
           </button>
         </div>
       </form>

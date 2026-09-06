@@ -577,9 +577,9 @@ section:not(.always-dark) .ambient-orb-secondary {
   /* Surface depth system (crisp daylight with coastal ambient radiance) */
   --admin-bg-base: #F4F8FD;
   --admin-bg-card: #FFFFFF;
-  --admin-bg-card-hover: #FFFFFF;
-  --admin-bg-input: #FFFFFF;
-  --admin-bg-elevated: #FFFFFF;
+  --admin-bg-card-hover: rgba(255, 255, 255, 0.96);
+  --admin-bg-input: rgba(255, 255, 255, 0.85);
+  --admin-bg-elevated: rgba(255, 255, 255, 0.95);
   --admin-bg-surface-subtle: rgba(17, 45, 73, 0.03);
 
   /* Brand accent spectrum */
@@ -601,39 +601,45 @@ section:not(.always-dark) .ambient-orb-secondary {
   --admin-border: rgba(17, 45, 73, 0.08);
   --admin-border-hover: rgba(47, 159, 227, 0.35);
   --admin-border-subtle: rgba(17, 45, 73, 0.04);
+  --admin-glass-border: rgba(255, 255, 255, 0.85);
 
   /* Premium tactile light shadow stack */
   --admin-shadow-card:
-    0 1px 3px rgba(11, 30, 51, 0.03),
-    0 6px 18px -3px rgba(11, 30, 51, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 2px 10px -2px rgba(11, 30, 51, 0.04),
+    0 8px 24px -4px rgba(11, 30, 51, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
   --admin-shadow-elevated:
-    0 4px 14px rgba(11, 30, 51, 0.04),
-    0 18px 40px -6px rgba(11, 30, 51, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
+    0 8px 30px -4px rgba(11, 30, 51, 0.08),
+    0 20px 48px -8px rgba(11, 30, 51, 0.07),
+    inset 0 1px 1.5px rgba(255, 255, 255, 1);
   --admin-shadow-gold:
     0 4px 16px rgba(234, 166, 54, 0.28),
-    0 1px 4px rgba(234, 166, 54, 0.15);
+    0 1px 4px rgba(234, 166, 54, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
   --admin-shadow-gold-intense:
     0 8px 24px rgba(234, 166, 54, 0.38),
-    0 2px 6px rgba(234, 166, 54, 0.20);
+    0 2px 6px rgba(234, 166, 54, 0.20),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.45);
   --admin-shadow-blue:
     0 4px 16px rgba(47, 159, 227, 0.28),
-    0 1px 4px rgba(47, 159, 227, 0.15);
+    0 1px 4px rgba(47, 159, 227, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 
   /* Ambient mesh background for daylight canvas */
   background-color: #F4F8FD;
   background-image:
-    radial-gradient(ellipse 70% 45% at 15% 0%, rgba(47, 159, 227, 0.09) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 85% 10%, rgba(234, 166, 54, 0.07) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 50% 70%, rgba(47, 159, 227, 0.04) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 45% at 15% 0%, rgba(47, 159, 227, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 85% 10%, rgba(234, 166, 54, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 50% 70%, rgba(47, 159, 227, 0.05) 0%, transparent 60%);
   background-attachment: fixed;
 }
 
-/* --- Premium Admin Card Base --- */
+/* --- Apple "Liquid Glass" Admin Card --- */
 .admin-card {
-  background: var(--admin-bg-card);
-  border: 1px solid var(--admin-border);
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 20px;
   box-shadow: var(--admin-shadow-card);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -654,9 +660,11 @@ section:not(.always-dark) .ambient-orb-secondary {
 }
 
 .admin-card-interactive {
-  background: #FFFFFF;
-  border: 1px solid var(--admin-border);
-  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.90);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
   box-shadow: var(--admin-shadow-card);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
@@ -669,24 +677,29 @@ section:not(.always-dark) .ambient-orb-secondary {
 }
 
 .admin-card-interactive:active {
-  transform: translateY(0) scale(0.99);
+  transform: translateY(0) scale(0.985);
 }
 
-/* --- Premium Admin Inputs --- */
+/* --- Apple-Grade Liquid Inputs --- */
 .admin-input {
-  background: var(--admin-bg-input);
-  border: 1px solid rgba(17, 45, 73, 0.14);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(17, 45, 73, 0.12);
+  border-radius: 14px;
   color: var(--admin-text-primary);
-  box-shadow: 0 1px 2px rgba(11, 30, 51, 0.03);
-  transition: all 0.2s ease;
+  box-shadow:
+    inset 0 1px 2px rgba(11, 30, 51, 0.03),
+    0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .admin-input:focus {
+  background: #FFFFFF;
   border-color: #2F9FE3;
   box-shadow:
-    0 0 0 3px rgba(47, 159, 227, 0.20),
-    0 1px 2px rgba(11, 30, 51, 0.04);
+    0 0 0 3px rgba(47, 159, 227, 0.22),
+    0 4px 12px rgba(47, 159, 227, 0.10);
   outline: none;
 }
 
@@ -696,37 +709,38 @@ section:not(.always-dark) .ambient-orb-secondary {
 
 /* --- Premium Admin Badges --- */
 .admin-badge {
-  border-radius: 8px;
+  border-radius: 999px;
   font-weight: 700;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   padding: 3px 10px;
   transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* --- Vibrant Icon Badges --- */
 .admin-tile-blue {
   background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(47, 159, 227, 0.25);
+  box-shadow: 0 4px 14px rgba(47, 159, 227, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .admin-tile-gold {
   background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(234, 166, 54, 0.25);
+  box-shadow: 0 4px 14px rgba(234, 166, 54, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .admin-tile-emerald {
   background: linear-gradient(135deg, #34D399 0%, #059669 100%);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .admin-tile-purple {
   background: linear-gradient(135deg, #A78BFA 0%, #6366F1 100%);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 /* --- Premium Radiant Admin Buttons --- */
@@ -734,9 +748,10 @@ section:not(.always-dark) .ambient-orb-secondary {
   background: linear-gradient(135deg, #F59E0B 0%, #EAA636 50%, #D97706 100%);
   color: #FFFFFF !important;
   font-weight: 700;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--admin-shadow-gold);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -744,21 +759,22 @@ section:not(.always-dark) .ambient-orb-secondary {
 
 .admin-btn-gold:hover {
   box-shadow: var(--admin-shadow-gold-intense);
-  transform: translateY(-1.5px);
-  filter: brightness(1.03);
+  transform: translateY(-1.5px) scale(1.01);
+  filter: brightness(1.04);
 }
 
 .admin-btn-gold:active {
-  transform: translateY(0.5px) scale(0.98);
+  transform: translateY(0.5px) scale(0.96);
 }
 
 .admin-btn-blue {
   background: linear-gradient(135deg, #38BDF8 0%, #2F9FE3 50%, #0284C7 100%);
   color: #FFFFFF !important;
   font-weight: 700;
-  border-radius: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: var(--admin-shadow-blue);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -766,32 +782,114 @@ section:not(.always-dark) .ambient-orb-secondary {
 
 .admin-btn-blue:hover {
   filter: brightness(1.04);
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 20px rgba(47, 159, 227, 0.35);
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(47, 159, 227, 0.40), inset 0 1px 1px rgba(255, 255, 255, 0.45);
 }
 
 .admin-btn-blue:active {
-  transform: translateY(0.5px) scale(0.98);
+  transform: translateY(0.5px) scale(0.96);
 }
 
-/* --- Glassmorphic Sidebar --- */
+/* --- Apple macOS Frosted Glass Sidebar --- */
 .admin-sidebar-glass {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   backdrop-filter: blur(28px) saturate(180%);
-  border-right: 1px solid var(--admin-border);
+  border-right: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 4px 0 24px -2px rgba(11, 30, 51, 0.03), inset -1px 0 0 rgba(17, 45, 73, 0.05);
 }
 
-/* --- Glassmorphic Top/Bottom Bar --- */
+/* --- Apple iOS Liquid Glass Top Navigation Bar --- */
 .admin-bar-glass {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid var(--admin-border);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  backdrop-filter: blur(24px) saturate(190%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 4px 20px -2px rgba(11, 30, 51, 0.03),
+    inset 0 -1px 0 rgba(17, 45, 73, 0.05);
+}
+
+/* --- Apple iOS Floating Liquid Glass Bottom Dock --- */
+.admin-dock-glass {
+  background: rgba(255, 255, 255, 0.84);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 14px 38px -4px rgba(11, 30, 51, 0.12),
+    0 3px 10px rgba(11, 30, 51, 0.04),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+}
+
+/* --- Apple Tactile Liquid Glass Pill --- */
+.admin-glass-pill {
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(17, 45, 73, 0.08);
+  border-radius: 999px;
+  box-shadow:
+    0 2px 8px rgba(11, 30, 51, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.admin-glass-pill:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(47, 159, 227, 0.35);
+  transform: translateY(-1px);
+}
+
+.admin-glass-pill:active {
+  transform: scale(0.95);
+}
+
+.admin-glass-pill-active {
+  background: linear-gradient(135deg, #38BDF8 0%, #2F9FE3 50%, #0284C7 100%) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow:
+    0 4px 16px rgba(47, 159, 227, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+}
+
+.admin-glass-pill-gold-active {
+  background: linear-gradient(135deg, #FBBF24 0%, #EAA636 50%, #D97706 100%) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow:
+    0 4px 16px rgba(234, 166, 54, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+}
+
+/* --- Apple Tactile Pill Counter (Mobile Stepper) --- */
+.admin-pill-counter {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.90);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(17, 45, 73, 0.10);
+  border-radius: 999px;
+  padding: 3px 4px;
+  box-shadow:
+    0 2px 8px rgba(11, 30, 51, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
+}
+
+.apple-spring-press {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.apple-spring-press:active {
+  transform: scale(0.94);
 }
 
 /* --- Section Header Label --- */
 .admin-section-label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--admin-text-muted);
