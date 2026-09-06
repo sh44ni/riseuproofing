@@ -10,9 +10,17 @@ export function proxy(req: NextRequest) {
   const isAdminPath = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
   if (!isAdminPath) return NextResponse.next();
 
+  // Build headers to pass current pathname to Server Components
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-admin-pathname', pathname);
+
   // Allow public admin paths through (login and auth)
   if (PUBLIC_ADMIN_PATHS.some(p => pathname.startsWith(p))) {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   // Check for session cookie and validate token format (64 hex characters)
@@ -27,9 +35,6 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', req.url));
   }
 
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set('x-admin-pathname', pathname);
-
   return NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -38,5 +43,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin', '/admin/:path*', '/api/admin/:path*'],
 };
