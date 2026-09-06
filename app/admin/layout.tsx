@@ -22,8 +22,7 @@ export default async function AdminLayout({
 
   const isLoginPage =
     pathname === '/admin/login' ||
-    pathname.startsWith('/admin/login') ||
-    headerList.get('referer')?.includes('/admin/login');
+    pathname.startsWith('/admin/login');
 
   if (!user) {
     // Only allow /admin/login through without an authenticated session.

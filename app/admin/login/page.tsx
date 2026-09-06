@@ -29,16 +29,15 @@ export default function AdminLogin() {
       const data = await res.json();
 
       if (res.ok && data.ok) {
-        // Run migration/seeding check if needed
-        await fetch('/api/admin/migrate', { method: 'POST' });
-        router.push('/admin/dashboard');
-        router.refresh();
+        // Run migration/seeding check in background without blocking redirect
+        fetch('/api/admin/migrate', { method: 'POST' }).catch(() => {});
+        window.location.href = '/admin/dashboard';
       } else {
         setError(data.error || 'Invalid credentials. Please try again.');
+        setLoading(false);
       }
     } catch {
       setError('Connection error. Please check your network and try again.');
-    } finally {
       setLoading(false);
     }
   }

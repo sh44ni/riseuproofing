@@ -35,8 +35,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
 
   async function handleLogout() {
     await fetch('/api/admin/auth', { method: 'DELETE' });
-    router.push('/admin/login');
-    router.refresh();
+    window.location.href = '/admin/login';
   }
 
   if (!isOpen) return null;

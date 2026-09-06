@@ -61,8 +61,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
 
   async function handleLogout() {
     await fetch('/api/admin/auth', { method: 'DELETE' });
-    router.push('/admin/login');
-    router.refresh();
+    window.location.href = '/admin/login';
   }
 
   // Filter navigation items by role
