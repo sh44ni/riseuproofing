@@ -10,46 +10,24 @@ interface MetadataOptions {
 
 
 export function buildMetadata({ title, description, path, ogImage }: MetadataOptions): Metadata {
-  // Strip redundant tags or existing suffixes to construct clean, high-impact titles
-  const baseTitle = title
-    .replace(/\s*\|\s*San Diego Roofing Case Study.*$/i, '')
-    .replace(/\s*\|\s*San Diego Roofing Experts.*$/i, '')
-    .replace(/\s*\|\s*San Diego Roofing & Construction.*$/i, '')
-    .replace(/\s*\|\s*5-Star San Diego Roofing.*$/i, '')
-    .replace(/\s*\|\s*Join Rise Up Roofing San Diego.*$/i, '')
-    .replace(/\s*\|\s*San Diego Roofing.*$/i, '')
-    .replace(/\s*[—|-]\s*Careers\s*\|\s*Rise Up Roofing.*$/i, '')
-    .replace(/\s*\|\s*Rise Up Roofing & Construction.*$/i, '')
-    .replace(/\s*\|\s*Rise Up Roofing.*$/i, '')
-    .replace(/\s*\|\s*San Diego County.*$/i, '')
-    .trim();
-
+  const trimmed = title.trim();
   let fullTitle: string;
-  if (title.includes('Rise Up')) {
-    // If title already has custom brand suffix
-    fullTitle = title.replace(/\s*\|\s*San Diego County/i, '').trim();
-  } else {
-    // If appending full brand name keeps it under 60 chars, use full brand name; otherwise use short brand name
-    const candidate = `${baseTitle} | ${COMPANY_NAME}`;
-    if (candidate.length <= 60) {
-      fullTitle = candidate;
-    } else {
-      fullTitle = `${baseTitle} | Rise Up Roofing`;
-    }
-  }
 
-  // Strict safety cap at 65 characters without cutting mid-word
-  if (fullTitle.length > 65) {
-    const cutLimit = 65 - ' | Rise Up Roofing'.length;
-    let safeBase = baseTitle;
-    if (safeBase.length > cutLimit) {
-      const lastSpace = safeBase.lastIndexOf(' ', cutLimit);
-      safeBase = lastSpace > 0 ? safeBase.slice(0, lastSpace) : safeBase.slice(0, cutLimit);
-    }
-    fullTitle = `${safeBase} | Rise Up Roofing`;
+  if (trimmed.includes('Rise Up') || trimmed.includes('riseuprac')) {
+    fullTitle = trimmed.replace(/\s*\|\s*San Diego County/i, '').trim();
+  } else if (trimmed.length <= 48) {
+    // Plenty of room for full brand suffix under 60 chars
+    fullTitle = `${trimmed} | Rise Up Roofing`;
+  } else if (trimmed.length <= 53) {
+    // Fit short brand suffix under 60 chars
+    fullTitle = `${trimmed} | Rise Up`;
+  } else {
+    // Title is already a complete, rich 54-65 char keyword phrase — preserve fully without truncation
+    fullTitle = trimmed;
   }
 
   const url = `${BASE_URL}${path}`;
+
   const image = ogImage || `${BASE_URL}/og-image.jpg`;
 
   return {
@@ -115,7 +93,14 @@ export function buildLocalBusinessJsonLd() {
       { '@type': 'City', name: 'El Cajon' },
       { '@type': 'City', name: 'La Mesa' },
       { '@type': 'City', name: 'Poway' },
+      { '@type': 'City', name: 'Rancho Santa Fe' },
+      { '@type': 'City', name: 'Rancho San Diego' },
+      { '@type': 'City', name: 'Fallbrook' },
+      { '@type': 'City', name: 'Ramona' },
+      { '@type': 'City', name: 'Valley Center' },
+      { '@type': 'City', name: 'Rancho Bernardo' },
     ],
+
     priceRange: '$$',
     openingHours: 'Mo-Su 00:00-24:00',
     sameAs: [
@@ -261,3 +246,38 @@ export function buildTechArticleJsonLd({
     inLanguage: 'en-US',
   };
 }
+
+export function buildProjectJsonLd(project: {
+  title: string;
+  scopeOfWork: string;
+  city: string;
+  slug: string;
+  afterImage: string;
+  materialsUsed: string[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    headline: project.title,
+    description: project.scopeOfWork,
+    image: project.afterImage,
+    url: `${BASE_URL}/projects/${project.slug}`,
+    locationCreated: {
+      '@type': 'Place',
+      name: `${project.city}, California`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: project.city,
+        addressRegion: 'CA',
+        addressCountry: 'US',
+      },
+    },
+    author: {
+      '@type': 'RoofingContractor',
+      name: COMPANY_NAME,
+      url: BASE_URL,
+    },
+  };
+}
+

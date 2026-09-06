@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Icon } from '@/components/shared/Icon';
 import {
@@ -523,7 +523,7 @@ export default function RoofTearOffProcessPage() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <Link
-              href="/services/repairs"
+              href="/services/roof-repair"
               className="p-4 rounded-2xl border border-slate-200/80 bg-white hover:border-brand-blue/40 shadow-xs transition-all group"
             >
               <h4 className="text-xs sm:text-sm font-bold text-[var(--text-primary)] group-hover:text-brand-blue transition-colors">

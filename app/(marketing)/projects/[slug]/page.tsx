@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Icon } from '@/components/shared/Icon';
 import { getProjectBySlug, getAllProjectSlugs } from '@/lib/data/projects';
-import { buildMetadata } from '@/lib/seo/metadata';
+import { buildMetadata, buildProjectJsonLd } from '@/lib/seo/metadata';
 import { Section } from '@/components/shared/Container';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const project = getProjectBySlug(slug);
   if (!project) return {};
   return buildMetadata({
-    title: `${project.title} | San Diego Roofing Case Study`,
+    title: `${project.title} in ${project.city} | San Diego Roofing Case Study`,
     description: `${project.title} in ${project.city}, CA. See before and after photos, scope of work, and materials used.`,
     path: `/projects/${project.slug}`,
     ogImage: project.afterImage,
@@ -29,9 +29,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const project = getProjectBySlug(slug);
   if (!project) notFound();
 
+  const projectJsonLd = buildProjectJsonLd(project);
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
+      />
       {/* Hero — full-width case study image */}
+
       <section className="relative min-h-[460px] flex items-end overflow-hidden bg-[#0B1B2B]">
         <Image
           src={project.afterImage}

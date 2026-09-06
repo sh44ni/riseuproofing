@@ -159,7 +159,7 @@ export function MobileNav({ stats }: { stats?: ReviewStats }) {
               </Link>
 
               <Link
-                href="/services/repairs"
+                href="/services/roof-repair"
                 onClick={() => setOpen(false)}
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-amber-400/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
@@ -175,7 +175,7 @@ export function MobileNav({ stats }: { stats?: ReviewStats }) {
               </Link>
 
               <Link
-                href="/services/commercial"
+                href="/services/commercial-roofing"
                 onClick={() => setOpen(false)}
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-cyan-400/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
@@ -191,7 +191,7 @@ export function MobileNav({ stats }: { stats?: ReviewStats }) {
               </Link>
 
               <Link
-                href="/services/solar"
+                href="/services/solar-roofing"
                 onClick={() => setOpen(false)}
                 className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-yellow-400/40 transition-all flex flex-col gap-2 group cursor-pointer"
               >
@@ -281,6 +281,46 @@ export function MobileNav({ stats }: { stats?: ReviewStats }) {
                 <span>Projects &amp; Case Studies</span>
                 <span className="text-[10px] font-extrabold uppercase bg-brand-gold/20 text-amber-300 border border-brand-gold/30 px-1.5 py-0.5 rounded">
                   Photos
+                </span>
+              </div>
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
+            </Link>
+
+            {/* Guides */}
+            <Link
+              href="/guides"
+              onClick={() => setOpen(false)}
+              className={cn(
+                'flex items-center justify-between py-2.5 px-3 rounded-xl text-xs font-bold transition-all',
+                pathname.startsWith('/guides')
+                  ? 'bg-brand-blue/20 text-brand-blue border border-brand-blue/30'
+                  : 'text-white/80 hover:bg-white/[0.06] hover:text-white'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span>Knowledge Hub &amp; Guides</span>
+                <span className="text-[10px] font-extrabold uppercase bg-brand-blue/20 text-blue-300 border border-brand-blue/30 px-1.5 py-0.5 rounded">
+                  Library
+                </span>
+              </div>
+              <Icon name="chevron-right" className="w-4 h-4 text-white/30" />
+            </Link>
+
+            {/* Roof Financing */}
+            <Link
+              href="/roof-financing-san-diego"
+              onClick={() => setOpen(false)}
+              className={cn(
+                'flex items-center justify-between py-2.5 px-3 rounded-xl text-xs font-bold transition-all',
+                pathname === '/roof-financing-san-diego'
+                  ? 'bg-brand-blue/20 text-brand-blue border border-brand-blue/30'
+                  : 'text-white/80 hover:bg-white/[0.06] hover:text-white'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span>Roof Financing</span>
+                <span className="text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+                  $0 Down
                 </span>
               </div>
               <Icon name="chevron-right" className="w-4 h-4 text-white/30" />

@@ -30,6 +30,26 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/services/repairs',
+        destination: '/services/roof-repair',
+        permanent: true,
+      },
+      {
+        source: '/services/commercial',
+        destination: '/services/commercial-roofing',
+        permanent: true,
+      },
+      {
+        source: '/services/solar',
+        destination: '/services/solar-roofing',
+        permanent: true,
+      },
+    ];
+  },
 };
+
 
 export default nextConfig;

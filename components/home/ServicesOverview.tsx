@@ -220,7 +220,7 @@ export function ServicesOverview() {
             {/* Action Buttons: Schedule & Instant Call */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <Link
-                href="/services/repairs"
+                href="/services/roof-repair"
                 className="py-3 px-4 rounded-xl bg-brand-blue hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
               >
                 <span>Book Diagnostic</span>
@@ -297,7 +297,7 @@ export function ServicesOverview() {
 
             {/* Button */}
             <Link
-              href="/services/commercial"
+              href="/services/commercial-roofing"
               className="w-full py-3 px-5 rounded-xl bg-brand-blue group-hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
             >
               <span>Explore Commercial</span>
@@ -364,7 +364,7 @@ export function ServicesOverview() {
 
             {/* Button */}
             <Link
-              href="/services/solar"
+              href="/services/solar-roofing"
               className="w-full py-3 px-5 rounded-xl bg-brand-blue group-hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md cursor-pointer"
             >
               <span>Explore Solar</span>

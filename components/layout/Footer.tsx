@@ -19,22 +19,29 @@ import { Tooltip } from '@/components/shared/Tooltip';
 import type { ReviewStats } from '@/lib/reviews-server';
 
 const SERVICES = [
+  { label: 'Roof Inspection & Diagnostics', href: '/services/roof-inspection' },
   { label: 'Residential Roofing', href: '/services/residential' },
-  { label: 'Roof Leak Repair', href: '/services/repairs' },
+  { label: 'Roof Leak Repair', href: '/services/roof-repair' },
   { label: 'Tile Roofing & Relay', href: '/services/tile-roofing' },
   { label: 'Standing Seam Metal', href: '/services/metal-roofing' },
   { label: 'Siding Installation & Repair', href: '/services/siding' },
   { label: 'Home & Room Additions', href: '/services/home-additions' },
   { label: 'ADU Construction Contractors', href: '/services/adu-construction' },
-  { label: 'Commercial Flat Roofing', href: '/services/commercial' },
+  { label: 'Commercial Roofing', href: '/services/commercial-roofing' },
+  { label: 'Commercial Roof Inspection', href: '/services/commercial-roof-inspection' },
+  { label: 'Industrial Roofing Contractors', href: '/services/industrial-roofing' },
   { label: 'Modified Bitumen & BUR', href: '/services/modified-bitumen' },
   { label: 'Silicone Roof Coatings', href: '/services/roof-coating' },
-  { label: 'Solar Roofing Integration', href: '/services/solar' },
+  { label: 'Solar Roofing Integration', href: '/services/solar-roofing' },
+  { label: 'Custom Deck Builder', href: '/services/deck-builder' },
   { label: 'General Construction & Framing', href: '/services/construction' },
+  { label: 'Roof Financing San Diego', href: '/roof-financing-san-diego' },
 ];
+
 
 const COMPANY_LINKS = [
   { label: 'About Us', href: '/about' },
+  { label: 'Knowledge Hub & Guides', href: '/guides' },
   { label: 'Roof Tear-Off Guide', href: '/about/roof-tear-off-process' },
   { label: 'Featured Projects', href: '/projects' },
   { label: 'Customer Reviews', href: '/reviews' },

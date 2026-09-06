@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -18,6 +18,8 @@ const ROUTE_LABELS: Record<string, string> = {
   contact: 'Estimate',
   careers: 'Careers',
   'service-area': 'Areas',
+  'roof-financing-san-diego': 'Financing',
+  guides: 'Guides',
   privacy: 'Privacy',
   terms: 'Terms',
 };
@@ -30,6 +32,8 @@ const ROUTE_TITLES: Record<string, string> = {
   contact: 'Free Estimate',
   careers: 'Careers',
   'service-area': 'Service Areas',
+  'roof-financing-san-diego': 'Roof Financing San Diego',
+  guides: 'Knowledge Hub & Technical Guides',
   privacy: 'Privacy Policy',
   terms: 'Terms of Service',
 };
@@ -384,6 +388,19 @@ export function Header({ stats }: { stats?: ReviewStats } = {}) {
               Projects
             </Link>
 
+            {/* GUIDES */}
+            <Link
+              href="/guides"
+              className={cn(
+                'text-xs xl:text-sm font-bold tracking-tight px-3 py-1.5 rounded-xl transition-all',
+                pathname.startsWith('/guides')
+                  ? 'text-brand-blue bg-blue-50/80 border border-blue-200/60 shadow-2xs'
+                  : 'text-theme-secondary hover:text-theme-primary hover:bg-slate-100/80'
+              )}
+            >
+              Guides
+            </Link>
+
             {/* SERVICE AREAS DROPDOWN */}
             <div
               className="relative"
@@ -441,6 +458,19 @@ export function Header({ stats }: { stats?: ReviewStats } = {}) {
                 </div>
               )}
             </div>
+
+            {/* FINANCING */}
+            <Link
+              href="/roof-financing-san-diego"
+              className={cn(
+                'text-xs xl:text-sm font-bold tracking-tight px-3 py-1.5 rounded-xl transition-all',
+                pathname === '/roof-financing-san-diego'
+                  ? 'text-brand-blue bg-blue-50/80 border border-blue-200/60 shadow-2xs'
+                  : 'text-theme-secondary hover:text-theme-primary hover:bg-slate-100/80'
+              )}
+            >
+              Financing
+            </Link>
 
             {/* REVIEWS */}
             <Link

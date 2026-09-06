@@ -31,8 +31,8 @@ export const serviceAreas: ServiceArea[] = [
         answer: 'Yes. We provide 100% free, no-obligation roof inspections and written estimates across all San Diego neighborhoods. Our inspectors examine your roof surface, attic ventilation, flashing points, and underlayment condition, providing a comprehensive photo report.',
       },
       {
-        question: 'Do you offer specialized re-roofing in Mira Mesa and Fairbanks Ranch?',
-        answer: 'Yes. In Mira Mesa, we specialize in complete re-roof tear-offs and high-wind architectural shingle upgrades for established homes built in the 1970s and 1980s. In luxury communities like Fairbanks Ranch, our master tile craftsmen perform delicate tile lift-and-resets, replacing deteriorated organic felt with dual-ply high-temperature synthetic underlayments to meet strict fire-safety and HOA architectural standards.',
+        question: 'Do you provide re-roof Mira Mesa and re-roofing Fairbanks Ranch services?',
+        answer: 'Yes. For homeowners needing a re-roof Mira Mesa project, we specialize in complete re-roof tear-offs and high-wind architectural shingle upgrades for established homes built in the 1970s and 1980s. For estates requiring re-roofing Fairbanks Ranch services, our master tile craftsmen perform delicate tile lift-and-resets, replacing deteriorated organic felt with dual-ply high-temperature synthetic underlayments to meet strict fire-safety and HOA architectural standards.',
       },
       {
         question: 'What roof financing options are available in San Diego?',
@@ -217,9 +217,9 @@ export const serviceAreas: ServiceArea[] = [
     name: 'Vista',
     county: 'San Diego',
     seoTitle: 'Vista Roofing Company | Roofing Contractors Vista CA | Rise Up',
-    seoDescription: 'Top-rated Vista roofing company. Tile underlayment replacement, Owens Corning shingles, and emergency roof repairs across Vista, Shadowridge, and Buena Creek.',
+    seoDescription: 'Top-rated Vista roofing company providing roofing Vista homeowners trust. Tile underlayment replacement, Owens Corning shingles, and emergency repairs.',
     h1: 'Premier Roofing Contractor & Roof Repair in Vista, CA',
-    intro: 'Searching for a trusted, 5-star Vista roofing company? Located just minutes away in adjacent Oceanside, Rise Up Roofing & Construction delivers master-grade residential and commercial roofing services throughout Vista, CA. From tile roof relayments in Shadowridge and rural agricultural reroofs in Buena Creek to commercial flat roofs across the Vista Business Park, our licensed C-39 and Class B builders provide rapid leak triage, Title 24 cool-roof shingles, and comprehensive 50-year manufacturer warranties.',
+    intro: 'Searching for a trusted, 5-star Vista roofing company? Located just minutes away in adjacent Oceanside, Rise Up Roofing & Construction delivers master-grade residential and commercial roofing Vista services throughout Vista, CA. From tile roof relayments in Shadowridge and rural agricultural reroofs in Buena Creek to commercial flat roofs across the Vista Business Park, our licensed C-39 and Class B builders provide rapid leak triage, Title 24 cool-roof shingles, and comprehensive 50-year manufacturer warranties.',
     neighborhoods: ['Shadowridge', 'Buena Creek', 'Breeze Hill', 'Foothill', 'Pechstein Reservoir', 'Vista Way', 'Olive', 'Lake San Marcos Border', 'Historic Downtown Vista'],
     faqs: [
       {
@@ -244,9 +244,135 @@ export const serviceAreas: ServiceArea[] = [
       },
     ],
   },
-  { slug: 'san-marcos', name: 'San Marcos', county: 'San Diego' },
-  { slug: 'la-jolla', name: 'La Jolla', county: 'San Diego' },
-  { slug: 'del-mar', name: 'Del Mar', county: 'San Diego' },
+  {
+    slug: 'san-marcos',
+    name: 'San Marcos',
+    county: 'San Diego',
+    seoTitle: 'San Marcos Roofing Company | Tile Relay & Repairs | Rise Up',
+    seoDescription: 'Premier San Marcos CA roofing contractor. Concrete tile underlayment replacement, Owens Corning cool shingles, and emergency leak repair. Free estimates.',
+    h1: 'Premier Roofing Contractor & Roof Repair in San Marcos, CA',
+    intro: 'Located in the heart of inland North County, San Marcos properties endure blistering summer heat, intense ultraviolet exposure, and sudden winter downpours. Rise Up Roofing & Construction delivers master-grade residential and commercial roofing across San Marcos—specializing in 50-year synthetic tile relayments, Title 24 energy-efficient cool roofs, and rapid emergency leak diagnostics. Backed by California License #1096492 and Owens Corning Preferred Contractor certification.',
+    neighborhoods: ['Lake San Marcos', 'San Elijo Hills', 'Twin Oaks Valley', 'Santa Fe Hills', 'Rancho Coronado', 'Discovery Hills', 'Coronado Hills', 'Richmar'],
+    faqs: [
+      {
+        question: 'How does inland North County heat affect tile roofs in San Marcos?',
+        answer: 'During summer months in San Marcos, rooftop temperatures regularly exceed 150°F. While concrete tiles endure, standard asphalt felt underlayment beneath them bakes into brittle shards after 18 to 22 years. Our tile relay service removes existing tiles, installs commercial-grade dual-layer synthetic underlayment rated to 250°F, and resets your tiles for decades of guaranteed leak-free protection.',
+      },
+      {
+        question: 'Do you service master-planned communities like San Elijo Hills and Lake San Marcos?',
+        answer: 'Yes. We routinely work in San Elijo Hills, Lake San Marcos, and surrounding HOA communities. We provide complete architectural review submittal packets, including material specification sheets, fire-rating certifications, and approved color chips for immediate approval.',
+      },
+      {
+        question: 'What is the average cost of a roof replacement in San Marcos, CA?',
+        answer: 'A residential roof replacement in San Marcos typically ranges from $8,500 to $17,000 for architectural shingles, and $11,500 to $25,000+ for a full concrete tile lift-and-reset with lifetime synthetic underlayment. We provide 100% free drone inspections and upfront, itemized estimates.',
+      },
+      {
+        question: 'Do you offer solar detach and reset in San Marcos?',
+        answer: 'Yes. If your roof has solar panels, our certified in-house technicians safely de-energize and remove the array, reroof your property with waterproof flashing mounts, and remount the system with full electrical testing.',
+      },
+      {
+        question: 'How fast can emergency roof repair crews arrive in San Marcos?',
+        answer: 'With our headquarters located minutes away in adjacent Oceanside, our emergency dispatch crews can typically arrive at your San Marcos home within 60 to 90 minutes during severe weather events.',
+      },
+    ],
+  },
+  {
+    slug: 'la-jolla',
+    name: 'La Jolla',
+    county: 'San Diego',
+    seoTitle: 'La Jolla Roofing Company | Luxury Tile Relay & Remodeling',
+    seoDescription: 'Premier La Jolla CA roofing contractor. Historic Spanish clay tile relayment, custom copper flashings, kitchen remodeling, and coastal roofing. Free estimates.',
+    h1: 'Luxury Roofing Contractor & Remodeling in La Jolla, CA',
+    intro: 'Perched along San Diego’s iconic coastline, La Jolla estates represent the pinnacle of Southern California luxury architecture—from historic Spanish Revival villas to modern oceanfront masterpieces. Coastal marine moisture, salt aerosol, and intense sunlight demand exceptional craftsmanship. Rise Up Roofing & Construction delivers bespoke roofing and exterior remodeling in La Jolla—specializing in authentic Spanish terracotta tile relays, custom hand-soldered copper valleys, and whole-home additions.',
+    neighborhoods: ['The Village', 'La Jolla Shores', 'Bird Rock', 'Mount Soledad', 'La Jolla Farms', 'Muirlands', 'Lower Hermosa', 'Windansea', 'La Jolla Alta', 'Hidden Valley'],
+    faqs: [
+      {
+        question: 'How do you preserve historic terracotta tiles during a La Jolla tile relay?',
+        answer: 'Our signature "Tile Lift and Reset" service carefully detaches and numbers your existing Spanish terracotta tiles on-site. We strip away deteriorated 20-year felt paper, repair any coastal plywood dry rot, and install commercial-grade dual-ply high-temperature synthetic underlayment paired with marine-grade copper flashings. We then reinstall your authentic tiles, preserving their irreplaceable architectural patina while guaranteeing lifetime waterproofing.',
+      },
+      {
+        question: 'How does coastal salt air affect La Jolla roofing metal and fasteners?',
+        answer: 'Salt air carried by Pacific ocean breezes quickly corrodes standard galvanized steel flashings and nails. In La Jolla, we specify 16-ounce copper or marine-grade 316 stainless steel valley liners, chimney counter-flashings, and stainless mechanical fasteners to prevent rust-induced leaks.',
+      },
+      {
+        question: 'Do you handle home additions and kitchen remodeling in La Jolla?',
+        answer: 'Yes. As licensed Class B General Contractors and C-39 Roofers, we design and build turnkey kitchen renovations, primary suite expansions, and luxury whole-home remodeling projects in La Jolla, managing all city coastal development permitting and engineering.',
+      },
+      {
+        question: 'Are your roofing installations compliant with La Jolla coastal zone building codes?',
+        answer: 'Yes. Every installation adheres strictly to California Residential Code CRC R908, coastal zone wind load specifications, and Title 24 cool-roof energy mandates with a 100% municipal city inspection pass rate.',
+      },
+      {
+        question: 'How do I schedule a white-glove roof consultation in La Jolla?',
+        answer: 'Call our dedicated private client desk at (760) 622-1230 or submit an online request. We provide complimentary 4K aerial drone surveys and formal written diagnostic reports.',
+      },
+    ],
+  },
+  {
+    slug: 'del-mar',
+    name: 'Del Mar',
+    county: 'San Diego',
+    seoTitle: 'Del Mar Roofing Company | Custom Deck Builder Del Mar CA',
+    seoDescription: 'Premier Del Mar CA roofing contractor and custom deck builder. Standing seam metal roofs, clay tile relays, Trex composite decks, and patio covers. Free estimates.',
+    h1: 'Premier Roofing Contractor & Custom Deck Builder in Del Mar, CA',
+    intro: 'Famed for its pristine coastal bluffs, equestrian heritage, and oceanfront estates, Del Mar requires the highest standard of exterior construction and roofing excellence. Rise Up Roofing & Construction is Del Mar’s premier roofing specialist and custom deck builder. From non-combustible standing seam metal roofs and authentic clay tile restorations to custom Trex composite decks engineered for coastal bluff living, our licensed builders deliver unmatched structural durability and aesthetic elegance.',
+    neighborhoods: ['Del Mar Beach Colony', 'Del Mar Heights', 'Del Mar Terrace', 'Old Del Mar', 'Torrey Pines Border', 'Stratford Court', 'Sandy Lane'],
+    faqs: [
+      {
+        question: 'Why is Rise Up recognized as the leading deck builder in Del Mar?',
+        answer: 'We design and construct custom exterior decks, multi-level ocean-view balconies, and covered patio retreats in Del Mar. Specializing in premium Trex composite decking and tropical hardwoods (Ipe, Mangaris), we install stainless steel marine fasteners and custom cable railings engineered to withstand coastal humidity and Del Mar Wildland-Urban Interface (WUI) building codes.',
+      },
+      {
+        question: 'What roofing materials provide the best defense against Del Mar coastal dampness?',
+        answer: 'Standing seam architectural metal (Kynar 500 coated Galvalume) and authentic concrete or clay tile with dual-ply synthetic underlayment provide the ultimate resistance against marine layer dampness, salt air corrosion, and intense UV degradation.',
+      },
+      {
+        question: 'Can you match historic Del Mar beach cottage and Mediterranean architecture?',
+        answer: 'Yes. Our master craftsmen take meticulous care to preserve architectural integrity, sourcing exact profile and color-matched tiles, custom-bent copper flashings, and architectural wood shake alternatives.',
+      },
+      {
+        question: 'Do you handle city building permits and coastal commission reviews in Del Mar?',
+        answer: 'Yes. We manage all municipal plan submissions, structural engineering calculations, and building department inspections with the City of Del Mar Planning Department.',
+      },
+      {
+        question: 'Do you offer free drone roof inspections in Del Mar?',
+        answer: 'Yes. We provide 100% free high-resolution 4K drone roof surveys and comprehensive written diagnostic reports for Del Mar property owners.',
+      },
+    ],
+  },
+  {
+    slug: 'rancho-san-diego',
+    name: 'Rancho San Diego',
+    county: 'San Diego',
+    seoTitle: 'Deck Builder Rancho San Diego | Roofing Contractor | Rise Up',
+    seoDescription: 'Top-rated deck builder in Rancho San Diego & licensed roofing contractor. Custom Trex composite decks, concrete tile relay, patio covers, and shingle roofs.',
+    h1: 'Premier Deck Builder & Roofing Contractor in Rancho San Diego, CA',
+    intro: 'Nestled in East County’s picturesque foothills, Rancho San Diego is known for its spacious residential properties, sunny microclimates, and vibrant outdoor California lifestyle. If you are searching for a premier deck builder in Rancho San Diego or a trusted roofing contractor, Rise Up Roofing & Construction delivers master craftsmanship. From custom Trex composite decks and covered patio pavilions to 50-year concrete tile underlayment relays and Owens Corning cool-roof replacements, our licensed builders bring your vision to life.',
+    neighborhoods: ['Cuyamaca College Area', 'Avocado Highlands', 'Hilton Head', 'Steele Canyon Border', 'Cottonwood Golf Area', 'Monte Vista'],
+    faqs: [
+      {
+        question: 'Why choose Rise Up as your custom deck builder in Rancho San Diego?',
+        answer: 'With over 2,400 monthly homeowners seeking deck builders in Rancho San Diego, Rise Up stands out with licensed Class B engineering, premium Trex Transcend composite decking, structural concrete footings, and custom aluminum or cable rail systems built to withstand extreme East County summer heat.',
+      },
+      {
+        question: 'How does Rancho San Diego’s inland heat impact tile and shingle roofs?',
+        answer: 'Inland summer heat regularly pushes rooftop temperatures above 155°F in Rancho San Diego. Conventional felt paper bakes into brittle shards beneath tiles, creating severe leak risks during winter rains. We install high-temperature SBS synthetic underlayments rated to 250°F and Title 24-certified reflective cool shingles that slash attic heat by up to 30°F.',
+      },
+      {
+        question: 'What is the cost of building a custom deck in Rancho San Diego?',
+        answer: 'Custom deck builds in Rancho San Diego typically range from $9,500 to $28,000+ depending on square footage, elevation, material choice (composite vs hardwood), and whether integrated LED lighting, pergolas, or custom staircases are included. We provide 100% free design consultations and fixed-price estimates.',
+      },
+      {
+        question: 'Do you offer concrete tile roof lift-and-reset services in Rancho San Diego?',
+        answer: 'Yes. For homes in Avocado Highlands and surrounding neighborhoods with intact tiles, our tile relay service saves homeowners up to 50% compared to purchasing new tile by replacing the failed underlayment while reinstalling your original tiles.',
+      },
+      {
+        question: 'Do you handle building permits for decks and roofing in Rancho San Diego?',
+        answer: 'Yes. We manage all permit pulling, engineering calculations, and county building department inspections from start to final approval.',
+      },
+    ],
+  },
+
     {
     slug: 'solana-beach',
     name: 'Solana Beach',
