@@ -574,10 +574,10 @@ section:not(.always-dark) .ambient-orb-secondary {
    ============================================================ */
 
 .admin-theme {
-  /* Surface depth system (crisp daylight) */
+  /* Surface depth system (crisp daylight with coastal ambient radiance) */
   --admin-bg-base: #F4F8FD;
   --admin-bg-card: #FFFFFF;
-  --admin-bg-card-hover: #F8FAFC;
+  --admin-bg-card-hover: #FFFFFF;
   --admin-bg-input: #FFFFFF;
   --admin-bg-elevated: #FFFFFF;
   --admin-bg-surface-subtle: rgba(17, 45, 73, 0.03);
@@ -588,8 +588,8 @@ section:not(.always-dark) .ambient-orb-secondary {
   --admin-gold: #EAA636;
   --admin-gold-light: #FCD34D;
   --admin-gold-soft: rgba(234, 166, 54, 0.12);
-  --admin-gold-glow: rgba(234, 166, 54, 0.20);
-  --admin-gold-border: rgba(234, 166, 54, 0.35);
+  --admin-gold-glow: rgba(234, 166, 54, 0.25);
+  --admin-gold-border: rgba(234, 166, 54, 0.40);
 
   /* Text hierarchy (deep slate navy, high contrast) */
   --admin-text-primary: #0B1E33;
@@ -598,57 +598,85 @@ section:not(.always-dark) .ambient-orb-secondary {
   --admin-text-gold: #B45309;
 
   /* Refined light border system */
-  --admin-border: rgba(17, 45, 73, 0.09);
-  --admin-border-hover: rgba(17, 45, 73, 0.18);
-  --admin-border-subtle: rgba(17, 45, 73, 0.05);
+  --admin-border: rgba(17, 45, 73, 0.08);
+  --admin-border-hover: rgba(47, 159, 227, 0.35);
+  --admin-border-subtle: rgba(17, 45, 73, 0.04);
 
-  /* Premium light shadow stack */
+  /* Premium tactile light shadow stack */
   --admin-shadow-card:
-    0 1px 3px rgba(11, 30, 51, 0.04),
-    0 6px 16px -2px rgba(11, 30, 51, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 1px 3px rgba(11, 30, 51, 0.03),
+    0 6px 18px -3px rgba(11, 30, 51, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --admin-shadow-elevated:
-    0 4px 12px rgba(11, 30, 51, 0.05),
-    0 16px 36px -4px rgba(11, 30, 51, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 4px 14px rgba(11, 30, 51, 0.04),
+    0 18px 40px -6px rgba(11, 30, 51, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
   --admin-shadow-gold:
-    0 4px 20px rgba(234, 166, 54, 0.18),
-    0 1px 4px rgba(234, 166, 54, 0.10);
+    0 4px 16px rgba(234, 166, 54, 0.28),
+    0 1px 4px rgba(234, 166, 54, 0.15);
   --admin-shadow-gold-intense:
-    0 6px 24px rgba(234, 166, 54, 0.30),
-    0 12px 36px rgba(234, 166, 54, 0.15);
+    0 8px 24px rgba(234, 166, 54, 0.38),
+    0 2px 6px rgba(234, 166, 54, 0.20);
   --admin-shadow-blue:
-    0 4px 20px rgba(47, 159, 227, 0.20),
-    0 1px 4px rgba(47, 159, 227, 0.12);
+    0 4px 16px rgba(47, 159, 227, 0.28),
+    0 1px 4px rgba(47, 159, 227, 0.15);
+
+  /* Ambient mesh background for daylight canvas */
+  background-color: #F4F8FD;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 15% 0%, rgba(47, 159, 227, 0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 85% 10%, rgba(234, 166, 54, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 50% 70%, rgba(47, 159, 227, 0.04) 0%, transparent 60%);
+  background-attachment: fixed;
 }
 
 /* --- Premium Admin Card Base --- */
 .admin-card {
   background: var(--admin-bg-card);
   border: 1px solid var(--admin-border);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: var(--admin-shadow-card);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .admin-card:hover {
   background: var(--admin-bg-card-hover);
-  border-color: var(--admin-border-hover);
-  box-shadow: var(--admin-shadow-elevated);
-  transform: translateY(-1px);
+  border-color: rgba(47, 159, 227, 0.30);
+  box-shadow: var(--admin-shadow-elevated), 0 0 0 1px rgba(47, 159, 227, 0.08);
+  transform: translateY(-2px);
 }
 
 /* Interactive variant with brand blue / gold accent on hover */
 .admin-card-gold:hover {
   border-color: var(--admin-gold-border);
   box-shadow: var(--admin-shadow-gold);
+  transform: translateY(-2px);
+}
+
+.admin-card-interactive {
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  box-shadow: var(--admin-shadow-card);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.admin-card-interactive:hover {
+  border-color: rgba(47, 159, 227, 0.35);
+  box-shadow: var(--admin-shadow-elevated), 0 0 0 1px rgba(47, 159, 227, 0.12);
+  transform: translateY(-2px);
+}
+
+.admin-card-interactive:active {
+  transform: translateY(0) scale(0.99);
 }
 
 /* --- Premium Admin Inputs --- */
 .admin-input {
   background: var(--admin-bg-input);
-  border: 1px solid var(--admin-border-hover);
-  border-radius: 10px;
+  border: 1px solid rgba(17, 45, 73, 0.14);
+  border-radius: 12px;
   color: var(--admin-text-primary);
   box-shadow: 0 1px 2px rgba(11, 30, 51, 0.03);
   transition: all 0.2s ease;
@@ -657,7 +685,7 @@ section:not(.always-dark) .ambient-orb-secondary {
 .admin-input:focus {
   border-color: #2F9FE3;
   box-shadow:
-    0 0 0 3px rgba(47, 159, 227, 0.18),
+    0 0 0 3px rgba(47, 159, 227, 0.20),
     0 1px 2px rgba(11, 30, 51, 0.04);
   outline: none;
 }
@@ -669,40 +697,81 @@ section:not(.always-dark) .ambient-orb-secondary {
 /* --- Premium Admin Badges --- */
 .admin-badge {
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.04em;
   padding: 3px 10px;
   transition: all 0.2s ease;
 }
 
-/* --- Premium Admin Button --- */
-.admin-btn-gold {
-  background: linear-gradient(135deg, #EAA636 0%, #D97706 100%);
+/* --- Vibrant Icon Badges --- */
+.admin-tile-blue {
+  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
   color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(47, 159, 227, 0.25);
+}
+
+.admin-tile-gold {
+  background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(234, 166, 54, 0.25);
+}
+
+.admin-tile-emerald {
+  background: linear-gradient(135deg, #34D399 0%, #059669 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.admin-tile-purple {
+  background: linear-gradient(135deg, #A78BFA 0%, #6366F1 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+/* --- Premium Radiant Admin Buttons --- */
+.admin-btn-gold {
+  background: linear-gradient(135deg, #F59E0B 0%, #EAA636 50%, #D97706 100%);
+  color: #FFFFFF !important;
   font-weight: 700;
   border-radius: 12px;
   box-shadow: var(--admin-shadow-gold);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-btn-gold:hover {
   box-shadow: var(--admin-shadow-gold-intense);
-  transform: translateY(-1px);
+  transform: translateY(-1.5px);
+  filter: brightness(1.03);
+}
+
+.admin-btn-gold:active {
+  transform: translateY(0.5px) scale(0.98);
 }
 
 .admin-btn-blue {
-  background: linear-gradient(135deg, #2F9FE3 0%, #1878B8 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #38BDF8 0%, #2F9FE3 50%, #0284C7 100%);
+  color: #FFFFFF !important;
   font-weight: 700;
   border-radius: 12px;
   box-shadow: var(--admin-shadow-blue);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-btn-blue:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
+  filter: brightness(1.04);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(47, 159, 227, 0.35);
+}
+
+.admin-btn-blue:active {
+  transform: translateY(0.5px) scale(0.98);
 }
 
 /* --- Glassmorphic Sidebar --- */

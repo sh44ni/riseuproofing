@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Zap, Lock, Mail, Eye, EyeOff, AlertCircle, ShieldCheck, User } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, AlertCircle, ShieldCheck, User } from 'lucide-react';
 import { RoleIcon } from '@/components/admin/shared/RoleBadge';
 
 export default function AdminLogin() {
@@ -69,11 +70,22 @@ export default function AdminLogin() {
       <div className="w-full max-w-md relative z-10 admin-fade-in-1">
         {/* Logo */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-[20px] bg-gradient-to-br from-[#EAA636] to-[#d49428] shadow-[0_8px_30px_rgba(234,166,54,0.3)] mb-3 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            <Zap size={28} className="text-white font-black relative z-10" />
+          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-md border border-slate-200/80 mb-3">
+            <Image
+              src="/logo.svg"
+              alt="Rise Up Roofing & Construction"
+              width={180}
+              height={55}
+              priority
+              className="h-10 w-auto object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-black text-[#0B1E33] tracking-tight">Rise Up Roofing CRM</h1>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-black text-[#0B1E33] tracking-tight">Operations Portal</h1>
+            <span className="px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-[#0284C7] text-[10px] font-extrabold uppercase tracking-wider">
+              CRM
+            </span>
+          </div>
           <div className="flex items-center justify-center gap-2 mt-1">
             <span className="text-[#EAA636] text-xs font-bold uppercase tracking-widest">
               CSLB #1096492

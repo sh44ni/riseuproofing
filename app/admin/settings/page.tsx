@@ -260,9 +260,9 @@ export default function SettingsPage() {
   const renderProfileSection = () => (
     <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#1878B8] border border-sky-200/80 flex items-center justify-center">
-            <UserIcon size={18} />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/20 flex items-center justify-center flex-shrink-0">
+            <UserIcon size={19} className="stroke-[2.2]" />
           </div>
           <div>
             <h2 className="text-base font-bold text-[#0B1E33]">My Profile &amp; Avatar</h2>
@@ -304,7 +304,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => setShowProfileAvatarPicker(true)}
-              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-[#EAA636] text-white hover:bg-[#d49428] shadow-md transition-all cursor-pointer"
+              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white hover:brightness-105 shadow-md shadow-amber-500/30 active:scale-95 transition-all cursor-pointer"
               title="Change Photo"
             >
               <Camera size={14} className="stroke-[2.5]" />
@@ -390,7 +390,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={savingProfile}
-            className="px-5 py-2.5 rounded-xl bg-[#EAA636] hover:bg-[#d49428] text-white font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl admin-btn-gold text-white font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-2"
           >
             <Save size={14} />
             {savingProfile ? 'Saving...' : 'Save Profile Changes'}
@@ -403,14 +403,18 @@ export default function SettingsPage() {
   if (isForbidden) {
     return (
       <div className="space-y-8 pb-24 md:pb-12 max-w-6xl mx-auto admin-fade-in">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] flex items-center gap-2.5">
-            <Settings size={26} className="text-[#1878B8]" />
-            Personal Settings &amp; Profile
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Manage your personal portrait photo, contact details, and role credentials.
-          </p>
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/20 flex items-center justify-center flex-shrink-0">
+            <Settings size={22} className="stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] tracking-tight">
+              Personal Settings &amp; Profile
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Manage your personal portrait photo, contact details, and role credentials.
+            </p>
+          </div>
         </div>
 
         {renderProfileSection()}
@@ -441,20 +445,27 @@ export default function SettingsPage() {
     <div className="space-y-8 pb-24 md:pb-12 max-w-6xl mx-auto admin-fade-in">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] flex items-center gap-2.5">
-            <Settings size={26} className="text-[#1878B8]" />
-            CRM Settings &amp; Operations Hub
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Configure business license information, default estimator pricing, accounting backups, and database monitoring.
-          </p>
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/20 flex items-center justify-center flex-shrink-0">
+            <Settings size={22} className="stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] tracking-tight">
+              CRM Settings &amp; Operations Hub
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Configure business license information, default estimator pricing, accounting backups, and database monitoring.
+            </p>
+          </div>
         </div>
 
         {dbHealth && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold self-start sm:self-auto shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Neon DB Latency: {dbHealth.latencyMs}ms
+          <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-800 text-xs font-bold self-start sm:self-auto shadow-xs">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span>Neon DB Latency: <strong className="text-emerald-950 font-black">{dbHealth.latencyMs}ms</strong></span>
           </div>
         )}
       </div>
@@ -466,10 +477,14 @@ export default function SettingsPage() {
         {/* Card 1: Company Profile & License */}
         <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
-              <Building2 size={18} className="text-[#1878B8]" />
-              Company Profile &amp; CSLB Credentials
-            </h2>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xs flex items-center justify-center flex-shrink-0">
+                <Building2 size={18} className="stroke-[2.2]" />
+              </div>
+              <h2 className="text-base font-bold text-[#0B1E33]">
+                Company Profile &amp; CSLB Credentials
+              </h2>
+            </div>
             {companySuccess && (
               <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
                 <CheckCircle2 size={14} /> Saved!
@@ -556,7 +571,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={savingCompany}
-                className="px-5 py-2 rounded-xl admin-btn-gold text-[#0c1117] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl admin-btn-gold text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save size={13} /> {savingCompany ? 'Saving...' : 'Save Profile'}
               </button>
@@ -567,10 +582,14 @@ export default function SettingsPage() {
         {/* Card 2: Estimator & Pricing Defaults */}
         <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
-              <DollarSign size={18} className="text-[#1878B8]" />
-              Estimator &amp; Pricing Baseline Rates
-            </h2>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-xs flex items-center justify-center flex-shrink-0">
+                <DollarSign size={18} className="stroke-[2.2]" />
+              </div>
+              <h2 className="text-base font-bold text-[#0B1E33]">
+                Estimator &amp; Pricing Baseline Rates
+              </h2>
+            </div>
             {pricingSuccess && (
               <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
                 <CheckCircle2 size={14} /> Saved!
@@ -663,7 +682,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={savingPricing}
-                className="px-5 py-2 rounded-xl admin-btn-gold text-[#0c1117] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl admin-btn-gold text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save size={13} /> {savingPricing ? 'Saving...' : 'Save Pricing Rates'}
               </button>
@@ -675,14 +694,18 @@ export default function SettingsPage() {
       {/* 1-Click Data Backup & CSV Exports Section */}
       <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4 admin-fade-in-2">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
-              <FileSpreadsheet size={18} className="text-emerald-600" />
-              1-Click Data Backup &amp; Accounting CSV Exports
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Instantly export CRM records in standard RFC 4180 CSV format for QuickBooks, Excel, or offline compliance.
-            </p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-xs flex items-center justify-center flex-shrink-0">
+              <FileSpreadsheet size={18} className="stroke-[2.2]" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-[#0B1E33]">
+                1-Click Data Backup &amp; Accounting CSV Exports
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Instantly export CRM records in standard RFC 4180 CSV format for QuickBooks, Excel, or offline compliance.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -711,14 +734,18 @@ export default function SettingsPage() {
       {/* Live Neon PostgreSQL Database Health Monitor */}
       <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4 admin-fade-in-3">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
-              <Database size={18} className="text-[#1878B8]" />
-              Live Database Health &amp; Table Telemetry
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Neon Serverless PostgreSQL connection status and real-time record volumes across all 16 tables.
-            </p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-white shadow-xs flex items-center justify-center flex-shrink-0">
+              <Database size={18} className="stroke-[2.2]" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-[#0B1E33]">
+                Live Database Health &amp; Table Telemetry
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Neon Serverless PostgreSQL connection status and real-time record volumes across all 16 tables.
+              </p>
+            </div>
           </div>
 
           <button
@@ -753,12 +780,19 @@ export default function SettingsPage() {
 
       {/* Security & Password Change */}
       <div className="p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-xs space-y-4 admin-fade-in-4">
-        <h2 className="text-base font-bold text-[#0B1E33] flex items-center gap-2">
-          <Lock size={18} className="text-[#1878B8]" /> Security &amp; Admin Password
-        </h2>
-        <p className="text-slate-500 text-xs">
-          Verify and generate a new secure password for the CRM administrative session.
-        </p>
+        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 text-white shadow-xs flex items-center justify-center flex-shrink-0">
+            <Lock size={18} className="stroke-[2.2]" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-[#0B1E33]">
+              Security &amp; Admin Password
+            </h2>
+            <p className="text-slate-500 text-xs mt-0.5">
+              Verify and generate a new secure password for the CRM administrative session.
+            </p>
+          </div>
+        </div>
 
         <form onSubmit={handlePasswordChange} className="space-y-3.5 text-xs max-w-md">
           {[
@@ -793,7 +827,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={pwLoading}
-            className="admin-btn-gold text-[#0c1117] font-bold py-2.5 px-5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="admin-btn-gold text-white font-bold py-2.5 px-5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
           >
             {pwLoading ? 'Verifying…' : 'Update Password'}
           </button>

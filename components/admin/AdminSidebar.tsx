@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
@@ -10,7 +11,6 @@ import {
   Settings,
   LogOut,
   X,
-  Zap,
   ChevronRight,
   CheckSquare,
   FileText,
@@ -71,20 +71,35 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
     <div className="flex flex-col h-full">
       {/* Brand */}
       <div
-        className={`flex items-center gap-3 px-5 py-5 border-b border-slate-200/80 ${
-          collapsed ? 'justify-center' : ''
+        className={`flex items-center px-4 py-4.5 border-b border-slate-200/80 ${
+          collapsed ? 'justify-center' : 'justify-between'
         }`}
       >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] flex items-center justify-center shadow-[0_2px_10px_rgba(47,159,227,0.25)] flex-shrink-0">
-          <Zap size={16} className="text-white" />
-        </div>
-        {!collapsed && (
-          <div>
-            <p className="text-[#112D49] font-bold text-sm leading-none">Rise Up</p>
-            <p className="text-[#2F9FE3] text-[10px] font-bold uppercase tracking-widest mt-0.5">
-              Admin
-            </p>
-          </div>
+        {collapsed ? (
+          <Link href="/admin/dashboard" title="Rise Up Roofing CRM" className="flex items-center justify-center">
+            <Image
+              src="/favicon.svg"
+              alt="Rise Up"
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 object-contain drop-shadow-xs"
+            />
+          </Link>
+        ) : (
+          <Link href="/admin/dashboard" className="flex items-center justify-between w-full group">
+            <Image
+              src="/logo.svg"
+              alt="Rise Up Roofing & Construction"
+              width={130}
+              height={40}
+              priority
+              className="h-8 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+            />
+            <span className="px-1.5 py-0.5 rounded-md bg-sky-50 border border-sky-200/90 text-[#0284C7] text-[10px] font-extrabold tracking-wider uppercase shadow-2xs">
+              CRM
+            </span>
+          </Link>
         )}
       </div>
 
@@ -99,23 +114,23 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative cursor-pointer
                 ${
                   active
-                    ? 'bg-sky-50 text-[#1878B8] font-semibold shadow-2xs'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#0B1E33]'
+                    ? 'bg-gradient-to-r from-sky-50 via-sky-50/70 to-blue-50/30 text-[#0284C7] font-bold shadow-2xs border-l-[3px] border-[#2F9FE3]'
+                    : 'text-slate-600 hover:bg-slate-100/70 hover:text-[#0B1E33] hover:translate-x-0.5'
                 }
-                ${collapsed ? 'justify-center' : ''}
+                ${collapsed ? 'justify-center !border-l-0' : ''}
               `}
               title={collapsed ? label : undefined}
             >
-              {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#2F9FE3] rounded-r-full shadow-[0_0_8px_rgba(47,159,227,0.4)]" />
+              {active && collapsed && (
+                <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-[#2F9FE3] rounded-full shadow-[0_0_8px_rgba(47,159,227,0.5)]" />
               )}
               <Icon
                 size={18}
-                className={`flex-shrink-0 ${active ? 'text-[#2F9FE3]' : 'text-slate-500 group-hover:text-[#0B1E33]'}`}
+                className={`flex-shrink-0 transition-colors ${active ? 'text-[#0284C7]' : 'text-slate-500 group-hover:text-[#0B1E33]'}`}
               />
               {!collapsed && <span>{label}</span>}
               {!collapsed && active && (
-                <ChevronRight size={14} className="ml-auto text-[#2F9FE3]/70" />
+                <ChevronRight size={14} className="ml-auto text-[#0284C7]/80" />
               )}
             </Link>
           );
@@ -196,16 +211,21 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       </aside>
 
       {/* Sleek Native Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-slate-200/80 flex items-center justify-between px-3.5 h-[52px]">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#2F9FE3] to-[#1878B8] flex items-center justify-center shadow-[0_2px_10px_rgba(47,159,227,0.25)] flex-shrink-0 group-active:scale-95 transition-transform">
-            <Zap size={14} className="text-white font-black" />
-          </div>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 admin-bar-glass border-b border-slate-200/80 flex items-center justify-between px-4 h-[56px] shadow-2xs">
+        <Link href="/admin/dashboard" className="flex items-center gap-2.5 group active:scale-95 transition-transform">
+          <Image
+            src="/favicon.svg"
+            alt="Rise Up Roofing"
+            width={28}
+            height={28}
+            priority
+            className="h-7 w-7 object-contain drop-shadow-xs"
+          />
           <div className="flex items-center gap-1.5">
-            <span className="text-[#112D49] font-black text-sm tracking-tight">
+            <span className="text-[#0B1E33] font-black text-sm tracking-tight">
               Rise Up
             </span>
-            <span className="px-1.5 py-0.5 rounded bg-sky-50 border border-sky-200 text-[#1878B8] text-[10px] font-bold uppercase tracking-wider">
+            <span className="px-1.5 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-[#0284C7] text-[10px] font-extrabold uppercase tracking-wider">
               CRM
             </span>
           </div>
@@ -215,7 +235,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
           {user && (
             <Link
               href="/admin/settings"
-              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 active:scale-95 transition-all"
+              className="flex items-center gap-2 py-1 pl-1.5 pr-2.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs active:scale-95 transition-all"
             >
               <UserAvatar
                 name={user.name}
@@ -224,7 +244,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                 size="sm"
                 showStatus
               />
-              <span className="text-xs font-semibold text-[#0B1E33] max-w-[90px] truncate">
+              <span className="text-xs font-bold text-[#0B1E33] max-w-[95px] truncate">
                 {user.name.split(' ')[0]}
               </span>
               <RoleIcon role={user.role} size={13} className="text-[#2F9FE3]" />
