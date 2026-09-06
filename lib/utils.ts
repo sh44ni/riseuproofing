@@ -21,4 +21,4 @@ export const PHONE_HREF = 'tel:+17606221230';
 export const COMPANY_NAME = 'Rise Up Roofing & Construction';
 export const LICENSE_NUMBER = '1096492';
 export const GOOGLE_REVIEWS_URL = 'https://www.google.com/maps/place/Rise+Up+Roofing+%26+Construction';
-export const YELP_REVIEWS_URL = 'https://www.yelp.com/biz/rise-up-roofing-and-construction';
+export const YELP_REVIEWS_URL = 'https://www.yelp.com/biz/rise-up-roofing-and-construction-oceanside-2';

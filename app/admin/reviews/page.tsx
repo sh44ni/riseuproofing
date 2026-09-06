@@ -24,6 +24,14 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+function YelpLogo({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="#D32323">
+      <path d="M20.16 12.74c-.11-.53-.44-.92-.93-1.07l-4.88-1.52c-.52-.16-1.05.15-1.21.67-.16.52.15 1.05.67 1.21l4.47 1.39-2.77 3.96c-.32.45-.21 1.07.24 1.38.45.32 1.07.21 1.38-.24l3.03-4.33c.27-.38.31-.87.08-1.45zm-7.79-1.92l1.52-4.88c.16-.52-.15-1.05-.67-1.21-.52-.16-1.05.15-1.21.67l-1.39 4.47-3.96-2.77c-.45-.32-1.07-.21-1.38.24-.32.45-.21 1.07.24 1.38l4.33 3.03c.38.27.87.31 1.45.08.53-.11.92-.44 1.07-.93zm-1.89 3.53l-4.88 1.52c-.52.16-.83.69-.67 1.21.16.52.69.83 1.21.67l4.47-1.39 2.77 3.96c.32.45.93.56 1.38.24.45-.32.56-.93.24-1.38l-3.03-4.33c-.27-.38-.76-.62-1.49-.5zm-4.73-3.41l4.88-1.52c.52-.16.83-.69.67-1.21-.16-.52-.69-.83-1.21-.67l-4.47 1.39-2.77-3.96c-.32-.45-.93-.56-1.38-.24-.45.32-.56.93-.24 1.38l3.03 4.33c.27.38.76.62 1.49.5z" />
+    </svg>
+  );
+}
+
 interface ReviewItem {
   id: number;
   lead_id?: number;
@@ -42,6 +50,8 @@ interface ReviewItem {
   customer_email?: string;
   job_number?: string;
   google_review_id?: string;
+  yelp_review_id?: string;
+  yelp_review_url?: string;
   author_photo?: string;
   owner_reply?: string;
   original_time?: string;
@@ -87,6 +97,32 @@ export default function ReviewsPage() {
     lastError: null,
   });
   const [syncingGoogle, setSyncingGoogle] = useState(false);
+
+  // Yelp Reviews Auto-Sync State
+  const [yelpSync, setYelpSync] = useState<{
+    isConnected: boolean;
+    businessName: string | null;
+    businessRating: number;
+    businessReviewCount: number;
+    businessUrl: string | null;
+    lastSyncedAt: string | null;
+    lastSyncStatus: string | null;
+    lastSyncCount: number;
+    lastError: string | null;
+    apiKeyMasked: string | null;
+  }>({
+    isConnected: false,
+    businessName: null,
+    businessRating: 5.0,
+    businessReviewCount: 1,
+    businessUrl: null,
+    lastSyncedAt: null,
+    lastSyncStatus: null,
+    lastSyncCount: 0,
+    lastError: null,
+    apiKeyMasked: null,
+  });
+  const [syncingYelp, setSyncingYelp] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Send Request Modal
@@ -127,9 +163,22 @@ export default function ReviewsPage() {
     }
   };
 
+  const fetchYelpStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/yelp-sync');
+      if (res.ok) {
+        const data = await res.json();
+        setYelpSync(data);
+      }
+    } catch (err) {
+      console.error('Failed to load Yelp sync status', err);
+    }
+  };
+
   useEffect(() => {
     fetchReviews();
     fetchGoogleStatus();
+    fetchYelpStatus();
 
     // Check query params for Google auth feedback
     if (typeof window !== 'undefined') {
@@ -177,6 +226,35 @@ export default function ReviewsPage() {
       });
     } finally {
       setSyncingGoogle(false);
+    }
+  };
+
+  const handleManualYelpSync = async () => {
+    setSyncingYelp(true);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch('/api/admin/yelp-sync', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setSyncFeedback({
+          type: 'success',
+          message: data.message || `Successfully synchronized Yelp reviews!`,
+        });
+        await fetchReviews();
+        await fetchYelpStatus();
+      } else {
+        setSyncFeedback({
+          type: 'error',
+          message: data.error || data.message || 'Yelp synchronization failed',
+        });
+      }
+    } catch (err: any) {
+      setSyncFeedback({
+        type: 'error',
+        message: err.message || 'Network error executing Yelp sync',
+      });
+    } finally {
+      setSyncingYelp(false);
     }
   };
 
@@ -384,6 +462,74 @@ export default function ReviewsPage() {
         </div>
       </div>
 
+      {/* Yelp Business Profile Auto-Sync Panel */}
+      <div className="p-4 rounded-[18px] admin-card border border-white/[0.08] bg-gradient-to-r from-[#1b1418] to-[#20141a] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#d32323]/10 border border-[#d32323]/25 flex items-center justify-center flex-shrink-0">
+            <YelpLogo className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold text-[#f0f2f5]">
+                {yelpSync.businessName || 'Yelp Business Profile Sync'}
+              </h2>
+              {yelpSync.isConnected ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Yelp Fusion Connected (Weekly Sync Active)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                  Not Configured
+                </span>
+              )}
+              {yelpSync.businessRating && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#d32323]/15 text-[#ff6b6b] border border-[#d32323]/30">
+                  ★ {yelpSync.businessRating.toFixed(1)} ({yelpSync.businessReviewCount} on Yelp)
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[#8a95a5] mt-0.5">
+              {yelpSync.isConnected ? (
+                <>
+                  Last Synced:{' '}
+                  {yelpSync.lastSyncedAt
+                    ? new Date(yelpSync.lastSyncedAt).toLocaleString('en-US')
+                    : 'Awaiting initial sync'}{' '}
+                  • {yelpSync.lastSyncCount} reviews synced from Yelp • API Key:{' '}
+                  {yelpSync.apiKeyMasked || 'Active'}
+                </>
+              ) : (
+                'Add YELP_API_KEY to environment variables to enable Yelp review synchronization.'
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+          <button
+            onClick={handleManualYelpSync}
+            disabled={syncingYelp}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#d32323]/20 hover:bg-[#d32323]/30 text-[#ff8e8e] border border-[#d32323]/40 font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw size={13} className={syncingYelp ? 'animate-spin' : ''} />
+            <span>{syncingYelp ? 'Syncing...' : 'Sync Yelp Reviews Now'}</span>
+          </button>
+          {yelpSync.businessUrl && (
+            <a
+              href={yelpSync.businessUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#8a95a5] hover:text-[#f0f2f5] border border-white/[0.06] text-xs font-semibold transition-all"
+              title="View on Yelp"
+            >
+              <span>View Listing</span>
+              <ExternalLink size={12} />
+            </a>
+          )}
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 rounded-[16px] admin-card shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
@@ -533,7 +679,13 @@ export default function ReviewsPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      {r.google_clicked && (
+                      {r.source === 'yelp' && (
+                        <span className="px-2 py-0.5 rounded-full bg-[#d32323]/20 text-[#ff8e8e] border border-[#d32323]/30 text-[10px] font-bold flex items-center gap-1">
+                          <YelpLogo className="w-2.5 h-2.5" /> Yelp
+                        </span>
+                      )}
+
+                      {(r.source === 'google' || r.google_clicked) && (
                         <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold flex items-center gap-1">
                           <Globe size={10} /> Google
                         </span>
@@ -622,6 +774,18 @@ export default function ReviewsPage() {
                           <Copy size={13} />
                         )}
                       </button>
+                    )}
+
+                    {r.yelp_review_url && (
+                      <a
+                        href={r.yelp_review_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-xl bg-[#1a2332] hover:bg-[#1e2736] text-[#ff8e8e] transition-colors"
+                        title="View Review on Yelp"
+                      >
+                        <ExternalLink size={13} />
+                      </a>
                     )}
 
                     {r.review_token && (

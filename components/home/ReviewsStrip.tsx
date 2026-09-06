@@ -5,7 +5,7 @@ import { Star, CheckCircle2, MapPin, ExternalLink } from 'lucide-react';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { reviews, getAverageRating, type EnrichedReview } from '@/lib/data/reviews';
-import { cn } from '@/lib/utils';
+import { cn, YELP_REVIEWS_URL } from '@/lib/utils';
 import { Tooltip } from '@/components/shared/Tooltip';
 
 function GoogleLogo({ className = 'w-4 h-4' }: { className?: string }) {
@@ -263,9 +263,21 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Verified Customer</span>
                 </div>
-                <span className="text-[var(--text-muted)] text-[10px] font-medium">
-                  via {isGoogle ? 'Google Maps' : 'Yelp Profile'}
-                </span>
+                {review.reviewUrl ? (
+                  <a
+                    href={review.reviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--text-muted)] hover:text-brand-blue text-[10px] font-medium flex items-center gap-1 transition-colors"
+                  >
+                    <span>via {isGoogle ? 'Google Maps' : 'Yelp Profile'}</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                ) : (
+                  <span className="text-[var(--text-muted)] text-[10px] font-medium">
+                    via {isGoogle ? 'Google Maps' : 'Yelp Profile'}
+                  </span>
+                )}
               </div>
             </div>
           );
@@ -286,7 +298,7 @@ export function ReviewsStrip({ initialReviews }: { initialReviews?: EnrichedRevi
         </a>
 
         <a
-          href="https://www.yelp.com/biz/rise-up-roofing-and-construction"
+          href={YELP_REVIEWS_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-white hover:bg-brand-blue text-[#0B1E33] hover:text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl border border-slate-200/80 hover:border-brand-blue transition-all shadow-xs hover:shadow-md group"

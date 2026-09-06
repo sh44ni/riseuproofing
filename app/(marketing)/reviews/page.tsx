@@ -6,6 +6,7 @@ import { getPublicReviews } from '@/lib/reviews-server';
 import { Section } from '@/components/shared/Container';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { YELP_REVIEWS_URL } from '@/lib/utils';
 
 export const revalidate = 3600;
 
@@ -35,6 +36,14 @@ function GoogleLogo({ className = 'w-3.5 h-3.5' }: { className?: string }) {
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
         fill="#EA4335"
       />
+    </svg>
+  );
+}
+
+function YelpLogo({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="#D32323">
+      <path d="M20.16 12.74c-.11-.53-.44-.92-.93-1.07l-4.88-1.52c-.52-.16-1.05.15-1.21.67-.16.52.15 1.05.67 1.21l4.47 1.39-2.77 3.96c-.32.45-.21 1.07.24 1.38.45.32 1.07.21 1.38-.24l3.03-4.33c.27-.38.31-.87.08-1.45zm-7.79-1.92l1.52-4.88c.16-.52-.15-1.05-.67-1.21-.52-.16-1.05.15-1.21.67l-1.39 4.47-3.96-2.77c-.45-.32-1.07-.21-1.38.24-.32.45-.21 1.07.24 1.38l4.33 3.03c.38.27.87.31 1.45.08.53-.11.92-.44 1.07-.93zm-1.89 3.53l-4.88 1.52c-.52.16-.83.69-.67 1.21.16.52.69.83 1.21.67l4.47-1.39 2.77 3.96c.32.45.93.56 1.38.24.45-.32.56-.93.24-1.38l-3.03-4.33c-.27-.38-.76-.62-1.49-.5zm-4.73-3.41l4.88-1.52c.52-.16.83-.69.67-1.21-.16-.52-.69-.83-1.21-.67l-4.47 1.39-2.77-3.96c-.32-.45-.93-.56-1.38-.24-.45.32-.56.93-.24 1.38l3.03 4.33c.27.38.76.62 1.49.5z" />
     </svg>
   );
 }
@@ -110,10 +119,23 @@ export default async function ReviewsPage() {
                         <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
                       ))}
                     </div>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[var(--text-secondary)] bg-slate-50 border border-slate-200/60 uppercase tracking-wider">
-                      {isGoogle ? <GoogleLogo className="w-3 h-3" /> : null}
-                      <span>via {isGoogle ? 'Google' : 'Yelp'}</span>
-                    </span>
+                    {review.reviewUrl ? (
+                      <a
+                        href={review.reviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[var(--text-secondary)] bg-slate-50 hover:bg-red-50 hover:text-red-700 hover:border-red-200 border border-slate-200/60 uppercase tracking-wider transition-all"
+                        title="View verified review on Yelp"
+                      >
+                        {isGoogle ? <GoogleLogo className="w-3 h-3" /> : <YelpLogo className="w-3 h-3" />}
+                        <span>via {isGoogle ? 'Google' : 'Yelp'}</span>
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[var(--text-secondary)] bg-slate-50 border border-slate-200/60 uppercase tracking-wider">
+                        {isGoogle ? <GoogleLogo className="w-3 h-3" /> : <YelpLogo className="w-3 h-3" />}
+                        <span>via {isGoogle ? 'Google' : 'Yelp'}</span>
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed mb-4 italic">
@@ -171,12 +193,12 @@ export default async function ReviewsPage() {
             <span>Read All Google Reviews</span>
           </a>
           <a
-            href="https://www.yelp.com/biz/rise-up-roofing-and-construction"
+            href={YELP_REVIEWS_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-xs"
           >
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <YelpLogo className="w-4 h-4" />
             <span>Read All Yelp Reviews</span>
           </a>
         </div>

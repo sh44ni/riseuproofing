@@ -15,13 +15,15 @@ export async function getPublicReviews(): Promise<EnrichedReview[]> {
       service_type: string | null;
       source: string | null;
       google_review_id: string | null;
+      yelp_review_id: string | null;
+      yelp_review_url: string | null;
       author_photo: string | null;
       original_time: string | null;
       owner_reply: string | null;
       created_at: string | null;
     }>(
       `SELECT customer_name, customer_city, rating, feedback, service_type, source,
-              google_review_id, author_photo, original_time, owner_reply, created_at
+              google_review_id, yelp_review_id, yelp_review_url, author_photo, original_time, owner_reply, created_at
        FROM reviews
        WHERE status = 'published'
        ORDER BY original_time DESC NULLS LAST, created_at DESC`
@@ -32,7 +34,7 @@ export async function getPublicReviews(): Promise<EnrichedReview[]> {
     }
 
     const dbReviews: EnrichedReview[] = rows.map((r) => {
-      const isYelp = r.source === 'yelp';
+      const isYelp = r.source === 'yelp' || Boolean(r.yelp_review_id);
       const dateSource = r.original_time || r.created_at;
       let formattedDate = 'Recent';
       if (dateSource) {
@@ -56,6 +58,7 @@ export async function getPublicReviews(): Promise<EnrichedReview[]> {
         date: formattedDate,
         authorPhoto: r.author_photo || null,
         ownerReply: r.owner_reply || null,
+        reviewUrl: r.yelp_review_url || (isYelp ? 'https://www.yelp.com/biz/rise-up-roofing-and-construction-oceanside-2' : null),
       };
     });
 

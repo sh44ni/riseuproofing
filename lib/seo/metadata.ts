@@ -108,7 +108,7 @@ export function buildLocalBusinessJsonLd() {
     openingHours: 'Mo-Su 00:00-24:00',
     sameAs: [
       'https://www.google.com/maps/place/Rise+Up+Roofing+%26+Construction',
-      'https://www.yelp.com/biz/rise-up-roofing-and-construction',
+      'https://www.yelp.com/biz/rise-up-roofing-and-construction-oceanside-2',
       'https://www.instagram.com/riseuproofingandconstruction/',
       'https://www.facebook.com/profile.php?id=61551393216836',
       'https://business.escondidochamber.org/list/member/rise-up-roofing-and-construction-inc-9925',

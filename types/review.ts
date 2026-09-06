@@ -8,4 +8,5 @@ export interface Review {
   date: string;
   authorPhoto?: string | null;
   ownerReply?: string | null;
+  reviewUrl?: string | null;
 }
