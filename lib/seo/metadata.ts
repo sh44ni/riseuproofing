@@ -204,3 +204,48 @@ export function buildJobPostingJsonLd(job: {
     datePosted: new Date().toISOString().split('T')[0],
   };
 }
+
+export function buildTechArticleJsonLd({
+  headline,
+  description,
+  url,
+  datePublished,
+  dateModified,
+  keywords,
+}: {
+  headline: string;
+  description: string;
+  url: string;
+  datePublished?: string;
+  dateModified?: string;
+  keywords?: string[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline,
+    description,
+    url,
+    mainEntityOfPage: url,
+    datePublished: datePublished || '2024-01-15T08:00:00+08:00',
+    dateModified: dateModified || new Date().toISOString(),
+    author: {
+      '@type': 'RoofingContractor',
+      name: COMPANY_NAME,
+      url: BASE_URL,
+      address: BUSINESS_ADDRESS,
+      telephone: '+17606221230',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: COMPANY_NAME,
+      url: BASE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${BASE_URL}/og-image.jpg`,
+      },
+    },
+    keywords: keywords || ['Roof Tear Off Process', 'Roof Removal', 'San Diego Roofing'],
+    inLanguage: 'en-US',
+  };
+}

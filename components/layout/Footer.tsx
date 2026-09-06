@@ -24,6 +24,7 @@ const SERVICES = [
 
 const COMPANY_LINKS = [
   { label: 'About Us', href: '/about' },
+  { label: 'Roof Tear-Off Guide', href: '/about/roof-tear-off-process' },
   { label: 'Featured Projects', href: '/projects' },
   { label: 'Customer Reviews', href: '/reviews' },
   { label: 'Warranties & Certifications', href: '/#certifications' },

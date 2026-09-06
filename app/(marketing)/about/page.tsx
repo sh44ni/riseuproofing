@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Shield, Users, Award, Heart, CheckCircle2, Phone, ClipboardCheck } from 'lucide-react';
+import { Shield, Users, Award, Heart, CheckCircle2, Phone, ClipboardCheck, FileText, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { Section } from '@/components/shared/Container';
@@ -121,6 +121,35 @@ export default function AboutPage() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Technical Standards & Roof Tear-Off Guide Link */}
+      <div className="max-w-5xl mx-auto mb-16">
+        <div className="glass-card-interactive rounded-3xl p-6 sm:p-8 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center flex-shrink-0 border border-blue-100">
+              <FileText className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-blue block mb-1">
+                Engineering &amp; Code Standards
+              </span>
+              <h4 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-1">
+                Explore Our Technical Roof Tear-Off &amp; Removal Guide
+              </h4>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed max-w-xl">
+                Learn how we comply with California Residential Code CRC R908, detect sub-deck dry rot, and divert 100% of asphalt shingles into Caltrans road recycling.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/about/roof-tear-off-process"
+            className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-all hover:brightness-110 flex-shrink-0"
+          >
+            <span>Read Technical Guide</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
 
