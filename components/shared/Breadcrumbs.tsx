@@ -31,21 +31,36 @@ export function Breadcrumbs({ items, dark = true, className }: BreadcrumbsProps)
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Desktop Breadcrumbs — 100% untouched */}
+      {/* Desktop Breadcrumbs */}
       <nav aria-label="Breadcrumb" className={cn('mb-6 hidden md:block', className)}>
-        <ol className="inline-flex items-center gap-1.5 glass-chip px-3.5 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md border-white/20">
+        <ol
+          className={cn(
+            'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md transition-all',
+            dark
+              ? 'bg-slate-900/60 border border-white/15 text-white/80 shadow-xs'
+              : 'bg-slate-100/90 border border-slate-200/90 text-slate-700 shadow-xs'
+          )}
+        >
           {items.map((item, index) => (
             <li key={index} className="flex items-center gap-1.5">
-              {index > 0 && <Icon name="chevron-right" className="w-3.5 h-3.5 text-white/50" />}
+              {index > 0 && (
+                <Icon
+                  name="chevron-right"
+                  className={cn('w-3.5 h-3.5', dark ? 'text-white/40' : 'text-slate-400')}
+                />
+              )}
               {item.href && index < items.length - 1 ? (
                 <Link
                   href={item.href}
-                  className="text-white/70 hover:text-brand-blue transition-colors"
+                  className={cn(
+                    'transition-colors',
+                    dark ? 'text-white/75 hover:text-brand-blue' : 'text-slate-600 hover:text-brand-blue'
+                  )}
                 >
                   {item.label}
                 </Link>
               ) : (
-                <span className="text-white font-bold">
+                <span className={cn('font-bold tracking-tight', dark ? 'text-white' : 'text-slate-900')}>
                   {item.label}
                 </span>
               )}
@@ -61,7 +76,12 @@ export function Breadcrumbs({ items, dark = true, className }: BreadcrumbsProps)
             {items[items.length - 2]?.href ? (
               <Link
                 href={items[items.length - 2].href!}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 dark:bg-white/5 hover:bg-white/15 border border-white/15 backdrop-blur-md text-xs font-bold text-white transition-all active:scale-95 shadow-2xs"
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border backdrop-blur-md text-xs font-bold transition-all active:scale-95 shadow-2xs',
+                  dark
+                    ? 'bg-slate-900/60 hover:bg-slate-900/80 border-white/15 text-white'
+                    : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
+                )}
               >
                 <span className="text-brand-blue">←</span>
                 <span>Back to {items[items.length - 2].label}</span>

@@ -21,4 +21,10 @@ export interface Service {
     paragraphs: string[];
     highlights?: { title: string; description: string }[];
   };
+  /** Investment range displayed in the Financing Preview widget */
+  investmentRange?: { low: string; high: string; note?: string };
+  /** Typical project duration shown in the Financing Preview widget */
+  typicalDuration?: string;
+  /** Manufacturer / system specifications shown in the Material Specs grid */
+  materialSpecs?: { name: string; spec: string; highlight?: string }[];
 }

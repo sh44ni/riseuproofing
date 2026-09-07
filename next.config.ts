@@ -47,6 +47,66 @@ const nextConfig: NextConfig = {
         destination: '/services/solar-roofing',
         permanent: true,
       },
+      {
+        source: '/services/residential-roofing',
+        destination: '/services/residential',
+        permanent: true,
+      },
+      {
+        source: '/roof-inspection',
+        destination: '/services/roof-inspection',
+        permanent: true,
+      },
+      {
+        source: '/commercial-roofing',
+        destination: '/services/commercial-roofing',
+        permanent: true,
+      },
+      {
+        source: '/commercial-roof-inspection',
+        destination: '/services/commercial-roof-inspection',
+        permanent: true,
+      },
+      {
+        source: '/roof-repair',
+        destination: '/services/roof-repair',
+        permanent: true,
+      },
+      {
+        source: '/metal-roofs',
+        destination: '/services/metal-roofing',
+        permanent: true,
+      },
+      {
+        source: '/tile-roofing',
+        destination: '/services/tile-roofing',
+        permanent: true,
+      },
+      {
+        source: '/solar-installation',
+        destination: '/services/solar-roofing',
+        permanent: true,
+      },
+      {
+        source: '/modified-bitumen',
+        destination: '/services/modified-bitumen',
+        permanent: true,
+      },
+      {
+        source: '/industrial-roofing',
+        destination: '/services/industrial-roofing',
+        permanent: true,
+      },
+      {
+        source: '/roof-coating',
+        destination: '/services/roof-coating',
+        permanent: true,
+      },
+      {
+        source: '/deck-builder',
+        destination: '/services/deck-builder',
+        permanent: true,
+      },
     ];
   },
 };

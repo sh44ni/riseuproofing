@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Icon } from '@/components/shared/Icon';
+import { Icon, type IconName } from '@/components/shared/Icon';
 import { services, getServiceBySlug, getAllServiceSlugs } from '@/lib/data/services';
 import { projects } from '@/lib/data/projects';
 import { buildMetadata, buildServiceJsonLd, buildFAQJsonLd } from '@/lib/seo/metadata';
@@ -62,26 +62,66 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               { label: service.name }
             ]}
           />
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {service.highlightBadge && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-blue text-white shadow-md shadow-brand-blue/30">
+                <Icon name="sparkles" className="w-3.5 h-3.5" />
+                <span>{service.highlightBadge}</span>
+              </span>
+            )}
+            {service.warranty && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md bg-white/10 border border-white/20 text-white/90">
+                <Icon name="shield-check" className="w-3.5 h-3.5 text-brand-blue" />
+                <span>{service.warranty}</span>
+              </span>
+            )}
+          </div>
+
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight">
             {service.name}
           </h1>
-          <p className="text-sm sm:text-base text-white/80 max-w-2xl leading-relaxed mb-6">
+          <p className="text-sm sm:text-base text-white/85 max-w-2xl leading-relaxed mb-6">
             {service.shortDescription}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 mb-8">
             <Link href="/contact">
-              <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110">
+              <span className="inline-flex items-center gap-2 bg-[#2E9BF0] hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110 active:scale-95">
                 <Icon name="clipboard-check" className="w-4 h-4" />
                 <span>Get a Free Estimate</span>
               </span>
             </Link>
             <a href={PHONE_HREF}>
-              <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl backdrop-blur-md transition-all">
+              <span className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl backdrop-blur-md transition-all active:scale-95">
                 <Icon name="phone" className="w-4 h-4 text-brand-blue" />
                 <span>{PHONE_NUMBER}</span>
               </span>
             </a>
+            <Link href="/roof-financing-san-diego">
+              <span className="inline-flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 font-bold text-xs uppercase tracking-wider px-4 py-3.5 rounded-xl backdrop-blur-md transition-all">
+                <span>0% APR Financing Available →</span>
+              </span>
+            </Link>
+          </div>
+
+          {/* Quick Credibility Strip */}
+          <div className="pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-white/80">
+            <div className="flex items-center gap-2">
+              <Icon name="shield-check" className="w-4 h-4 text-brand-blue flex-shrink-0" />
+              <span>CA License #1096492</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon name="award" className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span>Owens Corning Preferred</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon name="star" className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span>4.8/5 Star Local Rating</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon name="check-circle" className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>Title 24 Compliant</span>
+            </div>
           </div>
         </div>
       </section>
@@ -174,6 +214,154 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           ))}
         </div>
       </Section>
+
+      {/* ── Material & System Specifications ─────────────────────────────── */}
+      {service.materialSpecs && service.materialSpecs.length > 0 && (
+        <Section alternate={false}>
+          <SectionHeading
+            label="System Specifications"
+            title="Manufacturer-Grade Materials We Install"
+            subtitle="Every component is sourced direct from certified manufacturers and installed to exact engineering specifications."
+            centered={false}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+            {service.materialSpecs.map((spec, i) => (
+              <div
+                key={i}
+                className="glass-card-interactive rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="text-sm font-extrabold text-[var(--text-primary)] leading-tight">{spec.name}</h4>
+                  {spec.highlight && (
+                    <span className="shrink-0 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-brand-blue/10 text-brand-blue border border-brand-blue/20">
+                      {spec.highlight}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{spec.spec}</p>
+                <div className="mt-auto pt-3 border-t border-slate-100 flex items-center gap-1.5">
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Verified Installation</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* ── San Diego Climate & Title 24 Intelligence ─────────────────────── */}
+      <Section alternate={service.materialSpecs && service.materialSpecs.length > 0 ? true : false}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <SectionHeading
+              label="Local Engineering"
+              title="Built for San Diego's Microclimate Extremes"
+              subtitle="Southern California's climate is not uniform — your roofing system must be engineered for where you actually live."
+              centered={false}
+            />
+            <div className="space-y-4 text-sm text-[var(--text-secondary)] leading-relaxed">
+              <p>
+                Coastal zones from La Jolla to Oceanside face salt-laden marine layer humidity, which degrades unsealed flashings and corrodes standard galvanized fasteners. We specify 316 marine-grade stainless and pre-bent copper at all coastal installations.
+              </p>
+              <p>
+                Inland communities like Santee, El Cajon, and Ramona experience &ldquo;heat island&rdquo; peaks exceeding 110°F during Santa Ana wind events — conditions that bake standard organic felt paper, causing premature cracking and leak paths within 10–15 years.
+              </p>
+              <p>
+                Every Rise Up installation meets or exceeds <strong className="text-[var(--text-primary)]">California Title 24 2022 Energy Standards</strong>, including minimum Cool Roof SRI requirements and NFA 1:150 attic ventilation ratios to reduce thermal transfer into living spaces.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { icon: 'cloud-rain', label: 'Santa Ana Wind Zones', value: 'Up to 80 MPH gusts engineered', color: 'text-sky-500', bg: 'bg-sky-50 border-sky-100' },
+              { icon: 'sun', label: 'UV / Thermal Load', value: 'Cool-roof SRI ≥ 29 mandatory', color: 'text-amber-500', bg: 'bg-amber-50 border-amber-100' },
+              { icon: 'shield', label: 'Coastal Salt Spray', value: '316 marine stainless at coastal sites', color: 'text-blue-500', bg: 'bg-blue-50 border-blue-100' },
+              { icon: 'alert-triangle', label: 'WUI Fire Zones', value: 'Class A rated systems for Ramona, Alpine, Fallbrook', color: 'text-red-500', bg: 'bg-red-50 border-red-100' },
+            ].map((item) => (
+              <div key={item.label} className={`rounded-2xl p-4 border ${item.bg} flex flex-col gap-2`}>
+                <div className={`w-8 h-8 rounded-xl bg-white border ${item.bg.split(' ')[1]} flex items-center justify-center`}>
+                  <Icon name={item.icon as IconName} className={`w-4 h-4 ${item.color}`} />
+                </div>
+                <p className="text-xs font-bold text-[var(--text-primary)]">{item.label}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Investment & Financing Preview Widget ─────────────────────────── */}
+      {service.investmentRange && (
+        <Section alternate={true}>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+            {/* Left: Range + Duration */}
+            <div className="lg:col-span-3 space-y-5">
+              <SectionHeading
+                label="Investment Preview"
+                title={`Typical ${service.name} Investment Range`}
+                subtitle="Transparent San Diego market pricing based on real project data. Your exact quote depends on scope, materials, and access."
+                centered={false}
+              />
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[140px] rounded-2xl bg-white border border-slate-200 shadow-xs p-5 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">Starting From</p>
+                  <p className="text-3xl font-extrabold text-[var(--text-primary)]">{service.investmentRange.low}</p>
+                </div>
+                <div className="text-2xl font-bold text-[var(--text-muted)]">—</div>
+                <div className="flex-1 min-w-[140px] rounded-2xl bg-white border border-slate-200 shadow-xs p-5 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">Up To</p>
+                  <p className="text-3xl font-extrabold text-brand-blue">{service.investmentRange.high}</p>
+                </div>
+                {service.typicalDuration && (
+                  <div className="flex-1 min-w-[140px] rounded-2xl bg-white border border-slate-200 shadow-xs p-5 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">Typical Duration</p>
+                    <p className="text-xl font-extrabold text-[var(--text-primary)]">{service.typicalDuration}</p>
+                  </div>
+                )}
+              </div>
+              {service.investmentRange.note && (
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed pl-1">
+                  <span className="font-semibold text-[var(--text-secondary)]">Note:</span> {service.investmentRange.note}
+                </p>
+              )}
+            </div>
+            {/* Right: Financing CTA */}
+            <div className="lg:col-span-2 rounded-2xl bg-gradient-to-br from-[#0B1B2B] to-[#0D2640] p-6 text-white flex flex-col gap-5 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-blue/20 border border-brand-blue/30 flex items-center justify-center">
+                  <Icon name="badge-percent" className="w-5 h-5 text-brand-blue" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-white/60">Flexible Payment</p>
+                  <p className="text-base font-extrabold text-white">0% APR Financing Available</p>
+                </div>
+              </div>
+              <ul className="space-y-2.5">
+                {[
+                  '$0 down, zero interest options',
+                  'Same-as-cash 12–18 month plans',
+                  'Low monthly rate longer terms',
+                  'Approval in minutes — not days',
+                ].map((point) => (
+                  <li key={point} className="flex items-center gap-2 text-xs text-white/80">
+                    <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/roof-financing-san-diego">
+                <span className="flex items-center justify-center gap-2 w-full bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-xl shadow-lg shadow-brand-blue/30 transition-all hover:brightness-110 active:scale-95">
+                  <Icon name="calculator" className="w-4 h-4" />
+                  <span>Explore Financing Options</span>
+                </span>
+              </Link>
+              <p className="text-[10px] text-white/40 text-center leading-relaxed">
+                CA License #1096492 · C-39 Roofing · B General
+              </p>
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* Related Projects */}
       {relatedProjects.length > 0 && (
