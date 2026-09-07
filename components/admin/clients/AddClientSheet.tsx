@@ -267,10 +267,11 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
             sourceType={formData.sourceType}
             sourceDetail={formData.sourceDetail}
             userId={formData.acquiredByUserId}
+            entityType="client"
             onChange={({ sourceType, sourceDetail, userId }) =>
               setFormData(prev => ({
                 ...prev,
-                sourceType,
+                sourceType: 'team_member',
                 sourceDetail: sourceDetail || '',
                 acquiredByUserId: userId ?? null,
               }))

@@ -7,6 +7,8 @@ import {
   TrendingUp,
   HardHat,
   ClipboardCheck,
+  Footprints,
+  MapPin,
   Shield,
   LucideIcon,
 } from 'lucide-react';
@@ -18,6 +20,8 @@ const ICON_MAP: Record<RoleIconName, LucideIcon> = {
   TrendingUp,
   HardHat,
   ClipboardCheck,
+  Footprints,
+  MapPin,
 };
 
 interface RoleBadgeProps {
@@ -26,6 +30,22 @@ interface RoleBadgeProps {
   showLabel?: boolean;
   className?: string;
   iconOnly?: boolean;
+}
+
+function getRoleMeta(role?: UserRole | string | null) {
+  if (role && role in ROLE_CONFIG) {
+    return ROLE_CONFIG[role as UserRole];
+  }
+  const formattedLabel = (role || 'Staff')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return {
+    label: formattedLabel,
+    iconName: 'Shield' as RoleIconName,
+    badgeColor: 'bg-slate-100 text-slate-700 border-slate-300',
+    accentColor: '#64748B',
+    description: 'Custom team member role',
+  };
 }
 
 export function RoleIcon({
@@ -37,8 +57,7 @@ export function RoleIcon({
   size?: number;
   className?: string;
 }) {
-  const safeRole = (role && role in ROLE_CONFIG ? role : 'owner') as UserRole;
-  const config = ROLE_CONFIG[safeRole];
+  const config = getRoleMeta(role);
   const Icon = ICON_MAP[config.iconName] || Shield;
 
   return <Icon size={size} className={className} />;
@@ -51,8 +70,7 @@ export default function RoleBadge({
   className = '',
   iconOnly = false,
 }: RoleBadgeProps) {
-  const safeRole = (role && role in ROLE_CONFIG ? role : 'owner') as UserRole;
-  const config = ROLE_CONFIG[safeRole];
+  const config = getRoleMeta(role);
   const Icon = ICON_MAP[config.iconName] || Shield;
 
   const sizeStyles = {

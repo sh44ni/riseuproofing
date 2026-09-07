@@ -2,6 +2,8 @@ export type UserRole =
   | 'owner'
   | 'project_manager'
   | 'sales_rep'
+  | 'door_knocker'
+  | 'canvasser'
   | 'field_foreman'
   | 'office_admin';
 
@@ -123,6 +125,20 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'photos:upload',
     'reviews:manage',
   ],
+  door_knocker: [
+    'clients:view',
+    'clients:create',
+    'leads:view',
+    'leads:create',
+    'photos:upload',
+  ],
+  canvasser: [
+    'clients:view',
+    'clients:create',
+    'leads:view',
+    'leads:create',
+    'photos:upload',
+  ],
   field_foreman: [
     'clients:view',
     'jobs:view',
@@ -153,7 +169,14 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   ],
 };
 
-export type RoleIconName = 'Crown' | 'Briefcase' | 'TrendingUp' | 'HardHat' | 'ClipboardCheck';
+export type RoleIconName =
+  | 'Crown'
+  | 'Briefcase'
+  | 'TrendingUp'
+  | 'HardHat'
+  | 'ClipboardCheck'
+  | 'Footprints'
+  | 'MapPin';
 
 export const ROLE_CONFIG: Record<
   UserRole,
@@ -186,6 +209,20 @@ export const ROLE_CONFIG: Record<
     accentColor: '#059669',
     description: 'Lead follow-up, cost estimating, digital proposals & closing',
   },
+  door_knocker: {
+    label: 'Door Knocker',
+    iconName: 'Footprints',
+    badgeColor: 'bg-teal-50 text-teal-800 border-teal-300',
+    accentColor: '#0D9488',
+    description: 'Canvassing neighborhoods, field lead capture & homeowner qualifying',
+  },
+  canvasser: {
+    label: 'Field Canvasser',
+    iconName: 'MapPin',
+    badgeColor: 'bg-cyan-50 text-cyan-800 border-cyan-300',
+    accentColor: '#0891B2',
+    description: 'Neighborhood field marketing, door-to-door promotions & flyer distribution',
+  },
   field_foreman: {
     label: 'Field Foreman',
     iconName: 'HardHat',
@@ -206,6 +243,8 @@ export const DEFAULT_AVATARS: Record<UserRole, string> = {
   owner: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
   project_manager: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
   sales_rep: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+  door_knocker: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+  canvasser: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&q=80',
   field_foreman: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80',
   office_admin: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80',
 };
@@ -221,6 +260,8 @@ export const CURATED_PORTRAITS = [
   { id: 'p8', label: 'Tomas Vance (Superintendent)', role: 'field_foreman' as UserRole, url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80' },
   { id: 'p9', label: 'Lucas Wright (Crew Lead)', role: 'field_foreman' as UserRole, url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&q=80' },
   { id: 'p10', label: 'Maya Patel (Coordinator)', role: 'office_admin' as UserRole, url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p11', label: 'Jordan Cole (Door Knocker)', role: 'door_knocker' as UserRole, url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80' },
+  { id: 'p12', label: 'Diego Alvarez (Canvasser)', role: 'canvasser' as UserRole, url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80' },
 ];
 
 /**

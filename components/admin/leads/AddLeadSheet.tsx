@@ -174,13 +174,14 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
             sourceType={formData.sourceType}
             sourceDetail={formData.leadSourceDetail}
             userId={formData.createdByUserId}
+            entityType="lead"
             onChange={({ sourceType, sourceDetail, userId }) =>
               setFormData(prev => ({
                 ...prev,
-                sourceType,
+                sourceType: 'team_member',
                 leadSourceDetail: sourceDetail || '',
                 createdByUserId: userId ?? null,
-                leadSource: sourceType === 'website' ? 'website' : 'door_knocker',
+                leadSource: 'door_knocker',
               }))
             }
           />

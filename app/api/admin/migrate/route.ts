@@ -380,6 +380,7 @@ const MIGRATIONS = [
     created_at    TIMESTAMPTZ DEFAULT NOW(),
     updated_at    TIMESTAMPTZ DEFAULT NOW()
   )`,
+  `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions TEXT[] DEFAULT '{}'`,
   `CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)`,
   `CREATE INDEX IF NOT EXISTS idx_users_role ON users (role, status)`,
