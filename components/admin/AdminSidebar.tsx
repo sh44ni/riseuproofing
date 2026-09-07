@@ -24,6 +24,7 @@ import {
   MessageSquareCode,
   Star,
   UserCheck,
+  Calculator,
 } from 'lucide-react';
 import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
@@ -35,6 +36,7 @@ const NAV = [
   { href: '/admin/calendar', label: 'Calendar', icon: Calendar },
   { href: '/admin/inspections', label: 'Inspections', icon: ClipboardCheck },
   { href: '/admin/estimates', label: 'Estimates', icon: FileText },
+  { href: '/admin/estimator', label: 'Estimator Settings', icon: Calculator },
   { href: '/admin/jobs', label: 'Jobs', icon: Hammer },
   { href: '/admin/crew', label: 'Crew', icon: HardHat },
   { href: '/admin/warranties', label: 'Warranties', icon: ShieldCheck },

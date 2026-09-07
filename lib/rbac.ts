@@ -269,7 +269,7 @@ export function canAccessPath(
 
   // Route-to-Permission Mapping
   if (pathname.startsWith('/admin/users')) return hasPermission(user, 'users:manage');
-  if (pathname.startsWith('/admin/settings')) return hasPermission(user, 'settings:edit');
+  if (pathname.startsWith('/admin/settings') || pathname.startsWith('/admin/estimator')) return hasPermission(user, 'settings:edit');
   if (pathname.startsWith('/admin/finances')) return hasPermission(user, 'finances:view_invoices');
   if (pathname.startsWith('/admin/reports')) return hasPermission(user, 'finances:view_profit_ledger');
   if (

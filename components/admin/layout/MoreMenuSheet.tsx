@@ -19,6 +19,7 @@ import {
   Star,
   Layers,
   ChevronRight,
+  Calculator,
 } from 'lucide-react';
 import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
@@ -71,6 +72,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
     {
       title: 'System & Security',
       items: [
+        { href: '/admin/estimator', label: 'Estimator Settings', icon: Calculator, color: 'text-blue-700', bg: 'bg-blue-100' },
         { href: '/admin/users', label: 'Team & Roles', icon: ShieldCheck, color: 'text-sky-700', bg: 'bg-sky-100' },
         { href: '/admin/settings', label: 'CRM Settings & Backup', icon: Settings, color: 'text-slate-700', bg: 'bg-slate-100' },
       ],
