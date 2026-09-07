@@ -8,17 +8,42 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const leadId = searchParams.get('lead_id');
+  const personId = searchParams.get('person_id');
+  const eventType = searchParams.get('event_type');
 
   let sql = `
-    SELECT t.*, l.full_name as lead_name, l.phone as lead_phone, l.service_type as lead_service
+    SELECT 
+      t.*,
+      l.full_name as lead_name,
+      l.phone as lead_phone,
+      l.service_type as lead_service,
+      u.name as assigned_user_name,
+      u.role as assigned_user_role,
+      u.avatar_url as assigned_user_avatar
     FROM tasks t
     LEFT JOIN leads l ON t.entity_type = 'lead' AND t.entity_id = l.id
+    LEFT JOIN users u ON t.assigned_to_user_id = u.id
   `;
+  const conditions: string[] = [];
   const params: unknown[] = [];
 
   if (leadId) {
     params.push(parseInt(leadId, 10));
-    sql += ` WHERE t.entity_type = 'lead' AND t.entity_id = $1`;
+    conditions.push(`t.entity_type = 'lead' AND t.entity_id = $${params.length}`);
+  }
+
+  if (personId && personId !== 'all') {
+    params.push(parseInt(personId, 10));
+    conditions.push(`t.assigned_to_user_id = $${params.length}`);
+  }
+
+  if (eventType && eventType !== 'all') {
+    params.push(eventType);
+    conditions.push(`t.event_type = $${params.length}`);
+  }
+
+  if (conditions.length > 0) {
+    sql += ` WHERE ${conditions.join(' AND ')}`;
   }
 
   sql += ` ORDER BY t.due_at ASC, t.created_at DESC`;
@@ -79,27 +104,47 @@ export async function POST(req: NextRequest) {
       description,
       entityType = 'lead',
       entityId,
-      assignedTo = 'Staff',
+      assignedTo,
+      assignedToUserId,
       dueAt,
+      endAt,
       priority = 'normal',
+      eventType = 'task',
     } = body;
 
     if (!title || !dueAt) {
       return NextResponse.json({ error: 'Title and due date are required' }, { status: 400 });
     }
 
+    let resolvedAssignedName = assignedTo || 'Staff';
+    let resolvedUserId: number | null = assignedToUserId ? parseInt(String(assignedToUserId), 10) : null;
+
+    if (resolvedUserId) {
+      const uRows = await query<any>('SELECT name FROM users WHERE id = $1', [resolvedUserId]);
+      if (uRows.length > 0) {
+        resolvedAssignedName = uRows[0].name;
+      }
+    }
+
     const rows = await query<any>(
-      `INSERT INTO tasks (title, description, entity_type, entity_id, assigned_to, due_at, priority)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO tasks (
+         title, description, entity_type, entity_id, assigned_to, assigned_to_user_id,
+         due_at, end_at, priority, event_type, created_by_user_id
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
       [
         title,
         description ?? null,
         entityId ? entityType : null,
         entityId ? parseInt(entityId, 10) : null,
-        assignedTo,
+        resolvedAssignedName,
+        resolvedUserId,
         dueAt,
+        endAt || null,
         priority,
+        eventType,
+        auth.user.id,
       ]
     );
 
@@ -112,7 +157,7 @@ export async function POST(req: NextRequest) {
           parseInt(entityId, 10),
           `Task scheduled: ${title}`,
           `Due: ${new Date(dueAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
-          assignedTo,
+          resolvedAssignedName,
         ]
       );
     }
@@ -130,7 +175,18 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, completed, title, description, dueAt, priority } = body;
+    const {
+      id,
+      completed,
+      title,
+      description,
+      dueAt,
+      endAt,
+      priority,
+      eventType,
+      assignedTo,
+      assignedToUserId,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
@@ -145,10 +201,32 @@ export async function PATCH(req: NextRequest) {
     const updates: string[] = [];
     const params: unknown[] = [];
 
-    if (title) { params.push(title); updates.push(`title = $${params.length}`); }
+    if (title !== undefined) { params.push(title); updates.push(`title = $${params.length}`); }
     if (description !== undefined) { params.push(description); updates.push(`description = $${params.length}`); }
-    if (dueAt) { params.push(dueAt); updates.push(`due_at = $${params.length}`); }
-    if (priority) { params.push(priority); updates.push(`priority = $${params.length}`); }
+    if (dueAt !== undefined) { params.push(dueAt); updates.push(`due_at = $${params.length}`); }
+    if (endAt !== undefined) { params.push(endAt); updates.push(`end_at = $${params.length}`); }
+    if (priority !== undefined) { params.push(priority); updates.push(`priority = $${params.length}`); }
+    if (eventType !== undefined) { params.push(eventType); updates.push(`event_type = $${params.length}`); }
+
+    if (assignedToUserId !== undefined) {
+      const uid = assignedToUserId ? parseInt(String(assignedToUserId), 10) : null;
+      params.push(uid);
+      updates.push(`assigned_to_user_id = $${params.length}`);
+
+      if (uid) {
+        const uRows = await query<any>('SELECT name FROM users WHERE id = $1', [uid]);
+        if (uRows.length > 0) {
+          params.push(uRows[0].name);
+          updates.push(`assigned_to = $${params.length}`);
+        }
+      } else if (assignedTo !== undefined) {
+        params.push(assignedTo);
+        updates.push(`assigned_to = $${params.length}`);
+      }
+    } else if (assignedTo !== undefined) {
+      params.push(assignedTo);
+      updates.push(`assigned_to = $${params.length}`);
+    }
 
     if (updates.length > 0) {
       params.push(id);

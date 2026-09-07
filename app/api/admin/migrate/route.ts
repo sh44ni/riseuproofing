@@ -597,10 +597,13 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_leads_assigned_user ON leads (assigned_to_user_id, pipeline_stage)`,
 
   // Historical backfill into 5 pipeline stages
-  `UPDATE leads SET pipeline_stage = 'stage_5_completion_followup', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'won' OR id IN (SELECT lead_id FROM jobs WHERE lead_id IS NOT NULL)`,
-  `UPDATE leads SET pipeline_stage = 'stage_4_closing', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'quoted' AND pipeline_stage = 'stage_1_lead_gen'`,
-  `UPDATE leads SET pipeline_stage = 'stage_3_site_visit_estimate', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'inspected' AND pipeline_stage = 'stage_1_lead_gen'`,
-  `UPDATE leads SET pipeline_stage = 'stage_2_initial_contact', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'contacted' AND pipeline_stage = 'stage_1_lead_gen'`,
+  // ── Phase 11 CRM: Unified Field Ops Calendar & Manual Tasks ────────────────
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assigned_to_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL`,
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'task'`,
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL`,
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS end_at TIMESTAMPTZ`,
+  `CREATE INDEX IF NOT EXISTS idx_tasks_calendar ON tasks (due_at, completed_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_tasks_assigned_user ON tasks (assigned_to_user_id)`,
 ];
 
 async function handleMigration(req: NextRequest) {
