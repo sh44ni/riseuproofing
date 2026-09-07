@@ -50,6 +50,7 @@ export default function TaskModal({
 }: TaskModalProps) {
   const isEdit = Boolean(initialTask && initialTask.source_type === 'manual_task');
 
+  const [teamMembers, setTeamMembers] = useState(team || []);
   const [title, setTitle] = useState('');
   const [eventType, setEventType] = useState<CalendarEventType>('task');
   const [date, setDate] = useState('');
@@ -64,13 +65,28 @@ export default function TaskModal({
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (team && team.length > 0) {
+      setTeamMembers(team);
+    } else if (isOpen) {
+      fetch('/api/admin/users')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.users && Array.isArray(data.users)) {
+            setTeamMembers(data.users);
+          }
+        })
+        .catch((err) => console.error('Error fetching fallback team in TaskModal:', err));
+    }
+  }, [team, isOpen]);
+
+  useEffect(() => {
     if (initialTask && initialTask.source_type === 'manual_task') {
       setTitle(initialTask.title || '');
       setEventType(initialTask.event_type || 'task');
       setDate(initialTask.date || new Date().toISOString().slice(0, 10));
       setIsAllDay(Boolean(initialTask.is_all_day));
 
-      if (initialTask.start_at && initialTask.start_at.includes('T')) {
+      if (initialTask.start_at && String(initialTask.start_at).includes('T')) {
         const d = new Date(initialTask.start_at);
         const hours = String(d.getHours()).padStart(2, '0');
         const minutes = String(d.getMinutes()).padStart(2, '0');
@@ -117,6 +133,10 @@ export default function TaskModal({
         dueAtStr = new Date(`${date}T${fullTime}:00`).toISOString();
       }
 
+      const selectedMember = assignedUserId
+        ? teamMembers.find((m) => String(m.id) === assignedUserId)
+        : null;
+
       const payload = {
         id: isEdit && initialTask ? initialTask.source_id : undefined,
         title: title.trim(),
@@ -125,6 +145,7 @@ export default function TaskModal({
         eventType,
         priority,
         assignedToUserId: assignedUserId ? parseInt(assignedUserId, 10) : null,
+        assignedTo: selectedMember ? selectedMember.name : (assignedUserId ? undefined : 'Unassigned Operations Pool'),
         completed: isCompleted,
       };
 
@@ -282,9 +303,9 @@ export default function TaskModal({
               className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-cyan-500 focus:outline-none bg-white font-medium"
             >
               <option value="">Unassigned Operations Pool</option>
-              {team.map((u) => (
+              {teamMembers.map((u) => (
                 <option key={u.id} value={u.id}>
-                  {u.name} ({u.role.replace('_', ' ')})
+                  {u.name} ({u.role ? u.role.replace(/_/g, ' ') : 'Staff'})
                 </option>
               ))}
             </select>

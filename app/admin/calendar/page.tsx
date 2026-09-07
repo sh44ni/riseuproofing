@@ -54,11 +54,15 @@ export default function CalendarPage() {
   const [filterType, setFilterType] = useState('all');
   const [filterPersonId, setFilterPersonId] = useState<string>('all');
 
+  // Helper for local YYYY-MM-DD string
+  const getLocalTodayStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
   // Calendar Date State (default to current month & day)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDateStr, setSelectedDateStr] = useState<string>(
-    new Date().toISOString().slice(0, 10)
-  );
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(getLocalTodayStr());
 
   // Selected event for highlight in side panel
   const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
@@ -77,6 +81,18 @@ export default function CalendarPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  // Prefetch team directory so filters and modals are instantly ready
+  useEffect(() => {
+    fetch('/api/admin/users')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.users && Array.isArray(data.users)) {
+          setTeam((prev) => (prev.length === 0 ? data.users : prev));
+        }
+      })
+      .catch((err) => console.error('Failed to prefetch team directory', err));
+  }, []);
+
   // Fetch events & team from virtual read layer
   const fetchEvents = useCallback(async () => {
     try {
@@ -88,7 +104,7 @@ export default function CalendarPage() {
       if (res.ok) {
         const data = await res.json();
         setEvents(data.events || []);
-        if (data.team) setTeam(data.team);
+        if (data.team && Array.isArray(data.team)) setTeam(data.team);
       }
     } catch (err) {
       console.error('Failed to load calendar events', err);
@@ -123,7 +139,7 @@ export default function CalendarPage() {
   function goToToday() {
     const today = new Date();
     setCurrentDate(today);
-    setSelectedDateStr(today.toISOString().slice(0, 10));
+    setSelectedDateStr(getLocalTodayStr());
   }
 
   // Days in month calculation
@@ -182,7 +198,13 @@ export default function CalendarPage() {
       const data = await res.json();
       if (res.ok && (data.ok || data.task)) {
         showToast(isUpdate ? 'Task updated successfully' : 'Task created and scheduled! ✓');
-        fetchEvents();
+        if (taskData.dueAt) {
+          const taskDate = String(taskData.dueAt).slice(0, 10);
+          if (taskDate && /^\d{4}-\d{2}-\d{2}$/.test(taskDate)) {
+            setSelectedDateStr(taskDate);
+          }
+        }
+        await fetchEvents();
       } else {
         showToast(data.error || 'Failed to save task', 'error');
       }
@@ -358,7 +380,7 @@ export default function CalendarPage() {
             <option value="all">All Team Members</option>
             {team.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.name} ({u.role.replace('_', ' ')})
+                {u.name} ({u.role ? u.role.replace(/_/g, ' ') : 'Staff'})
               </option>
             ))}
           </select>

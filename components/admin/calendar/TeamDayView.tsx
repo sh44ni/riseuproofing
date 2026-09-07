@@ -129,10 +129,10 @@ export default function TeamDayView({
     return false;
   };
 
-  // Unassigned events on this day
-  const unassignedEvents = dayEvents.filter(
-    (e) => (!e.assignee_ids || e.assignee_ids.length === 0) && (!e.assignees || e.assignees.length === 0)
-  );
+  // Unassigned events on this day: any event not assigned to a specific team member
+  const unassignedEvents = dayEvents.filter((e) => {
+    return !team.some((person) => isPersonAssigned(e, person.id, person.name));
+  });
 
   // Helper to extract hour from ISO string
   const getEventHour = (e: CalendarEvent): number | null => {

@@ -41,6 +41,35 @@ export interface CalendarEvent {
   completed?: boolean;
 }
 
+// ── SAFE DATE & TIME UTILITY HELPERS ──
+function toIsoString(val: unknown): string {
+  if (!val) return '';
+  const d = val instanceof Date ? val : new Date(String(val));
+  return isNaN(d.getTime()) ? '' : d.toISOString();
+}
+
+function toDateString(val: unknown): string {
+  if (!val) return '';
+  const d = val instanceof Date ? val : new Date(String(val));
+  return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+}
+
+function formatTimeFromDate(val: unknown): { time?: string; isAllDay: boolean } {
+  if (!val) return { isAllDay: true };
+  const d = val instanceof Date ? val : new Date(String(val));
+  if (isNaN(d.getTime())) return { isAllDay: true };
+
+  // If exactly midnight UTC (00:00:00.000), treat as all-day date
+  if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0) {
+    return { isAllDay: true };
+  }
+
+  return {
+    time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    isAllDay: false,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const auth = await requireAnyPermission(['field:view_calendar', 'jobs:view', 'leads:view']);
   if (auth.response) return auth.response;
@@ -58,10 +87,8 @@ export async function GET(req: NextRequest) {
           j.address, j.city, j.zip, j.service_type, j.contract_value,
           j.scheduled_start, j.estimated_days, j.actual_start, j.actual_end,
           j.material_delivered_at, j.material_status, j.permit_approved_at, j.permit_status,
-          j.crew_lead, j.crew_members, j.notes,
-          u_foreman.id as foreman_id, u_foreman.name as foreman_name, u_foreman.avatar_url as foreman_avatar, u_foreman.role as foreman_role
+          j.crew_lead, j.crew_members, j.notes
         FROM jobs j
-        LEFT JOIN users u_foreman ON j.assigned_foreman_id = u_foreman.id
         WHERE j.scheduled_start IS NOT NULL 
            OR j.material_delivered_at IS NOT NULL 
            OR j.permit_approved_at IS NOT NULL
@@ -143,34 +170,12 @@ export async function GET(req: NextRequest) {
 
     const events: CalendarEvent[] = [];
 
-    // Helper: format time if present
-    const formatTimeFromIso = (isoStr: string): { time?: string; isAllDay: boolean } => {
-      if (!isoStr.includes('T')) return { isAllDay: true };
-      const d = new Date(isoStr);
-      if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0) {
-        return { isAllDay: true };
-      }
-      return {
-        time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-        isAllDay: false,
-      };
-    };
-
     // ── 1. MAP JOBS (Roof Installs, Boom Deliveries, City Permits) ──
     for (const j of jobs) {
-      // Build assignees list from crew_lead + crew_members + foreman_id
       const jobAssignees: CalendarAssignee[] = [];
       const jobAssigneeIds: number[] = [];
 
-      if (j.foreman_id) {
-        jobAssignees.push({
-          id: j.foreman_id,
-          name: j.foreman_name,
-          role: j.foreman_role,
-          avatar_url: j.foreman_avatar,
-        });
-        jobAssigneeIds.push(Number(j.foreman_id));
-      } else if (j.crew_lead) {
+      if (j.crew_lead) {
         const matched = userByName.get(j.crew_lead.toLowerCase().trim());
         if (matched) {
           jobAssignees.push({
@@ -200,18 +205,19 @@ export async function GET(req: NextRequest) {
               jobAssigneeIds.push(matched.id);
             }
           } else {
-            jobAssignees.push({ name: member, role: 'Crew Member' });
+            jobAssignees.push({ name: String(member), role: 'Crew Member' });
           }
         }
       }
 
       // 1A. Roof Install Multi-day Event
       if (j.scheduled_start) {
-        const startStr = new Date(j.scheduled_start).toISOString().slice(0, 10);
+        const startIso = toIsoString(j.scheduled_start);
+        const startDateStr = toDateString(j.scheduled_start);
         const days = j.estimated_days || 3;
         const endDateObj = new Date(j.scheduled_start);
         endDateObj.setDate(endDateObj.getDate() + (days - 1));
-        const endStr = endDateObj.toISOString().slice(0, 10);
+        const endDateStr = toDateString(endDateObj);
 
         events.push({
           id: `job-${j.id}`,
@@ -219,10 +225,10 @@ export async function GET(req: NextRequest) {
           source_id: j.id,
           event_type: 'roof_install',
           title: `Roof Install: ${j.customer_name}`,
-          start_at: new Date(j.scheduled_start).toISOString(),
-          end_at: endDateObj.toISOString(),
-          date: startStr,
-          endDate: endStr,
+          start_at: startIso,
+          end_at: toIsoString(endDateObj),
+          date: startDateStr,
+          endDate: endDateStr,
           is_all_day: true,
           status: j.status,
           customer: j.customer_name,
@@ -242,7 +248,7 @@ export async function GET(req: NextRequest) {
       // 1B. Boom Delivery Event
       if (j.material_delivered_at || (j.scheduled_start && j.material_status === 'delivered')) {
         const rawDate = j.material_delivered_at || j.scheduled_start;
-        const dateStr = new Date(rawDate).toISOString().slice(0, 10);
+        const dateStr = toDateString(rawDate);
 
         events.push({
           id: `delivery-${j.id}`,
@@ -250,7 +256,7 @@ export async function GET(req: NextRequest) {
           source_id: j.id,
           event_type: 'boom_delivery',
           title: `📦 Boom Delivery: ${j.job_number}`,
-          start_at: new Date(rawDate).toISOString(),
+          start_at: toIsoString(rawDate),
           date: dateStr,
           is_all_day: true,
           status: j.material_status || 'scheduled',
@@ -269,7 +275,7 @@ export async function GET(req: NextRequest) {
       // 1C. City Permit Inspection Event
       if (j.permit_approved_at || j.permit_status === 'inspection_scheduled') {
         const rawDate = j.permit_approved_at || j.scheduled_start;
-        const dateStr = new Date(rawDate).toISOString().slice(0, 10);
+        const dateStr = toDateString(rawDate);
 
         events.push({
           id: `permit-${j.id}`,
@@ -277,7 +283,7 @@ export async function GET(req: NextRequest) {
           source_id: j.id,
           event_type: 'city_permit',
           title: `🏛️ City Permit Inspection: ${j.job_number}`,
-          start_at: new Date(rawDate).toISOString(),
+          start_at: toIsoString(rawDate),
           date: dateStr,
           is_all_day: true,
           status: j.permit_status,
@@ -294,8 +300,8 @@ export async function GET(req: NextRequest) {
 
     // ── 2. MAP STAGE 3 SITE VISITS FROM PIPELINE LEADS ──
     for (const l of leads) {
-      const { time, isAllDay } = formatTimeFromIso(l.site_visit_scheduled_at);
-      const dateStr = new Date(l.site_visit_scheduled_at).toISOString().slice(0, 10);
+      const { time, isAllDay } = formatTimeFromDate(l.site_visit_scheduled_at);
+      const dateStr = toDateString(l.site_visit_scheduled_at);
 
       const leadAssignees: CalendarAssignee[] = [];
       const leadAssigneeIds: number[] = [];
@@ -316,7 +322,7 @@ export async function GET(req: NextRequest) {
         source_id: l.id,
         event_type: 'roof_inspection',
         title: `12-Pt Roof Visit: ${l.full_name}`,
-        start_at: new Date(l.site_visit_scheduled_at).toISOString(),
+        start_at: toIsoString(l.site_visit_scheduled_at),
         date: dateStr,
         time,
         is_all_day: isAllDay,
@@ -334,7 +340,7 @@ export async function GET(req: NextRequest) {
 
     // ── 3. MAP IN-FIELD DIGITAL INSPECTIONS ──
     for (const i of inspections) {
-      const dateStr = new Date(i.inspection_date).toISOString().slice(0, 10);
+      const dateStr = toDateString(i.inspection_date);
 
       const inspAssignees: CalendarAssignee[] = [];
       const inspAssigneeIds: number[] = [];
@@ -360,7 +366,7 @@ export async function GET(req: NextRequest) {
         source_id: i.id,
         event_type: 'roof_inspection',
         title: `🔍 Inspection (${i.roof_health_score}%): ${i.customer_name || i.inspection_number}`,
-        start_at: new Date(i.inspection_date).toISOString(),
+        start_at: toIsoString(i.inspection_date),
         date: dateStr,
         is_all_day: true,
         status: i.urgent_action_required ? 'Urgent Action' : 'Completed',
@@ -378,14 +384,14 @@ export async function GET(req: NextRequest) {
     // ── 4. MAP WARRANTY CHECK-INS ──
     for (const w of warranties) {
       if (w.checkin_6mo_due && !w.checkin_6mo_completed) {
-        const dateStr = new Date(w.checkin_6mo_due).toISOString().slice(0, 10);
+        const dateStr = toDateString(w.checkin_6mo_due);
         events.push({
           id: `war-6mo-${w.id}`,
           source_type: 'warranty',
           source_id: w.id,
           event_type: 'warranty_checkin',
           title: `🛡️ 6-Mo Check-in: ${w.customer_name || w.warranty_number}`,
-          start_at: new Date(w.checkin_6mo_due).toISOString(),
+          start_at: toIsoString(w.checkin_6mo_due),
           date: dateStr,
           is_all_day: true,
           status: 'Pending 6-Month Review',
@@ -401,14 +407,14 @@ export async function GET(req: NextRequest) {
       }
 
       if (w.checkin_1yr_due && !w.checkin_1yr_completed) {
-        const dateStr = new Date(w.checkin_1yr_due).toISOString().slice(0, 10);
+        const dateStr = toDateString(w.checkin_1yr_due);
         events.push({
           id: `war-1yr-${w.id}`,
           source_type: 'warranty',
           source_id: w.id,
           event_type: 'warranty_checkin',
           title: `🏆 1-Yr Anniversary: ${w.customer_name || w.warranty_number}`,
-          start_at: new Date(w.checkin_1yr_due).toISOString(),
+          start_at: toIsoString(w.checkin_1yr_due),
           date: dateStr,
           is_all_day: true,
           status: '1-Year Milestone',
@@ -426,16 +432,16 @@ export async function GET(req: NextRequest) {
 
     // ── 5. MAP MANUAL TASKS & CRM TASKS ──
     for (const t of tasks) {
-      const { time, isAllDay } = formatTimeFromIso(t.due_at);
-      const dateStr = new Date(t.due_at).toISOString().slice(0, 10);
-      const endDateStr = t.end_at ? new Date(t.end_at).toISOString().slice(0, 10) : undefined;
+      const { time, isAllDay } = formatTimeFromDate(t.due_at);
+      const dateStr = toDateString(t.due_at);
+      const endDateStr = t.end_at ? toDateString(t.end_at) : undefined;
 
       const taskAssignees: CalendarAssignee[] = [];
       const taskAssigneeIds: number[] = [];
 
       if (t.assigned_to_user_id) {
         taskAssignees.push({
-          id: t.assigned_to_user_id,
+          id: Number(t.assigned_to_user_id),
           name: t.user_name || t.assigned_to,
           role: t.user_role,
           avatar_url: t.user_avatar,
@@ -459,11 +465,11 @@ export async function GET(req: NextRequest) {
       events.push({
         id: `task-${t.id}`,
         source_type: 'manual_task',
-        source_id: t.id,
+        source_id: Number(t.id),
         event_type: (t.event_type as CalendarEventType) || 'task',
         title: t.title,
-        start_at: new Date(t.due_at).toISOString(),
-        end_at: t.end_at ? new Date(t.end_at).toISOString() : undefined,
+        start_at: toIsoString(t.due_at),
+        end_at: t.end_at ? toIsoString(t.end_at) : undefined,
         date: dateStr,
         endDate: endDateStr,
         time,
@@ -475,12 +481,12 @@ export async function GET(req: NextRequest) {
         assignees: taskAssignees,
         assignee_ids: taskAssigneeIds,
         created_by: t.creator_name,
-        link: undefined, // editable on calendar
+        link: undefined,
         is_synced: false,
       });
     }
 
-    // ── 6. APPLY OPTIONAL FILTERS ──
+    // ── 6. APPLY FILTERS ──
     let filteredEvents = events;
 
     if (filterEventType && filterEventType !== 'all') {
