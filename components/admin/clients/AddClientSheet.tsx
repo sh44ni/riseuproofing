@@ -48,6 +48,12 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
     notes: '',
   });
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setError(null);
+    }
+  }, [isOpen]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!formData.fullName.trim()) {

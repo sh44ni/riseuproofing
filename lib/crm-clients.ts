@@ -47,15 +47,85 @@ export interface ClientRecord {
   updated_at: string;
 }
 
+let tableEnsured = false;
+
+/**
+ * Self-healing table check to guarantee clients table and foreign keys exist in production
+ */
+export async function ensureClientsTable(): Promise<void> {
+  if (tableEnsured) return;
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS clients (
+        id                  BIGSERIAL PRIMARY KEY,
+        full_name           TEXT NOT NULL,
+        phone               TEXT,
+        phone_normalized    TEXT,
+        email               TEXT,
+        secondary_phone     TEXT,
+        address             TEXT,
+        city                TEXT,
+        zip                 TEXT,
+        property_type       TEXT DEFAULT 'Single Family',
+        roof_type           TEXT,
+        roof_sqf            INTEGER,
+        roof_age            INTEGER,
+        stories             INTEGER DEFAULT 1,
+        hoa                 BOOLEAN DEFAULT false,
+        status              TEXT DEFAULT 'lead',
+        tags                TEXT[] DEFAULT '{"New Lead"}',
+        total_revenue       NUMERIC(10,2) DEFAULT 0,
+        total_jobs_count    INTEGER DEFAULT 0,
+        notes               TEXT,
+        assigned_to_user_id BIGINT REFERENCES users(id),
+        created_at          TIMESTAMPTZ DEFAULT NOW(),
+        updated_at          TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_clients_phone_norm ON clients (phone_normalized);
+      CREATE INDEX IF NOT EXISTS idx_clients_email ON clients (email);
+      CREATE INDEX IF NOT EXISTS idx_clients_status ON clients (status);
+      CREATE INDEX IF NOT EXISTS idx_clients_name ON clients (full_name);
+      CREATE INDEX IF NOT EXISTS idx_clients_created ON clients (created_at DESC);
+
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE estimates ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE jobs ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE invoices ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE warranties ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE inspections ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE reviews ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE activities ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE tasks ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+    `);
+    tableEnsured = true;
+  } catch (err) {
+    console.warn('ensureClientsTable warning (may already exist):', err);
+  }
+}
+
 /**
  * Finds an existing client by matching normalized phone or email,
  * or creates a new client record with initial status 'lead'.
  * If existing client is found, backfills any missing address/specs.
  */
 export async function findOrCreateClient(input: ClientInput): Promise<ClientRecord> {
+  await ensureClientsTable();
   const normPhone = normalizePhone(input.phone);
   const cleanEmail = input.email ? input.email.trim().toLowerCase() : null;
-  const cleanName = input.fullName.trim();
+  const cleanName = (input.fullName || '').trim();
+  const safeRoofSqf = (input.roofSqf !== null && input.roofSqf !== undefined && !isNaN(Number(input.roofSqf)))
+    ? Math.round(Number(input.roofSqf))
+    : null;
+  const safeRoofAge = (input.roofAge !== null && input.roofAge !== undefined && !isNaN(Number(input.roofAge)))
+    ? Math.round(Number(input.roofAge))
+    : null;
+  const safeStories = (input.stories !== null && input.stories !== undefined && !isNaN(Number(input.stories)))
+    ? Math.max(1, Math.round(Number(input.stories)))
+    : 1;
+  const safeAssigned = (input.assignedToUserId !== null && input.assignedToUserId !== undefined && !isNaN(Number(input.assignedToUserId)))
+    ? Number(input.assignedToUserId)
+    : null;
 
   let existing: ClientRecord[] = [];
 
@@ -100,9 +170,13 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
       updateParams.push(input.roofType);
       updates.push(`roof_type = $${updateParams.length}`);
     }
-    if (!client.roof_sqf && input.roofSqf) {
-      updateParams.push(input.roofSqf);
+    if (!client.roof_sqf && safeRoofSqf !== null) {
+      updateParams.push(safeRoofSqf);
       updates.push(`roof_sqf = $${updateParams.length}`);
+    }
+    if (!client.roof_age && safeRoofAge !== null) {
+      updateParams.push(safeRoofAge);
+      updates.push(`roof_age = $${updateParams.length}`);
     }
     if (!client.phone && input.phone) {
       updateParams.push(input.phone);
@@ -165,14 +239,14 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
     input.zip ?? null,
     input.propertyType ?? 'Single Family',
     input.roofType ?? null,
-    input.roofSqf ?? null,
-    input.roofAge ?? null,
-    input.stories ?? 1,
+    safeRoofSqf,
+    safeRoofAge,
+    safeStories,
     Boolean(input.hoa),
     'lead',
     ['New Lead'],
     input.notes ?? null,
-    input.assignedToUserId ?? null,
+    safeAssigned,
   ]);
 
   return newClient[0];

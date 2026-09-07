@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
-import { normalizePhone, recalculateClientStats } from '@/lib/crm-clients';
+import { normalizePhone, recalculateClientStats, ensureClientsTable } from '@/lib/crm-clients';
 
 export async function GET(
   req: NextRequest,
@@ -9,6 +9,8 @@ export async function GET(
 ) {
   const auth = await requirePermission('clients:view');
   if (auth.response) return auth.response;
+
+  await ensureClientsTable();
 
   const resolved = await params;
   const clientId = parseInt(resolved.id, 10);
@@ -189,6 +191,7 @@ export async function PATCH(
   }
 
   try {
+    await ensureClientsTable();
     const body = await req.json();
     const allowedFields = [
       'full_name',
@@ -212,15 +215,31 @@ export async function PATCH(
 
     const updates: string[] = [];
     const updateParams: unknown[] = [clientId];
+    const intFields = ['roof_sqf', 'roof_age', 'stories', 'assigned_to_user_id'];
+    const boolFields = ['hoa'];
 
     for (const key of allowedFields) {
       if (body[key] !== undefined) {
-        updateParams.push(body[key]);
+        let val = body[key];
+        if (intFields.includes(key)) {
+          if (val === '' || val === null || val === undefined) {
+            val = null;
+          } else {
+            const parsed = parseInt(String(val), 10);
+            val = isNaN(parsed) ? null : parsed;
+          }
+        } else if (boolFields.includes(key)) {
+          val = Boolean(val);
+        } else if (typeof val === 'string' && val.trim() === '' && ['secondary_phone', 'notes', 'roof_type'].includes(key)) {
+          val = null;
+        }
+
+        updateParams.push(val);
         updates.push(`${key} = $${updateParams.length}`);
 
         // If phone changed, also update phone_normalized
         if (key === 'phone') {
-          const norm = normalizePhone(body[key]);
+          const norm = normalizePhone(val);
           updateParams.push(norm);
           updates.push(`phone_normalized = $${updateParams.length}`);
         }
@@ -242,19 +261,27 @@ export async function PATCH(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
     }
 
-    // Log update activity
-    await query(
-      `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
-       VALUES ('client', $1, $1, 'note', 'Client Profile Updated', $2, $3)`,
-      [clientId, `Updated: ${Object.keys(body).join(', ')}`, auth.user.name]
-    );
+    // Log update activity (non-blocking)
+    try {
+      await query(
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('client', $1, $1, 'note', 'Client Profile Updated', $2, $3)`,
+        [clientId, `Updated: ${Object.keys(body).join(', ')}`, auth.user.name || 'Staff']
+      );
+    } catch (actErr) {
+      console.warn('Could not log client update activity:', actErr);
+    }
 
-    await recalculateClientStats(clientId);
+    try {
+      await recalculateClientStats(clientId);
+    } catch (recErr) {
+      console.warn('Could not recalculate stats:', recErr);
+    }
 
     return NextResponse.json({ ok: true, client: result[0] });
-  } catch (err) {
+  } catch (err: any) {
     console.error('[api/admin/clients/[id] PATCH]', err);
-    return NextResponse.json({ error: 'Server error updating client' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Server error updating client' }, { status: 500 });
   }
 }
 

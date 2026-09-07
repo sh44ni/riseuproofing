@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
-import { findOrCreateClient, normalizePhone } from '@/lib/crm-clients';
+import { findOrCreateClient, normalizePhone, ensureClientsTable } from '@/lib/crm-clients';
 
 export async function GET(req: NextRequest) {
   const auth = await requirePermission('clients:view');
   if (auth.response) return auth.response;
+
+  await ensureClientsTable();
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search')?.trim();
@@ -119,6 +121,7 @@ export async function POST(req: NextRequest) {
   if (auth.response) return auth.response;
 
   try {
+    await ensureClientsTable();
     const body = await req.json();
     const {
       fullName,
@@ -164,16 +167,20 @@ export async function POST(req: NextRequest) {
       assignedToUserId: assignedToUserId ? parseInt(assignedToUserId, 10) : null,
     });
 
-    // Log client creation activity
-    await query(
-      `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
-       VALUES ('client', $1, $1, 'system', 'Client Profile Created', $2, $3)`,
-      [client.id, `Manual client profile setup by staff`, auth.user.name]
-    );
+    // Log client creation activity (non-blocking)
+    try {
+      await query(
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('client', $1, $1, 'system', 'Client Profile Created', $2, $3)`,
+        [client.id, `Manual client profile setup by staff`, auth.user.name || 'Staff']
+      );
+    } catch (actErr) {
+      console.warn('Could not log client activity:', actErr);
+    }
 
     return NextResponse.json({ ok: true, client });
-  } catch (err) {
+  } catch (err: any) {
     console.error('[api/admin/clients POST]', err);
-    return NextResponse.json({ error: 'Server error creating client' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Server error creating client' }, { status: 500 });
   }
 }

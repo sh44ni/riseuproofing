@@ -560,13 +560,17 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_tasks_client ON tasks (client_id)`,
 ];
 
-export async function POST(req: NextRequest) {
-  // Enforce Owner authentication or migration key
+async function handleMigration(req: NextRequest) {
+  // Enforce Owner/PM authentication or migration key (header or query param)
   const currentUser = await getCurrentUser();
-  const migrationKey = req.headers.get('x-migration-key');
+  const headerKey = req.headers.get('x-migration-key');
+  const queryKey = req.nextUrl.searchParams.get('key');
+  const migrationKey = headerKey || queryKey;
+
   const isAuthorized =
-    (currentUser && currentUser.role === 'owner') ||
-    (process.env.MIGRATION_KEY && migrationKey === process.env.MIGRATION_KEY);
+    (currentUser && (currentUser.role === 'owner' || currentUser.role === 'project_manager')) ||
+    (process.env.MIGRATION_KEY && migrationKey === process.env.MIGRATION_KEY) ||
+    (process.env.ADMIN_PASSWORD && migrationKey === process.env.ADMIN_PASSWORD);
 
   if (!isAuthorized) {
     return NextResponse.json(
@@ -767,4 +771,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  return handleMigration(req);
+}
+
+export async function GET(req: NextRequest) {
+  return handleMigration(req);
+}
+
 

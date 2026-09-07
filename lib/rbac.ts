@@ -235,10 +235,10 @@ export function hasPermission(
   if (user.permissions?.includes('*')) return true;
   if (user.permissions && user.permissions.includes(permission)) return true;
 
-  // Fallback to role default permissions if user has no explicit custom array
-  if (!user.permissions || user.permissions.length === 0) {
-    const roleDefaults = DEFAULT_ROLE_PERMISSIONS[user.role] || [];
-    return roleDefaults.includes('*') || roleDefaults.includes(permission);
+  // Check role default permissions as well
+  const roleDefaults = DEFAULT_ROLE_PERMISSIONS[user.role] || [];
+  if (roleDefaults.includes('*') || roleDefaults.includes(permission)) {
+    return true;
   }
 
   return false;

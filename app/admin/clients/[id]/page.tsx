@@ -50,6 +50,7 @@ export default function ClientDetailPage({
 
   // Edit Specs Modal state
   const [showEditSpecs, setShowEditSpecs] = useState(false);
+  const [editSpecsError, setEditSpecsError] = useState<string | null>(null);
   const [specsForm, setSpecsForm] = useState({
     full_name: '',
     phone: '',
@@ -65,6 +66,11 @@ export default function ClientDetailPage({
     notes: '',
   });
   const [savingSpecs, setSavingSpecs] = useState(false);
+
+  function handleOpenEditSpecs() {
+    setEditSpecsError(null);
+    setShowEditSpecs(true);
+  }
 
   // Log Activity Modal state
   const [showLogActivity, setShowLogActivity] = useState(false);
@@ -125,6 +131,7 @@ export default function ClientDetailPage({
   async function handleSaveSpecs(e: React.FormEvent) {
     e.preventDefault();
     setSavingSpecs(true);
+    setEditSpecsError(null);
     try {
       const res = await fetch(`/api/admin/clients/${clientId}`, {
         method: 'PATCH',
@@ -145,12 +152,17 @@ export default function ClientDetailPage({
         }),
       });
 
-      if (res.ok) {
-        setShowEditSpecs(false);
-        loadData();
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setEditSpecsError(d.error || `Failed to update client profile (${res.status})`);
+        return;
       }
-    } catch (err) {
+
+      setShowEditSpecs(false);
+      loadData();
+    } catch (err: any) {
       console.error('Failed to update client', err);
+      setEditSpecsError(err.message || 'Network error updating client');
     } finally {
       setSavingSpecs(false);
     }
@@ -212,7 +224,7 @@ export default function ClientDetailPage({
       {/* Sticky Action Header */}
       <ClientProfileHeader
         client={client}
-        onEditSpecs={() => setShowEditSpecs(true)}
+        onEditSpecs={handleOpenEditSpecs}
         onLogActivity={() => setShowLogActivity(true)}
       />
 
@@ -257,7 +269,7 @@ export default function ClientDetailPage({
             inspections={inspections}
             tasks={tasks}
             onSelectTab={setActiveTab}
-            onEditSpecs={() => setShowEditSpecs(true)}
+            onEditSpecs={handleOpenEditSpecs}
           />
         )}
 
@@ -279,7 +291,11 @@ export default function ClientDetailPage({
         )}
 
         {activeTab === 'billing' && (
-          <ClientBillingTab client={client} invoices={invoices} jobs={jobs} />
+          <ClientBillingTab
+            client={client}
+            invoices={invoices}
+            jobs={jobs}
+          />
         )}
 
         {activeTab === 'warranties' && (
@@ -306,6 +322,11 @@ export default function ClientDetailPage({
         title="Edit Client & Property Specifications"
       >
         <form onSubmit={handleSaveSpecs} className="space-y-4 max-w-xl mx-auto pb-4">
+          {editSpecsError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold">
+              {editSpecsError}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
