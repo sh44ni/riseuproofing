@@ -470,6 +470,41 @@ const MIGRATIONS = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_estimator_leads_created ON estimator_leads (created_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_estimator_pricing_service ON estimator_pricing_rules (service_id)`,
+
+  // ── Dynamic Financing Calculator Tables ─────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS financing_plans (
+    id                   SERIAL PRIMARY KEY,
+    name                 TEXT NOT NULL,
+    apr                  NUMERIC(5,2) NOT NULL DEFAULT 0,
+    term_months          INT NOT NULL,
+    min_down_payment_pct NUMERIC(5,2) NOT NULL DEFAULT 0,
+    is_default           BOOLEAN NOT NULL DEFAULT false,
+    is_active            BOOLEAN NOT NULL DEFAULT true,
+    sort_order           INT NOT NULL DEFAULT 0,
+    badge_label          TEXT,
+    description          TEXT,
+    created_at           TIMESTAMPTZ DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ DEFAULT NOW()
+  )`,
+  `CREATE TABLE IF NOT EXISTS financing_settings (
+    id                      INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    min_project_cost        NUMERIC(10,2) NOT NULL DEFAULT 5000,
+    max_project_cost        NUMERIC(10,2) NOT NULL DEFAULT 50000,
+    default_project_cost    NUMERIC(10,2) NOT NULL DEFAULT 16500,
+    credit_check_copy_flag  BOOLEAN NOT NULL DEFAULT true,
+    updated_at              TIMESTAMPTZ DEFAULT NOW(),
+    updated_by              TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS financing_calculations (
+    id              BIGSERIAL PRIMARY KEY,
+    plan_id         INT REFERENCES financing_plans(id) ON DELETE SET NULL,
+    project_cost    NUMERIC(10,2) NOT NULL,
+    down_payment    NUMERIC(10,2) NOT NULL DEFAULT 0,
+    monthly_payment NUMERIC(10,2) NOT NULL,
+    session_id      TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_financing_calculations_created ON financing_calculations (created_at DESC)`,
 ];
 
 export async function POST(req: NextRequest) {
