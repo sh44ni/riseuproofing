@@ -224,6 +224,7 @@ export function FinancingCalculator() {
               <span className="text-sm font-bold text-slate-400">$</span>
               <input
                 type="number"
+                inputMode="numeric"
                 step="250"
                 min={settings.minProjectCost}
                 max={settings.maxProjectCost}
@@ -319,6 +320,7 @@ export function FinancingCalculator() {
               <span className="text-xs font-bold text-slate-400">$</span>
               <input
                 type="number"
+                inputMode="numeric"
                 step="500"
                 min="0"
                 max={amount}
