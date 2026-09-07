@@ -578,6 +578,29 @@ const MIGRATIONS = [
   `UPDATE leads SET source_type = 'website', lead_source_detail = 'Website Estimate Request' WHERE (form_type = 'estimate' OR form_type = 'estimator_full') AND (lead_source_detail IS NULL OR source_type = 'website')`,
   `UPDATE leads SET source_type = 'website', lead_source_detail = 'Website Inbound' WHERE created_by_user_id IS NULL AND lead_source_detail IS NULL`,
   `UPDATE clients SET source_type = 'website', lead_source_detail = 'Website Inbound' WHERE acquired_by_user_id IS NULL AND (lead_source_detail IS NULL OR source_type IS NULL)`,
+
+  // ── Phase 10 CRM: Unified 5-Stage Sales & Operations Pipeline ───────────────
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS pipeline_stage TEXT DEFAULT 'stage_1_lead_gen'`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS stage_entered_at TIMESTAMPTZ DEFAULT NOW()`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS initial_contacted_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS site_visit_scheduled_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS site_visit_completed_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS proposal_sent_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS contract_signed_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS job_completed_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS assigned_at TIMESTAMPTZ`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS assigned_by_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS address_confirmed BOOLEAN DEFAULT false`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS discount_applied TEXT`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS financing_interested BOOLEAN DEFAULT false`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_pipeline_stage ON leads (pipeline_stage, stage_entered_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_assigned_user ON leads (assigned_to_user_id, pipeline_stage)`,
+
+  // Historical backfill into 5 pipeline stages
+  `UPDATE leads SET pipeline_stage = 'stage_5_completion_followup', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'won' OR id IN (SELECT lead_id FROM jobs WHERE lead_id IS NOT NULL)`,
+  `UPDATE leads SET pipeline_stage = 'stage_4_closing', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'quoted' AND pipeline_stage = 'stage_1_lead_gen'`,
+  `UPDATE leads SET pipeline_stage = 'stage_3_site_visit_estimate', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'inspected' AND pipeline_stage = 'stage_1_lead_gen'`,
+  `UPDATE leads SET pipeline_stage = 'stage_2_initial_contact', stage_entered_at = COALESCE(created_at, NOW()) WHERE status = 'contacted' AND pipeline_stage = 'stage_1_lead_gen'`,
 ];
 
 async function handleMigration(req: NextRequest) {

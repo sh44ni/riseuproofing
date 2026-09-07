@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Download, Filter, Search, Plus, Sparkles, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { Users, Download, Filter, Search, Plus, Sparkles, RefreshCw, GitFork, ArrowRight } from 'lucide-react';
 import LeadsTable, { Lead } from '@/components/admin/LeadsTable';
 import MobileLeadCard from '@/components/admin/leads/MobileLeadCard';
 import AddLeadSheet from '@/components/admin/leads/AddLeadSheet';
@@ -111,6 +112,33 @@ export default function LeadsPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      {/* 5-Stage Sales Pipeline Announcement Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-emerald-500/10 border border-amber-300/70 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500 text-white shadow-2xs shrink-0">
+            <GitFork size={18} />
+          </div>
+          <div>
+            <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span>Looking for the Unified Sales Pipeline?</span>
+              <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+                5-Stage Journey
+              </span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
+              Track leads through the official Rise Up 5 stages with unassigned hopper, 24–48h SLA countdowns, and 1-click self-claiming.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin/pipeline"
+          className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-xs"
+        >
+          <span>Open Pipeline</span>
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

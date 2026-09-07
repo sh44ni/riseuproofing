@@ -17,6 +17,8 @@ import {
   ChevronRight,
   Shield,
   Truck,
+  GitFork,
+  ArrowRight,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import { KanbanSkeleton } from '@/components/admin/shared/AdminSkeletons';
@@ -176,6 +178,33 @@ export default function JobsPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      {/* 5-Stage Sales Pipeline Announcement Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-sky-500/10 border border-emerald-300/70 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-2xs shrink-0">
+            <GitFork size={18} />
+          </div>
+          <div>
+            <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span>Looking for the Unified Sales & Operations Pipeline?</span>
+              <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-200">
+                Live
+              </span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
+              View the end-to-end customer journey from Inbound Lead to Initial Contact, 12-Pt Estimate, Closing, and Production.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin/pipeline"
+          className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs"
+        >
+          <span>Open Sales Pipeline</span>
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

@@ -336,7 +336,9 @@ export function canAccessPath(
     return hasPermission(user, 'analytics:view');
   }
   if (pathname.startsWith('/admin/clients')) return hasPermission(user, 'clients:view');
-  if (pathname.startsWith('/admin/leads')) return hasPermission(user, 'leads:view');
+  if (pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/pipeline')) {
+    return hasPermission(user, 'leads:view') || hasPermission(user, 'jobs:view');
+  }
   if (pathname.startsWith('/admin/estimates')) return hasPermission(user, 'estimates:view');
   if (pathname.startsWith('/admin/jobs')) return hasPermission(user, 'jobs:view');
   if (pathname.startsWith('/admin/calendar')) return hasPermission(user, 'field:view_calendar');

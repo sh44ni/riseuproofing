@@ -25,6 +25,7 @@ import {
   Star,
   UserCheck,
   Calculator,
+  GitFork,
 } from 'lucide-react';
 import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
@@ -32,6 +33,7 @@ import RoleBadge, { RoleIcon } from '@/components/admin/shared/RoleBadge';
 
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/pipeline', label: 'Sales Pipeline', icon: GitFork },
   { href: '/admin/leads', label: 'Leads', icon: Users },
   { href: '/admin/clients', label: 'Clients 360', icon: UserCheck },
   { href: '/admin/calendar', label: 'Calendar', icon: Calendar },
