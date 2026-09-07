@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import { FinancesSkeleton } from '@/components/admin/shared/AdminSkeletons';
+import SourceAttributionBadge from '@/components/admin/shared/SourceAttributionBadge';
 
 interface FinancialSummary {
   totalBilled: number;
@@ -52,6 +53,12 @@ interface Invoice {
   address?: string;
   city?: string;
   client_id?: number;
+  client_source_type?: string;
+  client_source_detail?: string;
+  client_since?: string;
+  acquired_by_name?: string;
+  acquired_by_role?: string;
+  acquired_by_avatar?: string;
   created_at: string;
 }
 
@@ -382,6 +389,16 @@ export default function FinancesPage() {
                           {inv.city ? `${inv.city}, CA` : 'San Diego County'}
                           {inv.job_number && ` • ${inv.job_number}`}
                         </div>
+                        <div className="mt-1">
+                          <SourceAttributionBadge
+                            sourceType={inv.client_source_type}
+                            sourceDetail={inv.client_source_detail}
+                            teamMemberName={inv.acquired_by_name}
+                            teamMemberRole={inv.acquired_by_role}
+                            teamMemberAvatar={inv.acquired_by_avatar}
+                            variant="compact"
+                          />
+                        </div>
                       </td>
                       <td className="py-3 px-4 font-bold text-[#0B1E33] text-sm">
                         ${Number(inv.amount).toLocaleString()}
@@ -470,6 +487,16 @@ export default function FinancesPage() {
                           <span>{inv.customer_name}</span>
                         )}
                         {' • '}{inv.city || 'San Diego'}
+                      </div>
+                      <div className="mt-1">
+                        <SourceAttributionBadge
+                          sourceType={inv.client_source_type}
+                          sourceDetail={inv.client_source_detail}
+                          teamMemberName={inv.acquired_by_name}
+                          teamMemberRole={inv.acquired_by_role}
+                          teamMemberAvatar={inv.acquired_by_avatar}
+                          variant="compact"
+                        />
                       </div>
                     </div>
                     <span

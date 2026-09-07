@@ -10,48 +10,60 @@ export async function GET(
   const auth = await requirePermission('clients:view');
   if (auth.response) return auth.response;
 
-  await ensureClientsTable();
+  try {
+    await ensureClientsTable();
 
-  const resolved = await params;
-  const clientId = parseInt(resolved.id, 10);
-  if (isNaN(clientId)) {
-    return NextResponse.json({ error: 'Invalid client ID' }, { status: 400 });
-  }
+    const resolved = await params;
+    const clientId = parseInt(resolved.id, 10);
+    if (isNaN(clientId)) {
+      return NextResponse.json({ error: 'Invalid client ID' }, { status: 400 });
+    }
 
-  const clientRows = await query<any>(
-    `SELECT c.*, u.name as assigned_to_name, u.email as assigned_to_email
-     FROM clients c
-     LEFT JOIN users u ON c.assigned_to_user_id = u.id
-     WHERE c.id = $1`,
-    [clientId]
-  );
+    const clientRows = await query<any>(
+      `SELECT 
+         c.*, 
+         u.name as assigned_to_name, 
+         u.email as assigned_to_email,
+         u_acq.name as acquired_by_name,
+         u_acq.role as acquired_by_role,
+         u_acq.avatar_url as acquired_by_avatar
+       FROM clients c
+       LEFT JOIN users u ON c.assigned_to_user_id = u.id
+       LEFT JOIN users u_acq ON c.acquired_by_user_id = u_acq.id
+       WHERE c.id = $1`,
+      [clientId]
+    );
 
-  if (!clientRows || clientRows.length === 0) {
-    return NextResponse.json({ error: 'Client not found' }, { status: 404 });
-  }
+    if (!clientRows || clientRows.length === 0) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    }
 
-  const client = clientRows[0];
+    const client = clientRows[0];
+    const cleanPhone = client.phone || '__NONE__';
+    const cleanNorm = client.phone_normalized || '__NONE__';
+    const cleanEmail = client.email ? client.email.toLowerCase() : '__NONE__';
 
-  // Fetch all related entities in parallel
-  const [
-    leads,
-    inspections,
-    estimates,
-    jobs,
-    invoices,
-    warranties,
-    reviews,
-    activities,
-    tasks,
-  ] = await Promise.all([
-    // Leads
-    query<any>(
-      `SELECT * FROM leads 
-       WHERE client_id = $1 
-          OR (phone_normalized IS NOT NULL AND phone_normalized = $2)
-       ORDER BY created_at DESC`,
-      [clientId, client.phone_normalized || '__NONE__']
-    ),
+    // Fetch all related entities in parallel
+    const [
+      leads,
+      inspections,
+      estimates,
+      jobs,
+      invoices,
+      warranties,
+      reviews,
+      activities,
+      tasks,
+    ] = await Promise.all([
+      // Leads
+      query<any>(
+        `SELECT * FROM leads 
+         WHERE client_id = $1 
+            OR (phone IS NOT NULL AND $2 != '__NONE__' AND (phone = $2 OR phone = $3))
+            OR (email IS NOT NULL AND $4 != '__NONE__' AND LOWER(email) = $4)
+         ORDER BY created_at DESC`,
+        [clientId, cleanPhone, cleanNorm, cleanEmail]
+      ),
 
     // Roof Inspections
     query<any>(
@@ -157,24 +169,31 @@ export async function GET(
     .reduce((acc, inv) => acc + Number(inv.amount || 0), 0);
   const balanceDue = Math.max(0, totalBilled - totalPaid);
 
-  return NextResponse.json({
-    ok: true,
-    client: {
-      ...client,
-      balance_due: balanceDue,
-      total_billed: totalBilled,
-      total_paid: totalPaid,
-    },
-    leads,
-    inspections,
-    estimates,
-    jobs,
-    invoices,
-    warranties,
-    reviews,
-    activities,
-    tasks,
-  });
+    return NextResponse.json({
+      ok: true,
+      client: {
+        ...client,
+        balance_due: balanceDue,
+        total_billed: totalBilled,
+        total_paid: totalPaid,
+      },
+      leads,
+      inspections,
+      estimates,
+      jobs,
+      invoices,
+      warranties,
+      reviews,
+      activities,
+      tasks,
+    });
+  } catch (err: any) {
+    console.error('Error loading client 360 data:', err);
+    return NextResponse.json(
+      { error: 'Failed to load client 360 data', details: err?.message },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(
@@ -211,11 +230,15 @@ export async function PATCH(
       'tags',
       'notes',
       'assigned_to_user_id',
+      'source_type',
+      'acquired_by_user_id',
+      'lead_source_detail',
+      'client_since',
     ];
 
     const updates: string[] = [];
     const updateParams: unknown[] = [clientId];
-    const intFields = ['roof_sqf', 'roof_age', 'stories', 'assigned_to_user_id'];
+    const intFields = ['roof_sqf', 'roof_age', 'stories', 'assigned_to_user_id', 'acquired_by_user_id'];
     const boolFields = ['hoa'];
 
     for (const key of allowedFields) {

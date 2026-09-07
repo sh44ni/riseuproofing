@@ -558,6 +558,18 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_reviews_client ON reviews (client_id)`,
   `CREATE INDEX IF NOT EXISTS idx_activities_client ON activities (client_id)`,
   `CREATE INDEX IF NOT EXISTS idx_tasks_client ON tasks (client_id)`,
+
+  // ── Phase 9 CRM: Lead & Client Origin Attribution (Website vs. Team Member) ─
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'website'`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_source_detail TEXT`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_source_type ON leads (source_type, created_by_user_id)`,
+
+  `ALTER TABLE clients ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'website'`,
+  `ALTER TABLE clients ADD COLUMN IF NOT EXISTS acquired_by_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL`,
+  `ALTER TABLE clients ADD COLUMN IF NOT EXISTS lead_source_detail TEXT`,
+  `ALTER TABLE clients ADD COLUMN IF NOT EXISTS client_since TIMESTAMPTZ DEFAULT NOW()`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_acquired_by ON clients (acquired_by_user_id)`,
 ];
 
 async function handleMigration(req: NextRequest) {
@@ -754,6 +766,47 @@ async function handleMigration(req: NextRequest) {
         (SELECT client_id FROM jobs j WHERE j.id = ins.job_id)
       )
       WHERE ins.client_id IS NULL
+    `);
+
+    // Phase 9: Backfill source attribution for historical leads
+    await query(`
+      UPDATE leads
+      SET source_type = CASE
+            WHEN lead_source ILIKE '%staff%' OR lead_source ILIKE '%referral%' OR lead_source ILIKE '%door%' OR lead_source ILIKE '%canvass%' THEN 'team_member'
+            ELSE 'website'
+          END,
+          created_by_user_id = CASE
+            WHEN (lead_source ILIKE '%staff%' OR lead_source ILIKE '%referral%' OR lead_source ILIKE '%door%' OR lead_source ILIKE '%canvass%') AND assigned_to_user_id IS NOT NULL THEN assigned_to_user_id
+            ELSE NULL
+          END,
+          lead_source_detail = COALESCE(lead_source_detail, lead_source, 'Inbound Inquiry')
+      WHERE source_type IS NULL OR source_type = ''
+    `);
+
+    // Backfill clients origin and registration tenure from earliest linked lead
+    await query(`
+      UPDATE clients c
+      SET source_type = COALESCE(
+            (SELECT l.source_type FROM leads l WHERE l.client_id = c.id ORDER BY l.created_at ASC LIMIT 1),
+            c.source_type,
+            'website'
+          ),
+          acquired_by_user_id = COALESCE(
+            (SELECT l.created_by_user_id FROM leads l WHERE l.client_id = c.id AND l.created_by_user_id IS NOT NULL ORDER BY l.created_at ASC LIMIT 1),
+            c.acquired_by_user_id,
+            c.assigned_to_user_id
+          ),
+          lead_source_detail = COALESCE(
+            (SELECT l.lead_source_detail FROM leads l WHERE l.client_id = c.id ORDER BY l.created_at ASC LIMIT 1),
+            c.lead_source_detail,
+            'Customer Acquisition'
+          ),
+          client_since = COALESCE(
+            (SELECT l.created_at FROM leads l WHERE l.client_id = c.id ORDER BY l.created_at ASC LIMIT 1),
+            c.created_at,
+            NOW()
+          )
+      WHERE c.acquired_by_user_id IS NULL OR c.client_since IS NULL
     `);
 
     // Recalculate stats for all clients

@@ -21,6 +21,7 @@ import {
   Hammer,
 } from 'lucide-react';
 import { formatPhone } from '@/lib/crm-clients-utils';
+import SourceAttributionBadge from '../shared/SourceAttributionBadge';
 
 interface ClientProfileHeaderProps {
   client: any;
@@ -141,6 +142,20 @@ export default function ClientProfileHeader({
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* Source Attribution & Tenure */}
+            <div className="mt-2 flex items-center gap-2">
+              <SourceAttributionBadge
+                sourceType={client.source_type}
+                sourceDetail={client.lead_source_detail}
+                teamMemberName={client.acquired_by_name}
+                teamMemberRole={client.acquired_by_role}
+                teamMemberAvatar={client.acquired_by_avatar}
+                clientSince={client.client_since || client.created_at}
+                showTenure={true}
+                variant="badge"
+              />
             </div>
           </div>
         </div>

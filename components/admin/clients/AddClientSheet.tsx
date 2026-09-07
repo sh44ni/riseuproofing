@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import BottomSheet from '../shared/BottomSheet';
+import SourceSelector from '../shared/SourceSelector';
 import { UserPlus, Home, Phone, Mail, MapPin } from 'lucide-react';
 
 interface AddClientSheetProps {
@@ -46,6 +47,9 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
     stories: '1',
     hoa: false,
     notes: '',
+    sourceType: 'team_member' as 'website' | 'team_member',
+    sourceDetail: 'Sales Rep Outreach',
+    acquiredByUserId: null as number | null,
   });
 
   React.useEffect(() => {
@@ -72,7 +76,12 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
       const res = await fetch('/api/admin/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          sourceType: formData.sourceType,
+          acquiredByUserId: formData.acquiredByUserId,
+          leadSourceDetail: formData.sourceDetail,
+        }),
       });
 
       if (!res.ok) {
@@ -250,6 +259,23 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Source Attribution */}
+        <div className="pt-2 border-t border-slate-200/80">
+          <SourceSelector
+            sourceType={formData.sourceType}
+            sourceDetail={formData.sourceDetail}
+            userId={formData.acquiredByUserId}
+            onChange={({ sourceType, sourceDetail, userId }) =>
+              setFormData(prev => ({
+                ...prev,
+                sourceType,
+                sourceDetail: sourceDetail || '',
+                acquiredByUserId: userId ?? null,
+              }))
+            }
+          />
         </div>
 
         {/* Internal Notes */}

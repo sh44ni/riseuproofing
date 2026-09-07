@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
       sourcePage = referer;
     }
 
+    const detail = formType === 'estimator_full' ? 'Instant Roof Estimator' : 'Website Free Estimate';
     let clientId: number | null = null;
     try {
       const { findOrCreateClient } = await import('@/lib/crm-clients');
@@ -66,6 +67,8 @@ export async function POST(req: NextRequest) {
         city: city ?? null,
         zip: zip ?? null,
         leadSource: leadSource || 'website_estimate',
+        sourceType: 'website',
+        leadSourceDetail: detail,
         notes: notes ?? null,
       });
       clientId = client.id;
@@ -75,9 +78,10 @@ export async function POST(req: NextRequest) {
 
     const result = await query<{ id: string }>(
       `INSERT INTO leads (
-        form_type, full_name, phone, email, address, city, zip, service_type, notes, source_page, status, priority, lead_score, lead_source, client_id
+        form_type, full_name, phone, email, address, city, zip, service_type, notes, source_page, status, priority, lead_score, lead_source, client_id,
+        source_type, lead_source_detail
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'new', $11, $12, $13, $14)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'new', $11, $12, $13, $14, 'website', $15)
       RETURNING id`,
       [
         formType,
@@ -94,6 +98,7 @@ export async function POST(req: NextRequest) {
         leadScore,
         leadSource,
         clientId,
+        detail,
       ]
     );
 

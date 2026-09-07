@@ -76,7 +76,18 @@ export async function GET(req: NextRequest) {
 
   const [rows, countRow, daily] = await Promise.all([
     query<any>(
-      `SELECT * FROM leads ${where} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      `SELECT 
+         l.*,
+         u_creator.name as created_by_name,
+         u_creator.role as created_by_role,
+         u_creator.avatar_url as created_by_avatar,
+         u_assigned.name as assigned_to_name
+       FROM leads l
+       LEFT JOIN users u_creator ON l.created_by_user_id = u_creator.id
+       LEFT JOIN users u_assigned ON l.assigned_to_user_id = u_assigned.id
+       ${where}
+       ORDER BY l.created_at DESC
+       LIMIT ${limit} OFFSET ${offset}`,
       params
     ),
     query<{ count: string }>(`SELECT COUNT(*) AS count FROM leads ${where}`, params),
@@ -132,11 +143,22 @@ export async function POST(req: NextRequest) {
       roofType,
       roofSqf,
       stories,
+      sourceType = 'website',
+      createdByUserId,
+      leadSourceDetail,
+      assignedToUserId,
     } = body;
 
     if (!fullName || !phone) {
       return NextResponse.json({ error: 'Full name and phone are required' }, { status: 400 });
     }
+
+    const finalSourceType = sourceType === 'team_member' ? 'team_member' : 'website';
+    const finalCreatedByUserId = finalSourceType === 'team_member'
+      ? (createdByUserId ? parseInt(String(createdByUserId), 10) : auth.user.id)
+      : null;
+    const finalAssignedToUserId = assignedToUserId ? parseInt(String(assignedToUserId), 10) : null;
+    const finalSourceDetail = leadSourceDetail || (finalSourceType === 'team_member' ? 'Team Member Attribution' : 'Manual Office Inbound');
 
     const scored = calculateLeadScore({
       serviceType,
@@ -164,6 +186,10 @@ export async function POST(req: NextRequest) {
         stories: stories ? parseInt(stories, 10) : null,
         leadSource,
         notes: notes ?? null,
+        sourceType: finalSourceType,
+        acquiredByUserId: finalCreatedByUserId,
+        leadSourceDetail: finalSourceDetail,
+        assignedToUserId: finalAssignedToUserId,
       });
       clientId = client.id;
     } catch (clientErr) {
@@ -174,11 +200,13 @@ export async function POST(req: NextRequest) {
       `INSERT INTO leads (
         form_type, full_name, phone, email, address, zip, service_type,
         lead_source, notes, property_type, roof_type, roof_sqf, stories,
-        lead_score, priority, status, source_page, client_id
+        lead_score, priority, status, source_page, client_id,
+        source_type, created_by_user_id, lead_source_detail, assigned_to_user_id
       ) VALUES (
         'manual', $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10, $11, $12,
-        $13, $14, 'new', 'admin', $15
+        $13, $14, 'new', 'admin', $15,
+        $16, $17, $18, $19
       ) RETURNING *`,
       [
         fullName,
@@ -196,6 +224,10 @@ export async function POST(req: NextRequest) {
         scored.score,
         scored.priority,
         clientId,
+        finalSourceType,
+        finalCreatedByUserId,
+        finalSourceDetail,
+        finalAssignedToUserId,
       ]
     );
 

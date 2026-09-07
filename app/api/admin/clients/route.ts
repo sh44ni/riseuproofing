@@ -73,9 +73,15 @@ export async function GET(req: NextRequest) {
 
   const [clients, countRows, summaryRows] = await Promise.all([
     query<any>(
-      `SELECT c.*, u.name as assigned_to_name
+      `SELECT 
+         c.*, 
+         u.name as assigned_to_name,
+         u_acq.name as acquired_by_name,
+         u_acq.role as acquired_by_role,
+         u_acq.avatar_url as acquired_by_avatar
        FROM clients c
        LEFT JOIN users u ON c.assigned_to_user_id = u.id
+       LEFT JOIN users u_acq ON c.acquired_by_user_id = u_acq.id
        ${where}
        ORDER BY ${orderBy}
        LIMIT ${limit} OFFSET ${offset}`,
@@ -139,6 +145,9 @@ export async function POST(req: NextRequest) {
       hoa,
       notes,
       assignedToUserId,
+      sourceType = 'website',
+      acquiredByUserId,
+      leadSourceDetail,
     } = body;
 
     if (!fullName || (!phone && !email)) {
@@ -147,6 +156,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const finalSourceType = sourceType === 'team_member' ? 'team_member' : 'website';
+    const finalAcquiredBy = finalSourceType === 'team_member'
+      ? (acquiredByUserId ? parseInt(String(acquiredByUserId), 10) : auth.user.id)
+      : null;
+    const finalSourceDetail = leadSourceDetail || (finalSourceType === 'team_member' ? 'Team Member Attribution' : 'Manual Office Inbound');
 
     const client = await findOrCreateClient({
       fullName,
@@ -165,6 +180,9 @@ export async function POST(req: NextRequest) {
       leadSource: 'admin_manual',
       notes,
       assignedToUserId: assignedToUserId ? parseInt(assignedToUserId, 10) : null,
+      sourceType: finalSourceType,
+      acquiredByUserId: finalAcquiredBy,
+      leadSourceDetail: finalSourceDetail,
     });
 
     // Log client creation activity (non-blocking)

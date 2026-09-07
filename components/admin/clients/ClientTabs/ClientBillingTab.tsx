@@ -13,6 +13,7 @@ import {
   Building2,
   Calendar,
 } from 'lucide-react';
+import SourceAttributionBadge from '../../shared/SourceAttributionBadge';
 
 interface ClientBillingTabProps {
   client: any;
@@ -38,6 +39,19 @@ export default function ClientBillingTab({ client, invoices, jobs }: ClientBilli
 
   return (
     <div className="space-y-6">
+      {/* Account Origin Bar */}
+      <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between text-xs">
+        <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Client Origin</span>
+        <SourceAttributionBadge
+          sourceType={client.source_type}
+          sourceDetail={client.lead_source_detail}
+          teamMemberName={client.acquired_by_name}
+          teamMemberRole={client.acquired_by_role}
+          teamMemberAvatar={client.acquired_by_avatar}
+          variant="compact"
+        />
+      </div>
+
       {/* Top Financial KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="admin-card p-4 sm:p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs">

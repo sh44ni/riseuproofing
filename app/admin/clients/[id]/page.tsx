@@ -14,6 +14,7 @@ import {
   CheckSquare,
   FileText,
   ClipboardCheck,
+  AlertCircle,
 } from 'lucide-react';
 import ClientProfileHeader from '@/components/admin/clients/ClientProfileHeader';
 import ClientOverviewTab from '@/components/admin/clients/ClientTabs/ClientOverviewTab';
@@ -44,6 +45,7 @@ export default function ClientDetailPage({
   const [activities, setActivities] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Tab navigation: 'overview' | 'timeline' | 'quotes' | 'billing' | 'warranties' | 'tasks'
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -80,6 +82,8 @@ export default function ClientDetailPage({
   const [savingLog, setSavingLog] = useState(false);
 
   const loadData = useCallback(async () => {
+    setLoading(true);
+    setFetchError(null);
     try {
       const res = await fetch(`/api/admin/clients/${clientId}`);
       if (res.status === 401) {
@@ -87,7 +91,8 @@ export default function ClientDetailPage({
         return;
       }
       if (!res.ok) {
-        router.push('/admin/clients');
+        const errJson = await res.json().catch(() => ({}));
+        setFetchError(errJson.error || errJson.details || `Failed to load client (HTTP ${res.status})`);
         return;
       }
 
@@ -117,8 +122,9 @@ export default function ClientDetailPage({
         hoa: Boolean(data.client.hoa),
         notes: data.client.notes || '',
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load client 360 data', err);
+      setFetchError(err?.message || 'Network connection failed while loading client profile');
     } finally {
       setLoading(false);
     }
@@ -197,11 +203,38 @@ export default function ClientDetailPage({
     }
   }
 
-  if (loading || !client) {
+  if (loading) {
     return (
       <div className="p-16 text-center">
-        <RefreshCw size={28} className="mx-auto text-slate-400 animate-spin mb-3" />
+        <RefreshCw size={28} className="mx-auto text-sky-500 animate-spin mb-3" />
         <p className="text-xs font-semibold text-slate-500">Loading Client 360 Profile...</p>
+      </div>
+    );
+  }
+
+  if (fetchError || !client) {
+    return (
+      <div className="max-w-md mx-auto my-12 p-8 bg-white border border-rose-100 rounded-3xl shadow-sm text-center">
+        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-4">
+          <AlertCircle size={24} />
+        </div>
+        <h2 className="text-base font-black text-slate-900 mb-1">Unable to Load Client Profile</h2>
+        <p className="text-xs text-slate-500 mb-6">{fetchError || 'Client record could not be found or retrieved.'}</p>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => loadData()}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+          >
+            <RefreshCw size={13} />
+            Try Again
+          </button>
+          <Link
+            href="/admin/clients"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          >
+            Back to Clients
+          </Link>
+        </div>
       </div>
     );
   }

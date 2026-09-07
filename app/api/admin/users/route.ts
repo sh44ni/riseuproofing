@@ -17,18 +17,23 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Only Owner can list/manage all system users
-  if (currentUser.role !== 'owner') {
-    return NextResponse.json({ ok: false, error: 'Forbidden. Owner role required.' }, { status: 403 });
-  }
-
   try {
-    const users = await query(
-      `SELECT id, name, email, phone, role, status, avatar_url, permissions, last_login_at, created_at, updated_at
-       FROM users
-       ORDER BY id ASC`
-    );
+    // Owner gets full management view; other authenticated staff get safe team directory
+    if (currentUser.role === 'owner') {
+      const users = await query(
+        `SELECT id, name, email, phone, role, status, avatar_url, permissions, last_login_at, created_at, updated_at
+         FROM users
+         ORDER BY id ASC`
+      );
+      return NextResponse.json({ ok: true, users });
+    }
 
+    const users = await query(
+      `SELECT id, name, email, role, status, avatar_url
+       FROM users
+       WHERE status = 'active'
+       ORDER BY name ASC`
+    );
     return NextResponse.json({ ok: true, users });
   } catch (err) {
     console.error('Error fetching users:', err);

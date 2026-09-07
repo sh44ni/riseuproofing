@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import BottomSheet from '../shared/BottomSheet';
+import SourceSelector from '../shared/SourceSelector';
 import { UserPlus } from 'lucide-react';
 
 interface AddLeadSheetProps {
@@ -19,16 +20,6 @@ const SERVICE_TYPES = [
   'Inspection / Assessment',
 ];
 
-const LEAD_SOURCES = [
-  { value: 'phone', label: 'Phone Call (Inbound)' },
-  { value: 'door_knocker', label: 'Door-to-Door / Field Rep' },
-  { value: 'referral', label: 'Customer / Partner Referral' },
-  { value: 'website', label: 'Website / Online' },
-  { value: 'google_ads', label: 'Google Search / Ads' },
-  { value: 'yelp', label: 'Yelp / Directory' },
-  { value: 'event', label: 'Trade Show / Event' },
-];
-
 export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadSheetProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +29,10 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
     phone: '',
     email: '',
     serviceType: SERVICE_TYPES[0],
-    leadSource: 'phone',
+    leadSource: 'door_knocker',
+    sourceType: 'team_member' as 'website' | 'team_member',
+    leadSourceDetail: 'Sales Rep Outreach',
+    createdByUserId: null as number | null,
     address: '',
     zip: '',
     roofSqf: '',
@@ -61,7 +55,12 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
       const res = await fetch('/api/admin/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          sourceType: formData.sourceType,
+          leadSourceDetail: formData.leadSourceDetail,
+          createdByUserId: formData.createdByUserId,
+        }),
       });
 
       if (!res.ok) {
@@ -77,7 +76,10 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
         phone: '',
         email: '',
         serviceType: SERVICE_TYPES[0],
-        leadSource: 'phone',
+        leadSource: 'door_knocker',
+        sourceType: 'team_member',
+        leadSourceDetail: 'Sales Rep Outreach',
+        createdByUserId: null,
         address: '',
         zip: '',
         roofSqf: '',
@@ -153,36 +155,35 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
           <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500">
             Project & Pipeline
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Service Type</label>
-              <select
-                value={formData.serviceType}
-                onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl cursor-pointer"
-              >
-                {SERVICE_TYPES.map(s => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Lead Source</label>
-              <select
-                value={formData.leadSource}
-                onChange={e => setFormData({ ...formData, leadSource: e.target.value })}
-                className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl cursor-pointer"
-              >
-                {LEAD_SOURCES.map(s => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Service Type</label>
+            <select
+              value={formData.serviceType}
+              onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
+              className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl cursor-pointer"
+            >
+              {SERVICE_TYPES.map(s => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <SourceSelector
+            sourceType={formData.sourceType}
+            sourceDetail={formData.leadSourceDetail}
+            userId={formData.createdByUserId}
+            onChange={({ sourceType, sourceDetail, userId }) =>
+              setFormData(prev => ({
+                ...prev,
+                sourceType,
+                leadSourceDetail: sourceDetail || '',
+                createdByUserId: userId ?? null,
+                leadSource: sourceType === 'website' ? 'website' : 'door_knocker',
+              }))
+            }
+          />
         </div>
 
         {/* Roofing Specs */}

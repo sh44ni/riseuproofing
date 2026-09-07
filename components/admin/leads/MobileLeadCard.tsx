@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Phone, MapPin, Home, Clock, ChevronRight } from 'lucide-react';
 import StatusBadge, { PriorityLevel } from '../shared/StatusBadge';
+import SourceAttributionBadge from '../shared/SourceAttributionBadge';
 
 export interface MobileLeadData {
   id: number;
@@ -21,6 +22,11 @@ export interface MobileLeadData {
   city?: string;
   created_at: string;
   form_type?: string;
+  source_type?: string;
+  lead_source_detail?: string;
+  created_by_name?: string;
+  created_by_role?: string;
+  created_by_avatar?: string;
 }
 
 interface MobileLeadCardProps {
@@ -108,6 +114,18 @@ export default function MobileLeadCard({ lead, onStatusChange }: MobileLeadCardP
             {locationLabel}
           </span>
         )}
+      </div>
+
+      {/* Attribution Tag */}
+      <div className="pt-2 pb-1 flex items-center justify-between">
+        <SourceAttributionBadge
+          sourceType={lead.source_type}
+          sourceDetail={lead.lead_source_detail}
+          teamMemberName={lead.created_by_name}
+          teamMemberRole={lead.created_by_role}
+          teamMemberAvatar={lead.created_by_avatar}
+          variant="compact"
+        />
       </div>
 
       {/* Bottom Row: 1-Tap Quick Action Buttons */}

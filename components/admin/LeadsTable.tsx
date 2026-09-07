@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Phone, Clock, Home, MapPin, ChevronRight, ExternalLink } from 'lucide-react';
 import StatusBadge, { PriorityLevel } from './shared/StatusBadge';
+import SourceAttributionBadge from './shared/SourceAttributionBadge';
 
 export interface Lead {
   id: number;
@@ -23,6 +24,12 @@ export interface Lead {
   notes?: string;
   message?: string;
   subject?: string;
+  source_type?: string;
+  lead_source_detail?: string;
+  created_by_name?: string;
+  created_by_role?: string;
+  created_by_avatar?: string;
+  assigned_to_name?: string;
 }
 
 const STATUSES = ['new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
@@ -49,7 +56,7 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200/80 bg-slate-50/80">
-            {['Lead / Contact', 'Priority', 'Service & Roof', 'Location', 'Date', 'Status', 'Actions'].map(h => (
+            {['Lead / Contact', 'Priority', 'Source / Origin', 'Service & Roof', 'Location', 'Date', 'Status', 'Actions'].map(h => (
               <th
                 key={h}
                 className="text-left px-4 py-3 text-slate-500 font-bold text-[11px] uppercase tracking-wider whitespace-nowrap admin-section-label"
@@ -62,7 +69,7 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
         <tbody className="divide-y divide-slate-100">
           {leads.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-4 py-12 text-center text-slate-500 text-sm">
+              <td colSpan={8} className="px-4 py-12 text-center text-slate-500 text-sm">
                 No matching leads found
               </td>
             </tr>
@@ -117,6 +124,18 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
                   ) : (
                     <span className="text-slate-400 text-xs">—</span>
                   )}
+                </td>
+
+                {/* Source / Origin */}
+                <td className="px-4 py-3">
+                  <SourceAttributionBadge
+                    sourceType={lead.source_type}
+                    sourceDetail={lead.lead_source_detail}
+                    teamMemberName={lead.created_by_name}
+                    teamMemberRole={lead.created_by_role}
+                    teamMemberAvatar={lead.created_by_avatar}
+                    variant="compact"
+                  />
                 </td>
 
                 {/* Service & Roof Specs */}
@@ -191,7 +210,7 @@ export default function LeadsTable({ leads, onStatusChange }: LeadsTableProps) {
               {/* Accordion Quick Preview */}
               {expanded === lead.id && (
                 <tr key={`${lead.id}-detail`} className="bg-slate-50/80">
-                  <td colSpan={7} className="px-6 py-4 border-t border-slate-200/60">
+                  <td colSpan={8} className="px-6 py-4 border-t border-slate-200/60">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                       {lead.address && (
                         <div>

@@ -28,6 +28,7 @@ import ActivityTimeline, { Activity } from '@/components/admin/timeline/Activity
 import LogActivitySheet from '@/components/admin/timeline/LogActivitySheet';
 import QuickMessageModal from '@/components/admin/timeline/QuickMessageModal';
 import CustomSelect from '@/components/admin/shared/CustomSelect';
+import SourceAttributionBadge from '@/components/admin/shared/SourceAttributionBadge';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New Lead', badge: 'Fresh', badgeColor: 'sky' as const },
@@ -57,6 +58,12 @@ interface LeadDetailData {
   lead_score: number;
   score_factors?: string[];
   lead_source?: string;
+  source_type?: string;
+  lead_source_detail?: string;
+  created_by_name?: string;
+  created_by_role?: string;
+  created_by_avatar?: string;
+  assigned_to_name?: string;
   property_type?: string;
   roof_type?: string;
   roof_sqf?: number;
@@ -380,6 +387,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column (1/3): Property Specs & Lead Insights */}
         <div className="space-y-6">
+          {/* Lead Source Attribution */}
+          <SourceAttributionBadge
+            sourceType={lead.source_type}
+            sourceDetail={lead.lead_source_detail}
+            teamMemberName={lead.created_by_name}
+            teamMemberRole={lead.created_by_role}
+            teamMemberAvatar={lead.created_by_avatar}
+            variant="card"
+          />
+
           {/* Lead Scoring Intelligence Card */}
           <div className="bg-white border border-slate-200/80 rounded-[20px] p-5 space-y-3 shadow-xs">
             <div className="flex items-center justify-between">

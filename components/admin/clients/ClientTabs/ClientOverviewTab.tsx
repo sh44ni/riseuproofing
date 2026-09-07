@@ -17,6 +17,7 @@ import {
   User,
   Plus,
 } from 'lucide-react';
+import SourceAttributionBadge from '../../shared/SourceAttributionBadge';
 
 interface ClientOverviewTabProps {
   client: any;
@@ -151,11 +152,22 @@ export default function ClientOverviewTab({
                 {client.stories || 1} Story • {client.roof_age ? `${client.roof_age} yrs old` : '—'}
               </span>
             </div>
-            <div className="flex justify-between py-1">
+            <div className="flex justify-between py-1 border-b border-slate-100">
               <span className="text-slate-500">HOA Community</span>
               <span className="font-semibold text-slate-800">
                 {client.hoa ? 'Yes (Review Restrictions)' : 'No'}
               </span>
+            </div>
+            <div className="flex justify-between items-center py-1.5">
+              <span className="text-slate-500">Origin / Source</span>
+              <SourceAttributionBadge
+                sourceType={client.source_type}
+                sourceDetail={client.lead_source_detail}
+                teamMemberName={client.acquired_by_name}
+                teamMemberRole={client.acquired_by_role}
+                teamMemberAvatar={client.acquired_by_avatar}
+                variant="compact"
+              />
             </div>
           </div>
         </div>

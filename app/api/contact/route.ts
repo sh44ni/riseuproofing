@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
         phone: phone ?? null,
         email: email ?? null,
         leadSource: 'website_contact',
+        sourceType: 'website',
+        leadSourceDetail: 'Website Contact Form',
         notes: subject ? `Subject: ${subject}` : null,
       });
       clientId = client.id;
@@ -61,8 +63,8 @@ export async function POST(req: NextRequest) {
     }
 
     const insertedLead = await query<{ id: number }>(
-      `INSERT INTO leads (form_type, full_name, phone, email, subject, message, source_page, status, client_id)
-       VALUES ('contact', $1, $2, $3, $4, $5, $6, 'new', $7)
+      `INSERT INTO leads (form_type, full_name, phone, email, subject, message, source_page, status, client_id, source_type, lead_source, lead_source_detail)
+       VALUES ('contact', $1, $2, $3, $4, $5, $6, 'new', $7, 'website', 'website_contact', 'Website Contact Form')
        RETURNING id`,
       [fullName, phone ?? null, email, subject ?? null, message, sourcePage, clientId]
     );

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ClientListItem } from './MobileClientCard';
 import { formatPhone } from '@/lib/crm-clients-utils';
+import SourceAttributionBadge from '../shared/SourceAttributionBadge';
 
 interface ClientsTableProps {
   clients: ClientListItem[];
@@ -100,6 +101,16 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
                             {c.email}
                           </a>
                         )}
+                      </div>
+                      <div className="mt-1">
+                        <SourceAttributionBadge
+                          sourceType={c.source_type}
+                          sourceDetail={c.lead_source_detail}
+                          teamMemberName={c.acquired_by_name}
+                          teamMemberRole={c.acquired_by_role}
+                          teamMemberAvatar={c.acquired_by_avatar}
+                          variant="compact"
+                        />
                       </div>
                     </div>
                   </div>

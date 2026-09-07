@@ -14,6 +14,7 @@ import {
   Award,
 } from 'lucide-react';
 import { formatPhone } from '@/lib/crm-clients-utils';
+import SourceAttributionBadge from '../shared/SourceAttributionBadge';
 
 export interface ClientListItem {
   id: number;
@@ -32,6 +33,12 @@ export interface ClientListItem {
   updated_at: string;
   created_at: string;
   assigned_to_name?: string | null;
+  source_type?: string | null;
+  lead_source_detail?: string | null;
+  client_since?: string | null;
+  acquired_by_name?: string | null;
+  acquired_by_role?: string | null;
+  acquired_by_avatar?: string | null;
 }
 
 interface MobileClientCardProps {
@@ -135,6 +142,18 @@ export default function MobileClientCard({ client }: MobileClientCardProps) {
             </span>
           ) : null}
         </div>
+      </div>
+
+      {/* Attribution Strip */}
+      <div className="pt-2 flex items-center justify-between">
+        <SourceAttributionBadge
+          sourceType={client.source_type}
+          sourceDetail={client.lead_source_detail}
+          teamMemberName={client.acquired_by_name}
+          teamMemberRole={client.acquired_by_role}
+          teamMemberAvatar={client.acquired_by_avatar}
+          variant="compact"
+        />
       </div>
 
       {/* Bottom Action Bar: Native Call, SMS, Directions, and View 360 */}

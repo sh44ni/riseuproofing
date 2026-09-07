@@ -16,7 +16,19 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid lead ID' }, { status: 400 });
   }
 
-  const rows = await query<any>(`SELECT * FROM leads WHERE id = $1`, [leadId]);
+  const rows = await query<any>(
+    `SELECT 
+       l.*,
+       u_creator.name as created_by_name,
+       u_creator.role as created_by_role,
+       u_creator.avatar_url as created_by_avatar,
+       u_assigned.name as assigned_to_name
+     FROM leads l
+     LEFT JOIN users u_creator ON l.created_by_user_id = u_creator.id
+     LEFT JOIN users u_assigned ON l.assigned_to_user_id = u_assigned.id
+     WHERE l.id = $1`,
+    [leadId]
+  );
   if (!rows || rows.length === 0) {
     return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
   }
@@ -67,7 +79,11 @@ export async function PATCH(
     'notes',
     'status',
     'assigned_to',
+    'assigned_to_user_id',
     'lead_source',
+    'source_type',
+    'created_by_user_id',
+    'lead_source_detail',
     'property_type',
     'roof_type',
     'roof_sqf',
