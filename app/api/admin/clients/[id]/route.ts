@@ -39,6 +39,10 @@ export async function GET(
     }
 
     const client = clientRows[0];
+    const isTeam = Boolean(client.acquired_by_user_id || client.acquired_by_name);
+    client.source_type = isTeam ? 'team_member' : 'website';
+    client.lead_source_detail = client.lead_source_detail || (isTeam ? 'Sales Rep Outreach' : 'Website Inbound');
+
     const cleanPhone = client.phone || '__NONE__';
     const cleanNorm = client.phone_normalized || '__NONE__';
     const cleanEmail = client.email ? client.email.toLowerCase() : '__NONE__';

@@ -94,26 +94,53 @@ export async function GET(req: NextRequest) {
     dailyPromise,
   ]);
 
-  // Ensure every lead has score & priority populated
+  // Ensure every lead has source attribution & score & priority populated
   const enrichedLeads = rows.map(lead => {
-    if (!lead.lead_score || lead.lead_score === 0) {
+    // Automatic Website Lead Recognition:
+    // Any lead without a team member creator, or coming through public forms,
+    // is automatically recognized as an inbound Website Lead.
+    const isTeam = Boolean(lead.created_by_user_id || lead.created_by_name);
+    const sourceType = isTeam ? 'team_member' : 'website';
+
+    let sourceDetail = lead.lead_source_detail;
+    if (!sourceDetail) {
+      if (sourceType === 'website') {
+        if (lead.form_type === 'contact') sourceDetail = 'Website Contact Form';
+        else if (lead.form_type === 'storm_promo' || lead.lead_source === 'storm_promo_popup') sourceDetail = 'Storm Season Alert';
+        else if (lead.form_type === 'estimate' || lead.form_type === 'estimator_full') sourceDetail = 'Website Estimate Request';
+        else if (lead.form_type === 'calculator') sourceDetail = 'Cost Calculator Inbound';
+        else if (lead.lead_source === 'google_ads') sourceDetail = 'Google Ads Search';
+        else if (lead.lead_source === 'yelp') sourceDetail = 'Yelp Directory';
+        else sourceDetail = 'Website Inbound';
+      } else {
+        sourceDetail = 'Sales Rep Outreach';
+      }
+    }
+
+    let item = {
+      ...lead,
+      source_type: sourceType,
+      lead_source_detail: sourceDetail,
+    };
+
+    if (!item.lead_score || item.lead_score === 0) {
       const scored = calculateLeadScore({
-        serviceType: lead.service_type,
-        phone: lead.phone,
-        email: lead.email,
-        roofSqf: lead.roof_sqf,
-        address: lead.address,
-        zip: lead.zip,
-        leadSource: lead.lead_source,
-        formType: lead.form_type,
+        serviceType: item.service_type,
+        phone: item.phone,
+        email: item.email,
+        roofSqf: item.roof_sqf,
+        address: item.address,
+        zip: item.zip,
+        leadSource: item.lead_source,
+        formType: item.form_type,
       });
-      return {
-        ...lead,
+      item = {
+        ...item,
         lead_score: scored.score,
         priority: scored.priority,
       };
     }
-    return lead;
+    return item;
   });
 
   return NextResponse.json({

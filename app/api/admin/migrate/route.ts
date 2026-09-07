@@ -570,6 +570,13 @@ const MIGRATIONS = [
   `ALTER TABLE clients ADD COLUMN IF NOT EXISTS lead_source_detail TEXT`,
   `ALTER TABLE clients ADD COLUMN IF NOT EXISTS client_since TIMESTAMPTZ DEFAULT NOW()`,
   `CREATE INDEX IF NOT EXISTS idx_clients_acquired_by ON clients (acquired_by_user_id)`,
+
+  // Backfill automatic website recognition
+  `UPDATE leads SET source_type = 'website', lead_source_detail = 'Website Storm Promo' WHERE (form_type = 'storm_promo' OR lead_source = 'storm_promo_popup') AND (lead_source_detail IS NULL OR source_type = 'website')`,
+  `UPDATE leads SET source_type = 'website', lead_source_detail = 'Website Contact Form' WHERE form_type = 'contact' AND (lead_source_detail IS NULL OR source_type = 'website')`,
+  `UPDATE leads SET source_type = 'website', lead_source_detail = 'Website Estimate Request' WHERE (form_type = 'estimate' OR form_type = 'estimator_full') AND (lead_source_detail IS NULL OR source_type = 'website')`,
+  `UPDATE leads SET source_type = 'website', lead_source_detail = 'Website Inbound' WHERE created_by_user_id IS NULL AND lead_source_detail IS NULL`,
+  `UPDATE clients SET source_type = 'website', lead_source_detail = 'Website Inbound' WHERE acquired_by_user_id IS NULL AND (lead_source_detail IS NULL OR source_type IS NULL)`,
 ];
 
 async function handleMigration(req: NextRequest) {

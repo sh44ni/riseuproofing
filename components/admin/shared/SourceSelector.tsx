@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Globe, UserCheck, ChevronDown, Sparkles } from 'lucide-react';
+import { Globe, UserCheck, Sparkles, Check, ChevronDown } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import RoleBadge from './RoleBadge';
 
@@ -20,6 +20,14 @@ export interface SourceSelectorProps {
 }
 
 interface TeamMember {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  avatar_url?: string | null;
+}
+
+interface CurrentUser {
   id: number;
   name: string;
   email: string;
@@ -55,26 +63,54 @@ export default function SourceSelector({
   label = 'Lead / Client Source Attribution',
 }: SourceSelectorProps) {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showReassign, setShowReassign] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    async function fetchTeam() {
+    async function loadData() {
       try {
-        setLoadingUsers(true);
-        const res = await fetch('/api/admin/users');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (isMounted && data.users) {
-          setTeamMembers(data.users);
+        setLoading(true);
+        const [usersRes, profileRes] = await Promise.all([
+          fetch('/api/admin/users'),
+          fetch('/api/admin/profile'),
+        ]);
+
+        let usersList: TeamMember[] = [];
+        let profileUser: CurrentUser | null = null;
+
+        if (usersRes.ok) {
+          const uData = await usersRes.json();
+          if (uData.users) usersList = uData.users;
+        }
+
+        if (profileRes.ok) {
+          const pData = await profileRes.json();
+          if (pData.user) profileUser = pData.user;
+        }
+
+        if (!isMounted) return;
+
+        setTeamMembers(usersList);
+        setCurrentUser(profileUser);
+
+        // AUTOMATIC: If userId is not selected yet, automatically pre-select the currently logged-in user!
+        if (profileUser && !userId && sourceType === 'team_member') {
+          onChange({
+            sourceType: 'team_member',
+            sourceDetail: sourceDetail || 'Sales Rep Outreach',
+            userId: profileUser.id,
+          });
         }
       } catch (err) {
-        console.error('Failed to load team directory for attribution', err);
+        console.error('Failed to load user directory for attribution', err);
       } finally {
-        if (isMounted) setLoadingUsers(false);
+        if (isMounted) setLoading(false);
       }
     }
-    fetchTeam();
+
+    loadData();
     return () => {
       isMounted = false;
     };
@@ -89,17 +125,21 @@ export default function SourceSelector({
         userId: null,
       });
     } else {
-      // Default to first user if none selected
-      const firstUserId = userId || (teamMembers.length > 0 ? teamMembers[0].id : null);
+      const activeId = userId || currentUser?.id || (teamMembers.length > 0 ? teamMembers[0].id : null);
       onChange({
         sourceType: 'team_member',
         sourceDetail: sourceDetail || 'Sales Rep Outreach',
-        userId: firstUserId ? Number(firstUserId) : null,
+        userId: activeId ? Number(activeId) : null,
       });
     }
   };
 
-  const selectedMember = teamMembers.find(m => String(m.id) === String(userId));
+  const effectiveUserId = userId || currentUser?.id;
+  const selectedMember =
+    teamMembers.find(m => String(m.id) === String(effectiveUserId)) ||
+    (currentUser && String(currentUser.id) === String(effectiveUserId) ? currentUser : null);
+
+  const isSelf = Boolean(currentUser && selectedMember && currentUser.id === selectedMember.id);
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -108,7 +148,7 @@ export default function SourceSelector({
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             {label}
           </label>
-          <span className="text-[10px] text-slate-400 font-medium">Source Tracking</span>
+          <span className="text-[10px] text-slate-400 font-medium">Automatic Origin</span>
         </div>
       )}
 
@@ -145,8 +185,14 @@ export default function SourceSelector({
 
       {/* Secondary Fields depending on selection */}
       {sourceType === 'website' ? (
-        <div className="space-y-2 p-3 bg-sky-50/50 rounded-2xl border border-sky-100">
-          <label className="block text-[11px] font-bold text-sky-900">Inbound Channel / Channel Detail</label>
+        <div className="space-y-2 p-3.5 bg-sky-50/50 rounded-2xl border border-sky-100">
+          <div className="flex items-center justify-between">
+            <label className="block text-[11px] font-bold text-sky-900">Digital Inbound Channel</label>
+            <span className="text-[10px] text-sky-600 font-semibold bg-sky-100/70 px-2 py-0.5 rounded-md">
+              Inbound Platform
+            </span>
+          </div>
+
           <div className="flex flex-wrap gap-1.5 mb-2">
             {WEBSITE_PRESETS.map(preset => (
               <button
@@ -169,61 +215,92 @@ export default function SourceSelector({
             disabled={disabled}
             value={sourceDetail || ''}
             onChange={e => onChange({ sourceType: 'website', sourceDetail: e.target.value, userId: null })}
-            placeholder="Custom source (e.g. Landing Page A, Yelp, Facebook Ad)"
+            placeholder="Custom channel (e.g. Landing Page A, Yelp, Facebook Ad)"
             className="w-full px-3 py-1.5 text-xs bg-white border border-sky-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-sky-400 font-medium"
           />
         </div>
       ) : (
-        <div className="space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
-          {/* Member Picker */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">
-              Acquired / Sourced By Staff Member
-            </label>
-            {loadingUsers ? (
-              <div className="text-xs text-slate-400 py-1.5 font-medium">Loading team directory...</div>
-            ) : (
-              <select
-                disabled={disabled}
-                value={userId ? String(userId) : ''}
-                onChange={e =>
-                  onChange({
-                    sourceType: 'team_member',
-                    sourceDetail: sourceDetail || 'Sales Rep Outreach',
-                    userId: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-slate-400 font-medium"
-              >
-                <option value="">-- Select Team Member --</option>
-                {teamMembers.map(member => (
-                  <option key={member.id} value={member.id}>
-                    {member.name} ({member.role.replace('_', ' ')})
-                  </option>
-                ))}
-              </select>
-            )}
+        <div className="space-y-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+          {/* Automatic Staff Member Card */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                <UserCheck size={13} className="text-emerald-600" />
+                <span>Acquired & Sourced By</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <Sparkles size={10} className="text-emerald-500" />
+                Auto-detected
+              </span>
+            </div>
 
-            {selectedMember && (
-              <div className="flex items-center gap-2 mt-2 px-2.5 py-1.5 bg-white rounded-xl border border-slate-200">
+            {loading ? (
+              <div className="text-xs text-slate-400 py-2 font-medium animate-pulse">
+                Detecting current user session...
+              </div>
+            ) : selectedMember ? (
+              <div className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
                 <UserAvatar
                   name={selectedMember.name}
                   avatarUrl={selectedMember.avatar_url}
                   role={selectedMember.role}
-                  size="sm"
+                  size="md"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-slate-800 truncate">{selectedMember.name}</div>
-                  <div className="text-[10px] text-slate-400 truncate">{selectedMember.email}</div>
+                  <div className="text-xs font-black text-slate-900 truncate flex items-center gap-1.5">
+                    <span>{selectedMember.name}</span>
+                    {isSelf && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                        You
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-500 truncate">{selectedMember.email}</div>
                 </div>
                 <RoleBadge role={selectedMember.role} size="xs" />
               </div>
-            )}
+            ) : null}
+
+            {/* Quick dropdown to reassign or credit a different team member */}
+            <div className="pt-1 flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={() => setShowReassign(!showReassign)}
+                className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer"
+              >
+                <span>{showReassign ? 'Hide team directory' : 'Change staff attribution'}</span>
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform ${showReassign ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {showReassign && teamMembers.length > 0 && (
+                <select
+                  disabled={disabled}
+                  value={effectiveUserId ? String(effectiveUserId) : ''}
+                  onChange={e =>
+                    onChange({
+                      sourceType: 'team_member',
+                      sourceDetail: sourceDetail || 'Sales Rep Outreach',
+                      userId: e.target.value ? Number(e.target.value) : null,
+                    })
+                  }
+                  className="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-400 font-medium text-slate-800"
+                >
+                  {teamMembers.map(member => (
+                    <option key={member.id} value={member.id}>
+                      {member.name} {currentUser?.id === member.id ? '(You)' : `(${member.role.replace('_', ' ')})`}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
 
-          {/* Acquisition Detail */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Acquisition Method</label>
+          {/* Acquisition Method */}
+          <div className="pt-2 border-t border-slate-200/80">
+            <label className="block text-[11px] font-bold text-slate-700 mb-1.5">Acquisition Method</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {TEAM_PRESETS.map(preset => (
                 <button
@@ -234,7 +311,7 @@ export default function SourceSelector({
                     onChange({
                       sourceType: 'team_member',
                       sourceDetail: preset,
-                      userId: userId ? Number(userId) : null,
+                      userId: effectiveUserId ? Number(effectiveUserId) : null,
                     })
                   }
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
@@ -255,7 +332,7 @@ export default function SourceSelector({
                 onChange({
                   sourceType: 'team_member',
                   sourceDetail: e.target.value,
-                  userId: userId ? Number(userId) : null,
+                  userId: effectiveUserId ? Number(effectiveUserId) : null,
                 })
               }
               placeholder="Detail (e.g. Canvassed neighborhood, Neighbor referral)"

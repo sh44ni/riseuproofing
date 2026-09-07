@@ -35,6 +35,25 @@ export async function GET(
 
   const lead = rows[0];
 
+  // Automatic Website Lead Recognition:
+  // If created_by_user_id is not present or came via public forms, automatically recognize as website lead
+  const isTeam = Boolean(lead.created_by_user_id || lead.created_by_name);
+  lead.source_type = isTeam ? 'team_member' : 'website';
+
+  if (!lead.lead_source_detail) {
+    if (lead.source_type === 'website') {
+      if (lead.form_type === 'contact') lead.lead_source_detail = 'Website Contact Form';
+      else if (lead.form_type === 'storm_promo' || lead.lead_source === 'storm_promo_popup') lead.lead_source_detail = 'Storm Season Alert';
+      else if (lead.form_type === 'estimate' || lead.form_type === 'estimator_full') lead.lead_source_detail = 'Website Estimate Request';
+      else if (lead.form_type === 'calculator') lead.lead_source_detail = 'Cost Calculator Inbound';
+      else if (lead.lead_source === 'google_ads') lead.lead_source_detail = 'Google Ads Search';
+      else if (lead.lead_source === 'yelp') lead.lead_source_detail = 'Yelp Directory';
+      else lead.lead_source_detail = 'Website Inbound';
+    } else {
+      lead.lead_source_detail = 'Sales Rep Outreach';
+    }
+  }
+
   // Auto-calculate score if not persisted
   if (!lead.lead_score || lead.lead_score === 0) {
     const scored = calculateLeadScore({

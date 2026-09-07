@@ -55,7 +55,19 @@ export async function POST(req: NextRequest) {
       sourcePage = referer;
     }
 
-    const detail = formType === 'estimator_full' ? 'Instant Roof Estimator' : 'Website Free Estimate';
+    let detail = 'Website Free Estimate';
+    if (formType === 'estimator_full' || formType === 'calculator') {
+      detail = 'Instant Estimator';
+    } else if (formType === 'storm_promo' || leadSource === 'storm_promo_popup') {
+      detail = 'Storm Season Alert';
+    } else if (sourcePage && sourcePage.includes('/service-area/')) {
+      const citySlug = sourcePage.replace('/service-area/', '').replace(/\/$/, '');
+      detail = `Website Landing (${citySlug})`;
+    } else if (sourcePage && sourcePage.includes('/services/')) {
+      const serviceSlug = sourcePage.replace('/services/', '').replace(/\/$/, '');
+      detail = `Website Service (${serviceSlug})`;
+    }
+
     let clientId: number | null = null;
     try {
       const { findOrCreateClient } = await import('@/lib/crm-clients');

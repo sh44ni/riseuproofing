@@ -111,9 +111,18 @@ export async function GET(req: NextRequest) {
     totalLtv: parseFloat(summaryRows[0]?.total_ltv || '0'),
   };
 
+  const enrichedClients = clients.map(c => {
+    const isTeam = Boolean(c.acquired_by_user_id || c.acquired_by_name);
+    return {
+      ...c,
+      source_type: isTeam ? 'team_member' : 'website',
+      lead_source_detail: c.lead_source_detail || (isTeam ? 'Sales Rep Outreach' : 'Website Inbound'),
+    };
+  });
+
   return NextResponse.json({
     ok: true,
-    clients,
+    clients: enrichedClients,
     total,
     page,
     limit,
