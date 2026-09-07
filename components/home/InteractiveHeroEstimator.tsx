@@ -1,92 +1,141 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { Icon, type IconName } from '@/components/shared/Icon';
 import { cn, PHONE_HREF, PHONE_NUMBER } from '@/lib/utils';
+import { calculateEstimate, type EstimatorService, type EstimatorPricingRule } from '@/lib/estimator';
 
 type ServiceId = 'residential' | 'repair' | 'commercial' | 'solar';
-type SizeId = 'small' | 'medium' | 'large';
 
-interface PricingTier {
-  range: string;
-  monthly: string;
-}
-
-const SERVICE_OPTIONS: {
-  id: ServiceId;
-  label: string;
-  shortLabel: string;
-  iconName: IconName;
-  badge: string;
-  iconBgLight: string;
-  iconBgDark: string;
-  pricing: Record<SizeId, PricingTier>;
-}[] = [
+// Initial fallback values match Phase 0 lossless seed verbatim
+const INITIAL_SERVICES: EstimatorService[] = [
   {
-    id: 'residential',
-    label: 'Tile / Shingle Roof',
+    id: 1,
+    slug: 'residential',
+    name: 'Tile / Shingle Roof',
     shortLabel: 'Tile / Shingle',
-    iconName: 'home',
-    badge: 'Popular',
-    iconBgLight: 'bg-sky-50 text-sky-600 border border-sky-100',
-    iconBgDark: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
+    iconKey: 'home',
+    badgeLabel: 'Popular',
+    sortOrder: 1,
+    isActive: true,
     pricing: {
-      small: { range: '$7,500 – $11,000', monthly: '$189/mo' },
-      medium: { range: '$11,500 – $18,000', monthly: '$299/mo' },
-      large: { range: '$18,500 – $28,000+', monthly: '$449/mo' },
+      pricePerSqftLow: 4.00,
+      pricePerSqftHigh: 6.20,
+      baseFeeLow: 500,
+      baseFeeHigh: 950,
+      minSqft: 800,
+      maxSqft: 8000,
+      aprAvailable: true,
+      financingApr: 0,
+      financingTermMonths: 60,
     },
+    presets: [
+      { id: 1, label: '< 2,000 sq ft', sqftValue: 1750, sortOrder: 1 },
+      { id: 2, label: '2,000 – 3,500 sq ft', sqftValue: 2750, sortOrder: 2 },
+      { id: 3, label: '3,500+ sq ft', sqftValue: 4250, sortOrder: 3 },
+    ],
   },
   {
-    id: 'repair',
-    label: 'Leak & Tile Repair',
+    id: 2,
+    slug: 'repair',
+    name: 'Leak & Tile Repair',
     shortLabel: 'Leak & Repair',
-    iconName: 'wrench',
-    badge: 'Same-Day',
-    iconBgLight: 'bg-amber-50 text-amber-600 border border-amber-100',
-    iconBgDark: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+    iconKey: 'wrench',
+    badgeLabel: 'Same-Day',
+    sortOrder: 2,
+    isActive: true,
     pricing: {
-      small: { range: '$650 – $1,400', monthly: '$79/mo' },
-      medium: { range: '$1,200 – $2,800', monthly: '$149/mo' },
-      large: { range: '$2,500 – $4,800', monthly: '$219/mo' },
+      pricePerSqftLow: 0.40,
+      pricePerSqftHigh: 0.80,
+      baseFeeLow: 100,
+      baseFeeHigh: 600,
+      minSqft: 500,
+      maxSqft: 8000,
+      aprAvailable: true,
+      financingApr: 0,
+      financingTermMonths: 18,
     },
+    presets: [
+      { id: 1, label: '< 2,000 sq ft', sqftValue: 1750, sortOrder: 1 },
+      { id: 2, label: '2,000 – 3,500 sq ft', sqftValue: 2750, sortOrder: 2 },
+      { id: 3, label: '3,500+ sq ft', sqftValue: 4250, sortOrder: 3 },
+    ],
   },
   {
-    id: 'commercial',
-    label: 'Commercial Flat Roof',
+    id: 3,
+    slug: 'commercial',
+    name: 'Commercial Flat Roof',
     shortLabel: 'Commercial Flat',
-    iconName: 'building',
-    badge: 'TPO / BUR',
-    iconBgLight: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
-    iconBgDark: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+    iconKey: 'building',
+    badgeLabel: 'TPO / BUR',
+    sortOrder: 3,
+    isActive: true,
     pricing: {
-      small: { range: '$9,000 – $15,000', monthly: '$349/mo' },
-      medium: { range: '$16,000 – $26,000', monthly: '$499/mo' },
-      large: { range: '$28,000 – $45,000+', monthly: '$799/mo' },
+      pricePerSqftLow: 5.00,
+      pricePerSqftHigh: 8.00,
+      baseFeeLow: 2250,
+      baseFeeHigh: 4000,
+      minSqft: 1000,
+      maxSqft: 15000,
+      aprAvailable: true,
+      financingApr: 0,
+      financingTermMonths: 60,
     },
+    presets: [
+      { id: 1, label: '< 2,000 sq ft', sqftValue: 1750, sortOrder: 1 },
+      { id: 2, label: '2,000 – 3,500 sq ft', sqftValue: 2750, sortOrder: 2 },
+      { id: 3, label: '3,500+ sq ft', sqftValue: 4250, sortOrder: 3 },
+    ],
   },
   {
-    id: 'solar',
-    label: 'Solar + Roofing',
+    id: 4,
+    slug: 'solar',
+    name: 'Solar + Roofing',
     shortLabel: 'Solar + Roof',
-    iconName: 'sun',
-    badge: 'Save 30%',
-    iconBgLight: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
-    iconBgDark: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+    iconKey: 'sun',
+    badgeLabel: 'Save 30%',
+    sortOrder: 4,
+    isActive: true,
     pricing: {
-      small: { range: '$14,000 – $21,000', monthly: '$149/mo' },
-      medium: { range: '$22,000 – $32,000', monthly: '$199/mo' },
-      large: { range: '$34,000 – $48,000', monthly: '$299/mo' },
+      pricePerSqftLow: 7.00,
+      pricePerSqftHigh: 10.00,
+      baseFeeLow: 2750,
+      baseFeeHigh: 4500,
+      minSqft: 800,
+      maxSqft: 8000,
+      aprAvailable: true,
+      financingApr: 0,
+      financingTermMonths: 120,
     },
+    presets: [
+      { id: 1, label: '< 2,000 sq ft', sqftValue: 1750, sortOrder: 1 },
+      { id: 2, label: '2,000 – 3,500 sq ft', sqftValue: 2750, sortOrder: 2 },
+      { id: 3, label: '3,500+ sq ft', sqftValue: 4250, sortOrder: 3 },
+    ],
   },
 ];
 
-const ROOF_SIZES: { id: SizeId; label: string; sqft: string }[] = [
-  { id: 'small', label: '< 2,000 sq ft', sqft: 'Small Home' },
-  { id: 'medium', label: '2,000 – 3,500 sq ft', sqft: 'Avg Home' },
-  { id: 'large', label: '3,500+ sq ft', sqft: 'Large Estate' },
-];
+const SERVICE_STYLING: Record<string, { light: string; dark: string }> = {
+  residential: {
+    light: 'bg-sky-50 text-sky-600 border border-sky-100',
+    dark: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
+  },
+  repair: {
+    light: 'bg-amber-50 text-amber-600 border border-amber-100',
+    dark: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+  },
+  commercial: {
+    light: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+    dark: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+  },
+  solar: {
+    light: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+    dark: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+  },
+};
 
+// ── Protected Trust Badges (Non-negotiable) ──────────────────────────────────
 const TRUST_BADGES = [
   {
     title: 'Licensed & Insured',
@@ -110,10 +159,49 @@ const TRUST_BADGES = [
   },
 ];
 
+/**
+ * High-performance smooth numeric tween hook for scroll-stopping live prices
+ */
+function useAnimatedNumber(target: number, duration = 280): number {
+  const [current, setCurrent] = useState(target);
+  const targetRef = useRef(target);
+  targetRef.current = target;
+
+  useEffect(() => {
+    let start = current;
+    let startTime: number | null = null;
+    let animFrame: number;
+
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Cubic ease-out
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const nextVal = Math.round(start + (targetRef.current - start) * ease);
+      setCurrent(nextVal);
+
+      if (progress < 1) {
+        animFrame = requestAnimationFrame(step);
+      }
+    };
+
+    animFrame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animFrame);
+  }, [target, duration]);
+
+  return current;
+}
+
 export function InteractiveHeroEstimator() {
+  const [servicesData, setServicesData] = useState<EstimatorService[]>(INITIAL_SERVICES);
   const [step, setStep] = useState<1 | 2>(1);
-  const [service, setService] = useState<ServiceId>('residential');
-  const [size, setSize] = useState<SizeId>('medium');
+  const [serviceSlug, setServiceSlug] = useState<string>('residential');
+  const [sqft, setSqft] = useState<number>(2750);
+  const [activePresetIndex, setActivePresetIndex] = useState<number>(1); // default medium
+  const [isCustomSlider, setIsCustomSlider] = useState<boolean>(false);
+  const [isHighlightPulsing, setIsHighlightPulsing] = useState<boolean>(false);
+
   const [contactData, setContactData] = useState({
     name: '',
     phone: '',
@@ -123,8 +211,103 @@ export function InteractiveHeroEstimator() {
   const [submitting, setSubmitting] = useState(false);
   const isLight = true;
 
-  const selectedServiceObj = SERVICE_OPTIONS.find((s) => s.id === service) || SERVICE_OPTIONS[0];
-  const currentPricing = selectedServiceObj.pricing[size];
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hydrate with latest dynamic config from DB (cached with ISR)
+  useEffect(() => {
+    fetch('/api/estimator/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok && Array.isArray(data.services) && data.services.length > 0) {
+          setServicesData(data.services);
+        }
+      })
+      .catch(() => {
+        // Fallback already pre-hydrated
+      });
+  }, []);
+
+  const activeService = useMemo(() => {
+    return servicesData.find((s) => s.slug === serviceSlug) || servicesData[0];
+  }, [servicesData, serviceSlug]);
+
+  const presets = useMemo(() => {
+    return activeService.presets && activeService.presets.length > 0
+      ? activeService.presets
+      : INITIAL_SERVICES[0].presets;
+  }, [activeService]);
+
+  // Instant zero-lag client calculation
+  const rawEstimate = useMemo(() => {
+    return calculateEstimate(activeService.pricing, sqft);
+  }, [activeService.pricing, sqft]);
+
+  // Animated numbers for scroll-stopping UX
+  const animatedLow = useAnimatedNumber(rawEstimate.low);
+  const animatedHigh = useAnimatedNumber(rawEstimate.high);
+  const animatedMonthly = useAnimatedNumber(rawEstimate.monthlyEstimate);
+
+  // Trigger brief highlight pulse on estimate change
+  const triggerPulse = useCallback(() => {
+    setIsHighlightPulsing(true);
+    const t = setTimeout(() => setIsHighlightPulsing(false), 300);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Debounced server sync & lead telemetry logging
+  const syncWithServer = useCallback((slug: string, currentSqft: number, source: 'preset' | 'custom') => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      fetch('/api/estimator/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: slug,
+          sqft: currentSqft,
+          source,
+        }),
+      }).catch(() => {});
+    }, 250);
+  }, []);
+
+  const handleSelectService = (slug: string) => {
+    setServiceSlug(slug);
+    triggerPulse();
+    const service = servicesData.find((s) => s.slug === slug);
+    if (service) {
+      // Keep sqft within bounds of new service
+      const clamped = Math.min(Math.max(sqft, service.pricing.minSqft), service.pricing.maxSqft);
+      setSqft(clamped);
+      syncWithServer(slug, clamped, isCustomSlider ? 'custom' : 'preset');
+    }
+  };
+
+  const handleSelectPreset = (preset: { sqftValue: number }, index: number) => {
+    setIsCustomSlider(false);
+    setActivePresetIndex(index);
+    setSqft(preset.sqftValue);
+    triggerPulse();
+    syncWithServer(serviceSlug, preset.sqftValue, 'preset');
+  };
+
+  const handleSliderChange = (newVal: number) => {
+    setIsCustomSlider(true);
+    // Tactile snap points near preset breakpoints (±60 sqft)
+    let snappedVal = newVal;
+    for (let i = 0; i < presets.length; i++) {
+      if (Math.abs(newVal - presets[i].sqftValue) < 65) {
+        snappedVal = presets[i].sqftValue;
+        setActivePresetIndex(i);
+        break;
+      } else {
+        setActivePresetIndex(-1);
+      }
+    }
+
+    setSqft(snappedVal);
+    triggerPulse();
+    syncWithServer(serviceSlug, snappedVal, 'custom');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +321,8 @@ export function InteractiveHeroEstimator() {
           fullName: contactData.name,
           phone: contactData.phone,
           address: contactData.address,
-          serviceType: service,
+          serviceType: activeService.name,
+          notes: `Dynamic Ballpark: $${rawEstimate.low.toLocaleString()} – $${rawEstimate.high.toLocaleString()} (${sqft} sq ft, ${isCustomSlider ? 'custom slider' : 'preset'})`,
         }),
       });
     } catch {
@@ -169,7 +353,7 @@ export function InteractiveHeroEstimator() {
           Thank you, {contactData.name}!
         </h3>
         <p className={cn('text-xs sm:text-sm leading-relaxed mb-5 max-w-[540px] mx-auto', isLight ? 'text-[#5D7287]' : 'text-white/80')}>
-          Your estimate request for <span className="font-bold text-brand-blue">{selectedServiceObj.label}</span> has been received. A licensed San Diego specialist will review your property satellite data and reach out within 15 minutes.
+          Your estimate request for <span className="font-bold text-brand-blue">{activeService.name}</span> ({sqft.toLocaleString()} sq ft) has been received. A licensed San Diego specialist will review your property satellite data and reach out within 15 minutes.
         </p>
 
         <div
@@ -218,7 +402,7 @@ export function InteractiveHeroEstimator() {
     >
       {/* Main Interactive Container */}
       <div className="p-5 sm:p-7">
-        {/* Header Bar */}
+        {/* Header Bar — Preserved exactly as required */}
         <div
           className={cn(
             'flex items-center justify-between gap-3 mb-5 pb-4 border-b',
@@ -273,10 +457,10 @@ export function InteractiveHeroEstimator() {
           </div>
         </div>
 
-        {/* STEP 1: SERVICE & SIZE WITH SOFT ESTIMATE */}
+        {/* STEP 1: SERVICE & DYNAMIC SIZE WITH LIVE SCROLL-STOPPER FORMULA */}
         {step === 1 && (
           <div className="space-y-5 animate-in fade-in duration-150">
-            {/* 1. Service Selector */}
+            {/* 1. Dynamic Service Selector */}
             <div>
               <div className="flex items-center justify-between mb-2.5">
                 <span
@@ -288,20 +472,25 @@ export function InteractiveHeroEstimator() {
                   1. Select Roofing Service
                 </span>
                 <span className="text-xs text-brand-blue font-bold">
-                  {selectedServiceObj.label}
+                  {activeService.name}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                {SERVICE_OPTIONS.map((item) => {
-                  const isSelected = service === item.id;
+                {servicesData.map((item) => {
+                  const isSelected = serviceSlug === item.slug;
+                  const styling = SERVICE_STYLING[item.slug] || {
+                    light: 'bg-sky-50 text-sky-600 border border-sky-100',
+                    dark: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
+                  };
+
                   return (
                     <button
                       type="button"
-                      key={item.id}
-                      onClick={() => setService(item.id)}
+                      key={item.slug}
+                      onClick={() => handleSelectService(item.slug)}
                       className={cn(
-                        'flex flex-col items-center justify-center p-3 sm:p-3.5 rounded-2xl cursor-pointer text-center group transition-all relative border',
+                        'flex flex-col items-center justify-center p-3 sm:p-3.5 rounded-2xl cursor-pointer text-center group transition-all relative border active:scale-95 duration-150',
                         isSelected
                           ? isLight
                             ? 'bg-sky-50/70 border-2 border-brand-blue text-[#0B1E33] shadow-xs'
@@ -312,18 +501,20 @@ export function InteractiveHeroEstimator() {
                       )}
                     >
                       {/* Top Badge */}
-                      <span
-                        className={cn(
-                          'absolute top-2 right-2 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md transition-colors',
-                          isSelected
-                            ? 'bg-brand-blue text-white'
-                            : isLight
-                            ? 'bg-slate-100 text-[#64748B]'
-                            : 'bg-white/10 text-white/60'
-                        )}
-                      >
-                        {item.badge}
-                      </span>
+                      {item.badgeLabel && (
+                        <span
+                          className={cn(
+                            'absolute top-2 right-2 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md transition-colors',
+                            isSelected
+                              ? 'bg-brand-blue text-white'
+                              : isLight
+                              ? 'bg-slate-100 text-[#64748B]'
+                              : 'bg-white/10 text-white/60'
+                          )}
+                        >
+                          {item.badgeLabel}
+                        </span>
+                      )}
 
                       {/* Icon Container */}
                       <div
@@ -332,15 +523,15 @@ export function InteractiveHeroEstimator() {
                           isSelected
                             ? 'bg-brand-blue text-white'
                             : isLight
-                            ? item.iconBgLight
-                            : item.iconBgDark
+                            ? styling.light
+                            : styling.dark
                         )}
                       >
-                        <Icon name={item.iconName} className="w-4 h-4" />
+                        <Icon name={item.iconKey as IconName} className="w-4 h-4" />
                       </div>
 
                       <span className={cn('text-xs sm:text-[13px] font-bold leading-snug', isLight ? 'text-[#0B1E33]' : 'text-white')}>
-                        {item.label}
+                        {item.name}
                       </span>
                     </button>
                   );
@@ -348,7 +539,7 @@ export function InteractiveHeroEstimator() {
               </div>
             </div>
 
-            {/* 2. Property Size Selector */}
+            {/* 2. Property Size: Quick Presets + Tactile Slider */}
             <div>
               <div className="flex items-center justify-between mb-2.5">
                 <span
@@ -359,41 +550,113 @@ export function InteractiveHeroEstimator() {
                 >
                   2. Estimated Property Size
                 </span>
-                <span className={cn('text-xs font-medium', isLight ? 'text-[#64748B]' : 'text-white/65')}>
-                  {selectedServiceObj.shortLabel}
+                <span className={cn('text-xs font-extrabold text-brand-blue flex items-center gap-1')}>
+                  <span className="font-mono">{sqft.toLocaleString()}</span> sq ft
+                  {isCustomSlider && <span className="text-[10px] font-normal text-slate-500">(Custom)</span>}
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5">
-                {ROOF_SIZES.map((sz) => {
-                  const isSelected = size === sz.id;
+              {/* Presets + Custom Button Row */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-3">
+                {presets.map((sz, idx) => {
+                  const isSelected = !isCustomSlider && activePresetIndex === idx;
                   return (
                     <button
                       type="button"
-                      key={sz.id}
-                      onClick={() => setSize(sz.id)}
+                      key={sz.id || idx}
+                      onClick={() => handleSelectPreset(sz, idx)}
                       className={cn(
-                        'py-2.5 px-3 rounded-xl text-center cursor-pointer transition-all border text-xs sm:text-sm',
+                        'py-2.5 px-2 rounded-xl text-center cursor-pointer transition-all border text-xs sm:text-sm active:scale-95 duration-150',
                         isSelected
-                          ? isLight
-                            ? 'bg-brand-blue text-white border-brand-blue font-bold shadow-xs'
-                            : 'bg-brand-blue text-white border-brand-blue font-bold shadow-xs'
+                          ? 'bg-brand-blue text-white border-brand-blue font-bold shadow-xs'
                           : isLight
                           ? 'bg-white hover:bg-slate-50/80 border border-slate-200/80 text-[#334155] hover:text-[#0B1E33] shadow-2xs font-semibold'
                           : 'bg-white/10 hover:bg-white/15 border-white/15 text-white font-semibold'
                       )}
                     >
-                      <span className="block leading-tight">{sz.label}</span>
+                      <span className="block leading-tight truncate">{sz.label}</span>
                     </button>
                   );
                 })}
+
+                {/* 4th Option: Custom Slider Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomSlider(true);
+                    triggerPulse();
+                  }}
+                  className={cn(
+                    'py-2.5 px-2 rounded-xl text-center cursor-pointer transition-all border text-xs sm:text-sm col-span-3 sm:col-span-1 active:scale-95 duration-150',
+                    isCustomSlider
+                      ? 'bg-brand-blue text-white border-brand-blue font-bold shadow-xs'
+                      : isLight
+                      ? 'bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-brand-blue font-bold shadow-2xs'
+                      : 'bg-white/10 hover:bg-white/15 border-white/15 text-sky-300 font-bold'
+                  )}
+                >
+                  <span className="block leading-tight">
+                    Custom Slider ⚙️
+                  </span>
+                </button>
+              </div>
+
+              {/* Tactile Slider Console with Snap Ticks (always accessible & thumb-friendly) */}
+              <div className="bg-slate-50/90 rounded-2xl p-3 sm:p-4 border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                  <span>Fine-tune roof footprint:</span>
+                  <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-[#0B1E33]">
+                    <span>{sqft.toLocaleString()}</span>
+                    <span className="text-[10px] text-slate-400 font-normal">sq ft</span>
+                  </div>
+                </div>
+
+                <div className="relative pt-1 pb-1">
+                  {/* Visual Preset Tick Markers */}
+                  <div className="absolute inset-x-0 top-3 pointer-events-none flex justify-between px-1">
+                    {presets.map((p, idx) => {
+                      const min = activeService.pricing.minSqft || 500;
+                      const max = activeService.pricing.maxSqft || 10000;
+                      const pct = Math.min(Math.max(((p.sqftValue - min) / (max - min)) * 100, 2), 98);
+                      return (
+                        <div
+                          key={idx}
+                          style={{ left: `${pct}%` }}
+                          className="absolute w-1.5 h-1.5 -ml-0.75 bg-slate-400 rounded-full"
+                          title={p.label}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <input
+                    type="range"
+                    min={activeService.pricing.minSqft || 800}
+                    max={activeService.pricing.maxSqft || 8000}
+                    step={50}
+                    value={sqft}
+                    onChange={(e) => handleSliderChange(parseInt(e.target.value, 10))}
+                    className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-blue touch-pan-y"
+                    style={{ minHeight: '44px' }}
+                    aria-label="Roof square footage slider"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                  <span>{(activeService.pricing.minSqft || 800).toLocaleString()} sq ft</span>
+                  <span className="text-slate-500 font-semibold">Snap points at common presets</span>
+                  <span>{(activeService.pricing.maxSqft || 8000).toLocaleString()} sq ft</span>
+                </div>
               </div>
             </div>
 
-            {/* Soft, Seamless Architectural Estimate Console */}
+            {/* Soft, Seamless Architectural Estimate Console with Animated Counter */}
             <div
               className={cn(
-                'rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border transition-all',
+                'rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border transition-all duration-300',
+                isHighlightPulsing
+                  ? 'ring-2 ring-brand-blue/30 border-brand-blue/50 scale-[1.005]'
+                  : '',
                 isLight
                   ? 'bg-slate-50/90 border-slate-200/80 text-[#0B1E33]'
                   : 'bg-white/5 border-white/15 text-white'
@@ -409,26 +672,28 @@ export function InteractiveHeroEstimator() {
                   >
                     Estimated Ballpark Range
                   </span>
-                  <span
-                    className={cn(
-                      'text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border',
-                      isLight
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-                    )}
-                  >
-                    0% APR Available
-                  </span>
+                  {activeService.pricing.aprAvailable && (
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border',
+                        isLight
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                      )}
+                    >
+                      0% APR Available
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-baseline gap-2.5 mt-0.5">
                   <span className={cn('text-2xl sm:text-3xl font-extrabold tracking-tight', isLight ? 'text-[#0B1E33]' : 'text-white')}>
-                    {currentPricing.range}
+                    ${animatedLow.toLocaleString()} – ${animatedHigh.toLocaleString()}
                   </span>
                   <span className={cn('text-xs sm:text-sm font-medium', isLight ? 'text-[#64748B]' : 'text-white/75')}>
                     (or as low as{' '}
                     <strong className={cn('font-bold', isLight ? 'text-amber-700' : 'text-amber-300')}>
-                      {currentPricing.monthly}
+                      ${animatedMonthly}/mo
                     </strong>
                     )
                   </span>
@@ -438,7 +703,7 @@ export function InteractiveHeroEstimator() {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-md shadow-brand-blue/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+                className="bg-brand-blue hover:bg-[#1C88DD] text-white font-bold text-xs sm:text-sm uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-md shadow-brand-blue/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer flex-shrink-0 active:scale-95"
               >
                 <span>Get Itemized Quote</span>
                 <Icon name="arrow-right" className="w-4 h-4" />
@@ -459,9 +724,13 @@ export function InteractiveHeroEstimator() {
               )}
             >
               <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <span className={cn('font-bold', isLight ? 'text-[#0B1E33]' : 'text-white')}>{selectedServiceObj.label}</span>
+                <span className={cn('font-bold', isLight ? 'text-[#0B1E33]' : 'text-white')}>
+                  {activeService.name} ({sqft.toLocaleString()} sq ft)
+                </span>
                 <span className="opacity-40">•</span>
-                <span className="text-brand-blue font-bold">{currentPricing.range}</span>
+                <span className="text-brand-blue font-bold">
+                  ${rawEstimate.low.toLocaleString()} – ${rawEstimate.high.toLocaleString()}
+                </span>
               </div>
               <button
                 type="button"
@@ -573,7 +842,7 @@ export function InteractiveHeroEstimator() {
         )}
       </div>
 
-      {/* Connected Trust Shelf at bottom */}
+      {/* Connected Trust Shelf at bottom — 100% untouched non-negotiable copy */}
       <div
         className={cn(
           'border-t px-4 sm:px-7 py-3.5',
