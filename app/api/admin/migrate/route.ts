@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getCurrentUser } from '@/lib/admin-auth';
 import crypto from 'crypto';
@@ -423,6 +423,53 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_estimates_access_token ON estimates (access_token)`,
   `CREATE INDEX IF NOT EXISTS idx_inspections_access_token ON inspections (access_token)`,
   `CREATE INDEX IF NOT EXISTS idx_warranties_access_token ON warranties (access_token)`,
+
+  // ── Dynamic Project Estimator Tables ────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS estimator_services (
+    id           SERIAL PRIMARY KEY,
+    slug         TEXT UNIQUE NOT NULL,
+    name         TEXT NOT NULL,
+    short_label  TEXT NOT NULL,
+    icon_key     TEXT NOT NULL,
+    badge_label  TEXT,
+    sort_order   INT NOT NULL DEFAULT 0,
+    is_active    BOOLEAN NOT NULL DEFAULT true,
+    created_at   TIMESTAMPTZ DEFAULT NOW()
+  )`,
+  `CREATE TABLE IF NOT EXISTS estimator_pricing_rules (
+    id                    SERIAL PRIMARY KEY,
+    service_id            INT NOT NULL REFERENCES estimator_services(id) ON DELETE CASCADE,
+    price_per_sqft_low    NUMERIC(10,2) NOT NULL,
+    price_per_sqft_high   NUMERIC(10,2) NOT NULL,
+    base_fee_low          NUMERIC(10,2) NOT NULL DEFAULT 0,
+    base_fee_high         NUMERIC(10,2) NOT NULL DEFAULT 0,
+    min_sqft              INT DEFAULT 500,
+    max_sqft              INT DEFAULT 12000,
+    apr_available         BOOLEAN NOT NULL DEFAULT true,
+    financing_apr         NUMERIC(5,2) DEFAULT 0,
+    financing_term_months INT DEFAULT 60,
+    updated_at            TIMESTAMPTZ DEFAULT NOW(),
+    updated_by            TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS estimator_size_presets (
+    id          SERIAL PRIMARY KEY,
+    service_id  INT REFERENCES estimator_services(id) ON DELETE CASCADE,
+    label       TEXT NOT NULL,
+    sqft_value  INT NOT NULL,
+    sort_order  INT NOT NULL DEFAULT 0
+  )`,
+  `CREATE TABLE IF NOT EXISTS estimator_leads (
+    id             BIGSERIAL PRIMARY KEY,
+    service_id     INT REFERENCES estimator_services(id) ON DELETE SET NULL,
+    sqft_entered   INT NOT NULL,
+    estimate_low   NUMERIC(10,2) NOT NULL,
+    estimate_high  NUMERIC(10,2) NOT NULL,
+    source         TEXT NOT NULL CHECK (source IN ('preset', 'custom')),
+    session_id     TEXT,
+    created_at     TIMESTAMPTZ DEFAULT NOW()
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_estimator_leads_created ON estimator_leads (created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_estimator_pricing_service ON estimator_pricing_rules (service_id)`,
 ];
 
 export async function POST(req: NextRequest) {
