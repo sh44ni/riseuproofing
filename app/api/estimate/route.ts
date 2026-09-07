@@ -55,11 +55,29 @@ export async function POST(req: NextRequest) {
       sourcePage = referer;
     }
 
+    let clientId: number | null = null;
+    try {
+      const { findOrCreateClient } = await import('@/lib/crm-clients');
+      const client = await findOrCreateClient({
+        fullName,
+        phone,
+        email: email ?? null,
+        address: address ?? null,
+        city: city ?? null,
+        zip: zip ?? null,
+        leadSource: leadSource || 'website_estimate',
+        notes: notes ?? null,
+      });
+      clientId = client.id;
+    } catch (clientErr) {
+      console.error('[api/estimate] Failed to auto-link client:', clientErr);
+    }
+
     const result = await query<{ id: string }>(
       `INSERT INTO leads (
-        form_type, full_name, phone, email, address, city, zip, service_type, notes, source_page, status, priority, lead_score, lead_source
+        form_type, full_name, phone, email, address, city, zip, service_type, notes, source_page, status, priority, lead_score, lead_source, client_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'new', $11, $12, $13)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'new', $11, $12, $13, $14)
       RETURNING id`,
       [
         formType,
@@ -75,6 +93,7 @@ export async function POST(req: NextRequest) {
         priority,
         leadScore,
         leadSource,
+        clientId,
       ]
     );
 
@@ -83,10 +102,11 @@ export async function POST(req: NextRequest) {
     if (leadId) {
       // Log lead creation activity to customer timeline
       await query(
-        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-         VALUES ('lead', $1, 'form_submission', $2, $3, 'Website Visitor')`,
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('lead', $1, $2, 'form_submission', $3, $4, 'Website Visitor')`,
         [
           leadId,
+          clientId,
           formType === 'storm_promo' ? '⚡ Storm Season Alert $1,000 Off Claimed' : 'New Estimate Request',
           notes || 'Inquiry submitted through website portal',
         ]

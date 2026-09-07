@@ -33,6 +33,7 @@ import RoleBadge, { RoleIcon } from '@/components/admin/shared/RoleBadge';
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/leads', label: 'Leads', icon: Users },
+  { href: '/admin/clients', label: 'Clients 360', icon: UserCheck },
   { href: '/admin/calendar', label: 'Calendar', icon: Calendar },
   { href: '/admin/inspections', label: 'Inspections', icon: ClipboardCheck },
   { href: '/admin/estimates', label: 'Estimates', icon: FileText },

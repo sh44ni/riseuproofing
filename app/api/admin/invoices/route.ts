@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   const rows = await query<any>(
-    `SELECT i.*, j.job_number, j.customer_name, j.customer_phone, j.address, j.city, j.lead_id
+    `SELECT i.*, j.job_number, j.customer_name, j.customer_phone, j.address, j.city, j.lead_id, COALESCE(i.client_id, j.client_id) as client_id
      FROM invoices i
      LEFT JOIN jobs j ON i.job_id = j.id
      ${where}

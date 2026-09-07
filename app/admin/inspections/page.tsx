@@ -36,6 +36,7 @@ interface InspectionItem {
   city?: string;
   service_type?: string;
   job_number?: string;
+  client_id?: number;
 }
 
 interface SummaryStats {
@@ -251,7 +252,16 @@ export default function InspectionsPage() {
                         {insp.inspection_number}
                       </span>
                       <h3 className="text-base font-black text-[#0B1E33] mt-0.5">
-                        {insp.customer_name || 'Homeowner Property'}
+                        {insp.client_id ? (
+                          <Link
+                            href={`/admin/clients/${insp.client_id}`}
+                            className="hover:text-[#0284C7] underline-offset-2 hover:underline transition-colors"
+                          >
+                            {insp.customer_name || 'Homeowner Property'}
+                          </Link>
+                        ) : (
+                          <span>{insp.customer_name || 'Homeowner Property'}</span>
+                        )}
                       </h3>
                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                         <MapPin size={11} className="text-slate-400 flex-shrink-0" />

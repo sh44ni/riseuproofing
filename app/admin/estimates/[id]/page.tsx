@@ -19,6 +19,7 @@ import {
   Calendar,
   DollarSign,
   AlertCircle,
+  UserCheck,
 } from 'lucide-react';
 
 interface EstimateDetail {
@@ -54,6 +55,7 @@ interface EstimateDetail {
   signature_name?: string;
   created_at: string;
   lead_id?: number;
+  client_id?: number;
 }
 
 export default function EstimateDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -173,9 +175,20 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-[#0B1E33] mt-1">
-              {estimate.customer_name}
-            </h1>
+            <div className="flex items-center flex-wrap gap-2 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-black text-[#0B1E33]">
+                {estimate.customer_name}
+              </h1>
+              {estimate.client_id && (
+                <Link
+                  href={`/admin/clients/${estimate.client_id}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200 transition-colors"
+                >
+                  <UserCheck size={13} />
+                  <span>360° Client Profile</span>
+                </Link>
+              )}
+            </div>
             <p className="text-xs sm:text-sm text-slate-500">
               {estimate.customer_address ? `${estimate.customer_address}, ${estimate.customer_city || ''} ${estimate.customer_zip || ''}` : 'No address'}
             </p>
@@ -192,8 +205,8 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
 
-        {/* Action Bar */}
-        <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-slate-100">
+        {/* Quick Actions Bar */}
+        <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
           <button
             onClick={handleCopyShareLink}
             className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold text-xs sm:text-sm transition-all duration-300 ease-out cursor-pointer active:scale-95"
@@ -211,6 +224,16 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
             <Eye size={16} />
             <span>Open Customer Portal</span>
           </a>
+
+          {estimate.client_id && (
+            <Link
+              href={`/admin/clients/${estimate.client_id}`}
+              className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-semibold text-xs sm:text-sm transition-all duration-300 ease-out"
+            >
+              <UserCheck size={16} />
+              <span>360° Client Profile</span>
+            </Link>
+          )}
 
           {estimate.status === 'draft' && (
             <button

@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Plus, UserPlus, PhoneCall, CheckSquare, FileText } from 'lucide-react';
+import { Plus, UserPlus, PhoneCall, CheckSquare, FileText, UserCheck } from 'lucide-react';
 
 interface FABProps {
   onAddLead?: () => void;
   onAddTask?: () => void;
   onLogCall?: () => void;
+  onAddClient?: () => void;
 }
 
 export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
@@ -72,6 +73,18 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
       router.push('/admin/leads?new=1');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('crm:open-add-lead'));
+      }
+    }
+  }
+
+  function handleAddClient() {
+    setOpen(false);
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/clients')) {
+      window.dispatchEvent(new CustomEvent('crm:open-add-client'));
+    } else {
+      router.push('/admin/clients?new=1');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('crm:open-add-client'));
       }
     }
   }
@@ -144,6 +157,20 @@ export default function FAB({ onAddLead, onAddTask, onLogCall }: FABProps) {
               </span>
               <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-[#38BDF8] via-[#2F9FE3] to-[#0284C7] text-white shadow-[0_6px_20px_rgba(47,159,227,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30 flex items-center justify-center transition-transform group-hover:scale-105">
                 <UserPlus size={18} />
+              </div>
+            </button>
+
+            {/* Add Client */}
+            <button
+              type="button"
+              onClick={handleAddClient}
+              className="flex items-center gap-2.5 group cursor-pointer apple-spring-press"
+            >
+              <span className="bg-white/90 backdrop-blur-md text-[#0B1E33] text-xs font-bold px-3 py-1.5 rounded-xl border border-white/80 shadow-[0_4px_14px_rgba(11,30,51,0.08)] group-hover:bg-white transition-colors">
+                New Client
+              </span>
+              <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-[#0B1E33] via-[#1878B8] to-[#2F9FE3] text-white shadow-[0_6px_20px_rgba(11,30,51,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30 flex items-center justify-center transition-transform group-hover:scale-105">
+                <UserCheck size={18} />
               </div>
             </button>
           </div>

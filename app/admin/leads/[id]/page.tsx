@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -70,6 +70,7 @@ interface LeadDetailData {
   created_at: string;
   assigned_to?: string;
   last_contact_at?: string;
+  client_id?: number;
 }
 
 interface TaskItem {
@@ -272,6 +273,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         </Link>
 
         <div className="flex items-center gap-2">
+          {lead.client_id && (
+            <Link
+              href={`/admin/clients/${lead.client_id}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 text-[#0284C7] hover:bg-sky-100 font-bold text-xs border border-sky-200 shadow-2xs transition-colors"
+            >
+              <UserCheck size={14} />
+              <span>360° Client Profile</span>
+            </Link>
+          )}
+
           <button
             onClick={handleDeleteLead}
             className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"

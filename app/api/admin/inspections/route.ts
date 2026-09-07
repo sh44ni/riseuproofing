@@ -29,7 +29,8 @@ export async function GET(req: NextRequest) {
     `SELECT i.*, 
             l.full_name as customer_name, l.phone as customer_phone, l.email as customer_email,
             l.address, l.zip, l.service_type,
-            j.job_number
+            j.job_number,
+            COALESCE(i.client_id, l.client_id, j.client_id) as client_id
      FROM inspections i
      LEFT JOIN leads l ON i.lead_id = l.id
      LEFT JOIN jobs j ON i.job_id = j.id

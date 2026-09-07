@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAnyPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
+import { findOrCreateClient, recalculateClientStats } from '@/lib/crm-clients';
 
 export async function POST(
   req: NextRequest,
@@ -22,6 +23,32 @@ export async function POST(
 
   const est = estRows[0];
 
+  // Resolve or link client_id
+  let clientId = est.client_id;
+  if (!clientId && est.lead_id) {
+    const lRows = await query<{ client_id: number | null }>(`SELECT client_id FROM leads WHERE id = $1`, [est.lead_id]);
+    if (lRows[0]?.client_id) {
+      clientId = lRows[0].client_id;
+    }
+  }
+  if (!clientId && (est.customer_phone || est.customer_email)) {
+    try {
+      const client = await findOrCreateClient({
+        fullName: est.customer_name,
+        phone: est.customer_phone,
+        email: est.customer_email,
+        address: est.customer_address,
+        city: est.customer_city,
+        zip: est.customer_zip,
+        leadSource: 'estimate_conversion',
+      });
+      clientId = client.id;
+      await query(`UPDATE estimates SET client_id = $1 WHERE id = $2`, [clientId, estimateId]);
+    } catch (e) {
+      console.warn('Could not auto-link client during conversion:', e);
+    }
+  }
+
   // Check if already converted
   const existingJob = await query<any>(`SELECT id, job_number FROM jobs WHERE estimate_id = $1`, [estimateId]);
   if (existingJob && existingJob.length > 0) {
@@ -38,18 +65,19 @@ export async function POST(
   const seq = String(parseInt(jobCount[0]?.count ?? '0', 10) + 1).padStart(4, '0');
   const jobNumber = `JOB-${year}-${seq}`;
 
-  // Insert Job
+  // Insert Job with client_id
   const jobRows = await query<any>(
     `INSERT INTO jobs (
-      lead_id, estimate_id, job_number, status, customer_name, customer_phone,
+      lead_id, estimate_id, client_id, job_number, status, customer_name, customer_phone,
       customer_email, address, city, zip, service_type, contract_value, notes
     ) VALUES (
-      $1, $2, $3, 'permit_pending', $4, $5,
-      $6, $7, $8, $9, $10, $11, $12
+      $1, $2, $3, $4, 'permit_pending', $5, $6,
+      $7, $8, $9, $10, $11, $12, $13
     ) RETURNING *`,
     [
       est.lead_id,
       est.id,
+      clientId,
       jobNumber,
       est.customer_name,
       est.customer_phone,
@@ -76,14 +104,28 @@ export async function POST(
     await query(`UPDATE leads SET status = 'won' WHERE id = $1`, [est.lead_id]);
 
     await query(
-      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-       VALUES ('lead', $1, 'status_change', $2, $3, 'Admin')`,
+      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
+       VALUES ('lead', $1, 'status_change', $2, $3, 'Admin', $4)`,
       [
         est.lead_id,
         `Deal Won! Converted to ${jobNumber}`,
         `Contract Value: $${Number(est.total).toLocaleString()} — Moved to Permit Pending stage`,
+        clientId,
       ]
     );
+  }
+
+  if (clientId) {
+    await query(
+      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
+       VALUES ('client', $1, 'status_change', $2, $3, 'Admin', $1)`,
+      [
+        clientId,
+        `Active Job Created: ${jobNumber}`,
+        `Contract Value: $${Number(est.total).toLocaleString()} from ${est.estimate_number}`,
+      ]
+    );
+    await recalculateClientStats(clientId);
   }
 
   return NextResponse.json({ ok: true, job });

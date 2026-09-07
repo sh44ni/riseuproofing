@@ -43,6 +43,7 @@ interface WarrantyItem {
   city?: string;
   service_type?: string;
   material_type?: string;
+  client_id?: number;
 }
 
 interface WarrantySummary {
@@ -290,7 +291,16 @@ export default function WarrantiesPage() {
                     </div>
 
                     <h3 className="text-base font-bold text-[#0B1E33] mt-1">
-                      {war.customer_name || 'Homeowner'}
+                      {war.client_id ? (
+                        <Link
+                          href={`/admin/clients/${war.client_id}`}
+                          className="hover:text-[#0284C7] underline-offset-2 hover:underline transition-colors"
+                        >
+                          {war.customer_name || 'Homeowner'}
+                        </Link>
+                      ) : (
+                        <span>{war.customer_name || 'Homeowner'}</span>
+                      )}
                     </h3>
                     <p className="text-xs text-slate-500">
                       {war.address ? `${war.address}, ${war.city || 'CA'}` : 'San Diego County'}

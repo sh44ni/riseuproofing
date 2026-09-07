@@ -45,11 +45,40 @@ export async function POST(req: NextRequest) {
       sourcePage = referer;
     }
 
-    await query(
-      `INSERT INTO leads (form_type, full_name, phone, email, subject, message, source_page, status)
-       VALUES ('contact', $1, $2, $3, $4, $5, $6, 'new')`,
-      [fullName, phone ?? null, email, subject ?? null, message, sourcePage]
+    let clientId: number | null = null;
+    try {
+      const { findOrCreateClient } = await import('@/lib/crm-clients');
+      const client = await findOrCreateClient({
+        fullName,
+        phone: phone ?? null,
+        email: email ?? null,
+        leadSource: 'website_contact',
+        notes: subject ? `Subject: ${subject}` : null,
+      });
+      clientId = client.id;
+    } catch (clientErr) {
+      console.error('[api/contact] Failed to auto-link client:', clientErr);
+    }
+
+    const insertedLead = await query<{ id: number }>(
+      `INSERT INTO leads (form_type, full_name, phone, email, subject, message, source_page, status, client_id)
+       VALUES ('contact', $1, $2, $3, $4, $5, $6, 'new', $7)
+       RETURNING id`,
+      [fullName, phone ?? null, email, subject ?? null, message, sourcePage, clientId]
     );
+
+    // Also log activity to client/lead
+    if (clientId && insertedLead.length > 0) {
+      try {
+        await query(
+          `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description)
+           VALUES ('lead', $1, $2, 'system', 'Website Contact Form Received', $3)`,
+          [insertedLead[0].id, clientId, `Subject: ${subject || 'General Inquiry'}. Message: ${message}`]
+        );
+      } catch (actErr) {
+        console.error('[api/contact] Activity log error:', actErr);
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

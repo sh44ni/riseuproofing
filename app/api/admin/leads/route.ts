@@ -149,15 +149,36 @@ export async function POST(req: NextRequest) {
       formType: 'manual',
     });
 
+    let clientId: number | null = null;
+    try {
+      const { findOrCreateClient } = await import('@/lib/crm-clients');
+      const client = await findOrCreateClient({
+        fullName,
+        phone,
+        email: email ?? null,
+        address: address ?? null,
+        zip: zip ?? null,
+        propertyType: propertyType ?? null,
+        roofType: roofType ?? null,
+        roofSqf: roofSqf ? parseInt(roofSqf, 10) : null,
+        stories: stories ? parseInt(stories, 10) : null,
+        leadSource,
+        notes: notes ?? null,
+      });
+      clientId = client.id;
+    } catch (clientErr) {
+      console.error('[api/admin/leads POST] Client link error:', clientErr);
+    }
+
     const rows = await query<any>(
       `INSERT INTO leads (
         form_type, full_name, phone, email, address, zip, service_type,
         lead_source, notes, property_type, roof_type, roof_sqf, stories,
-        lead_score, priority, status, source_page
+        lead_score, priority, status, source_page, client_id
       ) VALUES (
         'manual', $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10, $11, $12,
-        $13, $14, 'new', 'admin'
+        $13, $14, 'new', 'admin', $15
       ) RETURNING *`,
       [
         fullName,
@@ -174,6 +195,7 @@ export async function POST(req: NextRequest) {
         stories ? parseInt(stories, 10) : null,
         scored.score,
         scored.priority,
+        clientId,
       ]
     );
 
@@ -182,9 +204,9 @@ export async function POST(req: NextRequest) {
 
     // Log creation activity
     await query(
-      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-       VALUES ('lead', $1, 'system', 'Lead created manually', $2, 'Staff')`,
-      [newLead.id, `Created via manual entry (Source: ${leadSource})`]
+      `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+       VALUES ('lead', $1, $2, 'system', 'Lead created manually', $3, 'Staff')`,
+      [newLead.id, clientId, `Created via manual entry (Source: ${leadSource})`]
     );
 
     return NextResponse.json({ ok: true, lead: newLead });

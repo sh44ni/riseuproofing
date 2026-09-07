@@ -20,6 +20,7 @@ import {
   Layers,
   ChevronRight,
   Calculator,
+  UserCheck,
 } from 'lucide-react';
 import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
@@ -64,6 +65,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
     {
       title: 'Customer & Marketing',
       items: [
+        { href: '/admin/clients', label: 'Clients 360', icon: UserCheck, color: 'text-sky-700', bg: 'bg-sky-100' },
         { href: '/admin/reviews', label: 'Customer Reviews', icon: Star, color: 'text-amber-700', bg: 'bg-amber-100' },
         { href: '/admin/templates', label: 'Template Studio', icon: MessageSquareCode, color: 'text-cyan-700', bg: 'bg-cyan-100' },
         { href: '/admin/analytics', label: 'Web & Marketing', icon: BarChart3, color: 'text-blue-700', bg: 'bg-blue-100' },

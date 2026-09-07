@@ -66,6 +66,12 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { id: 'templates:manage', label: 'Manage Message Templates', category: 'Customer & Marketing', desc: 'Edit SMS and email templates in Studio' },
   { id: 'analytics:view', label: 'View Web & Marketing Hub', category: 'Customer & Marketing', desc: 'Access traffic trends, call logs, and click heatmaps' },
 
+  // ── Clients 360 & Profiles ────────────────────────────────────────────────
+  { id: 'clients:view', label: 'View Clients Directory & 360 Profiles', category: 'Clients & Profiles', desc: 'Access 360-degree customer history, jobs, billing, and warranties' },
+  { id: 'clients:create', label: 'Create Clients', category: 'Clients & Profiles', desc: 'Add new client records manually' },
+  { id: 'clients:edit', label: 'Edit Clients & Specs', category: 'Clients & Profiles', desc: 'Update contact info, property specs, tags, and notes' },
+  { id: 'clients:delete', label: 'Delete Clients', category: 'Clients & Profiles', desc: 'Archive or delete client profiles' },
+
   // ── System Administration ──────────────────────────────────────────────────
   { id: 'users:manage', label: 'Manage Team Members & Permissions', category: 'System Administration', desc: 'Create accounts, assign roles, and grant permissions', sensitive: true },
   { id: 'settings:edit', label: 'Edit Pricing & System Settings', category: 'System Administration', desc: 'Modify CSLB info, default pricing, and DB tools', sensitive: true },
@@ -74,6 +80,8 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
 export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   owner: ['*'],
   project_manager: [
+    'clients:view',
+    'clients:edit',
     'leads:view',
     'leads:edit',
     'estimates:view',
@@ -100,6 +108,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'analytics:view',
   ],
   sales_rep: [
+    'clients:view',
+    'clients:create',
+    'clients:edit',
     'leads:view',
     'leads:create',
     'leads:edit',
@@ -113,6 +124,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'reviews:manage',
   ],
   field_foreman: [
+    'clients:view',
     'jobs:view',
     'field:view_calendar',
     'field:manage_crew',
@@ -121,6 +133,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'warranties:issue',
   ],
   office_admin: [
+    'clients:view',
+    'clients:create',
+    'clients:edit',
     'leads:view',
     'leads:create',
     'leads:edit',
@@ -279,6 +294,7 @@ export function canAccessPath(
   ) {
     return hasPermission(user, 'analytics:view');
   }
+  if (pathname.startsWith('/admin/clients')) return hasPermission(user, 'clients:view');
   if (pathname.startsWith('/admin/leads')) return hasPermission(user, 'leads:view');
   if (pathname.startsWith('/admin/estimates')) return hasPermission(user, 'estimates:view');
   if (pathname.startsWith('/admin/jobs')) return hasPermission(user, 'jobs:view');

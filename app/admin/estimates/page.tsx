@@ -37,6 +37,7 @@ interface Estimate {
   accepted_at?: string;
   created_at: string;
   lead_id?: number;
+  client_id?: number;
 }
 
 interface Summary {
@@ -220,7 +221,13 @@ export default function EstimatesPage() {
                       <span className="text-[11px] font-bold text-[#1878B8] uppercase tracking-wider font-mono">
                         {est.estimate_number}
                       </span>
-                      <h3 className="text-[#0B1E33] font-bold text-base mt-0.5">{est.customer_name}</h3>
+                      {est.client_id ? (
+                        <Link href={`/admin/clients/${est.client_id}`} className="text-[#0B1E33] font-bold text-base mt-0.5 hover:text-[#1878B8] transition-colors block">
+                          {est.customer_name}
+                        </Link>
+                      ) : (
+                        <h3 className="text-[#0B1E33] font-bold text-base mt-0.5">{est.customer_name}</h3>
+                      )}
                       <p className="text-xs text-slate-500">
                         {est.customer_address ? `${est.customer_address}${est.customer_city ? `, ${est.customer_city}` : ''}` : 'No address'}
                       </p>
@@ -288,9 +295,15 @@ export default function EstimatesPage() {
                         {est.estimate_number}
                       </td>
                       <td className="px-4 py-3">
-                        <Link href={`/admin/estimates/${est.id}`} className="text-[#0B1E33] font-semibold hover:text-[#1878B8] transition-all duration-300 ease-out">
-                          {est.customer_name}
-                        </Link>
+                        {est.client_id ? (
+                          <Link href={`/admin/clients/${est.client_id}`} className="text-[#0B1E33] font-semibold hover:text-[#1878B8] transition-all duration-300 ease-out">
+                            {est.customer_name}
+                          </Link>
+                        ) : (
+                          <Link href={`/admin/estimates/${est.id}`} className="text-[#0B1E33] font-semibold hover:text-[#1878B8] transition-all duration-300 ease-out">
+                            {est.customer_name}
+                          </Link>
+                        )}
                         {est.customer_city && (
                           <p className="text-slate-400 text-xs">{est.customer_city}</p>
                         )}

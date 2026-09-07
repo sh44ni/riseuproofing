@@ -44,6 +44,7 @@ export default function NewEstimatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const leadId = searchParams.get('lead_id');
+  const clientId = searchParams.get('client_id');
 
   const [step, setStep] = useState(1);
   const [loadingLead, setLoadingLead] = useState(false);
@@ -74,6 +75,33 @@ export default function NewEstimatePage() {
     permit: 1,
     dumpster: 1,
   });
+
+  // Pre-fill from client if client_id is provided
+  useEffect(() => {
+    if (!clientId) return;
+
+    setLoadingLead(true);
+    fetch(`/api/admin/clients/${clientId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.client) {
+          const c = data.client;
+          setFormData(prev => ({
+            ...prev,
+            customerName: c.full_name || '',
+            customerPhone: c.phone || '',
+            customerEmail: c.email || '',
+            customerAddress: c.address || '',
+            customerCity: c.city || '',
+            customerZip: c.zip || '',
+            roofSquares: c.roof_squares || prev.roofSquares,
+            roofPitch: c.roof_pitch || prev.roofPitch,
+          }));
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoadingLead(false));
+  }, [clientId]);
 
   // Pre-fill from lead if lead_id is provided
   useEffect(() => {
@@ -141,6 +169,7 @@ export default function NewEstimatePage() {
         body: JSON.stringify({
           ...formData,
           leadId,
+          clientId,
           addons: addonsPayload,
         }),
       });

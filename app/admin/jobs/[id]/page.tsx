@@ -30,6 +30,7 @@ import {
   Check,
   ShieldCheck,
   Award,
+  UserCheck,
 } from 'lucide-react';
 import { STAGES } from '../page';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
@@ -89,6 +90,7 @@ interface JobDetail {
   notes?: string;
   created_at: string;
   estimate_id?: number;
+  client_id?: number;
 }
 
 interface Invoice {
@@ -440,6 +442,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             >
               <Phone size={13} /> Call Homeowner
             </a>
+          )}
+
+          {job.client_id && (
+            <Link
+              href={`/admin/clients/${job.client_id}`}
+              className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-sky-50 text-[#0284C7] hover:bg-sky-100 border border-sky-200 text-xs font-bold transition-colors"
+            >
+              <UserCheck size={13} /> 360° Client Profile
+            </Link>
           )}
 
           {job.estimate_id && (

@@ -505,6 +505,59 @@ const MIGRATIONS = [
     created_at      TIMESTAMPTZ DEFAULT NOW()
   )`,
   `CREATE INDEX IF NOT EXISTS idx_financing_calculations_created ON financing_calculations (created_at DESC)`,
+
+  // ── Phase 8 CRM: Clients 360° Customer Profiles ───────────────────────────
+  `CREATE TABLE IF NOT EXISTS clients (
+    id                  BIGSERIAL PRIMARY KEY,
+    full_name           TEXT NOT NULL,
+    phone               TEXT,
+    phone_normalized    TEXT,
+    email               TEXT,
+    secondary_phone     TEXT,
+    address             TEXT,
+    city                TEXT,
+    zip                 TEXT,
+    property_type       TEXT DEFAULT 'Single Family',
+    roof_type           TEXT,
+    roof_sqf            INTEGER,
+    roof_age            INTEGER,
+    stories             INTEGER DEFAULT 1,
+    hoa                 BOOLEAN DEFAULT false,
+    status              TEXT DEFAULT 'lead',
+    tags                TEXT[] DEFAULT '{"New Lead"}',
+    total_revenue       NUMERIC(10,2) DEFAULT 0,
+    total_jobs_count    INTEGER DEFAULT 0,
+    notes               TEXT,
+    assigned_to_user_id BIGINT REFERENCES users(id),
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_phone_norm ON clients (phone_normalized)`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_email ON clients (email)`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_status ON clients (status)`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_name ON clients (full_name)`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_created ON clients (created_at DESC)`,
+
+  // ── Add client_id FK to all dependent CRM tables ────────────────────────────
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE estimates ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE jobs ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE warranties ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE inspections ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE reviews ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE activities ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL`,
+
+  `CREATE INDEX IF NOT EXISTS idx_leads_client ON leads (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_estimates_client ON estimates (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_jobs_client ON jobs (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_invoices_client ON invoices (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_warranties_client ON warranties (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_inspections_client ON inspections (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_reviews_client ON reviews (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_activities_client ON activities (client_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_tasks_client ON tasks (client_id)`,
 ];
 
 export async function POST(req: NextRequest) {
@@ -607,7 +660,108 @@ export async function POST(req: NextRequest) {
       await query('UPDATE warranties SET access_token = $1 WHERE id = $2', [tok, war.id]);
     }
 
-    return NextResponse.json({ ok: true, message: 'Migrations and RBAC initialization complete' });
+    // ── Backfill / Link Historical Data to Clients ──────────────────────────
+    const unlinkedLeads = await query<any>('SELECT * FROM leads WHERE client_id IS NULL ORDER BY created_at ASC');
+    if (unlinkedLeads.length > 0) {
+      const { findOrCreateClient, recalculateClientStats } = await import('@/lib/crm-clients');
+      for (const lead of unlinkedLeads) {
+        if (!lead.full_name) continue;
+        const client = await findOrCreateClient({
+          fullName: lead.full_name,
+          phone: lead.phone,
+          email: lead.email,
+          address: lead.address,
+          city: lead.city,
+          zip: lead.zip,
+          propertyType: lead.property_type,
+          roofType: lead.roof_type,
+          roofSqf: lead.roof_sqf,
+          roofAge: lead.roof_age,
+          stories: lead.stories,
+          hoa: lead.hoa,
+          notes: lead.notes,
+        });
+
+        await query('UPDATE leads SET client_id = $1 WHERE id = $2', [client.id, lead.id]);
+      }
+    }
+
+    // Link unlinked jobs by matching lead_id or phone
+    const unlinkedJobs = await query<any>('SELECT * FROM jobs WHERE client_id IS NULL');
+    if (unlinkedJobs.length > 0) {
+      const { findOrCreateClient, recalculateClientStats } = await import('@/lib/crm-clients');
+      for (const job of unlinkedJobs) {
+        let clientId: number | null = null;
+        if (job.lead_id) {
+          const leadRow = await query<{ client_id: number }>('SELECT client_id FROM leads WHERE id = $1', [job.lead_id]);
+          if (leadRow[0]?.client_id) {
+            clientId = leadRow[0].client_id;
+          }
+        }
+        if (!clientId && job.customer_name) {
+          const client = await findOrCreateClient({
+            fullName: job.customer_name,
+            phone: job.customer_phone,
+            email: job.customer_email,
+            address: job.address,
+            city: job.city,
+            zip: job.zip,
+          });
+          clientId = client.id;
+        }
+        if (clientId) {
+          await query('UPDATE jobs SET client_id = $1 WHERE id = $2', [clientId, job.id]);
+        }
+      }
+    }
+
+    // Link unlinked estimates
+    await query(`
+      UPDATE estimates e
+      SET client_id = COALESCE(
+        (SELECT client_id FROM leads l WHERE l.id = e.lead_id),
+        (SELECT client_id FROM jobs j WHERE j.estimate_id = e.id)
+      )
+      WHERE e.client_id IS NULL
+    `);
+
+    // Link unlinked invoices
+    await query(`
+      UPDATE invoices i
+      SET client_id = (SELECT client_id FROM jobs j WHERE j.id = i.job_id)
+      WHERE i.client_id IS NULL AND i.job_id IS NOT NULL
+    `);
+
+    // Link unlinked warranties
+    await query(`
+      UPDATE warranties w
+      SET client_id = COALESCE(
+        (SELECT client_id FROM jobs j WHERE j.id = w.job_id),
+        (SELECT client_id FROM leads l WHERE l.id = w.lead_id)
+      )
+      WHERE w.client_id IS NULL
+    `);
+
+    // Link unlinked inspections
+    await query(`
+      UPDATE inspections ins
+      SET client_id = COALESCE(
+        (SELECT client_id FROM leads l WHERE l.id = ins.lead_id),
+        (SELECT client_id FROM jobs j WHERE j.id = ins.job_id)
+      )
+      WHERE ins.client_id IS NULL
+    `);
+
+    // Recalculate stats for all clients
+    const allClients = await query<{ id: number }>('SELECT id FROM clients');
+    if (allClients.length > 0) {
+      const { recalculateClientStats } = await import('@/lib/crm-clients');
+      for (const c of allClients) {
+        await recalculateClientStats(c.id);
+      }
+    }
+
+    return NextResponse.json({ ok: true, message: 'Migrations, RBAC, and Client 360 initialization complete' });
   } catch (err) {
     console.error('Migration error:', err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });

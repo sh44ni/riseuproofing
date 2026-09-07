@@ -51,6 +51,7 @@ interface Invoice {
   customer_phone?: string;
   address?: string;
   city?: string;
+  client_id?: number;
   created_at: string;
 }
 
@@ -365,9 +366,18 @@ export default function FinancesPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-bold text-[#0B1E33]">
-                          {inv.customer_name || 'Homeowner'}
-                        </div>
+                        {inv.client_id ? (
+                          <Link
+                            href={`/admin/clients/${inv.client_id}`}
+                            className="font-bold text-[#0B1E33] hover:text-[#0284C7] transition-colors underline-offset-2 hover:underline"
+                          >
+                            {inv.customer_name || 'Homeowner'}
+                          </Link>
+                        ) : (
+                          <div className="font-bold text-[#0B1E33]">
+                            {inv.customer_name || 'Homeowner'}
+                          </div>
+                        )}
                         <div className="text-[11px] text-slate-500">
                           {inv.city ? `${inv.city}, CA` : 'San Diego County'}
                           {inv.job_number && ` • ${inv.job_number}`}
@@ -449,7 +459,17 @@ export default function FinancesPage() {
                         {inv.milestone_name}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {inv.customer_name} • {inv.city || 'San Diego'}
+                        {inv.client_id ? (
+                          <Link
+                            href={`/admin/clients/${inv.client_id}`}
+                            className="font-semibold text-[#0B1E33] hover:text-[#0284C7] underline-offset-2 hover:underline"
+                          >
+                            {inv.customer_name}
+                          </Link>
+                        ) : (
+                          <span>{inv.customer_name}</span>
+                        )}
+                        {' • '}{inv.city || 'San Diego'}
                       </div>
                     </div>
                     <span
