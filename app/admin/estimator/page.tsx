@@ -16,8 +16,12 @@ import {
   Info,
   DollarSign,
   TrendingUp,
+  Percent,
+  ShieldAlert,
+  Star,
 } from 'lucide-react';
 import { calculateEstimate, type EstimatorPricingRule } from '@/lib/estimator';
+import { calculateFinancing, type FinancingPlan, type FinancingSettings } from '@/lib/financing';
 
 interface ServicePricing {
   id: number;
@@ -65,21 +69,28 @@ interface LeadLog {
   createdAt: string;
 }
 
+interface FinancingCalculationItem {
+  id: string;
+  planName: string;
+  projectCost: number;
+  downPayment: number;
+  monthlyPayment: number;
+  sessionId: string | null;
+  createdAt: string;
+}
+
 export default function EstimatorAdminPage() {
-  const [activeTab, setActiveTab] = useState<'pricing' | 'services' | 'presets' | 'logs'>('pricing');
+  const [activeTab, setActiveTab] = useState<'pricing' | 'services' | 'presets' | 'financing' | 'logs'>('pricing');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Estimator State
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [presets, setPresets] = useState<PresetItem[]>([]);
   const [leads, setLeads] = useState<LeadLog[]>([]);
-
-  // Selected service for pricing tab
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
-
-  // Editable pricing form state
   const [pricingForm, setPricingForm] = useState<ServicePricing>({
     id: 0,
     pricePerSqftLow: 4.0,
@@ -92,11 +103,34 @@ export default function EstimatorAdminPage() {
     financingApr: 0,
     financingTermMonths: 60,
   });
-
-  // Live preview test sqft
   const [testSqft, setTestSqft] = useState(2800);
 
-  // New service modal / inline state
+  // Financing State
+  const [financingPlans, setFinancingPlans] = useState<FinancingPlan[]>([]);
+  const [financingSettings, setFinancingSettings] = useState<FinancingSettings>({
+    minProjectCost: 5000,
+    maxProjectCost: 50000,
+    defaultProjectCost: 16500,
+    creditCheckCopyFlag: true,
+  });
+  const [financingCalculations, setFinancingCalculations] = useState<FinancingCalculationItem[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
+  const [planForm, setPlanForm] = useState<FinancingPlan>({
+    id: 0,
+    name: '',
+    apr: 0,
+    termMonths: 12,
+    minDownPaymentPct: 0,
+    isDefault: false,
+    isActive: true,
+    sortOrder: 1,
+    badgeLabel: '',
+    description: '',
+  });
+  const [testFinancingCost, setTestFinancingCost] = useState(16500);
+  const [testFinancingDown, setTestFinancingDown] = useState(0);
+
+  // Modals / forms
   const [isAddingService, setIsAddingService] = useState(false);
   const [newServiceForm, setNewServiceForm] = useState({
     name: '',
@@ -107,7 +141,6 @@ export default function EstimatorAdminPage() {
     isActive: true,
   });
 
-  // Preset modal / inline state
   const [isAddingPreset, setIsAddingPreset] = useState(false);
   const [newPresetForm, setNewPresetForm] = useState({
     label: '',
@@ -115,24 +148,41 @@ export default function EstimatorAdminPage() {
     sortOrder: 4,
   });
 
+  const [isAddingPlan, setIsAddingPlan] = useState(false);
+
   const loadData = async () => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/admin/estimator');
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Failed to load estimator data');
+      // 1. Fetch Estimator data
+      const estRes = await fetch('/api/admin/estimator');
+      const estData = await estRes.json();
+      if (!estData.ok) throw new Error(estData.error || 'Failed to load estimator data');
 
-      setServices(data.services || []);
-      setPresets(data.presets || []);
-      setLeads(data.leads || []);
+      setServices(estData.services || []);
+      setPresets(estData.presets || []);
+      setLeads(estData.leads || []);
 
-      if (data.services && data.services.length > 0) {
-        // Set first service if none selected or if previous was lost
+      if (estData.services && estData.services.length > 0) {
         const initialService =
-          data.services.find((s: ServiceItem) => s.id === selectedServiceId) || data.services[0];
+          estData.services.find((s: ServiceItem) => s.id === selectedServiceId) || estData.services[0];
         setSelectedServiceId(initialService.id);
         setPricingForm({ ...initialService.pricing });
+      }
+
+      // 2. Fetch Financing data
+      const finRes = await fetch('/api/admin/financing');
+      const finData = await finRes.json();
+      if (finData.ok) {
+        setFinancingPlans(finData.plans || []);
+        if (finData.settings) setFinancingSettings(finData.settings);
+        setFinancingCalculations(finData.calculations || []);
+
+        if (finData.plans && finData.plans.length > 0) {
+          const defaultP = finData.plans.find((p: FinancingPlan) => p.isDefault) || finData.plans[0];
+          setSelectedPlanId(defaultP.id);
+          setPlanForm({ ...defaultP });
+        }
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Error connecting to database');
@@ -153,6 +203,14 @@ export default function EstimatorAdminPage() {
     }
   };
 
+  const handleSelectPlanForEditing = (pId: number) => {
+    setSelectedPlanId(pId);
+    const found = financingPlans.find((p) => p.id === pId);
+    if (found) {
+      setPlanForm({ ...found });
+    }
+  };
+
   // Live simulated estimate using current unsaved pricing form values
   const liveSimulation = useMemo(() => {
     const pricingRule: EstimatorPricingRule = {
@@ -168,6 +226,19 @@ export default function EstimatorAdminPage() {
     };
     return calculateEstimate(pricingRule, testSqft);
   }, [pricingForm, testSqft]);
+
+  // Live simulated financing payment using current unsaved plan values
+  const liveFinancingSimulation = useMemo(() => {
+    return calculateFinancing(
+      {
+        name: planForm.name || 'Sample Plan',
+        apr: planForm.apr,
+        termMonths: planForm.termMonths,
+      },
+      testFinancingCost,
+      testFinancingDown
+    );
+  }, [planForm, testFinancingCost, testFinancingDown]);
 
   const handleSavePricing = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,7 +261,6 @@ export default function EstimatorAdminPage() {
       if (!data.ok) throw new Error(data.error || 'Failed to save pricing rules');
 
       setSaveSuccess('Pricing rules updated and public cache invalidated!');
-      // Update local state
       setServices((prev) =>
         prev.map((s) => (s.id === selectedServiceId ? { ...s, pricing: { ...pricingForm } } : s))
       );
@@ -199,6 +269,100 @@ export default function EstimatorAdminPage() {
       setErrorMessage(err.message || 'Failed to save');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveSuccess(null);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch('/api/admin/financing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_plan',
+          ...planForm,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to save plan');
+
+      setSaveSuccess('Financing plan saved and public cache invalidated!');
+      setIsAddingPlan(false);
+      await loadData();
+      setTimeout(() => setSaveSuccess(null), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to save plan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSetDefaultPlan = async (pId: number) => {
+    try {
+      const res = await fetch('/api/admin/financing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_default', id: pId }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      setFinancingPlans((prev) =>
+        prev.map((p) => ({ ...p, isDefault: p.id === pId }))
+      );
+      if (planForm.id === pId) {
+        setPlanForm((prev) => ({ ...prev, isDefault: true }));
+      }
+      setSaveSuccess('Default plan updated across public calculator and banner!');
+      setTimeout(() => setSaveSuccess(null), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update default plan');
+    }
+  };
+
+  const handleSaveFinancingSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveSuccess(null);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch('/api/admin/financing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_settings',
+          ...financingSettings,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to save settings');
+
+      setSaveSuccess('Financing calculator settings updated!');
+      setTimeout(() => setSaveSuccess(null), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeletePlan = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this financing plan?')) return;
+    try {
+      const res = await fetch('/api/admin/financing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_plan', id }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete plan');
     }
   };
 
@@ -235,10 +399,7 @@ export default function EstimatorAdminPage() {
       const res = await fetch('/api/admin/estimator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'save_service',
-          ...newServiceForm,
-        }),
+        body: JSON.stringify({ action: 'save_service', ...newServiceForm }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
@@ -267,10 +428,7 @@ export default function EstimatorAdminPage() {
       const res = await fetch('/api/admin/estimator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'save_preset',
-          ...newPresetForm,
-        }),
+        body: JSON.stringify({ action: 'save_preset', ...newPresetForm }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
@@ -313,10 +471,10 @@ export default function EstimatorAdminPage() {
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-[#0B1E33] tracking-tight">
-              Estimator Settings
+              Estimator &amp; Financing Settings
             </h1>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Configure dynamic pricing formulas, service options, size presets, and review lead telemetry.
+              Configure dynamic pricing formulas, financing loan plans, bounds, and live telemetry.
             </p>
           </div>
         </div>
@@ -349,10 +507,11 @@ export default function EstimatorAdminPage() {
       {/* Tabs */}
       <div className="flex border-b border-slate-200/80 gap-2 overflow-x-auto pb-px">
         {[
-          { key: 'pricing', label: 'Pricing Rules & Live Simulator', icon: Sliders },
+          { key: 'pricing', label: 'Estimator Pricing Rules', icon: Sliders },
           { key: 'services', label: 'Services Manager', icon: Layers },
           { key: 'presets', label: 'Size Presets', icon: Calculator },
-          { key: 'logs', label: 'Recent Calculation Logs', icon: History },
+          { key: 'financing', label: 'Financing Plans & Settings', icon: DollarSign },
+          { key: 'logs', label: 'Calculation Logs', icon: History },
         ].map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.key;
@@ -376,12 +535,12 @@ export default function EstimatorAdminPage() {
       {loading ? (
         <div className="p-12 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-3">
           <RefreshCw size={24} className="animate-spin text-sky-500" />
-          <span>Loading estimator configuration...</span>
+          <span>Loading configuration...</span>
         </div>
       ) : (
         <>
           {/* ═══════════════════════════════════════════════════════════════════
-              TAB 1: PRICING RULES & LIVE SIMULATOR
+              TAB 1: ESTIMATOR PRICING RULES & LIVE SIMULATOR
           ═══════════════════════════════════════════════════════════════════ */}
           {activeTab === 'pricing' && (
             <div className="space-y-6">
@@ -1037,12 +1196,509 @@ export default function EstimatorAdminPage() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════════════
-              TAB 4: RECENT CALCULATION LOGS
+              TAB 4: FINANCING PLANS & CALCULATOR SETTINGS
+          ═══════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'financing' && (
+            <div className="space-y-8">
+              {/* Plans Row */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0B1E33]">
+                      San Diego Roof Financing Plans
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Plans appear in the interactive monthly calculator on /roof-financing-san-diego. The plan marked as Default sources the banner &amp; trust strip claims.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsAddingPlan(true);
+                      setPlanForm({
+                        id: 0,
+                        name: '',
+                        apr: 0,
+                        termMonths: 12,
+                        minDownPaymentPct: 0,
+                        isDefault: false,
+                        isActive: true,
+                        sortOrder: financingPlans.length + 1,
+                        badgeLabel: '',
+                        description: '',
+                      });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369a1] shadow-xs cursor-pointer self-start sm:self-auto"
+                  >
+                    <Plus size={14} />
+                    <span>Add Financing Plan</span>
+                  </button>
+                </div>
+
+                {/* Plan Selection Buttons */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">
+                    Select Plan to Edit:
+                  </span>
+                  {financingPlans.map((p) => {
+                    const selected = p.id === selectedPlanId;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handleSelectPlanForEditing(p.id)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                          selected
+                            ? 'bg-[#0284C7] text-white border-[#0284C7] shadow-xs'
+                            : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        {p.isDefault && <Star size={12} className={selected ? 'text-amber-300' : 'text-amber-500'} />}
+                        <span>{p.name}</span>
+                        {!p.isActive && <span className="opacity-60 text-[10px]">(Inactive)</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Editor & Live Simulator Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Left: Plan Form (7 cols) */}
+                  <form
+                    onSubmit={handleSavePlan}
+                    className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4"
+                  >
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div>
+                        <h4 className="text-sm font-bold text-[#0B1E33]">
+                          {planForm.id ? `Edit Plan: ${planForm.name}` : 'Create New Financing Plan'}
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Configure term, interest rate, down payment rules, and default status.
+                        </p>
+                      </div>
+                      {planForm.isDefault && (
+                        <span className="text-[10px] px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 font-extrabold border border-amber-200 flex items-center gap-1">
+                          <Star size={11} className="text-amber-500" /> Default Banner Source
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                          Plan Name *
+                        </span>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 0% APR 12-Month Same-As-Cash"
+                          value={planForm.name}
+                          onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                          Badge Label (Optional)
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="e.g. Most Popular"
+                          value={planForm.badgeLabel || ''}
+                          onChange={(e) => setPlanForm({ ...planForm, badgeLabel: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                          APR Rate (%) *
+                        </span>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            required
+                            value={planForm.apr}
+                            onChange={(e) =>
+                              setPlanForm({ ...planForm, apr: parseFloat(e.target.value) || 0 })
+                            }
+                            className="w-full pr-7 pl-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                          />
+                          <span className="absolute right-2.5 top-2.5 text-slate-400 text-xs font-bold">
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                          Term (Months) *
+                        </span>
+                        <input
+                          type="number"
+                          step="6"
+                          min="1"
+                          required
+                          value={planForm.termMonths}
+                          onChange={(e) =>
+                            setPlanForm({
+                              ...planForm,
+                              termMonths: parseInt(e.target.value, 10) || 12,
+                            })
+                          }
+                          className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                          Min Down (%)
+                        </span>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            step="1"
+                            min="0"
+                            max="100"
+                            value={planForm.minDownPaymentPct}
+                            onChange={(e) =>
+                              setPlanForm({
+                                ...planForm,
+                                minDownPaymentPct: parseFloat(e.target.value) || 0,
+                              })
+                            }
+                            className="w-full pr-7 pl-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                          />
+                          <span className="absolute right-2.5 top-2.5 text-slate-400 text-xs font-bold">
+                            %
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                        Description
+                      </span>
+                      <textarea
+                        rows={2}
+                        placeholder="e.g. 12 Months zero interest with regular monthly payments."
+                        value={planForm.description || ''}
+                        onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl text-xs font-medium border border-slate-200 text-[#0B1E33]"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={planForm.isActive}
+                            onChange={(e) =>
+                              setPlanForm({ ...planForm, isActive: e.target.checked })
+                            }
+                            className="w-4 h-4 text-sky-600 rounded-sm border-slate-300"
+                          />
+                          <span>Plan Active</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-amber-800">
+                          <input
+                            type="checkbox"
+                            checked={planForm.isDefault}
+                            onChange={(e) =>
+                              setPlanForm({ ...planForm, isDefault: e.target.checked })
+                            }
+                            className="w-4 h-4 text-amber-600 rounded-sm border-slate-300"
+                          />
+                          <span>Make Default Plan</span>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {planForm.id > 0 && !planForm.isDefault && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePlan(planForm.id)}
+                            className="px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="px-5 py-2.5 rounded-xl bg-[#0284C7] hover:bg-[#0369a1] text-white font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer disabled:opacity-75"
+                        >
+                          {saving ? 'Saving...' : 'Save Plan'}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+
+                  {/* Right: Live Amortization Simulator Preview (5 cols) */}
+                  <div className="lg:col-span-5 space-y-4">
+                    <div className="bg-gradient-to-br from-[#0B1E33] to-[#081524] rounded-3xl p-6 text-white shadow-xl border border-slate-800 space-y-5 sticky top-6">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div className="flex items-center gap-2">
+                          <Eye size={16} className="text-amber-400" />
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                            Amortization Simulator
+                          </h4>
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-400/30">
+                          Real-Time Sandbox
+                        </span>
+                      </div>
+
+                      {/* Test Project Cost Slider */}
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-white/70 font-semibold">Test Project Budget</span>
+                          <span className="text-amber-400 font-extrabold text-sm font-mono">
+                            ${testFinancingCost.toLocaleString()}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={5000}
+                          max={50000}
+                          step={500}
+                          value={testFinancingCost}
+                          onChange={(e) => setTestFinancingCost(parseInt(e.target.value, 10))}
+                          className="w-full accent-amber-400 cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Test Down Payment Slider */}
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-white/70 font-semibold">Down Payment</span>
+                          <span className="text-emerald-400 font-extrabold text-sm font-mono">
+                            ${testFinancingDown.toLocaleString()}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={testFinancingCost}
+                          step={500}
+                          value={testFinancingDown}
+                          onChange={(e) => setTestFinancingDown(parseInt(e.target.value, 10))}
+                          className="w-full accent-emerald-400 cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Output Monthly Card */}
+                      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase tracking-wider text-white/60 font-bold">
+                            Estimated Monthly Payment
+                          </span>
+                          <span className="text-[9px] uppercase px-2 py-0.5 rounded-full bg-white/20 text-white font-bold">
+                            {planForm.termMonths} Mo @ {planForm.apr}% APR
+                          </span>
+                        </div>
+                        <p className="text-3xl sm:text-4xl font-black text-amber-300 tracking-tight font-mono">
+                          {liveFinancingSimulation.formattedMonthly}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-white/10 text-white/70">
+                          <div>
+                            <span className="block text-[10px] text-white/50 uppercase">Principal Loan</span>
+                            <span className="font-bold text-white">{liveFinancingSimulation.formattedPrincipal}</span>
+                          </div>
+                          <div>
+                            <span className="block text-[10px] text-white/50 uppercase">Total Interest</span>
+                            <span className="font-bold text-white">{liveFinancingSimulation.formattedInterest}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sanity Check Alert */}
+                      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs flex items-start gap-2.5 text-amber-200">
+                        <ShieldAlert size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold">Sanity Check Verification</p>
+                          <p className="text-[11px] text-amber-200/80 mt-0.5 leading-relaxed">
+                            Ensure the resulting monthly figure aligns with household roofing affordability before publishing to production.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calculator Bounds & Safety Flags */}
+              <form
+                onSubmit={handleSaveFinancingSettings}
+                className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div>
+                    <h4 className="text-sm font-bold text-[#0B1E33]">
+                      Global Calculator Settings &amp; Compliance Flags
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Configure min/max project budget boundaries and the credit check claim safety valve.
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369a1] shadow-xs cursor-pointer"
+                  >
+                    <Save size={14} />
+                    <span>Save Settings</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                      Min Project Cost ($)
+                    </span>
+                    <input
+                      type="number"
+                      step="500"
+                      min="1000"
+                      required
+                      value={financingSettings.minProjectCost}
+                      onChange={(e) =>
+                        setFinancingSettings({
+                          ...financingSettings,
+                          minProjectCost: parseInt(e.target.value, 10) || 5000,
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                      Max Project Cost ($)
+                    </span>
+                    <input
+                      type="number"
+                      step="1000"
+                      min="10000"
+                      required
+                      value={financingSettings.maxProjectCost}
+                      onChange={(e) =>
+                        setFinancingSettings({
+                          ...financingSettings,
+                          maxProjectCost: parseInt(e.target.value, 10) || 50000,
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                      Default Project Cost ($)
+                    </span>
+                    <input
+                      type="number"
+                      step="500"
+                      required
+                      value={financingSettings.defaultProjectCost}
+                      onChange={(e) =>
+                        setFinancingSettings({
+                          ...financingSettings,
+                          defaultProjectCost: parseInt(e.target.value, 10) || 16500,
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 text-[#0B1E33]"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-slate-700 block">
+                      &quot;No Credit Score Impact Check&quot; Safety Valve Flag
+                    </span>
+                    <span className="text-[11px] text-slate-500 block">
+                      When enabled, confirms all active programs support soft credit pre-qualification inquiries.
+                    </span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={financingSettings.creditCheckCopyFlag}
+                      onChange={(e) =>
+                        setFinancingSettings({
+                          ...financingSettings,
+                          creditCheckCopyFlag: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 text-emerald-600 rounded-sm border-slate-300"
+                    />
+                    <span className="text-xs font-bold text-emerald-700">True (Soft Pulls Verified)</span>
+                  </label>
+                </div>
+              </form>
+
+              {/* Financing Calculations Telemetry Table */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-bold text-[#0B1E33]">
+                    Recent Financing Calculations Telemetry
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Anonymous loan simulation activity from visitors exploring financing options.
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th className="px-5 py-3">Date / Time</th>
+                        <th className="px-5 py-3">Plan Used</th>
+                        <th className="px-5 py-3">Project Cost</th>
+                        <th className="px-5 py-3">Down Payment</th>
+                        <th className="px-5 py-3">Resulting Monthly</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-[#0B1E33]">
+                      {financingCalculations.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-5 py-8 text-center text-slate-400 text-xs">
+                            No financing calculations recorded yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        financingCalculations.map((c) => (
+                          <tr key={c.id} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="px-5 py-3 text-slate-500 font-mono text-[11px]">
+                              {new Date(c.createdAt).toLocaleString()}
+                            </td>
+                            <td className="px-5 py-3 font-bold text-sky-800">{c.planName}</td>
+                            <td className="px-5 py-3 font-mono">${c.projectCost.toLocaleString()}</td>
+                            <td className="px-5 py-3 font-mono text-emerald-600">
+                              ${c.downPayment.toLocaleString()}
+                            </td>
+                            <td className="px-5 py-3 font-extrabold text-amber-700 font-mono">
+                              ${c.monthlyPayment.toLocaleString()}/mo
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              TAB 5: RECENT CALCULATION LOGS
           ═══════════════════════════════════════════════════════════════════ */}
           {activeTab === 'logs' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-bold text-[#0B1E33]">Anonymous Telemetry Log</h3>
+                <h3 className="text-sm font-bold text-[#0B1E33]">Anonymous Estimator Telemetry Log</h3>
                 <p className="text-xs text-slate-500">
                   Real-time calculations from website visitors (no PII captured until formal quote request).
                 </p>
