@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { CalendarEvent, CalendarEventType } from '@/app/api/admin/calendar/route';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -223,32 +225,31 @@ export default function TaskModal({
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Event Category
               </label>
-              <select
+              <CustomSelect
                 value={eventType}
-                onChange={(e) => setEventType(e.target.value as CalendarEventType)}
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-cyan-500 focus:outline-none bg-white font-medium"
-              >
-                {EVENT_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.icon} {opt.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setEventType(val as CalendarEventType)}
+                size="sm"
+                options={EVENT_TYPE_OPTIONS.map((opt) => ({
+                  value: opt.id,
+                  label: `${opt.icon} ${opt.label}`,
+                }))}
+              />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Priority
               </label>
-              <select
+              <CustomSelect
                 value={priority}
-                onChange={(e) => setPriority(e.target.value as any)}
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-cyan-500 focus:outline-none bg-white font-medium"
-              >
-                <option value="normal">Normal</option>
-                <option value="high">High Priority</option>
-                <option value="urgent">🔴 Urgent / Critical</option>
-              </select>
+                onChange={(val) => setPriority(val as any)}
+                size="sm"
+                options={[
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'high', label: 'High Priority', badge: 'High', badgeColor: 'sky' },
+                  { value: 'urgent', label: '🔴 Urgent / Critical', badge: 'Urgent', badgeColor: 'rose' },
+                ]}
+              />
             </div>
           </div>
 
@@ -258,12 +259,13 @@ export default function TaskModal({
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Date *
               </label>
-              <input
-                type="date"
+              <CustomDatePicker
+                mode="date"
                 required
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-cyan-500 focus:outline-none"
+                onChange={setDate}
+                size="sm"
+                placeholder="Pick date..."
               />
             </div>
 
@@ -282,12 +284,13 @@ export default function TaskModal({
                   <span>All-day</span>
                 </label>
               </div>
-              <input
-                type="time"
+              <CustomDatePicker
+                mode="time"
                 disabled={isAllDay}
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-cyan-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                onChange={setTime}
+                size="sm"
+                placeholder="Pick time..."
               />
             </div>
           </div>
@@ -297,18 +300,20 @@ export default function TaskModal({
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
               Assignee (Team Member)
             </label>
-            <select
+            <CustomSelect
               value={assignedUserId}
-              onChange={(e) => setAssignedUserId(e.target.value)}
-              className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-cyan-500 focus:outline-none bg-white font-medium"
-            >
-              <option value="">Unassigned Operations Pool</option>
-              {teamMembers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.role ? u.role.replace(/_/g, ' ') : 'Staff'})
-                </option>
-              ))}
-            </select>
+              onChange={setAssignedUserId}
+              size="sm"
+              placeholder="Unassigned Operations Pool"
+              options={[
+                { value: '', label: 'Unassigned Operations Pool' },
+                ...teamMembers.map((u) => ({
+                  value: String(u.id),
+                  label: u.name,
+                  description: u.role ? u.role.replace(/_/g, ' ') : 'Staff',
+                })),
+              ]}
+            />
           </div>
 
           {/* Description / Notes */}

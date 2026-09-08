@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Icon } from '@/components/shared/Icon';
 import { PHONE_HREF, PHONE_NUMBER, LICENSE_NUMBER } from '@/lib/utils';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 const STORAGE_KEY_DISMISSED = 'riseup_storm_promo_dismissed';
 const STORAGE_KEY_CLAIMED = 'riseup_storm_promo_claimed';
@@ -364,16 +365,18 @@ export function StormPromoModal() {
                   <label className="block text-[11px] uppercase tracking-wider text-slate-300 font-semibold mb-1">
                     Project Type
                   </label>
-                  <select
+                  <CustomSelect
                     value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg bg-slate-900/90 border border-slate-700 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors"
-                  >
-                    <option value="Roof Replacement">Complete Roof Replacement</option>
-                    <option value="Storm Repair & Inspection">Storm Damage Repair & Inspection</option>
-                    <option value="Tile / Shingle Tune-Up">Tile / Shingle Tune-Up</option>
-                    <option value="Commercial Roofing">Commercial Roofing</option>
-                  </select>
+                    onChange={setServiceType}
+                    variant="dark"
+                    size="sm"
+                    options={[
+                      { value: 'Roof Replacement', label: 'Complete Roof Replacement' },
+                      { value: 'Storm Repair & Inspection', label: 'Storm Damage Repair & Inspection' },
+                      { value: 'Tile / Shingle Tune-Up', label: 'Tile / Shingle Tune-Up' },
+                      { value: 'Commercial Roofing', label: 'Commercial Roofing' },
+                    ]}
+                  />
                 </div>
               </div>
 

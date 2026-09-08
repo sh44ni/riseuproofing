@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import BottomSheet from '../shared/BottomSheet';
 import SourceSelector from '../shared/SourceSelector';
+import CustomSelect from '../shared/CustomSelect';
 import { UserPlus } from 'lucide-react';
 
 interface AddLeadSheetProps {
@@ -157,17 +158,12 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
           </h4>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Service Type</label>
-            <select
+            <CustomSelect
               value={formData.serviceType}
-              onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-              className="admin-input text-sm w-full px-3.5 py-2.5 rounded-xl cursor-pointer"
-            >
-              {SERVICE_TYPES.map(s => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setFormData({ ...formData, serviceType: val })}
+              options={SERVICE_TYPES}
+              size="sm"
+            />
           </div>
 
           <SourceSelector
@@ -205,29 +201,31 @@ export default function AddLeadSheet({ isOpen, onClose, onCreated }: AddLeadShee
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Roof Type</label>
-              <select
+              <CustomSelect
                 value={formData.roofType}
-                onChange={e => setFormData({ ...formData, roofType: e.target.value })}
-                className="admin-input text-sm w-full px-3 py-2 rounded-xl cursor-pointer"
-              >
-                <option value="Concrete Tile">Concrete Tile</option>
-                <option value="Clay Tile">Clay Tile</option>
-                <option value="Architectural Shingle">Shingle</option>
-                <option value="Flat / TPO">Flat / TPO</option>
-                <option value="Metal">Metal</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, roofType: val })}
+                options={[
+                  'Concrete Tile',
+                  'Clay Tile',
+                  'Architectural Shingle',
+                  'Flat / TPO',
+                  'Metal',
+                ]}
+                size="sm"
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Stories</label>
-              <select
+              <CustomSelect
                 value={formData.stories}
-                onChange={e => setFormData({ ...formData, stories: e.target.value })}
-                className="admin-input text-sm w-full px-3 py-2 rounded-xl cursor-pointer"
-              >
-                <option value="1">1 Story</option>
-                <option value="2">2 Stories</option>
-                <option value="3">3+ Stories</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, stories: val })}
+                options={[
+                  { value: '1', label: '1 Story' },
+                  { value: '2', label: '2 Stories' },
+                  { value: '3', label: '3+ Stories' },
+                ]}
+                size="sm"
+              />
             </div>
           </div>
 

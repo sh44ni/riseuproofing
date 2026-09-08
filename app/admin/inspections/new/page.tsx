@@ -21,6 +21,8 @@ import {
   Clock,
   HelpCircle,
 } from 'lucide-react';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 
 interface InspectionPoint {
   id: string;
@@ -482,27 +484,26 @@ function InspectionBuilderContent() {
 
             <div>
               <label className="block text-slate-700 font-bold mb-1.5">Inspection Date</label>
-              <input
-                type="date"
+              <CustomDatePicker
                 value={propertyData.inspectionDate}
-                onChange={e => setPropertyData({ ...propertyData, inspectionDate: e.target.value })}
-                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
+                onChange={(val) => setPropertyData({ ...propertyData, inspectionDate: val })}
+                placeholder="Select date..."
               />
             </div>
 
             <div>
               <label className="block text-slate-700 font-bold mb-1.5">Roof Type / Material</label>
-              <select
+              <CustomSelect
                 value={propertyData.roofType}
-                onChange={e => setPropertyData({ ...propertyData, roofType: e.target.value })}
-                className="admin-input w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold"
-              >
-                <option value="Asphalt Shingle">Asphalt Architectural Shingle</option>
-                <option value="Concrete Tile">Concrete / Clay Tile</option>
-                <option value="Commercial TPO">Commercial TPO Flat Roof</option>
-                <option value="Standing Seam Metal">Standing Seam Metal</option>
-                <option value="Torch Down">Torch Down Modified Bitumen</option>
-              </select>
+                onChange={(val) => setPropertyData({ ...propertyData, roofType: val })}
+                options={[
+                  { value: 'Asphalt Shingle', label: 'Asphalt Architectural Shingle' },
+                  { value: 'Concrete Tile', label: 'Concrete / Clay Tile' },
+                  { value: 'Commercial TPO', label: 'Commercial TPO Flat Roof' },
+                  { value: 'Standing Seam Metal', label: 'Standing Seam Metal' },
+                  { value: 'Torch Down', label: 'Torch Down Modified Bitumen' },
+                ]}
+              />
             </div>
           </div>
         </div>

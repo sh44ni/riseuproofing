@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
 import AvatarPickerModal from '@/components/admin/shared/AvatarPickerModal';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 interface UserRoleInfo {
   id: number;
@@ -548,32 +549,37 @@ export default function TeamAndRolesConsole() {
                 <Filter size={13} />
                 <span>Role:</span>
               </div>
-              <select
-                value={selectedRoleFilter}
-                onChange={(e) => setSelectedRoleFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none shadow-2xs cursor-pointer"
-              >
-                <option value="all">All Roles</option>
-                {roles.map((r) => (
-                  <option key={r.id} value={r.name || ''}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+              <div className="w-40 sm:w-44">
+                <CustomSelect
+                  value={selectedRoleFilter}
+                  onChange={(val) => setSelectedRoleFilter(val)}
+                  options={[
+                    { value: 'all', label: 'All Roles' },
+                    ...roles.map((r) => ({
+                      value: r.name || '',
+                      label: r.name || '',
+                    })),
+                  ]}
+                  size="sm"
+                />
+              </div>
 
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium ml-2">
                 <span>Status:</span>
               </div>
-              <select
-                value={selectedStatusFilter}
-                onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none shadow-2xs cursor-pointer"
-              >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="invited">Invited</option>
-                <option value="deactivated">Deactivated</option>
-              </select>
+              <div className="w-36 sm:w-40">
+                <CustomSelect
+                  value={selectedStatusFilter}
+                  onChange={(val) => setSelectedStatusFilter(val)}
+                  options={[
+                    { value: 'all', label: 'All Statuses' },
+                    { value: 'active', label: 'Active' },
+                    { value: 'invited', label: 'Invited' },
+                    { value: 'deactivated', label: 'Deactivated' },
+                  ]}
+                  size="sm"
+                />
+              </div>
             </div>
           </div>
 
@@ -1837,16 +1843,19 @@ function RoleEditorModal({
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">
                                   Scope:
                                 </span>
-                                <select
-                                  disabled={isProtected}
-                                  value={currentScope}
-                                  onChange={(e) => changeScope(perm.key, e.target.value as any)}
-                                  className="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1878B8] cursor-pointer"
-                                >
-                                  <option value="all">All Records</option>
-                                  <option value="assigned">Assigned Only</option>
-                                  <option value="own">Created by User</option>
-                                </select>
+                                <div className="w-36">
+                                  <CustomSelect
+                                    disabled={isProtected}
+                                    value={currentScope}
+                                    onChange={(val) => changeScope(perm.key, val as any)}
+                                    options={[
+                                      { value: 'all', label: 'All Records' },
+                                      { value: 'assigned', label: 'Assigned Only' },
+                                      { value: 'own', label: 'Created by User' },
+                                    ]}
+                                    variant="compact"
+                                  />
+                                </div>
                               </div>
                             )}
                           </div>

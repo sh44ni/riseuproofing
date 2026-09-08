@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import BottomSheet from '../shared/BottomSheet';
 import SourceSelector from '../shared/SourceSelector';
+import CustomSelect from '../shared/CustomSelect';
 import { UserPlus, Home, Phone, Mail, MapPin } from 'lucide-react';
 
 interface AddClientSheetProps {
@@ -197,31 +198,21 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Property Type</label>
-              <select
+              <CustomSelect
                 value={formData.propertyType}
-                onChange={e => setFormData({ ...formData, propertyType: e.target.value })}
-                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-sm focus:border-[#2F9FE3] outline-none"
-              >
-                {PROPERTY_TYPES.map(p => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, propertyType: val })}
+                options={PROPERTY_TYPES}
+                size="sm"
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Roof Material</label>
-              <select
+              <CustomSelect
                 value={formData.roofType}
-                onChange={e => setFormData({ ...formData, roofType: e.target.value })}
-                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-sm focus:border-[#2F9FE3] outline-none"
-              >
-                {ROOF_TYPES.map(r => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, roofType: val })}
+                options={ROOF_TYPES}
+                size="sm"
+              />
             </div>
           </div>
 
@@ -248,15 +239,16 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Stories</label>
-              <select
+              <CustomSelect
                 value={formData.stories}
-                onChange={e => setFormData({ ...formData, stories: e.target.value })}
-                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-sm focus:border-[#2F9FE3] outline-none"
-              >
-                <option value="1">1 Story</option>
-                <option value="2">2 Stories</option>
-                <option value="3">3+ Stories</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, stories: val })}
+                options={[
+                  { value: '1', label: '1 Story' },
+                  { value: '2', label: '2 Stories' },
+                  { value: '3', label: '3+ Stories' },
+                ]}
+                size="sm"
+              />
             </div>
           </div>
         </div>

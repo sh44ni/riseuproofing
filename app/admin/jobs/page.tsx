@@ -693,23 +693,17 @@ function JobCard({
         <span className="font-mono text-[10px] font-bold text-[#1878B8] tracking-wide">
           {job.job_number}
         </span>
-        <div className="relative">
-          <select
+        <div className="w-36">
+          <CustomSelect
             value={job.status}
-            onChange={e => onStageChange(job.id, e.target.value)}
-            className="text-[10px] font-bold pl-2.5 pr-6 py-0.5 rounded-full border border-slate-200/90 bg-slate-50 hover:bg-white text-slate-700 cursor-pointer outline-none focus:border-[#2F9FE3] transition-colors appearance-none shadow-2xs"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 6px center',
-            }}
-          >
-            {STAGES.map(s => (
-              <option key={s.id} value={s.id} className="bg-white text-[#0B1E33]">
-                {s.label}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => onStageChange(job.id, val)}
+            size="sm"
+            variant="compact"
+            options={STAGES.map((s) => ({
+              value: s.id,
+              label: s.label,
+            }))}
+          />
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Sparkles,
 } from 'lucide-react';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 interface QuickAddLeadModalProps {
   isOpen: boolean;
@@ -156,17 +157,12 @@ export default function QuickAddLeadModal({
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
               Lead Source Tag <span className="text-rose-500">*</span>
             </label>
-            <select
+            <CustomSelect
               value={leadSource}
-              onChange={(e) => setLeadSource(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-slate-800 text-xs font-semibold focus:border-sky-500 focus:bg-white focus:outline-hidden"
-            >
-              {LEAD_SOURCE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              onChange={setLeadSource}
+              options={LEAD_SOURCE_OPTIONS}
+              size="sm"
+            />
           </div>
 
           {/* Name & Phone */}
@@ -261,17 +257,12 @@ export default function QuickAddLeadModal({
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                 Service Needed
               </label>
-              <select
+              <CustomSelect
                 value={serviceType}
-                onChange={(e) => setServiceType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-sky-500 focus:bg-white focus:outline-hidden"
-              >
-                {SERVICE_OPTIONS.map((srv) => (
-                  <option key={srv} value={srv}>
-                    {srv}
-                  </option>
-                ))}
-              </select>
+                onChange={setServiceType}
+                options={SERVICE_OPTIONS}
+                size="sm"
+              />
             </div>
           </div>
 

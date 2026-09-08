@@ -14,6 +14,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { PipelineLead } from '@/app/api/admin/pipeline/route';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 
 interface StageTransitionModalProps {
   isOpen: boolean;
@@ -217,12 +219,13 @@ export default function StageTransitionModal({
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Inspection Date & Time
                 </label>
-                <input
-                  type="datetime-local"
+                <CustomDatePicker
+                  mode="datetime"
                   value={visitDate}
-                  onChange={(e) => setVisitDate(e.target.value)}
+                  onChange={setVisitDate}
                   required
-                  className="w-full text-xs rounded-lg border border-slate-200 p-2.5 focus:border-purple-500 focus:outline-none"
+                  placeholder="Select visit date & time..."
+                  size="sm"
                 />
               </div>
 
@@ -230,18 +233,20 @@ export default function StageTransitionModal({
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Assigned Inspector / Project Manager
                 </label>
-                <select
+                <CustomSelect
                   value={inspectorId}
-                  onChange={(e) => setInspectorId(e.target.value)}
-                  className="w-full text-xs rounded-lg border border-slate-200 p-2.5 focus:border-purple-500 focus:outline-none bg-white"
-                >
-                  <option value="">Keep current rep ({lead.assigned_to_name || 'Unassigned'})</option>
-                  {users.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name} &bull; {u.role?.replace('_', ' ')}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setInspectorId}
+                  size="sm"
+                  placeholder={`Keep current rep (${lead.assigned_to_name || 'Unassigned'})`}
+                  options={[
+                    { value: '', label: `Keep current rep (${lead.assigned_to_name || 'Unassigned'})` },
+                    ...users.map((u) => ({
+                      value: String(u.id),
+                      label: u.name,
+                      description: u.role?.replace('_', ' '),
+                    })),
+                  ]}
+                />
               </div>
 
               <div className="p-3 rounded-lg bg-purple-50/70 border border-purple-200 text-xs text-purple-900 leading-relaxed">
@@ -325,21 +330,31 @@ export default function StageTransitionModal({
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Warranty Plan
                 </label>
-                <select
+                <CustomSelect
                   value={warrantyType}
-                  onChange={(e) => setWarrantyType(e.target.value)}
-                  className="w-full text-xs rounded-lg border border-slate-200 p-2.5 focus:border-emerald-500 focus:outline-none bg-white font-medium"
-                >
-                  <option value="50-Year GAF Golden Pledge Lifetime Warranty">
-                    50-Year GAF Golden Pledge Lifetime Warranty (Standard)
-                  </option>
-                  <option value="25-Year Commercial System Armor Warranty">
-                    25-Year Commercial System Armor Warranty
-                  </option>
-                  <option value="10-Year Workmanship Guarantee (Repair)">
-                    10-Year Workmanship Guarantee (Repair)
-                  </option>
-                </select>
+                  onChange={setWarrantyType}
+                  size="sm"
+                  options={[
+                    {
+                      value: '50-Year GAF Golden Pledge Lifetime Warranty',
+                      label: '50-Year GAF Golden Pledge Lifetime Warranty (Standard)',
+                      badge: 'Lifetime',
+                      badgeColor: 'gold',
+                    },
+                    {
+                      value: '25-Year Commercial System Armor Warranty',
+                      label: '25-Year Commercial System Armor Warranty',
+                      badge: '25-Yr',
+                      badgeColor: 'sky',
+                    },
+                    {
+                      value: '10-Year Workmanship Guarantee (Repair)',
+                      label: '10-Year Workmanship Guarantee (Repair)',
+                      badge: '10-Yr',
+                      badgeColor: 'emerald',
+                    },
+                  ]}
+                />
               </div>
 
               <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 leading-relaxed">

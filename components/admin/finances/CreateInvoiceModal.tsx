@@ -20,6 +20,8 @@ import {
   ArrowRight,
   Check,
 } from 'lucide-react';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 
 interface JobSummary {
   id: number;
@@ -557,17 +559,12 @@ export default function CreateInvoiceModal({
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                       Milestone Name <span className="text-rose-500">*</span>
                     </label>
-                    <select
+                    <CustomSelect
                       value={presetMilestone}
-                      onChange={e => setPresetMilestone(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200/90 bg-white px-3 py-2 text-xs text-slate-800 focus:border-[#EAA636] focus:outline-hidden"
-                    >
-                      {PRESET_MILESTONES.map(p => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={setPresetMilestone}
+                      options={PRESET_MILESTONES}
+                      size="sm"
+                    />
 
                     {presetMilestone === 'Custom Milestone' && (
                       <input
@@ -603,15 +600,12 @@ export default function CreateInvoiceModal({
                       <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                         Due Date <span className="text-rose-500">*</span>
                       </label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                        <input
-                          type="date"
-                          value={dueDate}
-                          onChange={e => setDueDate(e.target.value)}
-                          className="w-full rounded-xl border border-slate-200/90 pl-8 pr-3 py-2 text-xs text-slate-800 focus:border-[#EAA636] focus:outline-hidden"
-                        />
-                      </div>
+                      <CustomDatePicker
+                        value={dueDate}
+                        onChange={setDueDate}
+                        size="sm"
+                        placeholder="Pick due date..."
+                      />
                     </div>
                   </div>
 

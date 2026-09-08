@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 interface JobPhoto {
   id: number;
@@ -278,17 +279,18 @@ export default function JobPhotoGallery({ jobId, jobNumber }: JobPhotoGalleryPro
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Project Phase
               </label>
-              <select
+              <CustomSelect
                 value={uploadPhase}
-                onChange={e => setUploadPhase(e.target.value)}
-                className="admin-input text-xs w-full px-3 py-2 rounded-xl"
-              >
-                <option value="before">Before Starting (Initial Condition)</option>
-                <option value="during">Tear-Off &amp; Underlayment (In Progress)</option>
-                <option value="inspection">City Building Inspection Pass</option>
-                <option value="after">Completed Roof (Final Warranty Photo)</option>
-                <option value="damage">Dry Rot / Subdecking Damage</option>
-              </select>
+                onChange={(val) => setUploadPhase(val as any)}
+                size="sm"
+                options={[
+                  { value: 'before', label: 'Before Starting (Initial Condition)' },
+                  { value: 'during', label: 'Tear-Off & Underlayment (In Progress)' },
+                  { value: 'inspection', label: 'City Building Inspection Pass' },
+                  { value: 'after', label: 'Completed Roof (Final Warranty Photo)' },
+                  { value: 'damage', label: 'Dry Rot / Subdecking Damage' },
+                ]}
+              />
             </div>
 
             {/* Camera / File Capture */}

@@ -23,6 +23,7 @@ import {
   TrendingUp,
   RefreshCw,
 } from 'lucide-react';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 function YelpLogo({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
@@ -609,16 +610,19 @@ export default function ReviewsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <select
-            value={ratingFilter}
-            onChange={e => setRatingFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-[#0B1E33] focus:outline-none focus:border-[#2F9FE3] shadow-2xs"
-          >
-            <option value="all">All Star Ratings</option>
-            <option value="5">5 Stars Only ★★★★★</option>
-            <option value="4">4 Stars ★★★★</option>
-            <option value="below_4">1–3 Stars (Detractors)</option>
-          </select>
+          <div className="w-52">
+            <CustomSelect
+              value={ratingFilter}
+              onChange={setRatingFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: 'All Star Ratings' },
+                { value: '5', label: '5 Stars Only ★★★★★', badge: '5★', badgeColor: 'gold' },
+                { value: '4', label: '4 Stars ★★★★', badge: '4★', badgeColor: 'sky' },
+                { value: 'below_4', label: '1–3 Stars (Detractors)', badge: '1-3★', badgeColor: 'amber' },
+              ]}
+            />
+          </div>
 
           <div className="relative flex-1 md:w-52">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -895,16 +899,17 @@ export default function ReviewsPage() {
 
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Service Type</label>
-                    <select
+                    <CustomSelect
                       value={formData.serviceType}
-                      onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] focus:outline-none focus:border-[#2F9FE3] focus:bg-white shadow-2xs"
-                    >
-                      <option value="Roof Replacement">Roof Replacement</option>
-                      <option value="Tile Relayment">Tile Relayment</option>
-                      <option value="Leak Repair">Leak Repair</option>
-                      <option value="Commercial TPO">Commercial TPO</option>
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, serviceType: val })}
+                      size="sm"
+                      options={[
+                        'Roof Replacement',
+                        'Tile Relayment',
+                        'Leak Repair',
+                        'Commercial TPO',
+                      ]}
+                    />
                   </div>
                 </div>
 

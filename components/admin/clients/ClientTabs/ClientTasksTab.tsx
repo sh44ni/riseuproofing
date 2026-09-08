@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { CheckSquare, Plus, Clock, CheckCircle2, User, AlertCircle } from 'lucide-react';
+import CustomSelect from '../../shared/CustomSelect';
+import CustomDatePicker from '../../shared/CustomDatePicker';
 
 interface TaskItem {
   id: number;
@@ -132,27 +134,29 @@ export default function ClientTasksTab({
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Due Date & Time <span className="text-red-500">*</span>
               </label>
-              <input
-                type="datetime-local"
+              <CustomDatePicker
+                mode="datetime"
                 required
                 value={dueAt}
-                onChange={e => setDueAt(e.target.value)}
-                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-sm focus:border-purple-600 outline-none"
+                onChange={setDueAt}
+                size="sm"
+                placeholder="Pick due date..."
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Priority</label>
-              <select
+              <CustomSelect
                 value={priority}
-                onChange={e => setPriority(e.target.value)}
-                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-sm focus:border-purple-600 outline-none"
-              >
-                <option value="low">Low</option>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent ⚡</option>
-              </select>
+                onChange={setPriority}
+                size="sm"
+                options={[
+                  { value: 'low', label: 'Low' },
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'high', label: 'High', badge: 'High', badgeColor: 'sky' },
+                  { value: 'urgent', label: 'Urgent ⚡', badge: 'Urgent', badgeColor: 'rose' },
+                ]}
+              />
             </div>
           </div>
 

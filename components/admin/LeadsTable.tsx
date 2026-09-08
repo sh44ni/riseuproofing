@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import StatusBadge, { PriorityLevel } from './shared/StatusBadge';
 import SourceAttributionBadge from './shared/SourceAttributionBadge';
+import CustomSelect from './shared/CustomSelect';
 
 export interface Lead {
   id: number;
@@ -277,23 +278,18 @@ export default function LeadsTable({ leads, onStatusChange, onQuickPeek }: Leads
 
                     {/* Status Select Pill */}
                     <td className="py-3 px-3">
-                      <div className="relative inline-block" onClick={e => e.stopPropagation()}>
-                        <select
+                      <div className="w-36" onClick={e => e.stopPropagation()}>
+                        <CustomSelect
                           value={lead.status}
-                          onChange={e => onStatusChange(lead.id, e.target.value)}
-                          className={`text-[11px] font-extrabold pl-2.5 pr-6 py-1 rounded-full border cursor-pointer outline-none transition-all appearance-none shadow-2xs ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
-                          style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'right 6px center',
-                          }}
-                        >
-                          {STATUS_OPTIONS.map(s => (
-                            <option key={s} value={s} className="bg-white text-slate-800 capitalize font-medium">
-                              {STATUS_CONFIG[s]?.label || s}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={val => onStatusChange(lead.id, val)}
+                          size="sm"
+                          variant="compact"
+                          options={STATUS_OPTIONS.map(s => ({
+                            value: s,
+                            label: STATUS_CONFIG[s]?.label || s,
+                            badgeColor: (s === 'won' ? 'emerald' : s === 'lost' ? 'rose' : 'sky') as any,
+                          }))}
+                        />
                       </div>
                     </td>
 

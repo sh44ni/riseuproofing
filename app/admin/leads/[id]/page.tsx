@@ -28,6 +28,7 @@ import ActivityTimeline, { Activity } from '@/components/admin/timeline/Activity
 import LogActivitySheet from '@/components/admin/timeline/LogActivitySheet';
 import QuickMessageModal from '@/components/admin/timeline/QuickMessageModal';
 import CustomSelect from '@/components/admin/shared/CustomSelect';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 import SourceAttributionBadge from '@/components/admin/shared/SourceAttributionBadge';
 import LeadStageChecklistCard from '@/components/admin/pipeline/LeadStageChecklistCard';
 
@@ -667,13 +668,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="datetime-local"
-                    required
-                    value={newTaskDue}
-                    onChange={e => setNewTaskDue(e.target.value)}
-                    className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3]"
-                  />
+                  <div className="flex-1">
+                    <CustomDatePicker
+                      mode="datetime"
+                      required
+                      placeholder="Due date & time..."
+                      value={newTaskDue}
+                      onChange={setNewTaskDue}
+                      size="sm"
+                    />
+                  </div>
                   <button
                     type="submit"
                     className="px-3.5 py-1.5 rounded-xl admin-btn-gold font-bold text-xs cursor-pointer ml-auto"

@@ -13,6 +13,7 @@ import {
   Loader2,
   CheckCircle2,
 } from 'lucide-react';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 
 export interface TaskItem {
   id: number;
@@ -283,14 +284,15 @@ export default function DashboardTasksWidget({
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <input
-            type="date"
+        <div className="flex items-center gap-1.5 w-40">
+          <CustomDatePicker
             value={newDueDate}
-            onChange={(e) => setNewDueDate(e.target.value)}
+            onChange={setNewDueDate}
             disabled={adding}
-            className="text-xs px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 focus:bg-white focus:border-[#1878B8] focus:outline-none"
+            size="sm"
+            placeholder="Due date..."
           />
+        </div>
 
           <button
             type="submit"
@@ -306,7 +308,6 @@ export default function DashboardTasksWidget({
               </>
             )}
           </button>
-        </div>
       </form>
     </div>
   );

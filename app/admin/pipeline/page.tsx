@@ -33,6 +33,7 @@ import QuickAddLeadModal from '@/components/admin/pipeline/QuickAddLeadModal';
 import EstimateTemplatePickerModal from '@/components/admin/pipeline/EstimateTemplatePickerModal';
 import StageChecklistPopover from '@/components/admin/pipeline/StageChecklistPopover';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 import RoleBadge from '@/components/admin/shared/RoleBadge';
 
 interface StageMeta {
@@ -554,21 +555,25 @@ export default function PipelinePage() {
 
         {/* Staff Filter Dropdown & Search */}
         <div className="flex items-center gap-2">
-          <select
-            value={selectedStaffId}
-            onChange={(e) => {
-              setSelectedStaffId(e.target.value);
-              setActiveTab('all');
-            }}
-            className="text-xs rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-slate-700 font-semibold focus:border-amber-500 focus:outline-none"
-          >
-            <option value="all">Filter by Staff Member...</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} ({u.role?.replace('_', ' ')})
-              </option>
-            ))}
-          </select>
+          <div className="w-52">
+            <CustomSelect
+              value={selectedStaffId}
+              onChange={(val) => {
+                setSelectedStaffId(val);
+                setActiveTab('all');
+              }}
+              size="sm"
+              placeholder="Filter by Staff Member..."
+              options={[
+                { value: 'all', label: 'All Staff Members' },
+                ...users.map((u) => ({
+                  value: String(u.id),
+                  label: u.name,
+                  description: u.role?.replace('_', ' '),
+                })),
+              ]}
+            />
+          </div>
 
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -741,17 +746,18 @@ export default function PipelinePage() {
 
                       {/* Pipeline Stage Picker */}
                       <td className="p-3.5">
-                        <select
-                          value={lead.pipeline_stage}
-                          onChange={(e) => handleStageChange(lead.id, e.target.value as PipelineStage)}
-                          className="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 font-semibold text-slate-800 focus:outline-none"
-                        >
-                          {STAGE_CONFIGS.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              Stage {s.stageNum}: {s.title}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="w-48">
+                          <CustomSelect
+                            value={lead.pipeline_stage}
+                            onChange={(val) => handleStageChange(lead.id, val as PipelineStage)}
+                            size="sm"
+                            variant="compact"
+                            options={STAGE_CONFIGS.map((s) => ({
+                              value: s.id,
+                              label: `Stage ${s.stageNum}: ${s.title}`,
+                            }))}
+                          />
+                        </div>
                       </td>
 
                       {/* Assigned Staff with 1-click Claim */}

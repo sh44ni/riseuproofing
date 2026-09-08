@@ -16,6 +16,7 @@ import {
 import MobileClientCard, { ClientListItem } from '@/components/admin/clients/MobileClientCard';
 import ClientsTable from '@/components/admin/clients/ClientsTable';
 import AddClientSheet from '@/components/admin/clients/AddClientSheet';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'All Clients' },
@@ -202,17 +203,21 @@ export default function ClientsDirectoryPage() {
           {/* Sort selection */}
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <span className="text-xs text-slate-500 font-medium">Sort by:</span>
-            <select
-              value={sort}
-              onChange={e => setSort(e.target.value)}
-              className="text-xs font-bold px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-2xs outline-none focus:border-[#2F9FE3] cursor-pointer"
-            >
-              <option value="recent">Recently Updated</option>
-              <option value="ltv">Highest Lifetime Value ($)</option>
-              <option value="name">Client Name (A-Z)</option>
-              <option value="jobs">Most Projects</option>
-              <option value="created">Newest Added</option>
-            </select>
+            <div className="w-48">
+              <CustomSelect
+                value={sort}
+                onChange={setSort}
+                size="sm"
+                variant="compact"
+                options={[
+                  { value: 'recent', label: 'Recently Updated' },
+                  { value: 'ltv', label: 'Highest Lifetime Value ($)' },
+                  { value: 'name', label: 'Client Name (A-Z)' },
+                  { value: 'jobs', label: 'Most Projects' },
+                  { value: 'created', label: 'Newest Added' },
+                ]}
+              />
+            </div>
           </div>
         </div>
 

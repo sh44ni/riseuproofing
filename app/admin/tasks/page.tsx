@@ -15,6 +15,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 
 interface Task {
   id: number;
@@ -326,26 +328,28 @@ export default function TasksPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Due Date & Time *</label>
-              <input
-                type="datetime-local"
+              <CustomDatePicker
+                mode="datetime"
                 required
                 value={newDue}
-                onChange={e => setNewDue(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
+                onChange={setNewDue}
+                size="sm"
+                placeholder="Pick due time..."
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Priority</label>
-              <select
+              <CustomSelect
                 value={newPriority}
-                onChange={e => setNewPriority(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-[#0B1E33] text-xs focus:outline-none focus:border-[#2F9FE3] focus:ring-1 focus:ring-[#2F9FE3]"
-              >
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-                <option value="low">Low</option>
-              </select>
+                onChange={setNewPriority}
+                size="sm"
+                options={[
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'high', label: 'High', badge: 'High', badgeColor: 'sky' },
+                  { value: 'urgent', label: 'Urgent', badge: 'Urgent', badgeColor: 'rose' },
+                  { value: 'low', label: 'Low' },
+                ]}
+              />
             </div>
           </div>
 

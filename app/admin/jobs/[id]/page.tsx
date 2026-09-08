@@ -33,6 +33,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { STAGES } from '../page';
+import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import JobPhotoGallery from '@/components/admin/jobs/JobPhotoGallery';
 import CustomSelect from '@/components/admin/shared/CustomSelect';
@@ -930,11 +931,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Start Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
                     value={scheduledStart}
-                    onChange={e => setScheduledStart(e.target.value)}
-                    className="admin-input text-xs font-medium"
+                    onChange={setScheduledStart}
+                    size="sm"
+                    placeholder="Pick start date..."
                   />
                 </div>
                 <div>
@@ -1067,11 +1068,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">Date</label>
-              <input
-                type="date"
+              <CustomDatePicker
                 value={expenseDate}
-                onChange={e => setExpenseDate(e.target.value)}
-                className="admin-input text-xs"
+                onChange={setExpenseDate}
+                size="sm"
+                placeholder="Pick expense date..."
               />
             </div>
 

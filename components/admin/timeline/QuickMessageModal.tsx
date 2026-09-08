@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import BottomSheet from '../shared/BottomSheet';
+import CustomSelect from '../shared/CustomSelect';
 import { ROOFING_TEMPLATES, renderTemplate } from '@/lib/crm-templates';
 import { MessageSquare, Mail, Copy, Check, Send, Sparkles, PhoneCall } from 'lucide-react';
 
@@ -206,18 +207,18 @@ export default function QuickMessageModal({
               <Sparkles size={11} className="text-[#EAA636]" /> CSLB & Field Ready
             </span>
           </label>
-          <select
+          <CustomSelect
             value={selectedTemplateId}
-            onChange={e => setSelectedTemplateId(e.target.value)}
-            className="admin-input text-xs font-medium w-full px-3 py-2.5 rounded-xl"
-          >
-            {availableTemplates.map(tpl => (
-              <option key={tpl.id} value={tpl.id}>
-                {tpl.name}
-              </option>
-            ))}
-            <option value="custom">✏️ Custom Freeform Message</option>
-          </select>
+            onChange={setSelectedTemplateId}
+            size="sm"
+            options={[
+              ...availableTemplates.map(tpl => ({
+                value: tpl.id,
+                label: tpl.name,
+              })),
+              { value: 'custom', label: '✏️ Custom Freeform Message' },
+            ]}
+          />
         </div>
 
         {/* Dynamic Context Inputs */}

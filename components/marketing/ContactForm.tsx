@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { Icon } from '@/components/shared/Icon';
 import { PHONE_HREF, PHONE_NUMBER } from '@/lib/utils';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [serviceType, setServiceType] = useState('residential');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -115,18 +117,21 @@ export function ContactForm() {
               <label htmlFor="serviceType" className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 block">
                 Roofing Service Needed
               </label>
-              <select
+              <CustomSelect
                 id="serviceType"
                 name="serviceType"
-                className="glass-input w-full px-4 py-3 rounded-xl text-sm font-medium bg-white text-[var(--text-primary)]"
-              >
-                <option value="residential">Residential Tile / Shingle</option>
-                <option value="repair">Leak Diagnostic &amp; Repair</option>
-                <option value="commercial">Commercial Flat / TPO</option>
-                <option value="solar">Solar Roofing Integration</option>
-                <option value="construction">General Construction / Dry Rot</option>
-                <option value="other">Other Inquiry</option>
-              </select>
+                value={serviceType}
+                onChange={setServiceType}
+                options={[
+                  { value: 'residential', label: 'Residential Tile / Shingle' },
+                  { value: 'repair', label: 'Leak Diagnostic & Repair' },
+                  { value: 'commercial', label: 'Commercial Flat / TPO' },
+                  { value: 'solar', label: 'Solar Roofing Integration' },
+                  { value: 'construction', label: 'General Construction / Dry Rot' },
+                  { value: 'other', label: 'Other Inquiry' },
+                ]}
+                triggerClassName="glass-input rounded-xl text-sm font-medium py-2.5"
+              />
             </div>
           </div>
 

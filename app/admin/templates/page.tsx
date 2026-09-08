@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ import {
   Tag,
   ArrowRight,
 } from 'lucide-react';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 interface TemplateItem {
   id: number;
@@ -482,17 +483,14 @@ export default function TemplatesPage() {
 
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Category</label>
-                  <select
+                  <CustomSelect
                     value={formData.category}
-                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#0B1E33] focus:outline-none focus:border-[#2F9FE3] focus:bg-white shadow-2xs"
-                  >
-                    {CATEGORIES.filter(c => c.id !== 'all').map(cat => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={val => setFormData({ ...formData, category: val })}
+                    options={CATEGORIES.filter(c => c.id !== 'all').map(cat => ({
+                      value: cat.id,
+                      label: cat.label,
+                    }))}
+                  />
                 </div>
               </div>
 

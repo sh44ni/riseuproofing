@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import StatusBadge, { PriorityLevel } from '../shared/StatusBadge';
 import SourceAttributionBadge from '../shared/SourceAttributionBadge';
+import CustomSelect from '../shared/CustomSelect';
 import { Lead } from '../LeadsTable';
 
 export type MobileLeadData = Lead;
@@ -135,18 +136,18 @@ export default function MobileLeadCard({
               </span>
             </div>
           ) : (
-            <div className="relative" onClick={e => e.stopPropagation()}>
-              <select
+            <div className="w-32" onClick={e => e.stopPropagation()}>
+              <CustomSelect
                 value={lead.status}
-                onChange={e => onStatusChange(lead.id, e.target.value)}
-                className={`text-[10px] font-bold pl-2 pr-5 py-0.5 rounded-full border cursor-pointer outline-none appearance-none ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
-              >
-                {STATUS_OPTIONS.map(s => (
-                  <option key={s} value={s} className="bg-white text-slate-800 capitalize">
-                    {STATUS_CONFIG[s]?.label || s}
-                  </option>
-                ))}
-              </select>
+                onChange={val => onStatusChange(lead.id, val)}
+                size="sm"
+                variant="compact"
+                options={STATUS_OPTIONS.map(s => ({
+                  value: s,
+                  label: STATUS_CONFIG[s]?.label || s,
+                  badgeColor: (s === 'won' ? 'emerald' : s === 'lost' ? 'rose' : 'sky') as any,
+                }))}
+              />
             </div>
           )}
         </div>
@@ -173,18 +174,18 @@ export default function MobileLeadCard({
 
         {/* Status Dropdown if estVal was shown above */}
         {estVal > 0 && (
-          <div className="relative" onClick={e => e.stopPropagation()}>
-            <select
+          <div className="w-32" onClick={e => e.stopPropagation()}>
+            <CustomSelect
               value={lead.status}
-              onChange={e => onStatusChange(lead.id, e.target.value)}
-              className={`text-[10px] font-bold pl-2 pr-5 py-0.5 rounded-full border cursor-pointer outline-none appearance-none ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
-            >
-              {STATUS_OPTIONS.map(s => (
-                <option key={s} value={s} className="bg-white text-slate-800 capitalize">
-                  {STATUS_CONFIG[s]?.label || s}
-                </option>
-              ))}
-            </select>
+              onChange={val => onStatusChange(lead.id, val)}
+              size="sm"
+              variant="compact"
+              options={STATUS_OPTIONS.map(s => ({
+                value: s,
+                label: STATUS_CONFIG[s]?.label || s,
+                badgeColor: (s === 'won' ? 'emerald' : s === 'lost' ? 'rose' : 'sky') as any,
+              }))}
+            />
           </div>
         )}
       </div>

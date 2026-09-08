@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import BottomSheet from '../shared/BottomSheet';
+import CustomSelect from '../shared/CustomSelect';
 import { Phone, FileText, MessageSquare, MapPin } from 'lucide-react';
 
 interface LogActivitySheetProps {
@@ -162,17 +163,12 @@ export default function LogActivitySheet({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Call Outcome</label>
-                <select
+                <CustomSelect
                   value={outcome}
-                  onChange={e => setOutcome(e.target.value)}
-                  className="admin-input text-xs w-full px-3 py-2 rounded-xl"
-                >
-                  {OUTCOMES.map(o => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setOutcome}
+                  size="sm"
+                  options={OUTCOMES}
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Duration (minutes)</label>

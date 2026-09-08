@@ -20,6 +20,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 import { CrewRosterSkeleton } from '@/components/admin/shared/AdminSkeletons';
 
 interface CrewMember {
@@ -483,18 +484,19 @@ export default function CrewPage() {
 
                   {/* Quick Re-assign dropdown */}
                   <div>
-                    <select
-                      value={member.current_job_id || ''}
-                      onChange={e => handleQuickAssign(member.id, e.target.value)}
-                      className="admin-select w-full px-2.5 py-1.5 text-[11px] font-semibold"
-                    >
-                      <option value="">-- No Active Job (Standby) --</option>
-                      {jobs.map(j => (
-                        <option key={j.id} value={j.id}>
-                          {j.job_number} - {j.customer_name} ({j.city || 'SD'})
-                        </option>
-                      ))}
-                    </select>
+                    <CustomSelect
+                      value={member.current_job_id ? String(member.current_job_id) : ''}
+                      onChange={(val) => handleQuickAssign(member.id, val)}
+                      size="sm"
+                      placeholder="-- No Active Job (Standby) --"
+                      options={[
+                        { value: '', label: '-- No Active Job (Standby) --' },
+                        ...jobs.map((j) => ({
+                          value: String(j.id),
+                          label: `${j.job_number} - ${j.customer_name} (${j.city || 'SD'})`,
+                        })),
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -539,16 +541,17 @@ export default function CrewPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Role</label>
-              <select
+              <CustomSelect
                 value={role}
-                onChange={e => setRole(e.target.value as any)}
-                className="admin-select text-xs font-semibold"
-              >
-                <option value="foreman">Foreman / Job Site Lead</option>
-                <option value="lead_installer">Lead Installer</option>
-                <option value="laborer">Laborer / Tear-off &amp; Staging</option>
-                <option value="sales">Sales &amp; Field Estimator</option>
-              </select>
+                onChange={(val) => setRole(val as any)}
+                size="sm"
+                options={[
+                  { value: 'foreman', label: 'Foreman / Job Site Lead' },
+                  { value: 'lead_installer', label: 'Lead Installer' },
+                  { value: 'laborer', label: 'Laborer / Tear-off & Staging' },
+                  { value: 'sales', label: 'Sales & Field Estimator' },
+                ]}
+              />
             </div>
 
             <div>
@@ -575,18 +578,19 @@ export default function CrewPage() {
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Assign to Active Job
               </label>
-              <select
+              <CustomSelect
                 value={currentJobId}
-                onChange={e => setCurrentJobId(e.target.value)}
-                className="admin-select text-xs font-semibold"
-              >
-                <option value="">Standby (No active job)</option>
-                {jobs.map(j => (
-                  <option key={j.id} value={j.id}>
-                    {j.job_number} - {j.customer_name} ({j.city || 'CA'})
-                  </option>
-                ))}
-              </select>
+                onChange={setCurrentJobId}
+                size="sm"
+                placeholder="Standby (No active job)"
+                options={[
+                  { value: '', label: 'Standby (No active job)' },
+                  ...jobs.map((j) => ({
+                    value: String(j.id),
+                    label: `${j.job_number} - ${j.customer_name} (${j.city || 'CA'})`,
+                  })),
+                ]}
+              />
             </div>
 
             <div>

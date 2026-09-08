@@ -11,6 +11,7 @@ import {
 import { AdminAreaChart, AdminBarChart, AdminPieChart } from '@/components/admin/Charts';
 import HeatmapCanvas from '@/components/admin/HeatmapCanvas';
 import { Skeleton } from '@/components/shared/Skeleton';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface AnalyticsData {
@@ -551,19 +552,17 @@ function AnalyticsContent() {
           {/* Controls Bar */}
           <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="relative">
-                <select
+              <div className="w-64">
+                <CustomSelect
                   value={selectedPage}
-                  onChange={e => setSelectedPage(e.target.value)}
-                  className="bg-white border border-slate-200/80 text-[#0B1E33] text-xs rounded-xl px-3 py-2 pr-7 focus:outline-none focus:border-[#2F9FE3] cursor-pointer shadow-2xs"
-                >
-                  {(heatmapData?.pages ?? []).map(p => (
-                    <option key={p.page_path} value={p.page_path}>
-                      {p.page_path} ({p.views} views)
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  onChange={setSelectedPage}
+                  size="sm"
+                  variant="compact"
+                  options={(heatmapData?.pages ?? []).map(p => ({
+                    value: p.page_path,
+                    label: `${p.page_path} (${p.views} views)`,
+                  }))}
+                />
               </div>
 
               <div className="flex gap-2">

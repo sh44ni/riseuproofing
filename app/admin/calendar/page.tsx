@@ -30,6 +30,7 @@ import { CalendarEvent, CalendarEventType } from '@/app/api/admin/calendar/route
 import TeamDayView from '@/components/admin/calendar/TeamDayView';
 import TaskModal from '@/components/admin/calendar/TaskModal';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
+import CustomSelect from '@/components/admin/shared/CustomSelect';
 
 const EVENT_TYPES: Array<{ id: string; label: string; color: string }> = [
   { id: 'all', label: 'All Events', color: 'bg-slate-100 text-slate-700' },
@@ -372,18 +373,21 @@ export default function CalendarPage() {
           <label className="text-xs font-bold text-slate-500 whitespace-nowrap">
             Filter Assignee:
           </label>
-          <select
-            value={filterPersonId}
-            onChange={(e) => setFilterPersonId(e.target.value)}
-            className="text-xs rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-slate-700 font-semibold focus:border-amber-500 focus:outline-none"
-          >
-            <option value="all">All Team Members</option>
-            {team.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} ({u.role ? u.role.replace(/_/g, ' ') : 'Staff'})
-              </option>
-            ))}
-          </select>
+          <div className="w-52">
+            <CustomSelect
+              value={filterPersonId}
+              onChange={setFilterPersonId}
+              size="sm"
+              options={[
+                { value: 'all', label: 'All Team Members' },
+                ...team.map((u) => ({
+                  value: String(u.id),
+                  label: u.name,
+                  description: u.role ? u.role.replace(/_/g, ' ') : 'Staff',
+                })),
+              ]}
+            />
+          </div>
         </div>
       </div>
 
