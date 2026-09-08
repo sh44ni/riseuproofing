@@ -1,297 +1,234 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthUser, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
-// Short-lived in-memory cache to deliver instant (< 1ms) dashboard refreshes
-interface CachedStats {
-  data: any;
-  expires: number;
-}
-let statsCache: CachedStats | null = null;
-const STATS_CACHE_TTL_MS = 15 * 1000; // 15 seconds cache
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   const auth = await requireAuthUser();
   if (auth.response) return auth.response;
 
-  const canViewProfit = hasPermission(auth.user, 'finances:view_profit_ledger');
-  const canViewInvoices = hasPermission(auth.user, 'finances:view_invoices');
-  const canViewLeads = hasPermission(auth.user, 'leads:view');
+  const user = auth.user;
+  const role = user.role;
+  const isOwner = role === 'owner' || role === 'office_admin';
+  const isPM = role === 'project_manager';
+  const isSalesRep = role === 'sales_rep' || role === 'door_knocker' || role === 'canvasser';
+  const isFieldCrew = role === 'field_foreman';
 
-  // Return instantly from memory cache if fresh (with per-user field filtering applied below)
-  const now = Date.now();
-  let baseData: any = null;
-  let cacheStatus = 'MISS';
-
-  if (statsCache && statsCache.expires > now) {
-    baseData = statsCache.data;
-    cacheStatus = 'HIT';
-  }
+  const canViewProfit = hasPermission(user, 'finances:view_profit_ledger');
+  const canViewInvoices = hasPermission(user, 'finances:view_invoices');
+  const canViewLeads = hasPermission(user, 'leads:view');
 
   try {
-    if (!baseData) {
-      const [
-        metricsRes,
-        hotLeadsRes,
-        urgentInspectionsRes,
-        overdueInvoicesRes,
-        escalatedReviewsRes,
-        tasksTodayRes,
-        todayInspectionsRes,
-        activeJobsOnSiteRes,
-        recentLeadsRes,
-      ] = await Promise.all([
-        // 1. Consolidated Aggregations & Metrics in 1 single CTE query
-        query<{
-          pipeline_val: string;
-          collected_val: string;
-          pending_inv_val: string;
-          pending_inv_count: string;
-          won_count: string;
-          total_closed: string;
-          crew_total: string;
-          crew_dispatched: string;
-          traffic_today: string;
-          traffic_7d: string;
-          stages_map: Record<string, number> | null;
-        }>(`
-          WITH
-            agg_pipeline AS (
-              SELECT COALESCE(SUM(contract_value), 0) as val FROM jobs WHERE status != 'complete'
-            ),
-            agg_collected AS (
-              SELECT COALESCE(SUM(amount), 0) as val FROM invoices 
-              WHERE status = 'paid' AND (paid_at >= NOW() - INTERVAL '30 days' OR updated_at >= NOW() - INTERVAL '30 days')
-            ),
-            agg_pending_inv AS (
-              SELECT COALESCE(SUM(amount), 0) as val, COUNT(*) as count FROM invoices WHERE status = 'pending'
-            ),
-            agg_win_rate AS (
-              SELECT 
-                COUNT(CASE WHEN status = 'won' THEN 1 END) as won_count,
-                COUNT(CASE WHEN status IN ('won', 'lost') THEN 1 END) as total_closed
-              FROM leads
-            ),
-            agg_crew AS (
-              SELECT 
-                COUNT(*) as total, 
-                COUNT(CASE WHEN current_job_id IS NOT NULL THEN 1 END) as dispatched 
-              FROM crew_members WHERE active = true
-            ),
-            agg_traffic AS (
-              SELECT 
-                COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN session_id END) as today,
-                COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN session_id END) as past_7d
-              FROM analytics_events 
-              WHERE event_type = 'pageview' AND page_path NOT LIKE '/admin%'
-            ),
-            agg_job_stages AS (
-              SELECT jsonb_object_agg(status, count) as stages_map
-              FROM (
-                SELECT status, COUNT(*)::int as count FROM jobs GROUP BY status
-              ) s
-            )
-          SELECT 
-            (SELECT val FROM agg_pipeline) as pipeline_val,
-            (SELECT val FROM agg_collected) as collected_val,
-            (SELECT val FROM agg_pending_inv) as pending_inv_val,
-            (SELECT count FROM agg_pending_inv) as pending_inv_count,
-            (SELECT won_count FROM agg_win_rate) as won_count,
-            (SELECT total_closed FROM agg_win_rate) as total_closed,
-            (SELECT total FROM agg_crew) as crew_total,
-            (SELECT dispatched FROM agg_crew) as crew_dispatched,
-            (SELECT today FROM agg_traffic) as traffic_today,
-            (SELECT past_7d FROM agg_traffic) as traffic_7d,
-            (SELECT stages_map FROM agg_job_stages) as stages_map;
-        `).catch(() => []),
-
-        // 2. Urgent: Hot leads not yet closed
-        query<any>(`
-          SELECT id, full_name, phone, address, COALESCE(city, 'San Diego') as city, service_type, lead_score, priority, created_at 
-          FROM leads 
-          WHERE status IN ('new', 'contacted') AND (priority = 'hot' OR lead_score >= 70) 
-          ORDER BY created_at DESC 
-          LIMIT 5
-        `).catch(() => []),
-
-        // 3. Urgent: Inspections with critical leak/rot hazards
-        query<any>(`
-          SELECT i.id, i.inspection_number, i.roof_health_score, i.inspection_date, 
-                 l.full_name as customer_name, l.address, COALESCE(l.city, 'San Diego') as city 
-          FROM inspections i 
-          LEFT JOIN leads l ON i.lead_id = l.id 
-          WHERE i.urgent_action_required = true 
-          ORDER BY i.created_at DESC 
-          LIMIT 5
-        `).catch(() => []),
-
-        // 4. Urgent: Overdue invoices
-        query<any>(`
-          SELECT i.id, i.invoice_number, i.amount, i.due_date, i.milestone_name as milestone_title,
-                 j.job_number, j.customer_name 
-          FROM invoices i 
-          LEFT JOIN jobs j ON i.job_id = j.id 
-          WHERE i.status = 'pending' AND i.due_date < CURRENT_DATE 
-          ORDER BY i.due_date ASC 
-          LIMIT 5
-        `).catch(() => []),
-
-        // 5. Urgent: Customer Review Escalations (<4★)
-        query<any>(`
-          SELECT id, customer_name, customer_city, rating, feedback, created_at 
-          FROM reviews 
-          WHERE status = 'escalated' 
-          ORDER BY created_at DESC 
-          LIMIT 3
-        `).catch(() => []),
-
-        // 6. Tasks due today or overdue
-        query<any>(`
-          SELECT id, title, due_at, priority, assigned_to 
-          FROM tasks 
-          WHERE completed_at IS NULL AND due_at::DATE <= CURRENT_DATE 
-          ORDER BY due_at ASC 
-          LIMIT 5
-        `).catch(() => []),
-
-        // 7. Today's scheduled inspections
-        query<any>(`
-          SELECT i.inspection_number, i.inspector_name, 
-                 l.full_name as customer_name, l.address, COALESCE(l.city, 'San Diego') as city 
-          FROM inspections i 
-          LEFT JOIN leads l ON i.lead_id = l.id 
-          WHERE i.inspection_date = CURRENT_DATE 
-          LIMIT 5
-        `).catch(() => []),
-
-        // 8. Active jobs on site
-        query<any>(`
-          SELECT id, job_number, customer_name, address, city, service_type, status, crew_lead, contract_value 
-          FROM jobs 
-          WHERE status IN ('scheduled', 'in_progress', 'material_order', 'permit_pending') 
-          ORDER BY updated_at DESC 
-          LIMIT 6
-        `).catch(() => []),
-
-        // 9. Recent Leads
-        query<any>(`
-          SELECT id, full_name, phone, email, address, COALESCE(city, 'San Diego') as city, service_type, status, priority, lead_score, created_at 
-          FROM leads 
-          ORDER BY created_at DESC 
-          LIMIT 6
-        `).catch(() => []),
-      ]);
-
-      const m = metricsRes[0] || {
-        pipeline_val: '0',
-        collected_val: '0',
-        pending_inv_val: '0',
-        pending_inv_count: '0',
-        won_count: '0',
-        total_closed: '0',
-        crew_total: '0',
-        crew_dispatched: '0',
-        traffic_today: '0',
-        traffic_7d: '0',
-        stages_map: {},
-      };
-
-      // Compute win rate
-      const wonCount = parseInt(m.won_count || '0', 10);
-      const totalClosed = parseInt(m.total_closed || '0', 10);
-      const winRate = totalClosed > 0 ? Math.round((wonCount / totalClosed) * 100) : 68;
-
-      // Build stage map for 7 kanban stages
-      const stageMap: Record<string, number> = {
-        permit_pending: 0,
-        material_order: 0,
-        scheduled: 0,
-        in_progress: 0,
-        punch_list: 0,
-        final_inspection: 0,
-        complete: 0,
-      };
-      if (m.stages_map && typeof m.stages_map === 'object') {
-        Object.entries(m.stages_map).forEach(([status, count]) => {
-          if (status in stageMap) {
-            stageMap[status] = typeof count === 'number' ? count : parseInt(String(count), 10);
-          }
-        });
+    // 1. Fetch configurable Follow-Up Threshold Hours from app_settings (fallback to 72 hours)
+    let followUpThresholdHours = 72;
+    try {
+      const settingsRow = await query<{ value: any }>(
+        `SELECT value FROM app_settings WHERE key = 'follow_up_threshold_hours' LIMIT 1`
+      );
+      if (settingsRow.length > 0 && settingsRow[0].value) {
+        const parsed = parseInt(String(settingsRow[0].value), 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          followUpThresholdHours = parsed;
+        }
       }
-
-      const activeJobsTotal =
-        stageMap.permit_pending +
-        stageMap.material_order +
-        stageMap.scheduled +
-        stageMap.in_progress +
-        stageMap.punch_list +
-        stageMap.final_inspection;
-
-      baseData = {
-        revenue: {
-          activePipelineValue: parseFloat(m.pipeline_val || '0'),
-          collectedThisMonth: parseFloat(m.collected_val || '0'),
-          pendingInvoicesAmount: parseFloat(m.pending_inv_val || '0'),
-          pendingInvoicesCount: parseInt(m.pending_inv_count || '0', 10),
-          winRate,
-          activeJobsTotal,
-        },
-        urgentAlerts: {
-          hotLeads: hotLeadsRes,
-          urgentInspections: urgentInspectionsRes,
-          overdueInvoices: overdueInvoicesRes,
-          escalatedReviews: escalatedReviewsRes,
-          tasksToday: tasksTodayRes,
-          totalUrgentItems:
-            hotLeadsRes.length +
-            urgentInspectionsRes.length +
-            overdueInvoicesRes.length +
-            escalatedReviewsRes.length,
-        },
-        jobsStageMap: stageMap,
-        todayOperations: {
-          inspections: todayInspectionsRes,
-          activeJobs: activeJobsOnSiteRes,
-          crewDispatched: parseInt(m.crew_dispatched || '0', 10),
-          crewTotal: parseInt(m.crew_total || '0', 10),
-        },
-        recentLeads: recentLeadsRes,
-        trafficSummary: {
-          visitorsToday: parseInt(m.traffic_today || '0', 10),
-          visitors7d: parseInt(m.traffic_7d || '0', 10),
-        },
-      };
-
-      // Store in-memory
-      statsCache = {
-        data: baseData,
-        expires: Date.now() + STATS_CACHE_TTL_MS,
-      };
+    } catch {
+      // Use fallback default
     }
 
-    // Filter fields according to current user's atomic permissions
-    const userPayload = {
-      ...baseData,
-      revenue: {
-        ...baseData.revenue,
-        activePipelineValue: canViewProfit ? baseData.revenue.activePipelineValue : 0,
-        collectedThisMonth: canViewProfit ? baseData.revenue.collectedThisMonth : 0,
-        pendingInvoicesAmount: canViewInvoices ? baseData.revenue.pendingInvoicesAmount : 0,
-      },
-      urgentAlerts: {
-        ...baseData.urgentAlerts,
-        hotLeads: canViewLeads ? baseData.urgentAlerts.hotLeads : [],
-        overdueInvoices: canViewInvoices ? baseData.urgentAlerts.overdueInvoices : [],
-      },
-      recentLeads: canViewLeads ? baseData.recentLeads : [],
+    // 2. Parallel data fetching based on user role
+    const [
+      kpisRes,
+      needsFollowUpRes,
+      myTasksRes,
+      activeJobsRes,
+      recentLeadsRes,
+      topPerformersRes,
+      trafficRes,
+      jobsStageMapRes,
+    ] = await Promise.all([
+      // 2.1 KPI Strip Aggregations
+      query<{
+        new_leads_week: string;
+        active_jobs: string;
+        pending_estimates: string;
+        revenue_mtd: string;
+      }>(`
+        WITH
+          agg_leads AS (
+            SELECT COUNT(*) as count FROM leads 
+            WHERE created_at >= date_trunc('week', NOW())
+            ${isSalesRep ? `AND assigned_to_user_id = ${user.id}` : ''}
+          ),
+          agg_jobs AS (
+            SELECT COUNT(*) as count FROM jobs 
+            WHERE status != 'complete'
+            ${isSalesRep ? `AND (lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))` : ''}
+          ),
+          agg_estimates AS (
+            SELECT COUNT(*) as count FROM estimates 
+            WHERE status IN ('sent', 'viewed', 'draft')
+            ${isSalesRep ? `AND (lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))` : ''}
+          ),
+          agg_revenue AS (
+            SELECT COALESCE(SUM(amount), 0) as amount FROM invoices 
+            WHERE status = 'paid' 
+              AND (paid_at >= date_trunc('month', NOW()) OR (paid_at IS NULL AND updated_at >= date_trunc('month', NOW())))
+          )
+        SELECT 
+          (SELECT count FROM agg_leads) as new_leads_week,
+          (SELECT count FROM agg_jobs) as active_jobs,
+          (SELECT count FROM agg_estimates) as pending_estimates,
+          (SELECT amount FROM agg_revenue) as revenue_mtd;
+      `),
+
+      // 2.2 Needs Follow-Up (Stale leads waiting on decision > threshold hours)
+      !isFieldCrew
+        ? query<any>(`
+            SELECT 
+              l.id, l.full_name, l.phone, l.email, l.address, COALESCE(l.city, 'San Diego') as city, 
+              l.service_type, l.estimated_value, l.pipeline_stage, l.status, l.priority, 
+              l.assigned_to_name, l.assigned_to_user_id,
+              COALESCE(l.proposal_sent_at, l.updated_at, l.created_at) as last_activity_at,
+              ROUND(EXTRACT(EPOCH FROM (NOW() - COALESCE(l.proposal_sent_at, l.updated_at, l.created_at))) / 86400)::int as days_idle
+            FROM leads l
+            WHERE l.status NOT IN ('won', 'lost')
+              AND (
+                l.pipeline_stage IN ('stage_4_proposal_negotiation', 'stage_3_site_visit_estimate')
+                OR l.status IN ('quoted', 'contacted')
+              )
+              AND COALESCE(l.proposal_sent_at, l.updated_at, l.created_at) < NOW() - ($1 * INTERVAL '1 hour')
+              ${isSalesRep ? `AND l.assigned_to_user_id = ${user.id}` : ''}
+            ORDER BY COALESCE(l.proposal_sent_at, l.updated_at, l.created_at) ASC
+            LIMIT 6
+          `, [followUpThresholdHours])
+        : Promise.resolve([]),
+
+      // 2.3 My Tasks (CRUD-backed personal task list for current_user.id)
+      query<any>(`
+        SELECT 
+          t.id, t.title, t.description, t.priority, t.due_at, t.end_at, t.completed_at,
+          t.entity_type, t.entity_id,
+          COALESCE(l.full_name, j.customer_name) as related_name,
+          COALESCE(l.phone, j.customer_phone) as related_phone
+        FROM tasks t
+        LEFT JOIN leads l ON t.entity_type = 'lead' AND t.entity_id = l.id
+        LEFT JOIN jobs j ON t.entity_type = 'job' AND t.entity_id = j.id
+        WHERE (t.assigned_to_user_id = $1 OR t.created_by_user_id = $1)
+          AND (t.completed_at IS NULL OR t.completed_at >= CURRENT_DATE)
+        ORDER BY (t.completed_at IS NOT NULL) ASC, t.due_at ASC
+        LIMIT 10
+      `, [user.id]),
+
+      // 2.4 Active Jobs in Field
+      query<any>(`
+        SELECT 
+          j.id, j.job_number, j.customer_name, j.customer_phone, j.address, 
+          COALESCE(j.city, 'San Diego') as city, j.service_type, j.status, 
+          j.crew_lead, j.contract_value, j.scheduled_start, j.lead_id
+        FROM jobs j
+        WHERE j.status IN ('scheduled', 'in_progress', 'material_order', 'permit_pending', 'punch_list', 'final_inspection')
+        ${isFieldCrew ? `AND (DATE(j.scheduled_start) = CURRENT_DATE OR j.status = 'in_progress')` : ''}
+        ${isSalesRep ? `AND (j.lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))` : ''}
+        ORDER BY j.updated_at DESC
+        LIMIT 6
+      `),
+
+      // 2.5 Recent Prospects (Real priority field checked)
+      !isFieldCrew && canViewLeads
+        ? query<any>(`
+            SELECT 
+              id, full_name, phone, email, address, COALESCE(city, 'San Diego') as city, 
+              service_type, status, priority, lead_score, estimated_value, created_at,
+              source_type, lead_source_detail
+            FROM leads
+            ${isSalesRep ? `WHERE assigned_to_user_id = ${user.id}` : ''}
+            ORDER BY created_at DESC
+            LIMIT 6
+          `)
+        : Promise.resolve([]),
+
+      // 2.6 Top Performers (Owner only, flat static aggregate)
+      isOwner
+        ? query<any>(`
+            SELECT 
+              u.id, u.name, u.role, u.avatar_url,
+              COUNT(l.id)::int as won_leads,
+              COALESCE(SUM(l.estimated_value), 0)::numeric as total_revenue
+            FROM users u
+            JOIN leads l ON l.assigned_to_user_id = u.id AND l.status = 'won'
+            GROUP BY u.id, u.name, u.role, u.avatar_url
+            ORDER BY total_revenue DESC, won_leads DESC
+            LIMIT 5
+          `)
+        : Promise.resolve([]),
+
+      // 2.7 Marketing & Traffic summary (for single-line teaser)
+      isOwner || isPM || isSalesRep
+        ? query<any>(`
+            SELECT 
+              COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN session_id END)::int as today,
+              COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN session_id END)::int as past_7d
+            FROM analytics_events 
+            WHERE event_type = 'pageview' AND page_path NOT LIKE '/admin%'
+          `).catch(() => [{ today: 0, past_7d: 0 }])
+        : Promise.resolve([{ today: 0, past_7d: 0 }]),
+
+      // 2.8 7-Stage Production Pulse Map
+      query<any>(`
+        SELECT status, COUNT(*)::int as count 
+        FROM jobs 
+        GROUP BY status
+      `).catch(() => []),
+    ]);
+
+    // Build stage map
+    const stageMap: Record<string, number> = {
+      permit_pending: 0,
+      material_order: 0,
+      scheduled: 0,
+      in_progress: 0,
+      punch_list: 0,
+      final_inspection: 0,
+      complete: 0,
+    };
+    jobsStageMapRes.forEach((r: any) => {
+      if (r.status in stageMap) {
+        stageMap[r.status] = parseInt(String(r.count), 10) || 0;
+      }
+    });
+
+    const kpiData = kpisRes[0] || {
+      new_leads_week: '0',
+      active_jobs: '0',
+      pending_estimates: '0',
+      revenue_mtd: '0',
     };
 
-    return NextResponse.json(userPayload, {
-      headers: { 'X-Cache': cacheStatus },
+    const traffic = trafficRes[0] || { today: 0, past_7d: 0 };
+
+    return NextResponse.json({
+      userRole: role,
+      userId: user.id,
+      userName: user.name,
+      followUpThresholdHours,
+      kpis: {
+        newLeadsThisWeek: parseInt(kpiData.new_leads_week || '0', 10),
+        activeJobs: parseInt(kpiData.active_jobs || '0', 10),
+        pendingEstimates: parseInt(kpiData.pending_estimates || '0', 10),
+        revenueMtd: canViewProfit ? parseFloat(kpiData.revenue_mtd || '0') : 0,
+      },
+      needsFollowUp: needsFollowUpRes,
+      myTasks: myTasksRes,
+      activeJobs: activeJobsRes,
+      recentLeads: recentLeadsRes,
+      topPerformers: topPerformersRes,
+      trafficSummary: {
+        visitorsToday: parseInt(traffic.today || '0', 10),
+        visitors7d: parseInt(traffic.past_7d || '0', 10),
+      },
+      jobsStageMap: stageMap,
     });
   } catch (err) {
     console.error('[api/admin/stats GET]', err);
     return NextResponse.json({ error: 'Server error loading stats' }, { status: 500 });
   }
 }
-
