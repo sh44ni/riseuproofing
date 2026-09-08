@@ -1,10 +1,9 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, ShieldCheck, User } from 'lucide-react';
-import { RoleIcon } from '@/components/admin/shared/RoleBadge';
 
 export default function AdminLogin() {
   const [mode, setMode] = useState<'team' | 'quick'>('team');
@@ -41,13 +40,6 @@ export default function AdminLogin() {
       setError('Connection error. Please check your network and try again.');
       setLoading(false);
     }
-  }
-
-  function setDemoAccount(userEmail: string, userPass: string) {
-    setMode('team');
-    setEmail(userEmail);
-    setPassword(userPass);
-    setError('');
   }
 
   return (
@@ -202,55 +194,6 @@ export default function AdminLogin() {
               </div>
             </button>
           </form>
-
-          {/* Role Test Preset Pills */}
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center relative z-10">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">
-              Quick Role Test Logins
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setDemoAccount('owner@riseuprac.com', 'RiseUp2025!')}
-                className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <RoleIcon role="owner" size={12} />
-                Owner
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoAccount('pm@riseuprac.com', 'RiseUpPM2025!')}
-                className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <RoleIcon role="project_manager" size={12} />
-                PM
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoAccount('sales@riseuprac.com', 'RiseUpSales2025!')}
-                className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <RoleIcon role="sales_rep" size={12} />
-                Sales Rep
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoAccount('foreman@riseuprac.com', 'RiseUpCrew2025!')}
-                className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <RoleIcon role="field_foreman" size={12} />
-                Foreman
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoAccount('office@riseuprac.com', 'RiseUpOffice2025!')}
-                className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <RoleIcon role="office_admin" size={12} />
-                Office
-              </button>
-            </div>
-          </div>
         </div>
 
         <p className="text-center text-slate-400 text-xs mt-6 admin-fade-in-2">
