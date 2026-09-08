@@ -110,14 +110,36 @@ export async function POST(
     return NextResponse.json({ ok: true, message: 'Proposal was already accepted' });
   }
 
-  // Update estimate status
+  // Resolve or establish client_id
+  let clientId: number | null = est.client_id ? Number(est.client_id) : null;
+  if (!clientId && est.lead_id) {
+    const lRows = await query<any>('SELECT client_id FROM leads WHERE id = $1', [est.lead_id]);
+    if (lRows[0]?.client_id) clientId = Number(lRows[0].client_id);
+  }
+  if (!clientId) {
+    const { findOrCreateClient } = await import('@/lib/crm-clients');
+    const client = await findOrCreateClient({
+      fullName: est.customer_name,
+      phone: est.customer_phone,
+      email: est.customer_email,
+      address: est.customer_address,
+      city: est.customer_city,
+      zip: est.customer_zip,
+      serviceType: est.service_type,
+      leadSource: 'proposal_portal',
+    });
+    clientId = client.id;
+  }
+
+  // Update estimate status and link client
   await query(
     `UPDATE estimates SET 
        status = 'accepted',
        accepted_at = NOW(),
-       signature_name = $1
-     WHERE id = $2`,
-    [signatureName.trim(), est.id]
+       signature_name = $1,
+       client_id = COALESCE(client_id, $2)
+     WHERE id = $3`,
+    [signatureName.trim(), clientId, est.id]
   );
 
   // Generate job number JOB-YYYY-XXXX
@@ -126,17 +148,18 @@ export async function POST(
   const seq = String(parseInt(jobCount[0]?.count ?? '0', 10) + 1).padStart(4, '0');
   const jobNumber = `JOB-${year}-${seq}`;
 
-  // Create Job in 'permit_pending'
+  // Create Job in 'permit_pending' with client_id
   await query(
     `INSERT INTO jobs (
-      lead_id, estimate_id, job_number, status, customer_name, customer_phone,
+      lead_id, client_id, estimate_id, job_number, status, customer_name, customer_phone,
       customer_email, address, city, zip, service_type, contract_value, notes
     ) VALUES (
-      $1, $2, $3, 'permit_pending', $4, $5,
-      $6, $7, $8, $9, $10, $11, $12
+      $1, $2, $3, $4, 'permit_pending', $5, $6,
+      $7, $8, $9, $10, $11, $12, $13
     )`,
     [
       est.lead_id,
+      clientId,
       est.id,
       jobNumber,
       est.customer_name,
@@ -151,18 +174,35 @@ export async function POST(
     ]
   );
 
-  // Mark lead as won
+  // Mark lead as won and advance to Stage 5 in the Sales Pipeline
   if (est.lead_id) {
-    await query(`UPDATE leads SET status = 'won' WHERE id = $1`, [est.lead_id]);
+    await query(
+      `UPDATE leads 
+       SET status = 'won',
+           pipeline_stage = 'stage_5_completion_followup',
+           stage_entered_at = NOW(),
+           contract_signed_at = NOW(),
+           estimated_value = GREATEST(COALESCE(estimated_value, 0), $1),
+           client_id = COALESCE(client_id, $2),
+           updated_at = NOW()
+       WHERE id = $3`,
+      [Number(est.total) || 0, clientId, est.lead_id]
+    );
 
     await query(
-      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-       VALUES ('lead', $1, 'status_change', 'Contract Signed Online!', $2, 'Customer')`,
+      `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+       VALUES ('lead', $1, $2, 'status_change', 'Contract Signed Online!', $3, 'Customer')`,
       [
         est.lead_id,
-        `Homeowner ${signatureName.trim()} signed estimate ${est.estimate_number} ($${Number(est.total).toLocaleString()}). Project ${jobNumber} created!`,
+        clientId,
+        `Homeowner ${signatureName.trim()} signed estimate ${est.estimate_number} ($${Number(est.total).toLocaleString()}). Project ${jobNumber} created and moved to Stage 5!`,
       ]
     );
+  }
+
+  if (clientId) {
+    const { recalculateClientStats } = await import('@/lib/crm-clients');
+    await recalculateClientStats(clientId);
   }
 
   return NextResponse.json({

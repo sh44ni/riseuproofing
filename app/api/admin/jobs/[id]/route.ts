@@ -90,9 +90,25 @@ export async function PATCH(
   updates.push(`updated_at = NOW()`);
 
   params.push(jobId);
-  await query(`UPDATE jobs SET ${updates.join(', ')} WHERE id = $${params.length}`, params);
+  const updatedJobs = await query<any>(`UPDATE jobs SET ${updates.join(', ')} WHERE id = $${params.length} RETURNING *`, params);
+  const updatedJob = updatedJobs[0];
 
-  return NextResponse.json({ ok: true });
+  if (updatedJob) {
+    // If status became complete, mark the linked lead
+    if (body.status === 'complete' && updatedJob.lead_id) {
+      await query(
+        `UPDATE leads SET job_completed_at = NOW(), status = 'won', updated_at = NOW() WHERE id = $1`,
+        [updatedJob.lead_id]
+      );
+    }
+
+    if (updatedJob.client_id) {
+      const { recalculateClientStats } = await import('@/lib/crm-clients');
+      await recalculateClientStats(Number(updatedJob.client_id));
+    }
+  }
+
+  return NextResponse.json({ ok: true, job: updatedJob });
 }
 
 export async function DELETE(
@@ -108,6 +124,15 @@ export async function DELETE(
     return NextResponse.json({ error: 'Invalid job ID' }, { status: 400 });
   }
 
+  const existing = await query<any>('SELECT client_id FROM jobs WHERE id = $1', [jobId]);
+  const clientId = existing[0]?.client_id;
+
   await query(`DELETE FROM jobs WHERE id = $1`, [jobId]);
+
+  if (clientId) {
+    const { recalculateClientStats } = await import('@/lib/crm-clients');
+    await recalculateClientStats(Number(clientId));
+  }
+
   return NextResponse.json({ ok: true });
 }

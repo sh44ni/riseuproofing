@@ -122,15 +122,22 @@ export async function POST(req: NextRequest) {
       coverageDetails ||
       'Owens Corning Preferred Protection System Warranty (50-Year Non-Prorated TruDefinition Duration Shingles) with Rise Up Roofing 10-Year Workmanship Guarantee. CSLB #1096492.';
 
+    let clientId = job.client_id ? Number(job.client_id) : null;
+    if (!clientId && job.lead_id) {
+      const l = await query<any>('SELECT client_id FROM leads WHERE id = $1', [job.lead_id]);
+      if (l[0]?.client_id) clientId = Number(l[0].client_id);
+    }
+
     const rows = await query<any>(
       `INSERT INTO warranties (
-        job_id, lead_id, warranty_number, warranty_type, start_date, expiration_date,
+        job_id, lead_id, client_id, warranty_number, warranty_type, start_date, expiration_date,
         coverage_details, status, checkin_6mo_due, checkin_1yr_due, access_token
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9, $10)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9, $10, $11)
       RETURNING *`,
       [
         job.id,
         job.lead_id,
+        clientId,
         warrantyNumber,
         warrantyType,
         startDateStr,
@@ -142,13 +149,14 @@ export async function POST(req: NextRequest) {
       ]
     );
 
-    // Log to lead activity timeline
+    // Log to lead & client activity timeline
     if (job.lead_id) {
       await query(
-        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-         VALUES ('lead', $1, 'status_change', $2, $3, 'Warranty Dept')`,
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('lead', $1, $2, 'status_change', $3, $4, 'Warranty Dept')`,
         [
           job.lead_id,
+          clientId,
           `Warranty Certificate Issued: ${warrantyNumber}`,
           `${warrantyType} issued. Valid through ${expirationDateStr}. 6-month inspection scheduled for ${checkin6moStr}.`,
         ]

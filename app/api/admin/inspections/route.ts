@@ -105,15 +105,26 @@ export async function POST(req: NextRequest) {
 
     const dateStr = inspectionDate || new Date().toISOString().slice(0, 10);
 
+    let resolvedClientId: number | null = null;
+    if (leadId) {
+      const l = await query<any>('SELECT client_id FROM leads WHERE id = $1', [parseInt(leadId, 10)]);
+      if (l[0]?.client_id) resolvedClientId = Number(l[0].client_id);
+    }
+    if (!resolvedClientId && jobId) {
+      const j = await query<any>('SELECT client_id FROM jobs WHERE id = $1', [parseInt(jobId, 10)]);
+      if (j[0]?.client_id) resolvedClientId = Number(j[0].client_id);
+    }
+
     const rows = await query<any>(
       `INSERT INTO inspections (
-        lead_id, job_id, inspection_number, inspector_name, inspection_date,
+        lead_id, job_id, client_id, inspection_number, inspector_name, inspection_date,
         roof_health_score, findings, urgent_action_required, estimated_remaining_years, notes, access_token
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *`,
       [
         leadId ? parseInt(leadId, 10) : null,
         jobId ? parseInt(jobId, 10) : null,
+        resolvedClientId,
         inspectionNumber,
         inspectorName,
         dateStr,
@@ -128,24 +139,28 @@ export async function POST(req: NextRequest) {
 
     const createdInspection = rows[0];
 
-    // Update lead status to 'inspected' if lead was new/contacted
+    // Update lead status to 'inspected', mark site visit completed, and advance pipeline stage
     if (leadId) {
       await query(
         `UPDATE leads 
          SET status = CASE WHEN status IN ('new', 'contacted') THEN 'inspected' ELSE status END,
-             last_contact_at = NOW()
+             pipeline_stage = CASE WHEN pipeline_stage IN ('stage_1_lead_gen', 'stage_2_initial_contact') THEN 'stage_3_site_visit_estimate' ELSE pipeline_stage END,
+             site_visit_completed_at = COALESCE(site_visit_completed_at, NOW()),
+             last_contact_at = NOW(),
+             updated_at = NOW()
          WHERE id = $1`,
         [parseInt(leadId, 10)]
       );
 
-      // Log activity to lead timeline
+      // Log activity to lead & client timeline
       await query(
-        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-         VALUES ('lead', $1, 'visit', $2, $3, $4)`,
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('lead', $1, $2, 'visit', $3, $4, $5)`,
         [
           parseInt(leadId, 10),
-          `12-Point Roof Inspection Completed: ${inspectionNumber}`,
-          `Roof Health Score: ${finalScore}/100. ${hasUrgent ? '⚠️ Urgent leak hazards detected.' : 'Overall good condition with normal weathering.'}`,
+          resolvedClientId,
+          `Roof Inspection Completed: Score ${finalScore}/100`,
+          `Inspection ${inspectionNumber} performed by ${inspectorName}.${hasUrgent ? ' ⚠️ Critical roof damage identified!' : ''}`,
           inspectorName,
         ]
       );

@@ -190,17 +190,20 @@ export async function GET(req: NextRequest) {
         LEFT JOIN users u_creator ON l.created_by_user_id = u_creator.id
         LEFT JOIN LATERAL (
           SELECT id, job_number, status, contract_value, crew_lead
-          FROM jobs WHERE lead_id = l.id
+          FROM jobs 
+          WHERE lead_id = l.id OR (l.client_id IS NOT NULL AND client_id = l.client_id)
           ORDER BY id DESC LIMIT 1
         ) j ON true
         LEFT JOIN LATERAL (
           SELECT id, estimate_number, total, status
-          FROM estimates WHERE lead_id = l.id
+          FROM estimates 
+          WHERE lead_id = l.id OR (l.client_id IS NOT NULL AND client_id = l.client_id)
           ORDER BY id DESC LIMIT 1
         ) e ON true
         LEFT JOIN LATERAL (
           SELECT id, inspection_number, roof_health_score, inspection_date
-          FROM inspections WHERE lead_id = l.id
+          FROM inspections 
+          WHERE lead_id = l.id OR (l.client_id IS NOT NULL AND client_id = l.client_id)
           ORDER BY id DESC LIMIT 1
         ) insp ON true
         LEFT JOIN LATERAL (

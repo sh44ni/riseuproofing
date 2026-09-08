@@ -126,18 +126,32 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let resolvedClientId: number | null = null;
+    if (entityId) {
+      if (entityType === 'lead') {
+        const l = await query<any>('SELECT client_id FROM leads WHERE id = $1', [parseInt(entityId, 10)]);
+        if (l[0]?.client_id) resolvedClientId = Number(l[0].client_id);
+      } else if (entityType === 'job') {
+        const j = await query<any>('SELECT client_id FROM jobs WHERE id = $1', [parseInt(entityId, 10)]);
+        if (j[0]?.client_id) resolvedClientId = Number(j[0].client_id);
+      } else if (entityType === 'client') {
+        resolvedClientId = parseInt(entityId, 10);
+      }
+    }
+
     const rows = await query<any>(
       `INSERT INTO tasks (
-         title, description, entity_type, entity_id, assigned_to, assigned_to_user_id,
+         title, description, entity_type, entity_id, client_id, assigned_to, assigned_to_user_id,
          due_at, end_at, priority, event_type, created_by_user_id
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         title,
         description ?? null,
         entityId ? entityType : null,
         entityId ? parseInt(entityId, 10) : null,
+        resolvedClientId,
         resolvedAssignedName,
         resolvedUserId,
         dueAt,
@@ -148,16 +162,18 @@ export async function POST(req: NextRequest) {
       ]
     );
 
-    // If linked to lead, log in activity
+    // If linked to lead/job/client, log in activity
     if (entityId) {
       await query(
-        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-         VALUES ('lead', $1, 'note', $2, $3, $4)`,
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ($1, $2, $3, 'note', $4, $5, $6)`,
         [
+          entityType,
           parseInt(entityId, 10),
-          `Task scheduled: ${title}`,
-          `Due: ${new Date(dueAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
-          resolvedAssignedName,
+          resolvedClientId,
+          `Task Created: ${title}`,
+          `Due ${new Date(dueAt).toLocaleDateString()} — Assigned to ${resolvedAssignedName}`,
+          auth.user.name,
         ]
       );
     }

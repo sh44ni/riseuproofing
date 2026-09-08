@@ -147,15 +147,45 @@ export async function PATCH(
         [leadId]
       );
 
+      // Resolve client_id
+      let clientId = lead.client_id ? Number(lead.client_id) : null;
+      if (!clientId) {
+        const { findOrCreateClient } = await import('@/lib/crm-clients');
+        const client = await findOrCreateClient({
+          fullName: lead.full_name,
+          phone: lead.phone,
+          email: lead.email,
+          address: lead.address,
+          city: lead.city,
+          zip: lead.zip,
+          serviceType: lead.service_type,
+          leadSource: lead.lead_source || 'pipeline_stage_5',
+        });
+        clientId = client.id;
+        await query('UPDATE leads SET client_id = $1 WHERE id = $2', [clientId, leadId]);
+      }
+
+      // Check if lead has an estimate
+      let estimateId: number | null = null;
+      const estRows = await query<any>(
+        `SELECT id, total FROM estimates WHERE lead_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [leadId]
+      );
+      if (estRows.length > 0) {
+        estimateId = Number(estRows[0].id);
+      }
+
       if (existingJob.length === 0) {
         const year = new Date().getFullYear();
         const randHex = Math.floor(1000 + Math.random() * 9000);
         const jobNumber = `JOB-${year}-${randHex}`;
-        const contractVal = Number(metadata.contract_value) || Number(lead.estimated_value) || 16500.00;
+        const contractVal = Number(metadata.contract_value) || (estimateId && estRows[0]?.total ? Number(estRows[0].total) : null) || Number(lead.estimated_value) || 16500.00;
 
         const jobRows = await query<any>(
           `INSERT INTO jobs (
              lead_id,
+             client_id,
+             estimate_id,
              job_number,
              status,
              customer_name,
@@ -168,10 +198,12 @@ export async function PATCH(
              contract_value,
              notes
            )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
            RETURNING *`,
           [
             leadId,
+            clientId,
+            estimateId,
             jobNumber,
             'permit_pending',
             lead.full_name,
@@ -188,6 +220,18 @@ export async function PATCH(
         createdJob = jobRows[0];
       } else {
         createdJob = existingJob[0];
+        // Ensure existing job has client_id and estimate_id linked
+        if (!createdJob.client_id || !createdJob.estimate_id) {
+          await query(
+            `UPDATE jobs SET client_id = COALESCE(client_id, $1), estimate_id = COALESCE(estimate_id, $2) WHERE id = $3`,
+            [clientId, estimateId, createdJob.id]
+          );
+        }
+      }
+
+      if (clientId) {
+        const { recalculateClientStats } = await import('@/lib/crm-clients');
+        await recalculateClientStats(clientId);
       }
     }
 

@@ -593,6 +593,7 @@ const MIGRATIONS = [
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS address_confirmed BOOLEAN DEFAULT false`,
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS discount_applied TEXT`,
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS financing_interested BOOLEAN DEFAULT false`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS estimated_value NUMERIC(10,2) DEFAULT 0`,
   `CREATE INDEX IF NOT EXISTS idx_leads_pipeline_stage ON leads (pipeline_stage, stage_entered_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_leads_assigned_user ON leads (assigned_to_user_id, pipeline_stage)`,
 

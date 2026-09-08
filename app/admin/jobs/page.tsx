@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -19,6 +19,9 @@ import {
   Truck,
   GitFork,
   ArrowRight,
+  Info,
+  AlertCircle,
+  ChevronsUpDown,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import { KanbanSkeleton } from '@/components/admin/shared/AdminSkeletons';
@@ -66,6 +69,19 @@ interface Summary {
   activeValue: number;
 }
 
+interface LeadOption {
+  id: number;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+  service_type: string | null;
+  estimated_value: number;
+  pipeline_stage: string;
+  lead_score: number;
+}
+
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [kanban, setKanban] = useState<Record<string, Job[]>>({});
@@ -76,7 +92,14 @@ export default function JobsPage() {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Manual job form
+  // Manual job form with mandatory lead selection
+  const [leadsList, setLeadsList] = useState<LeadOption[]>([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<LeadOption | null>(null);
+  const [leadSearch, setLeadSearch] = useState('');
+  const [leadDropdownOpen, setLeadDropdownOpen] = useState(false);
+  const [jobFormError, setJobFormError] = useState<string | null>(null);
+
   const [manualName, setManualName] = useState('');
   const [manualPhone, setManualPhone] = useState('');
   const [manualAddress, setManualAddress] = useState('');
@@ -87,6 +110,55 @@ export default function JobsPage() {
   const [creating, setCreating] = useState(false);
 
   const router = useRouter();
+
+  // Load leads when opening the Add Job modal
+  useEffect(() => {
+    if (!showAddModal) {
+      setSelectedLead(null);
+      setLeadSearch('');
+      setLeadDropdownOpen(false);
+      setJobFormError(null);
+      return;
+    }
+
+    setLoadingLeads(true);
+    fetch('/api/admin/leads?limit=100')
+      .then(res => res.json())
+      .then(data => {
+        if (data.leads) {
+          setLeadsList(data.leads);
+        }
+      })
+      .catch(err => console.error('Failed to load leads for job creation', err))
+      .finally(() => setLoadingLeads(false));
+  }, [showAddModal]);
+
+  const filteredLeads = useMemo(() => {
+    if (!leadSearch.trim()) return leadsList;
+    const q = leadSearch.toLowerCase().trim();
+    return leadsList.filter(l =>
+      (l.full_name && l.full_name.toLowerCase().includes(q)) ||
+      (l.phone && l.phone.includes(q)) ||
+      (l.address && l.address.toLowerCase().includes(q)) ||
+      (l.city && l.city.toLowerCase().includes(q)) ||
+      String(l.id).includes(q)
+    );
+  }, [leadsList, leadSearch]);
+
+  function handleSelectLead(lead: LeadOption) {
+    setSelectedLead(lead);
+    setManualName(lead.full_name || '');
+    setManualPhone(lead.phone || '');
+    setManualAddress(lead.address || '');
+    setManualCity(lead.city || 'San Diego');
+    if (lead.service_type) setManualService(lead.service_type);
+    if (lead.estimated_value && Number(lead.estimated_value) > 0) {
+      setManualValue(String(lead.estimated_value));
+    }
+    setLeadDropdownOpen(false);
+    setLeadSearch('');
+    setJobFormError(null);
+  }
 
   const loadJobs = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -142,14 +214,20 @@ export default function JobsPage() {
 
   async function handleCreateManualJob(e: React.FormEvent) {
     e.preventDefault();
+    if (!selectedLead) {
+      setJobFormError('Please select a sales pipeline lead first.');
+      return;
+    }
     if (!manualName) return;
 
     setCreating(true);
+    setJobFormError(null);
     try {
       const res = await fetch('/api/admin/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          leadId: selectedLead.id,
           customerName: manualName,
           customerPhone: manualPhone,
           address: manualAddress,
@@ -160,13 +238,20 @@ export default function JobsPage() {
         }),
       });
 
-      if (res.ok) {
-        setShowAddModal(false);
-        setManualName('');
-        setManualPhone('');
-        setManualAddress('');
-        loadJobs(true);
+      const data = await res.json();
+      if (!res.ok) {
+        setJobFormError(data.error || 'Failed to create job');
+        return;
       }
+
+      setShowAddModal(false);
+      setSelectedLead(null);
+      setManualName('');
+      setManualPhone('');
+      setManualAddress('');
+      loadJobs(true);
+    } catch (err: any) {
+      setJobFormError(err.message || 'Server error creating job');
     } finally {
       setCreating(false);
     }
@@ -379,91 +464,215 @@ export default function JobsPage() {
         subtitle="Manually create an active job or project outside standard proposals"
       >
         <form onSubmit={handleCreateManualJob} className="space-y-4">
+          {/* Tip Callout */}
+          <div className="p-3 bg-amber-500/10 border border-amber-300/80 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
+            <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <span className="font-bold">Required Step:</span> Every roofing project must be linked to an existing Sales Pipeline lead to guarantee customer history, proposal correlation, and client revenue tracking. Please select a lead first.
+            </div>
+          </div>
+
+          {/* Form Error Notice */}
+          {jobFormError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+              <AlertCircle size={15} className="shrink-0 text-rose-600" />
+              <span>{jobFormError}</span>
+            </div>
+          )}
+
+          {/* Step 1: Lead Selector */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Customer Full Name *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Maria Gonzalez"
-              value={manualName}
-              onChange={e => setManualName(e.target.value)}
-              className="admin-input text-sm"
-            />
+            <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+              <span>1. Select Sales Pipeline Lead <span className="text-rose-500">*</span></span>
+              {selectedLead && (
+                <span className="text-[10px] font-normal text-slate-500">
+                  Lead #{selectedLead.id} selected
+                </span>
+              )}
+            </label>
+
+            {selectedLead ? (
+              <div className="p-3 bg-sky-500/10 border border-sky-300/80 rounded-xl flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                    <span className="text-xs font-bold text-[#0B1E33] truncate">
+                      {selectedLead.full_name}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-100 text-sky-800 border border-sky-200">
+                      #{selectedLead.id}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-0.5 truncate">
+                    {selectedLead.phone || 'No phone'} • {selectedLead.address || selectedLead.city || 'San Diego'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedLead(null);
+                    setLeadDropdownOpen(true);
+                  }}
+                  className="shrink-0 text-xs font-semibold text-[#1878B8] hover:text-[#0B1E33] underline cursor-pointer"
+                >
+                  Change Lead
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search by customer name, phone, address, or lead #..."
+                    value={leadSearch}
+                    onChange={e => {
+                      setLeadSearch(e.target.value);
+                      setLeadDropdownOpen(true);
+                    }}
+                    onFocus={() => setLeadDropdownOpen(true)}
+                    className="admin-input pl-9 text-xs"
+                  />
+                </div>
+
+                {leadDropdownOpen && (
+                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100">
+                    {loadingLeads ? (
+                      <div className="p-3 text-center text-xs text-slate-400">Loading pipeline leads...</div>
+                    ) : filteredLeads.length === 0 ? (
+                      <div className="p-3.5 text-center text-xs text-slate-500 space-y-1.5">
+                        <p>No leads matched &ldquo;{leadSearch}&rdquo;.</p>
+                        <Link
+                          href="/admin/leads?new=true"
+                          className="inline-block text-xs font-bold text-[#1878B8] hover:underline"
+                        >
+                          + Create New Lead First
+                        </Link>
+                      </div>
+                    ) : (
+                      filteredLeads.map((l: LeadOption) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => handleSelectLead(l)}
+                          className="w-full text-left p-2.5 hover:bg-sky-50 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-[#0B1E33] truncate flex items-center gap-1.5">
+                              <span>{l.full_name}</span>
+                              <span className="text-[10px] font-mono text-slate-400 font-normal">#{l.id}</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 truncate">
+                              {l.phone || 'No phone'} {l.address ? `• ${l.address}` : ''}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            {l.estimated_value && Number(l.estimated_value) > 0 ? (
+                              <div className="text-[11px] font-bold text-emerald-700">
+                                ${Number(l.estimated_value).toLocaleString()}
+                              </div>
+                            ) : null}
+                            <span className="text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-slate-100 text-slate-600">
+                              {l.pipeline_stage ? l.pipeline_stage.replace('stage_', 'S') : 'Lead'}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Step 2: Auto-populated / Editable Job Parameters */}
+          <div className="pt-2 border-t border-slate-100 space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Phone</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Customer Full Name *</label>
               <input
-                type="tel"
-                placeholder="(760) 000-0000"
-                value={manualPhone}
-                onChange={e => setManualPhone(e.target.value)}
+                type="text"
+                required
+                placeholder="e.g. Maria Gonzalez"
+                value={manualName}
+                onChange={e => setManualName(e.target.value)}
                 className="admin-input text-sm"
               />
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Contract Value ($)</label>
-              <input
-                type="number"
-                value={manualValue}
-                onChange={e => setManualValue(e.target.value)}
-                className="admin-input text-sm"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Address</label>
-              <input
-                type="text"
-                placeholder="1234 Main St"
-                value={manualAddress}
-                onChange={e => setManualAddress(e.target.value)}
-                className="admin-input text-sm"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  placeholder="(760) 000-0000"
+                  value={manualPhone}
+                  onChange={e => setManualPhone(e.target.value)}
+                  className="admin-input text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Contract Value ($)</label>
+                <input
+                  type="number"
+                  value={manualValue}
+                  onChange={e => setManualValue(e.target.value)}
+                  className="admin-input text-sm"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">City</label>
-              <input
-                type="text"
-                placeholder="Carlsbad"
-                value={manualCity}
-                onChange={e => setManualCity(e.target.value)}
-                className="admin-input text-sm"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <CustomSelect
-                label="Service"
-                value={manualService}
-                onChange={setManualService}
-                options={SERVICE_OPTIONS}
-                size="sm"
-              />
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Address</label>
+                <input
+                  type="text"
+                  placeholder="1234 Main St"
+                  value={manualAddress}
+                  onChange={e => setManualAddress(e.target.value)}
+                  className="admin-input text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">City</label>
+                <input
+                  type="text"
+                  placeholder="Carlsbad"
+                  value={manualCity}
+                  onChange={e => setManualCity(e.target.value)}
+                  className="admin-input text-sm"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Crew Lead</label>
-              <input
-                type="text"
-                value={manualLead}
-                onChange={e => setManualLead(e.target.value)}
-                className="admin-input text-sm"
-              />
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <CustomSelect
+                  label="Service"
+                  value={manualService}
+                  onChange={setManualService}
+                  options={SERVICE_OPTIONS}
+                  size="sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Crew Lead</label>
+                <input
+                  type="text"
+                  value={manualLead}
+                  onChange={e => setManualLead(e.target.value)}
+                  className="admin-input text-sm"
+                />
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={creating}
-            className="admin-btn-gold w-full py-3 px-4 rounded-xl font-bold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            disabled={!selectedLead || creating}
+            className="admin-btn-gold w-full py-3 px-4 rounded-xl font-bold text-sm shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Hammer size={16} />
-            {creating ? 'Creating Job...' : 'Create Job Record'}
+            {creating ? 'Creating Job...' : !selectedLead ? 'Select a Lead Above to Create Job' : 'Create Job Record'}
           </button>
         </form>
       </BottomSheet>

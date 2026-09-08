@@ -34,6 +34,7 @@ export interface ClientInput {
   sourceType?: 'website' | 'team_member' | string | null;
   acquiredByUserId?: number | null;
   leadSourceDetail?: string | null;
+  serviceType?: string | null;
   clientSince?: string | Date | null;
 }
 
@@ -188,6 +189,17 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
     );
   }
 
+  // Fallback: match by exact name and property address if phone/email didn't match
+  if (existing.length === 0 && cleanName && input.address) {
+    existing = await query<ClientRecord>(
+      `SELECT * FROM clients 
+       WHERE LOWER(full_name) = LOWER($1) 
+         AND LOWER(COALESCE(address, '')) = LOWER($2) 
+       ORDER BY created_at ASC LIMIT 1`,
+      [cleanName, input.address.trim()]
+    );
+  }
+
   // If found, update missing details if input provides them (protecting acquired_by_user_id)
   if (existing.length > 0) {
     const client = existing[0];
@@ -321,24 +333,40 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
  * Re-computes lifetime revenue, job counts, and status for a client
  */
 export async function recalculateClientStats(clientId: number): Promise<void> {
-  // Sum paid invoices
+  // Sum paid invoices (linked via job_id, estimate_id, or direct client_id)
   const revRes = await query<{ total: string }>(
     `SELECT COALESCE(SUM(amount), 0) as total 
      FROM invoices 
-     WHERE (job_id IN (SELECT id FROM jobs WHERE client_id = $1) 
-            OR estimate_id IN (SELECT id FROM estimates WHERE client_id = $1))
+     WHERE (job_id IN (SELECT id FROM jobs WHERE client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1)) 
+            OR estimate_id IN (SELECT id FROM estimates WHERE client_id = $1)
+            OR client_id = $1)
        AND status = 'paid'`,
     [clientId]
   );
-  const totalRevenue = parseFloat(revRes[0]?.total || '0');
+  let totalRevenue = parseFloat(revRes[0]?.total || '0');
 
-  // Count jobs
+  // If no formal invoices paid yet, check completed jobs contract value
+  if (totalRevenue === 0) {
+    const jobValRes = await query<{ total: string }>(
+      `SELECT COALESCE(SUM(contract_value), 0) as total
+       FROM jobs
+       WHERE (client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1))
+         AND status = 'complete'`,
+      [clientId]
+    );
+    const completedContractVal = parseFloat(jobValRes[0]?.total || '0');
+    if (completedContractVal > 0) {
+      totalRevenue = completedContractVal;
+    }
+  }
+
+  // Count jobs (linked directly or via client's leads)
   const jobRes = await query<{ count: string; has_active: string }>(
     `SELECT 
        COUNT(*) as count,
        COUNT(CASE WHEN status NOT IN ('complete', 'cancelled') THEN 1 END) as has_active
      FROM jobs 
-     WHERE client_id = $1`,
+     WHERE client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1)`,
     [clientId]
   );
   const totalJobs = parseInt(jobRes[0]?.count || '0', 10);
@@ -355,7 +383,7 @@ export async function recalculateClientStats(clientId: number): Promise<void> {
   } else {
     // Check if proposals exist
     const estRes = await query<{ count: string }>(
-      `SELECT COUNT(*) as count FROM estimates WHERE client_id = $1`,
+      `SELECT COUNT(*) as count FROM estimates WHERE client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1)`,
       [clientId]
     );
     if (parseInt(estRes[0]?.count || '0', 10) > 0) {

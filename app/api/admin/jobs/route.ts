@@ -112,36 +112,83 @@ export async function POST(req: NextRequest) {
       notes,
     } = body;
 
-    if (!customerName) {
+    // Strict rule: Jobs cannot be created without being tied to a Sales Pipeline lead
+    const parsedLeadId = leadId ? parseInt(String(leadId), 10) : null;
+    if (!parsedLeadId || isNaN(parsedLeadId)) {
+      return NextResponse.json(
+        { error: 'A valid sales pipeline lead is required to create a job. Please select an existing lead.' },
+        { status: 400 }
+      );
+    }
+
+    const leadRows = await query<any>('SELECT * FROM leads WHERE id = $1', [parsedLeadId]);
+    if (leadRows.length === 0) {
+      return NextResponse.json({ error: 'Selected lead not found in sales pipeline' }, { status: 404 });
+    }
+    const lead = leadRows[0];
+
+    const finalName = customerName || lead.full_name;
+    if (!finalName) {
       return NextResponse.json({ error: 'Customer name is required' }, { status: 400 });
+    }
+
+    // Resolve or establish client_id
+    let clientId: number | null = lead.client_id ? Number(lead.client_id) : null;
+    if (!clientId) {
+      const { findOrCreateClient } = await import('@/lib/crm-clients');
+      const client = await findOrCreateClient({
+        fullName: finalName,
+        phone: customerPhone || lead.phone,
+        email: customerEmail || lead.email,
+        address: address || lead.address,
+        city: city || lead.city,
+        zip: zip || lead.zip,
+        serviceType: serviceType || lead.service_type,
+        leadSource: lead.lead_source || 'job_creation',
+      });
+      clientId = client.id;
+      await query('UPDATE leads SET client_id = $1 WHERE id = $2', [clientId, parsedLeadId]);
+    }
+
+    // Check if lead has an estimate to link
+    let estimateId: number | null = null;
+    const estRows = await query<any>(
+      `SELECT id, total FROM estimates WHERE lead_id = $1 OR (client_id = $2 AND client_id IS NOT NULL) ORDER BY created_at DESC LIMIT 1`,
+      [parsedLeadId, clientId]
+    );
+    if (estRows.length > 0) {
+      estimateId = Number(estRows[0].id);
     }
 
     const year = new Date().getFullYear();
     const countRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM jobs`);
     const seq = String(parseInt(countRes[0]?.count ?? '0', 10) + 1).padStart(4, '0');
     const jobNumber = `JOB-${year}-${seq}`;
+    const finalContractVal = Number(contractValue) || (estimateId && estRows[0]?.total ? Number(estRows[0].total) : 0);
 
     const rows = await query<any>(
       `INSERT INTO jobs (
-        lead_id, job_number, status, customer_name, customer_phone, customer_email,
+        lead_id, client_id, estimate_id, job_number, status, customer_name, customer_phone, customer_email,
         address, city, zip, service_type, contract_value, scheduled_start,
         estimated_days, crew_lead, notes
       ) VALUES (
-        $1, $2, 'permit_pending', $3, $4, $5,
-        $6, $7, $8, $9, $10, $11,
-        $12, $13, $14
+        $1, $2, $3, $4, 'permit_pending', $5, $6, $7,
+        $8, $9, $10, $11, $12, $13,
+        $14, $15, $16
       ) RETURNING *`,
       [
-        leadId ? parseInt(leadId, 10) : null,
+        parsedLeadId,
+        clientId,
+        estimateId,
         jobNumber,
-        customerName,
-        customerPhone ?? null,
-        customerEmail ?? null,
-        address ?? null,
-        city ?? null,
-        zip ?? null,
-        serviceType,
-        Number(contractValue) || 0,
+        finalName,
+        customerPhone ?? lead.phone ?? null,
+        customerEmail ?? lead.email ?? null,
+        address ?? lead.address ?? null,
+        city ?? lead.city ?? null,
+        zip ?? lead.zip ?? null,
+        serviceType || lead.service_type || 'Residential Roofing',
+        finalContractVal,
         scheduledStart ?? null,
         Number(estimatedDays) || 3,
         crewLead ?? null,
@@ -149,7 +196,64 @@ export async function POST(req: NextRequest) {
       ]
     );
 
-    return NextResponse.json({ ok: true, job: rows[0] });
+    const newJob = rows[0];
+
+    // Automatically transition lead to Stage 5 (Job Completion & Follow-up) and mark status = won
+    await query(
+      `UPDATE leads 
+       SET pipeline_stage = 'stage_5_completion_followup',
+           stage_entered_at = CASE WHEN pipeline_stage != 'stage_5_completion_followup' THEN NOW() ELSE stage_entered_at END,
+           status = 'won',
+           contract_signed_at = COALESCE(contract_signed_at, NOW()),
+           estimated_value = GREATEST(COALESCE(estimated_value, 0), $1),
+           updated_at = NOW()
+       WHERE id = $2`,
+      [finalContractVal, parsedLeadId]
+    );
+
+    // If estimate exists, mark it accepted and linked
+    if (estimateId) {
+      await query(
+        `UPDATE estimates 
+         SET status = 'accepted', accepted_at = COALESCE(accepted_at, NOW()), client_id = COALESCE(client_id, $1) 
+         WHERE id = $2`,
+        [clientId, estimateId]
+      );
+    }
+
+    // Recalculate client statistics
+    if (clientId) {
+      const { recalculateClientStats } = await import('@/lib/crm-clients');
+      await recalculateClientStats(clientId);
+    }
+
+    // Log activity timeline
+    await query(
+      `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+       VALUES ('lead', $1, $2, 'status_change', $3, $4, $5)`,
+      [
+        parsedLeadId,
+        clientId,
+        `Job Dispatched: ${jobNumber}`,
+        `Moved to Stage 5 (Production / Permit Pending) with contract value $${finalContractVal.toLocaleString()}`,
+        auth.user.name || 'Staff',
+      ]
+    );
+
+    if (clientId) {
+      await query(
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('client', $1, $1, 'status_change', $2, $3, $4)`,
+        [
+          clientId,
+          `New Project Started: ${jobNumber}`,
+          `Contract Value: $${finalContractVal.toLocaleString()} (${serviceType})`,
+          auth.user.name || 'Staff',
+        ]
+      );
+    }
+
+    return NextResponse.json({ ok: true, job: newJob });
   } catch (err) {
     console.error('[api/admin/jobs POST]', err);
     return NextResponse.json({ error: 'Server error creating job' }, { status: 500 });

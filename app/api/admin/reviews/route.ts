@@ -111,15 +111,27 @@ export async function POST(req: NextRequest) {
     // Generate cryptographically secure unique token
     const token = `REV-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
+    // Resolve client_id
+    let clientId: number | null = null;
+    if (leadId) {
+      const l = await query<any>('SELECT client_id FROM leads WHERE id = $1', [parseInt(leadId, 10)]);
+      if (l[0]?.client_id) clientId = Number(l[0].client_id);
+    }
+    if (!clientId && jobId) {
+      const j = await query<any>('SELECT client_id FROM jobs WHERE id = $1', [parseInt(jobId, 10)]);
+      if (j[0]?.client_id) clientId = Number(j[0].client_id);
+    }
+
     const rows = await query<any>(
       `INSERT INTO reviews (
-        lead_id, job_id, customer_name, customer_city, rating,
+        lead_id, job_id, client_id, customer_name, customer_city, rating,
         service_type, source, status, review_token
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9)
       RETURNING *`,
       [
         leadId ? parseInt(leadId, 10) : null,
         jobId ? parseInt(jobId, 10) : null,
+        clientId,
         customerName,
         customerCity,
         initialRating,
@@ -134,10 +146,11 @@ export async function POST(req: NextRequest) {
     // Log to activities timeline if leadId is linked
     if (leadId) {
       await query(
-        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-         VALUES ('lead', $1, 'message', $2, $3, $4)`,
+        `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+         VALUES ('lead', $1, $2, 'message', $3, $4, $5)`,
         [
           parseInt(leadId, 10),
+          clientId,
           `Review Request Dispatched to ${customerName}`,
           `Sent automated review request link (/review/${token}).`,
           'Reputation Engine',

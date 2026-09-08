@@ -108,14 +108,15 @@ export async function POST(req: NextRequest) {
       ];
 
       const createdInvoices = [];
+      const jobClientId = job.client_id ? Number(job.client_id) : null;
       for (const m of milestones) {
         seq += 1;
         const invNumber = `INV-${year}-${String(seq).padStart(4, '0')}`;
         const res = await query<any>(
-          `INSERT INTO invoices (job_id, estimate_id, invoice_number, milestone_name, amount, due_date, status)
-           VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+          `INSERT INTO invoices (job_id, estimate_id, client_id, invoice_number, milestone_name, amount, due_date, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
            RETURNING *`,
-          [job.id, job.estimate_id, invNumber, m.name, m.amount, m.due]
+          [job.id, job.estimate_id, jobClientId, invNumber, m.name, m.amount, m.due]
         );
         createdInvoices.push(res[0]);
       }
@@ -128,18 +129,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Amount and due date are required' }, { status: 400 });
     }
 
+    let resolvedClientId: number | null = null;
+    if (jobId) {
+      const j = await query<any>('SELECT client_id FROM jobs WHERE id = $1', [parseInt(jobId, 10)]);
+      if (j[0]?.client_id) resolvedClientId = Number(j[0].client_id);
+    }
+    if (!resolvedClientId && estimateId) {
+      const e = await query<any>('SELECT client_id FROM estimates WHERE id = $1', [parseInt(estimateId, 10)]);
+      if (e[0]?.client_id) resolvedClientId = Number(e[0].client_id);
+    }
+
     const countRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM invoices`);
     const seq = String(parseInt(countRes[0]?.count ?? '0', 10) + 1).padStart(4, '0');
     const invoiceNumber = `INV-${year}-${seq}`;
 
     const rows = await query<any>(
       `INSERT INTO invoices (
-        job_id, estimate_id, invoice_number, milestone_name, amount, due_date, notes, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+        job_id, estimate_id, client_id, invoice_number, milestone_name, amount, due_date, notes, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
       RETURNING *`,
       [
         jobId ? parseInt(jobId, 10) : null,
         estimateId ? parseInt(estimateId, 10) : null,
+        resolvedClientId,
         invoiceNumber,
         milestoneName || 'Payment Milestone',
         Number(amount),
@@ -204,19 +216,34 @@ export async function PATCH(req: NextRequest) {
 
     const inv = res[0];
 
-    // If marked paid, log to lead timeline if linked
+    // If marked paid, log to lead timeline if linked and recalculate client stats
     if (status === 'paid' && inv) {
-      const jobRows = await query<any>(`SELECT lead_id, job_number FROM jobs WHERE id = $1`, [inv.job_id]);
-      if (jobRows && jobRows.length > 0 && jobRows[0].lead_id) {
-        await query(
-          `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-           VALUES ('lead', $1, 'status_change', $2, $3, 'Billing')`,
-          [
-            jobRows[0].lead_id,
-            `Payment Received: $${Number(inv.amount).toLocaleString()}`,
-            `Paid for ${inv.milestone_name} (${inv.invoice_number}) via ${paymentMethod || 'Credit Card / Check'}`,
-          ]
-        );
+      let resolvedClientId = inv.client_id ? Number(inv.client_id) : null;
+
+      const jobRows = await query<any>(`SELECT lead_id, client_id, job_number FROM jobs WHERE id = $1`, [inv.job_id]);
+      if (jobRows && jobRows.length > 0) {
+        if (!resolvedClientId && jobRows[0].client_id) {
+          resolvedClientId = Number(jobRows[0].client_id);
+          await query('UPDATE invoices SET client_id = $1 WHERE id = $2', [resolvedClientId, inv.id]);
+        }
+
+        if (jobRows[0].lead_id) {
+          await query(
+            `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
+             VALUES ('lead', $1, $2, 'status_change', $3, $4, 'Billing')`,
+            [
+              jobRows[0].lead_id,
+              resolvedClientId,
+              `Payment Received: $${Number(inv.amount).toLocaleString()}`,
+              `Paid for ${inv.milestone_name} (${inv.invoice_number}) via ${paymentMethod || 'Credit Card / Check'}`,
+            ]
+          );
+        }
+      }
+
+      if (resolvedClientId) {
+        const { recalculateClientStats } = await import('@/lib/crm-clients');
+        await recalculateClientStats(resolvedClientId);
       }
     }
 

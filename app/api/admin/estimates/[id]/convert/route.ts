@@ -99,9 +99,19 @@ export async function POST(
     [estimateId]
   );
 
-  // Mark lead as won if linked
+  // Mark lead as won and advance to Stage 5 if linked
   if (est.lead_id) {
-    await query(`UPDATE leads SET status = 'won' WHERE id = $1`, [est.lead_id]);
+    await query(
+      `UPDATE leads 
+       SET status = 'won', 
+           pipeline_stage = 'stage_5_completion_followup',
+           stage_entered_at = NOW(),
+           contract_signed_at = COALESCE(contract_signed_at, NOW()),
+           estimated_value = GREATEST(COALESCE(estimated_value, 0), $1),
+           updated_at = NOW()
+       WHERE id = $2`,
+      [Number(est.total) || 0, est.lead_id]
+    );
 
     await query(
       `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
@@ -109,7 +119,7 @@ export async function POST(
       [
         est.lead_id,
         `Deal Won! Converted to ${jobNumber}`,
-        `Contract Value: $${Number(est.total).toLocaleString()} — Moved to Permit Pending stage`,
+        `Contract Value: $${Number(est.total).toLocaleString()} — Moved to Stage 5 (Job Completion & Follow-up)`,
         clientId,
       ]
     );
