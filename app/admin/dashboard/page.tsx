@@ -22,7 +22,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-import { AuthUser, ROLE_CONFIG } from '@/lib/rbac';
+import { AuthUser, ROLE_CONFIG, hasPermission } from '@/lib/rbac';
 import RoleBadge from '@/components/admin/shared/RoleBadge';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
 import { DashboardSkeleton } from '@/components/admin/shared/AdminSkeletons';
@@ -143,10 +143,20 @@ export default function DashboardPage() {
   }
 
   const role = currentUser?.role || stats.userRole || 'owner';
-  const isForeman = role === 'field_foreman';
-  const isSales = role === 'sales_rep' || role === 'door_knocker' || role === 'canvasser';
-  const isOwner = role === 'owner' || role === 'office_admin';
-  const isPM = role === 'project_manager';
+
+  // Dynamic permission checks (§10)
+  const canViewLeads = hasPermission(currentUser, 'leads.view') || hasPermission(currentUser, 'leads:view');
+  const canViewJobs = hasPermission(currentUser, 'jobs.view') || hasPermission(currentUser, 'jobs:view');
+  const canViewFinances = hasPermission(currentUser, 'finances.view') || hasPermission(currentUser, 'finances:view_invoices') || hasPermission(currentUser, 'finances:view_profit_ledger');
+  const canViewReports = hasPermission(currentUser, 'reports.view') || hasPermission(currentUser, 'reports:view');
+  const canCreateEstimates = hasPermission(currentUser, 'estimates.create') || hasPermission(currentUser, 'estimates:create');
+  const canCreateInspections = hasPermission(currentUser, 'inspections.create') || hasPermission(currentUser, 'inspections:create');
+
+  // Role layout variants derived from permissions
+  const isForeman = !canViewLeads && !canViewFinances;
+  const isSales = canViewLeads && !canViewFinances;
+  const isOwner = canViewReports && canViewFinances;
+  const isPM = canViewJobs && canViewLeads && !isOwner;
 
   const kpis = stats.kpis;
   const stageMap = stats.jobsStageMap || {};

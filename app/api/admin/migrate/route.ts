@@ -605,6 +605,56 @@ const MIGRATIONS = [
   `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS end_at TIMESTAMPTZ`,
   `CREATE INDEX IF NOT EXISTS idx_tasks_calendar ON tasks (due_at, completed_at)`,
   `CREATE INDEX IF NOT EXISTS idx_tasks_assigned_user ON tasks (assigned_to_user_id)`,
+
+  // ── Phase 12 CRM: Dynamic Roles, Granular Permissions, Invitations & Lead Attribution ──
+  `CREATE TABLE IF NOT EXISTS roles (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    is_protected BOOLEAN DEFAULT FALSE,
+    created_by BIGINT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  )`,
+  `CREATE TABLE IF NOT EXISTS permissions (
+    id SERIAL PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    resource TEXT NOT NULL,
+    action TEXT NOT NULL,
+    description TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS role_permissions (
+    role_id INT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    permission_id INT NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    scope TEXT NOT NULL DEFAULT 'all' CHECK (scope IN ('own', 'assigned', 'all')),
+    PRIMARY KEY (role_id, permission_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS user_roles (
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role_id INT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    assigned_by BIGINT REFERENCES users(id),
+    assigned_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, role_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS invitations (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL,
+    invited_role_ids INT[] NOT NULL,
+    invited_by BIGINT REFERENCES users(id),
+    token TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'expired', 'revoked')),
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    accepted_at TIMESTAMPTZ
+  )`,
+  `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_status_check`,
+  `ALTER TABLE users ADD CONSTRAINT users_status_check CHECK (status IN ('invited', 'active', 'deactivated', 'inactive', 'suspended'))`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS created_by BIGINT REFERENCES users(id)`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS created_by_role_snapshot TEXT`,
+  `ALTER TABLE estimates ADD COLUMN IF NOT EXISTS created_by BIGINT REFERENCES users(id)`,
+  `ALTER TABLE estimates ADD COLUMN IF NOT EXISTS created_by_role_snapshot TEXT`,
+  `ALTER TABLE jobs ADD COLUMN IF NOT EXISTS created_by BIGINT REFERENCES users(id)`,
+  `ALTER TABLE jobs ADD COLUMN IF NOT EXISTS created_by_role_snapshot TEXT`,
 ];
 
 async function handleMigration(req: NextRequest) {

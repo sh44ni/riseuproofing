@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuthUser, hasPermission } from '@/lib/admin-auth';
+import { requireAuthUser } from '@/lib/admin-auth';
+import { hasPermission, getPermissionScope } from '@/lib/permissions';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
@@ -7,15 +8,14 @@ export async function GET(req: NextRequest) {
   if (auth.response) return auth.response;
 
   const user = auth.user;
-  const role = user.role;
-  const isOwner = role === 'owner' || role === 'office_admin';
-  const isPM = role === 'project_manager';
-  const isSalesRep = role === 'sales_rep' || role === 'door_knocker' || role === 'canvasser';
-  const isFieldCrew = role === 'field_foreman';
 
-  const canViewProfit = hasPermission(user, 'finances:view_profit_ledger');
-  const canViewInvoices = hasPermission(user, 'finances:view_invoices');
-  const canViewLeads = hasPermission(user, 'leads:view');
+  // Dynamic Permissions & Scopes (§3, §8 & §10)
+  const leadsScope = getPermissionScope(user, 'leads.view');
+  const jobsScope = getPermissionScope(user, 'jobs.view');
+  const estimatesScope = getPermissionScope(user, 'estimates.view');
+  const canViewProfit = hasPermission(user, 'finances.view') || hasPermission(user, 'finances:view_profit_ledger');
+  const canViewReports = hasPermission(user, 'reports.view');
+  const canViewAnalytics = hasPermission(user, 'analytics.view');
 
   try {
     // 1. Fetch configurable Follow-Up Threshold Hours from app_settings (fallback to 72 hours)
@@ -34,7 +34,29 @@ export async function GET(req: NextRequest) {
       // Use fallback default
     }
 
-    // 2. Parallel data fetching based on user role
+    // Dynamic Filter Clauses
+    let leadFilter = '';
+    if (leadsScope === 'own') {
+      leadFilter = `AND (l.created_by = ${user.id} OR l.created_by_user_id = ${user.id})`;
+    } else if (leadsScope === 'assigned') {
+      leadFilter = `AND l.assigned_to_user_id = ${user.id}`;
+    }
+
+    let jobFilter = '';
+    if (jobsScope === 'own') {
+      jobFilter = `AND (j.created_by = ${user.id} OR j.lead_id IN (SELECT id FROM leads WHERE created_by = ${user.id} OR created_by_user_id = ${user.id}))`;
+    } else if (jobsScope === 'assigned') {
+      jobFilter = `AND (j.lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))`;
+    }
+
+    let estimateFilter = '';
+    if (estimatesScope === 'own') {
+      estimateFilter = `AND (created_by = ${user.id} OR lead_id IN (SELECT id FROM leads WHERE created_by = ${user.id} OR created_by_user_id = ${user.id}))`;
+    } else if (estimatesScope === 'assigned') {
+      estimateFilter = `AND (lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))`;
+    }
+
+    // 2. Parallel data fetching based on user permissions
     const [
       kpisRes,
       needsFollowUpRes,
@@ -54,24 +76,30 @@ export async function GET(req: NextRequest) {
       }>(`
         WITH
           agg_leads AS (
-            SELECT COUNT(*) as count FROM leads 
-            WHERE created_at >= date_trunc('week', NOW())
-            ${isSalesRep ? `AND assigned_to_user_id = ${user.id}` : ''}
+            ${leadsScope !== null
+              ? `SELECT COUNT(*) as count FROM leads l WHERE l.created_at >= date_trunc('week', NOW()) ${leadFilter}`
+              : `SELECT 0 as count`
+            }
           ),
           agg_jobs AS (
-            SELECT COUNT(*) as count FROM jobs 
-            WHERE status != 'complete'
-            ${isSalesRep ? `AND (lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))` : ''}
+            ${jobsScope !== null
+              ? `SELECT COUNT(*) as count FROM jobs j WHERE j.status != 'complete' ${jobFilter}`
+              : `SELECT 0 as count`
+            }
           ),
           agg_estimates AS (
-            SELECT COUNT(*) as count FROM estimates 
-            WHERE status IN ('sent', 'viewed', 'draft')
-            ${isSalesRep ? `AND (lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))` : ''}
+            ${estimatesScope !== null
+              ? `SELECT COUNT(*) as count FROM estimates WHERE status IN ('sent', 'viewed', 'draft') ${estimateFilter}`
+              : `SELECT 0 as count`
+            }
           ),
           agg_revenue AS (
-            SELECT COALESCE(SUM(amount), 0) as amount FROM invoices 
-            WHERE status = 'paid' 
-              AND (paid_at >= date_trunc('month', NOW()) OR (paid_at IS NULL AND updated_at >= date_trunc('month', NOW())))
+            ${canViewProfit
+              ? `SELECT COALESCE(SUM(amount), 0) as amount FROM invoices 
+                 WHERE status = 'paid' 
+                   AND (paid_at >= date_trunc('month', NOW()) OR (paid_at IS NULL AND updated_at >= date_trunc('month', NOW())))`
+              : `SELECT 0 as amount`
+            }
           )
         SELECT 
           (SELECT count FROM agg_leads) as new_leads_week,
@@ -81,7 +109,7 @@ export async function GET(req: NextRequest) {
       `),
 
       // 2.2 Needs Follow-Up (Stale leads waiting on decision > threshold hours)
-      !isFieldCrew
+      leadsScope !== null
         ? query<any>(`
             SELECT 
               l.id, l.full_name, l.phone, l.email, l.address, COALESCE(l.city, 'San Diego') as city, 
@@ -96,7 +124,7 @@ export async function GET(req: NextRequest) {
                 OR l.status IN ('quoted', 'contacted')
               )
               AND COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) < NOW() - ($1 * INTERVAL '1 hour')
-              ${isSalesRep ? `AND l.assigned_to_user_id = ${user.id}` : ''}
+              ${leadFilter}
             ORDER BY COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) ASC
             LIMIT 6
           `, [followUpThresholdHours])
@@ -119,35 +147,36 @@ export async function GET(req: NextRequest) {
       `, [user.id]),
 
       // 2.4 Active Jobs in Field
-      query<any>(`
-        SELECT 
-          j.id, j.job_number, j.customer_name, j.customer_phone, j.address, 
-          COALESCE(j.city, 'San Diego') as city, j.service_type, j.status, 
-          j.crew_lead, j.contract_value, j.scheduled_start, j.lead_id
-        FROM jobs j
-        WHERE j.status IN ('scheduled', 'in_progress', 'material_order', 'permit_pending', 'punch_list', 'final_inspection')
-        ${isFieldCrew ? `AND (DATE(j.scheduled_start) = CURRENT_DATE OR j.status = 'in_progress')` : ''}
-        ${isSalesRep ? `AND (j.lead_id IN (SELECT id FROM leads WHERE assigned_to_user_id = ${user.id}))` : ''}
-        ORDER BY j.updated_at DESC
-        LIMIT 6
-      `),
-
-      // 2.5 Recent Prospects (Real priority field checked)
-      !isFieldCrew && canViewLeads
+      jobsScope !== null
         ? query<any>(`
             SELECT 
-              id, full_name, phone, email, address, COALESCE(city, 'San Diego') as city, 
-              service_type, status, priority, lead_score, estimated_value, created_at,
-              source_type, lead_source_detail
-            FROM leads
-            ${isSalesRep ? `WHERE assigned_to_user_id = ${user.id}` : ''}
-            ORDER BY created_at DESC
+              j.id, j.job_number, j.customer_name, j.customer_phone, j.address, 
+              COALESCE(j.city, 'San Diego') as city, j.service_type, j.status, 
+              j.crew_lead, j.contract_value, j.scheduled_start, j.lead_id
+            FROM jobs j
+            WHERE j.status IN ('scheduled', 'in_progress', 'material_order', 'permit_pending', 'punch_list', 'final_inspection')
+            ${jobFilter}
+            ORDER BY j.updated_at DESC
             LIMIT 6
           `)
         : Promise.resolve([]),
 
-      // 2.6 Top Performers (Owner only, flat static aggregate)
-      isOwner
+      // 2.5 Recent Prospects (Real priority field checked)
+      leadsScope !== null
+        ? query<any>(`
+            SELECT 
+              l.id, l.full_name, l.phone, l.email, l.address, COALESCE(l.city, 'San Diego') as city, 
+              l.service_type, l.status, l.priority, l.lead_score, l.estimated_value, l.created_at,
+              l.source_type, l.lead_source_detail
+            FROM leads l
+            WHERE 1=1 ${leadFilter}
+            ORDER BY l.created_at DESC
+            LIMIT 6
+          `)
+        : Promise.resolve([]),
+
+      // 2.6 Top Performers (Gated on reports.view)
+      canViewReports
         ? query<any>(`
             SELECT 
               u.id, u.name, u.role, u.avatar_url,
@@ -161,8 +190,8 @@ export async function GET(req: NextRequest) {
           `)
         : Promise.resolve([]),
 
-      // 2.7 Marketing & Traffic summary (for single-line teaser)
-      isOwner || isPM || isSalesRep
+      // 2.7 Marketing & Traffic summary (Gated on analytics.view)
+      canViewAnalytics
         ? query<any>(`
             SELECT 
               COUNT(DISTINCT CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN session_id END)::int as today,
@@ -173,11 +202,13 @@ export async function GET(req: NextRequest) {
         : Promise.resolve([{ today: 0, past_7d: 0 }]),
 
       // 2.8 7-Stage Production Pulse Map
-      query<any>(`
-        SELECT status, COUNT(*)::int as count 
-        FROM jobs 
-        GROUP BY status
-      `).catch(() => []),
+      jobsScope !== null
+        ? query<any>(`
+            SELECT status, COUNT(*)::int as count 
+            FROM jobs 
+            GROUP BY status
+          `).catch(() => [])
+        : Promise.resolve([]),
     ]);
 
     // Build stage map
@@ -206,7 +237,7 @@ export async function GET(req: NextRequest) {
     const traffic = trafficRes[0] || { today: 0, past_7d: 0 };
 
     return NextResponse.json({
-      userRole: role,
+      userRole: user.role,
       userId: user.id,
       userName: user.name,
       followUpThresholdHours,

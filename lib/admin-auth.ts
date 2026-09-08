@@ -151,8 +151,16 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     );
 
     if (rows.length > 0) {
-      sessionCache.set(token, { valid: true, user: rows[0], expires: now + CACHE_TTL_MS });
-      return rows[0];
+      const userRow = rows[0];
+      const { getUserEffectivePermissions } = await import('./permissions');
+      const { roles, permissions } = await getUserEffectivePermissions(userRow.id);
+      const enrichedUser: AuthUser = {
+        ...userRow,
+        roles,
+        permissions,
+      };
+      sessionCache.set(token, { valid: true, user: enrichedUser, expires: now + CACHE_TTL_MS });
+      return enrichedUser;
     }
 
     // 2. Backward compatibility fallback:
@@ -175,8 +183,15 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
           owners[0].id,
           token,
         ]);
-        sessionCache.set(token, { valid: true, user: owners[0], expires: now + CACHE_TTL_MS });
-        return owners[0];
+        const { getUserEffectivePermissions } = await import('./permissions');
+        const { roles, permissions } = await getUserEffectivePermissions(owners[0].id);
+        const enrichedUser: AuthUser = {
+          ...owners[0],
+          roles,
+          permissions,
+        };
+        sessionCache.set(token, { valid: true, user: enrichedUser, expires: now + CACHE_TTL_MS });
+        return enrichedUser;
       }
     }
   } catch (err) {

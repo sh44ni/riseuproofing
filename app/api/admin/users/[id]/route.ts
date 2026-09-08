@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser, hashPassword, UserRole, invalidateSessionCache } from '@/lib/admin-auth';
+import { getCurrentUser, hashPassword, invalidateSessionCache } from '@/lib/admin-auth';
+import { hasPermission, assertNotLockout } from '@/lib/permissions';
 import { query } from '@/lib/db';
-
-const VALID_ROLES: UserRole[] = [
-  'owner',
-  'project_manager',
-  'sales_rep',
-  'field_foreman',
-  'office_admin',
-];
 
 export async function PATCH(
   req: NextRequest,
@@ -19,10 +12,6 @@ export async function PATCH(
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (currentUser.role !== 'owner') {
-    return NextResponse.json({ ok: false, error: 'Forbidden. Owner role required.' }, { status: 403 });
-  }
-
   const { id } = await context.params;
   const targetUserId = parseInt(id, 10);
   if (isNaN(targetUserId)) {
@@ -31,30 +20,53 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { name, phone, role, status, password, permissions, avatar_url } = body;
+    const { name, phone, roleIds, role, status, password, avatar_url } = body;
 
-    // Check if target user exists
-    const existing = await query<{ id: number; role: string; email: string }>(
-      'SELECT id, role, email FROM users WHERE id = $1',
+    // Check target user
+    const existing = await query<any>(
+      `SELECT u.id, u.role, u.email, u.status FROM users u WHERE u.id = $1`,
       [targetUserId]
     );
     if (existing.length === 0) {
       return NextResponse.json({ ok: false, error: 'User not found' }, { status: 404 });
     }
 
-    // Safety guard: Don't allow deactivating or changing role of the last active owner
-    if (
-      existing[0].role === 'owner' &&
-      (role !== 'owner' || status === 'inactive' || status === 'suspended')
-    ) {
-      const activeOwners = await query<{ count: string }>(
-        "SELECT COUNT(*) as count FROM users WHERE role = 'owner' AND status = 'active'"
-      );
-      if (parseInt(activeOwners[0]?.count || '1', 10) <= 1) {
+    const targetUser = existing[0];
+
+    // Permission enforcement
+    if (roleIds !== undefined || role !== undefined) {
+      if (!hasPermission(currentUser, 'users.assign_roles')) {
         return NextResponse.json(
-          { ok: false, error: 'Cannot demote or deactivate the only active Owner account.' },
-          { status: 400 }
+          { ok: false, error: 'Forbidden: Missing permission [users.assign_roles]' },
+          { status: 403 }
         );
+      }
+    }
+
+    if (status !== undefined && status !== targetUser.status) {
+      if (!hasPermission(currentUser, 'users.deactivate')) {
+        return NextResponse.json(
+          { ok: false, error: 'Forbidden: Missing permission [users.deactivate]' },
+          { status: 403 }
+        );
+      }
+
+      // Lockout check if deactivating user
+      if (status === 'deactivated' || status === 'inactive' || status === 'suspended') {
+        try {
+          await assertNotLockout({ deactivatingUserId: targetUserId });
+        } catch (lockoutErr: any) {
+          return NextResponse.json({ ok: false, error: lockoutErr.message }, { status: 400 });
+        }
+      }
+    }
+
+    // Lockout check if changing roles
+    if (roleIds !== undefined && Array.isArray(roleIds)) {
+      try {
+        await assertNotLockout({ fromUserId: targetUserId });
+      } catch (lockoutErr: any) {
+        return NextResponse.json({ ok: false, error: lockoutErr.message }, { status: 400 });
       }
     }
 
@@ -74,23 +86,10 @@ export async function PATCH(
       updates.push(`avatar_url = $${idx++}`);
       values.push(avatar_url ? avatar_url.trim() : null);
     }
-    if (role !== undefined) {
-      if (!VALID_ROLES.includes(role as UserRole)) {
-        return NextResponse.json({ ok: false, error: 'Invalid role' }, { status: 400 });
-      }
-      updates.push(`role = $${idx++}`);
-      values.push(role);
-    }
     if (status !== undefined) {
-      if (!['active', 'inactive', 'suspended'].includes(status)) {
-        return NextResponse.json({ ok: false, error: 'Invalid status' }, { status: 400 });
-      }
+      const normalizedStatus = status === 'inactive' || status === 'suspended' ? 'deactivated' : status;
       updates.push(`status = $${idx++}`);
-      values.push(status);
-    }
-    if (permissions !== undefined && Array.isArray(permissions)) {
-      updates.push(`permissions = $${idx++}`);
-      values.push(permissions);
+      values.push(normalizedStatus);
     }
     if (password) {
       const { hash, salt } = hashPassword(password);
@@ -100,63 +99,53 @@ export async function PATCH(
       values.push(salt);
     }
 
-    if (updates.length === 0) {
-      return NextResponse.json({ ok: false, error: 'No fields to update' }, { status: 400 });
+    // Role assignment
+    if (roleIds !== undefined && Array.isArray(roleIds)) {
+      await query(`DELETE FROM user_roles WHERE user_id = $1`, [targetUserId]);
+
+      for (const rid of roleIds) {
+        await query(
+          `INSERT INTO user_roles (user_id, role_id, assigned_by)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (user_id, role_id) DO NOTHING`,
+          [targetUserId, rid, currentUser.id]
+        );
+      }
+
+      // Update primary role column
+      if (roleIds.length > 0) {
+        const rRow = await query<any>(`SELECT name FROM roles WHERE id = $1`, [roleIds[0]]);
+        if (rRow.length > 0) {
+          updates.push(`role = $${idx++}`);
+          values.push(rRow[0].name.toLowerCase().replace(/\s+/g, '_'));
+        }
+      }
+    } else if (role !== undefined) {
+      updates.push(`role = $${idx++}`);
+      values.push(role);
     }
 
-    updates.push('updated_at = NOW()');
-    values.push(targetUserId);
+    if (updates.length > 0) {
+      updates.push('updated_at = NOW()');
+      values.push(targetUserId);
 
-    const updated = await query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, role, status, avatar_url, permissions, updated_at`,
-      values
-    );
+      await query(
+        `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}`,
+        values
+      );
+    }
 
-    // If deactivated, role changed, or permissions updated, invalidate sessions so changes take immediate effect
-    if (status === 'inactive' || status === 'suspended' || role !== undefined || permissions !== undefined) {
-      await query('DELETE FROM admin_sessions WHERE user_id = $1', [targetUserId]);
+    // Invalidate sessions immediately on deactivation or role re-assignment
+    if (status === 'deactivated' || roleIds !== undefined || role !== undefined) {
+      if (status === 'deactivated') {
+        await query('DELETE FROM admin_sessions WHERE user_id = $1', [targetUserId]);
+      }
       invalidateSessionCache();
     }
 
-    return NextResponse.json({ ok: true, user: updated[0] });
-  } catch (err) {
-    console.error('Error updating user:', err);
-    return NextResponse.json({ ok: false, error: 'Database update failed' }, { status: 500 });
-  }
-}
-
-export async function DELETE(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (currentUser.role !== 'owner') {
-    return NextResponse.json({ ok: false, error: 'Forbidden. Owner role required.' }, { status: 403 });
-  }
-
-  const { id } = await context.params;
-  const targetUserId = parseInt(id, 10);
-  if (isNaN(targetUserId)) {
-    return NextResponse.json({ ok: false, error: 'Invalid user ID' }, { status: 400 });
-  }
-
-  if (targetUserId === currentUser.id) {
-    return NextResponse.json({ ok: false, error: 'You cannot delete your own account.' }, { status: 400 });
-  }
-
-  try {
-    // Soft-deactivate user & terminate sessions
-    await query("UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1", [targetUserId]);
-    await query('DELETE FROM admin_sessions WHERE user_id = $1', [targetUserId]);
-    invalidateSessionCache();
-
-    return NextResponse.json({ ok: true, message: 'User deactivated successfully' });
-  } catch (err) {
-    console.error('Error deleting user:', err);
-    return NextResponse.json({ ok: false, error: 'Failed to deactivate user' }, { status: 500 });
+    return NextResponse.json({ ok: true, message: 'User updated successfully' });
+  } catch (err: any) {
+    console.error('[api/admin/users/[id] PATCH]', err);
+    return NextResponse.json({ ok: false, error: err.message || 'Database error' }, { status: 500 });
   }
 }

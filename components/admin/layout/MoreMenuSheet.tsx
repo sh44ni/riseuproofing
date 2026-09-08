@@ -42,7 +42,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
 
   if (!isOpen) return null;
 
-  const roleConfig = user?.role ? ROLE_CONFIG[user.role] : ROLE_CONFIG.owner;
+  const roleConfig = (user?.role && (ROLE_CONFIG as Record<string, any>)[user.role]) || ROLE_CONFIG.owner;
 
   const ALL_SECTIONS = [
     {
@@ -84,7 +84,7 @@ export default function MoreMenuSheet({ isOpen, onClose, user }: MoreMenuSheetPr
   // Filter sections by role
   const filteredSections = ALL_SECTIONS.map((sec) => ({
     ...sec,
-    items: sec.items.filter((item) => canAccessPath(user?.role, item.href)),
+    items: sec.items.filter((item) => canAccessPath(user, item.href)),
   })).filter((sec) => sec.items.length > 0);
 
   return (

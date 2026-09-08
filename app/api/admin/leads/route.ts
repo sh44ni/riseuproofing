@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/lib/admin-auth';
+import { buildScopeFilter } from '@/lib/permissions';
 import { query } from '@/lib/db';
 import { calculateLeadScore } from '@/lib/crm-scoring';
 
@@ -12,7 +13,7 @@ let cachedDaily: CachedDaily | null = null;
 const DAILY_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export async function GET(req: NextRequest) {
-  const auth = await requirePermission('leads:view');
+  const auth = await requirePermission('leads.view');
   if (auth.response) return auth.response;
 
   const { searchParams } = new URL(req.url);
@@ -27,6 +28,22 @@ export async function GET(req: NextRequest) {
 
   const conditions: string[] = [];
   const params: unknown[] = [];
+
+  // Dynamic Scope Filtering: own vs assigned vs all (§3 & §8)
+  const scopeFilter = buildScopeFilter(auth.user, 'leads.view', {
+    creatorCol: 'l.created_by_user_id',
+    assignedCol: 'l.assigned_to_user_id',
+    paramOffset: params.length + 1,
+  });
+
+  if (!scopeFilter.allowed) {
+    return NextResponse.json({ ok: false, error: 'Forbidden: Insufficient permissions to view leads' }, { status: 403 });
+  }
+
+  if (scopeFilter.clause !== '1=1') {
+    conditions.push(scopeFilter.clause);
+    params.push(...scopeFilter.params);
+  }
 
   if (status && status !== 'all') {
     params.push(status);
@@ -223,17 +240,42 @@ export async function POST(req: NextRequest) {
       console.error('[api/admin/leads POST] Client link error:', clientErr);
     }
 
+    // Resolve attribution snapshot (§7)
+    const userRoleSnapshot = (auth.user.roles && auth.user.roles.length > 0)
+      ? auth.user.roles.map(r => r.name).join(', ')
+      : (auth.user.role || 'Staff');
+
+    let finalRoleSnapshot = userRoleSnapshot;
+    if (finalCreatedByUserId && finalCreatedByUserId !== auth.user.id) {
+      try {
+        const creatorRolesRes = await query<{ role_names: string }>(
+          `SELECT string_agg(r.name, ', ') as role_names
+           FROM user_roles ur
+           JOIN roles r ON ur.role_id = r.id
+           WHERE ur.user_id = $1`,
+          [finalCreatedByUserId]
+        );
+        if (creatorRolesRes[0]?.role_names) {
+          finalRoleSnapshot = creatorRolesRes[0].role_names;
+        }
+      } catch (err) {
+        console.warn('[leads POST] Failed to fetch creator role names:', err);
+      }
+    }
+
     const rows = await query<any>(
       `INSERT INTO leads (
         form_type, full_name, phone, email, address, zip, service_type,
         lead_source, notes, property_type, roof_type, roof_sqf, stories,
         lead_score, priority, status, source_page, client_id,
-        source_type, created_by_user_id, lead_source_detail, assigned_to_user_id
+        source_type, created_by_user_id, lead_source_detail, assigned_to_user_id,
+        created_by, created_by_role_snapshot
       ) VALUES (
         'manual', $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10, $11, $12,
         $13, $14, 'new', 'admin', $15,
-        $16, $17, $18, $19
+        $16, $17, $18, $19,
+        $20, $21
       ) RETURNING *`,
       [
         fullName,
@@ -255,6 +297,8 @@ export async function POST(req: NextRequest) {
         finalCreatedByUserId,
         finalSourceDetail,
         finalAssignedToUserId,
+        finalCreatedByUserId,
+        finalRoleSnapshot,
       ]
     );
 
@@ -265,7 +309,7 @@ export async function POST(req: NextRequest) {
     await query(
       `INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
        VALUES ('lead', $1, $2, 'system', 'Lead created manually', $3, 'Staff')`,
-      [newLead.id, clientId, `Created via manual entry (Source: ${leadSource})`]
+      [newLead.id, clientId, `Created via manual entry (Source: ${leadSource}, Attributed to: ${finalRoleSnapshot})`]
     );
 
     return NextResponse.json({ ok: true, lead: newLead });
@@ -285,21 +329,30 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
+  // Enforce leads.edit dynamic scope (§3 & §8)
+  const patchScope = buildScopeFilter(auth.user, 'leads.edit', {
+    creatorCol: 'COALESCE(leads.created_by, leads.created_by_user_id)',
+    assignedCol: 'leads.assigned_to_user_id',
+    paramOffset: 3, // $1=status, $2=id
+  });
+
+  if (!patchScope.allowed) {
+    return NextResponse.json({ ok: false, error: 'Forbidden: Insufficient permissions to edit this lead' }, { status: 403 });
+  }
+
+  const scopeClause = patchScope.clause !== '1=1' ? `AND ${patchScope.clause}` : '';
+  const queryParams = [status, id, ...patchScope.params];
+
   // Atomically update status and log activity in a single round-trip
-  await query(`
+  const updateRes = await query<any>(`
     WITH updated_lead AS (
-      UPDATE leads SET status = $1 WHERE id = $2 RETURNING id
+      UPDATE leads SET status = $1 WHERE id = $2 ${scopeClause} RETURNING id
     )
     INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-    SELECT 'lead', id, 'status_change', $3, $4, $5
+    SELECT 'lead', id, 'status_change', 'Status updated', 'Lead status changed to ' || $1, $3
     FROM updated_lead
-  `, [
-    status,
-    id,
-    `Status changed to ${status}`,
-    `Lead status updated to ${status}`,
-    performedBy || 'Staff',
-  ]);
+    RETURNING entity_id
+  `, [status, id, performedBy || auth.user.name || 'Staff']);
 
   cachedDaily = null; // Invalidate daily sparkline cache
 

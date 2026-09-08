@@ -12,10 +12,11 @@ export interface AuthUser {
   name: string;
   email: string;
   phone?: string;
-  role: UserRole;
-  status: 'active' | 'inactive' | 'suspended';
+  role: string;
+  roles?: { id: number; name: string; is_protected: boolean }[];
+  status: 'invited' | 'active' | 'deactivated' | 'inactive' | 'suspended';
   avatar_url?: string;
-  permissions?: string[];
+  permissions?: Record<string, import('./permissions').PermissionScope> | string[];
 }
 
 export interface PermissionDefinition {
@@ -269,16 +270,36 @@ export const CURATED_PORTRAITS = [
  */
 export function hasPermission(
   user: AuthUser | null | undefined,
-  permission: string
+  permission: string,
+  requiredScope?: import('./permissions').PermissionScope
 ): boolean {
-  if (!user || user.status !== 'active') return false;
+  if (!user || user.status === 'deactivated' || user.status === 'inactive' || user.status === 'suspended') return false;
   if (user.role === 'owner') return true;
-  if (user.permissions?.includes('*')) return true;
-  if (user.permissions && user.permissions.includes(permission)) return true;
+  if (user.roles?.some((r) => r.is_protected)) return true;
 
-  // Check role default permissions as well
-  const roleDefaults = DEFAULT_ROLE_PERMISSIONS[user.role] || [];
-  if (roleDefaults.includes('*') || roleDefaults.includes(permission)) {
+  const normKey = permission.replace(/:/g, '.');
+
+  // Handle Record<string, PermissionScope> format
+  if (user.permissions && !Array.isArray(user.permissions)) {
+    if (user.permissions['*']) return true;
+    const scope = user.permissions[normKey];
+    if (!scope) return false;
+    if (!requiredScope) return true;
+    if (requiredScope === 'all') return scope === 'all';
+    if (requiredScope === 'assigned') return scope === 'assigned' || scope === 'all';
+    if (requiredScope === 'own') return true;
+    return true;
+  }
+
+  // Handle legacy string[] array format
+  if (Array.isArray(user.permissions)) {
+    if (user.permissions.includes('*')) return true;
+    if (user.permissions.includes(permission) || user.permissions.includes(normKey)) return true;
+  }
+
+  // Check role default permissions fallback
+  const roleDefaults = DEFAULT_ROLE_PERMISSIONS[user.role as UserRole] || [];
+  if (roleDefaults.includes('*') || roleDefaults.includes(permission) || roleDefaults.includes(normKey)) {
     return true;
   }
 
@@ -292,15 +313,14 @@ export function hasAnyPermission(
   user: AuthUser | null | undefined,
   permissions: string[]
 ): boolean {
-  if (!user || user.status !== 'active') return false;
+  if (!user || user.status === 'deactivated' || user.status === 'inactive' || user.status === 'suspended') return false;
   if (user.role === 'owner') return true;
-  if (user.permissions?.includes('*')) return true;
+  if (user.roles?.some((r) => r.is_protected)) return true;
   return permissions.some((p) => hasPermission(user, p));
 }
 
 /**
  * Role-Based Access Control Path Guard (Dynamic Permissions Aware)
- * Accepts either full AuthUser or UserRole string for backward compatibility
  */
 export function canAccessPath(
   userOrRole: AuthUser | UserRole | null | undefined,
@@ -308,7 +328,6 @@ export function canAccessPath(
 ): boolean {
   if (!userOrRole) return false;
 
-  // If passed as a role string, construct synthetic AuthUser
   const user: AuthUser =
     typeof userOrRole === 'string'
       ? {
@@ -321,33 +340,68 @@ export function canAccessPath(
         }
       : userOrRole;
 
-  if (user.role === 'owner' || user.permissions?.includes('*')) return true;
+  if (user.role === 'owner' || user.roles?.some((r) => r.is_protected)) return true;
 
-  // Route-to-Permission Mapping
-  if (pathname.startsWith('/admin/users')) return hasPermission(user, 'users:manage');
-  if (pathname.startsWith('/admin/settings') || pathname.startsWith('/admin/estimator')) return hasPermission(user, 'settings:edit');
-  if (pathname.startsWith('/admin/finances')) return hasPermission(user, 'finances:view_invoices');
-  if (pathname.startsWith('/admin/reports')) return hasPermission(user, 'finances:view_profit_ledger');
+  // Dynamic Route-to-Permission Mapping (§4 & §10)
+  if (pathname.startsWith('/admin/users')) {
+    return hasPermission(user, 'users.view') || hasPermission(user, 'roles.view');
+  }
+  if (pathname.startsWith('/admin/settings')) {
+    return hasPermission(user, 'estimator_settings.view') || hasPermission(user, 'roles.view') || hasPermission(user, 'users.view');
+  }
+  if (pathname.startsWith('/admin/estimator')) {
+    return hasPermission(user, 'estimator_settings.view');
+  }
+  if (pathname.startsWith('/admin/finances')) {
+    return hasPermission(user, 'finances.view');
+  }
+  if (pathname.startsWith('/admin/reports')) {
+    return hasPermission(user, 'reports.view') || hasPermission(user, 'finances.view');
+  }
   if (
     pathname.startsWith('/admin/analytics') ||
     pathname.startsWith('/admin/calls') ||
     pathname.startsWith('/admin/heatmaps')
   ) {
-    return hasPermission(user, 'analytics:view');
+    return hasPermission(user, 'reports.view') || hasPermission(user, 'leads.view');
   }
-  if (pathname.startsWith('/admin/clients')) return hasPermission(user, 'clients:view');
-  if (pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/pipeline')) {
-    return hasPermission(user, 'leads:view') || hasPermission(user, 'jobs:view');
+  if (pathname.startsWith('/admin/clients')) {
+    return hasPermission(user, 'leads.view') || hasPermission(user, 'jobs.view');
   }
-  if (pathname.startsWith('/admin/estimates')) return hasPermission(user, 'estimates:view');
-  if (pathname.startsWith('/admin/jobs')) return hasPermission(user, 'jobs:view');
-  if (pathname.startsWith('/admin/calendar')) return hasPermission(user, 'field:view_calendar');
-  if (pathname.startsWith('/admin/inspections')) return hasPermission(user, 'inspections:conduct');
-  if (pathname.startsWith('/admin/crew')) return hasPermission(user, 'field:manage_crew');
-  if (pathname.startsWith('/admin/warranties')) return hasPermission(user, 'warranties:issue');
-  if (pathname.startsWith('/admin/reviews')) return hasPermission(user, 'reviews:manage');
-  if (pathname.startsWith('/admin/templates')) return hasPermission(user, 'templates:manage');
-  if (pathname.startsWith('/admin/tasks')) return hasPermission(user, 'field:view_calendar');
+  if (pathname.startsWith('/admin/leads')) {
+    return hasPermission(user, 'leads.view');
+  }
+  if (pathname.startsWith('/admin/pipeline')) {
+    return hasPermission(user, 'pipeline.view') || hasPermission(user, 'leads.view');
+  }
+  if (pathname.startsWith('/admin/estimates')) {
+    return hasPermission(user, 'estimates.view');
+  }
+  if (pathname.startsWith('/admin/jobs')) {
+    return hasPermission(user, 'jobs.view');
+  }
+  if (pathname.startsWith('/admin/calendar') || pathname.startsWith('/admin/tasks')) {
+    return hasPermission(user, 'calendar.view') || hasPermission(user, 'jobs.view');
+  }
+  if (pathname.startsWith('/admin/inspections')) {
+    return hasPermission(user, 'inspections.view') || hasPermission(user, 'inspections.create');
+  }
+  if (pathname.startsWith('/admin/crew')) {
+    return hasPermission(user, 'crew.view');
+  }
+  if (pathname.startsWith('/admin/warranties')) {
+    return hasPermission(user, 'warranties.view') || hasPermission(user, 'warranties.create');
+  }
+  if (pathname.startsWith('/admin/reviews')) {
+    return hasPermission(user, 'leads.view');
+  }
+  if (pathname.startsWith('/admin/templates')) {
+    return (
+      hasPermission(user, 'estimates.edit_pricing_templates') ||
+      hasPermission(user, 'inspections.edit_checklist_templates') ||
+      hasPermission(user, 'leads.edit')
+    );
+  }
 
   return true;
 }

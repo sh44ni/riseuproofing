@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, hasPermission } from '@/lib/admin-auth';
+import { buildScopeFilter } from '@/lib/permissions';
 import { query } from '@/lib/db';
 import { calculateRoofEstimate, ROOFING_MATERIALS } from '@/lib/crm-calculator';
 import { findOrCreateClient, recalculateClientStats } from '@/lib/crm-clients';
@@ -17,6 +18,22 @@ export async function GET(req: NextRequest) {
 
   const conditions: string[] = [];
   const params: unknown[] = [];
+
+  // Enforce dynamic scope filtering (§3 & §8)
+  const scopeFilter = buildScopeFilter(auth.user, 'estimates.view', {
+    creatorCol: 'COALESCE(estimates.created_by, (SELECT created_by_user_id FROM leads WHERE leads.id = estimates.lead_id))',
+    assignedCol: '(SELECT assigned_to_user_id FROM leads WHERE leads.id = estimates.lead_id)',
+    paramOffset: params.length + 1,
+  });
+
+  if (!scopeFilter.allowed) {
+    return NextResponse.json({ ok: false, error: 'Forbidden: Insufficient permissions to view estimates' }, { status: 403 });
+  }
+
+  if (scopeFilter.clause !== '1=1') {
+    conditions.push(scopeFilter.clause);
+    params.push(...scopeFilter.params);
+  }
 
   if (status && status !== 'all') {
     params.push(status);
@@ -140,6 +157,32 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Resolve attribution snapshot (§7)
+    let estimateCreatedBy: number = auth.user.id;
+    let estimateRoleSnapshot: string = (auth.user.roles && auth.user.roles.length > 0)
+      ? auth.user.roles.map(r => r.name).join(', ')
+      : (auth.user.role || 'Staff');
+
+    if (leadId) {
+      try {
+        const leadAttr = await query<any>(
+          `SELECT created_by, created_by_user_id, created_by_role_snapshot FROM leads WHERE id = $1`,
+          [parseInt(leadId, 10)]
+        );
+        if (leadAttr.length > 0) {
+          const l = leadAttr[0];
+          if (l.created_by || l.created_by_user_id) {
+            estimateCreatedBy = Number(l.created_by || l.created_by_user_id);
+          }
+          if (l.created_by_role_snapshot) {
+            estimateRoleSnapshot = l.created_by_role_snapshot;
+          }
+        }
+      } catch (err) {
+        console.warn('[estimates POST] Failed to fetch lead attribution:', err);
+      }
+    }
+
     // Auto-generate Estimate Number (e.g. EST-2026-0001)
     const year = new Date().getFullYear();
     const countRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM estimates`);
@@ -159,13 +202,15 @@ export async function POST(req: NextRequest) {
         customer_address, customer_city, customer_zip, service_type,
         roof_squares, roof_pitch, stories, tearoff_layers, material_type,
         material_cost, labor_cost, addons, subtotal, margin_pct, total,
-        financing_months, monthly_payment, valid_until, notes, access_token
+        financing_months, monthly_payment, valid_until, notes, access_token,
+        created_by, created_by_role_snapshot
       ) VALUES (
         $1, $2, $3, 'draft', $4, $5, $6,
         $7, $8, $9, $10,
         $11, $12, $13, $14, $15,
         $16, $17, $18, $19, $20, $21,
-        $22, $23, $24, $25, $26, $27
+        $22, $23, $24, $25, $26,
+        $27, $28
       ) RETURNING *`,
       [
         leadId ? parseInt(leadId, 10) : null,
@@ -194,6 +239,8 @@ export async function POST(req: NextRequest) {
         validUntil.toISOString().slice(0, 10),
         notes ?? null,
         accessToken,
+        estimateCreatedBy,
+        estimateRoleSnapshot,
       ]
     );
 

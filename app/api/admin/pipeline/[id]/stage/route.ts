@@ -181,6 +181,16 @@ export async function PATCH(
         const jobNumber = `JOB-${year}-${randHex}`;
         const contractVal = Number(metadata.contract_value) || (estimateId && estRows[0]?.total ? Number(estRows[0].total) : null) || Number(lead.estimated_value) || 16500.00;
 
+        // Resolve lead attribution (§7)
+        let jobCreatedBy = lead.created_by || lead.created_by_user_id;
+        let jobRoleSnapshot = lead.created_by_role_snapshot;
+        if (!jobCreatedBy) {
+          jobCreatedBy = auth.user.id;
+          jobRoleSnapshot = (auth.user.roles && auth.user.roles.length > 0)
+            ? auth.user.roles.map(r => r.name).join(', ')
+            : (auth.user.role || 'Staff');
+        }
+
         const jobRows = await query<any>(
           `INSERT INTO jobs (
              lead_id,
@@ -196,9 +206,11 @@ export async function PATCH(
              zip,
              service_type,
              contract_value,
-             notes
+             notes,
+             created_by,
+             created_by_role_snapshot
            )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
            RETURNING *`,
           [
             leadId,
@@ -215,6 +227,8 @@ export async function PATCH(
             lead.service_type || 'Roof Replacement',
             contractVal,
             `Auto-created upon pipeline progression to Stage 5 (Job Completion & Follow-up). Lead #${leadId}`,
+            jobCreatedBy,
+            jobRoleSnapshot,
           ]
         );
         createdJob = jobRows[0];

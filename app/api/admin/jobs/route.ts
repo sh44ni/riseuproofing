@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, requireAnyPermission } from '@/lib/admin-auth';
+import { buildScopeFilter } from '@/lib/permissions';
 import { query } from '@/lib/db';
 
 export const JOB_STAGES = [
@@ -22,6 +23,22 @@ export async function GET(req: NextRequest) {
 
   const conditions: string[] = [];
   const params: unknown[] = [];
+
+  // Enforce dynamic scope filtering (§3 & §8)
+  const scopeFilter = buildScopeFilter(auth.user, 'jobs.view', {
+    creatorCol: 'COALESCE(jobs.created_by, (SELECT created_by_user_id FROM leads WHERE leads.id = jobs.lead_id))',
+    assignedCol: '(SELECT assigned_to_user_id FROM leads WHERE leads.id = jobs.lead_id)',
+    paramOffset: params.length + 1,
+  });
+
+  if (!scopeFilter.allowed) {
+    return NextResponse.json({ ok: false, error: 'Forbidden: Insufficient permissions to view jobs' }, { status: 403 });
+  }
+
+  if (scopeFilter.clause !== '1=1') {
+    conditions.push(scopeFilter.clause);
+    params.push(...scopeFilter.params);
+  }
 
   if (status && status !== 'all') {
     params.push(status);
@@ -160,6 +177,16 @@ export async function POST(req: NextRequest) {
       estimateId = Number(estRows[0].id);
     }
 
+    // Resolve attribution snapshot (§7)
+    let jobCreatedBy = lead.created_by || lead.created_by_user_id;
+    let jobRoleSnapshot = lead.created_by_role_snapshot;
+    if (!jobCreatedBy) {
+      jobCreatedBy = auth.user.id;
+      jobRoleSnapshot = (auth.user.roles && auth.user.roles.length > 0)
+        ? auth.user.roles.map(r => r.name).join(', ')
+        : (auth.user.role || 'Staff');
+    }
+
     const year = new Date().getFullYear();
     const countRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM jobs`);
     const seq = String(parseInt(countRes[0]?.count ?? '0', 10) + 1).padStart(4, '0');
@@ -170,11 +197,13 @@ export async function POST(req: NextRequest) {
       `INSERT INTO jobs (
         lead_id, client_id, estimate_id, job_number, status, customer_name, customer_phone, customer_email,
         address, city, zip, service_type, contract_value, scheduled_start,
-        estimated_days, crew_lead, notes
+        estimated_days, crew_lead, notes,
+        created_by, created_by_role_snapshot
       ) VALUES (
         $1, $2, $3, $4, 'permit_pending', $5, $6, $7,
         $8, $9, $10, $11, $12, $13,
-        $14, $15, $16
+        $14, $15, $16,
+        $17, $18
       ) RETURNING *`,
       [
         parsedLeadId,
@@ -193,6 +222,8 @@ export async function POST(req: NextRequest) {
         Number(estimatedDays) || 3,
         crewLead ?? null,
         notes ?? null,
+        jobCreatedBy,
+        jobRoleSnapshot,
       ]
     );
 

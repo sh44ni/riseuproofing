@@ -62,15 +62,15 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
 
-  const roleConfig = user?.role ? ROLE_CONFIG[user.role] : ROLE_CONFIG.owner;
+  const roleConfig = (user?.role && (ROLE_CONFIG as Record<string, any>)[user.role]) || ROLE_CONFIG.owner;
 
   async function handleLogout() {
     await fetch('/api/admin/auth', { method: 'DELETE' });
     window.location.href = '/admin/login';
   }
 
-  // Filter navigation items by role
-  const visibleNav = NAV.filter((item) => canAccessPath(user?.role, item.href));
+  // Filter navigation items by dynamic user permissions (§10)
+  const visibleNav = NAV.filter((item) => canAccessPath(user, item.href));
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">

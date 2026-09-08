@@ -59,20 +59,43 @@ export async function POST(
     });
   }
 
+  // Resolve lead attribution (§7)
+  let jobCreatedBy = est.created_by;
+  let jobRoleSnapshot = est.created_by_role_snapshot;
+
+  if (!jobCreatedBy && est.lead_id) {
+    const lRows = await query<any>(`SELECT created_by, created_by_user_id, created_by_role_snapshot FROM leads WHERE id = $1`, [est.lead_id]);
+    if (lRows.length > 0) {
+      jobCreatedBy = lRows[0].created_by || lRows[0].created_by_user_id;
+      if (lRows[0].created_by_role_snapshot) {
+        jobRoleSnapshot = lRows[0].created_by_role_snapshot;
+      }
+    }
+  }
+
+  if (!jobCreatedBy) {
+    jobCreatedBy = auth.user.id;
+    jobRoleSnapshot = (auth.user.roles && auth.user.roles.length > 0)
+      ? auth.user.roles.map(r => r.name).join(', ')
+      : (auth.user.role || 'Staff');
+  }
+
   // Generate job number JOB-YYYY-XXXX
   const year = new Date().getFullYear();
   const jobCount = await query<{ count: string }>(`SELECT COUNT(*) as count FROM jobs`);
   const seq = String(parseInt(jobCount[0]?.count ?? '0', 10) + 1).padStart(4, '0');
   const jobNumber = `JOB-${year}-${seq}`;
 
-  // Insert Job with client_id
+  // Insert Job with client_id and attribution
   const jobRows = await query<any>(
     `INSERT INTO jobs (
       lead_id, estimate_id, client_id, job_number, status, customer_name, customer_phone,
-      customer_email, address, city, zip, service_type, contract_value, notes
+      customer_email, address, city, zip, service_type, contract_value, notes,
+      created_by, created_by_role_snapshot
     ) VALUES (
       $1, $2, $3, $4, 'permit_pending', $5, $6,
-      $7, $8, $9, $10, $11, $12, $13
+      $7, $8, $9, $10, $11, $12, $13,
+      $14, $15
     ) RETURNING *`,
     [
       est.lead_id,
@@ -88,6 +111,8 @@ export async function POST(
       est.service_type,
       est.total,
       est.notes,
+      jobCreatedBy,
+      jobRoleSnapshot,
     ]
   );
 
