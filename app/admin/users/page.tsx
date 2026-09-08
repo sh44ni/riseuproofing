@@ -34,6 +34,12 @@ import {
   X,
   Send,
   AlertCircle,
+  Eye,
+  Building2,
+  UserCheck,
+  Settings,
+  CheckCheck,
+  Minus,
 } from 'lucide-react';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
 import AvatarPickerModal from '@/components/admin/shared/AvatarPickerModal';
@@ -45,15 +51,15 @@ interface UserRoleInfo {
 }
 
 interface UserRecord {
-  id: number;
+  id: number | string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   role: string;
   roles?: UserRoleInfo[];
   status: 'invited' | 'active' | 'deactivated' | 'inactive' | 'suspended';
   avatar_url?: string | null;
-  last_login_at?: string;
+  last_login_at?: string | null;
   created_at: string;
 }
 
@@ -65,39 +71,39 @@ interface InvitationRecord {
   status: 'pending' | 'accepted' | 'expired';
   expires_at: string;
   created_at: string;
-  accepted_at?: string;
-  invited_by_name?: string;
+  accepted_at?: string | null;
+  invited_by_name?: string | null;
+  token?: string;
 }
 
 interface RoleRecord {
   id: number;
   name: string;
-  description: string;
+  description?: string | null;
   is_protected: boolean;
   member_count: number;
   created_at?: string;
-  permissions?: {
-    permission_id: number;
-    name: string;
-    action: string;
-    scope: 'own' | 'assigned' | 'all';
-    supports_scope: boolean;
-  }[];
+  updated_at?: string;
+  permissions?: Record<string, 'own' | 'assigned' | 'all'>;
 }
 
-interface CatalogPermission {
-  id: number;
-  name: string;
+interface PermissionItem {
+  id?: number;
+  key: string;
+  resource: string;
   action: string;
+  name: string;
   description: string;
   supports_scope: boolean;
   default_scope: 'own' | 'assigned' | 'all';
 }
 
-interface CatalogCategory {
+interface PermissionCategory {
   resource: string;
   name: string;
-  permissions: CatalogPermission[];
+  description: string;
+  order: number;
+  permissions: PermissionItem[];
 }
 
 export default function TeamAndRolesConsole() {
@@ -105,14 +111,20 @@ export default function TeamAndRolesConsole() {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [invitations, setInvitations] = useState<InvitationRecord[]>([]);
   const [roles, setRoles] = useState<RoleRecord[]>([]);
-  const [catalog, setCatalog] = useState<CatalogCategory[]>([]);
+  const [categories, setCategories] = useState<PermissionCategory[]>([]);
+  const [allPermissions, setAllPermissions] = useState<PermissionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isForbidden, setIsForbidden] = useState(false);
 
-  // Filters
+  // Filters for Users Tab
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
+
+  // Filters for Matrix Tab
+  const [matrixSearch, setMatrixSearch] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
 
   // Modals
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -122,7 +134,7 @@ export default function TeamAndRolesConsole() {
   const [isNewRole, setIsNewRole] = useState(false);
   const [avatarUser, setAvatarUser] = useState<UserRecord | null>(null);
 
-  // Feedback
+  // Toast & Errors
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -131,38 +143,82 @@ export default function TeamAndRolesConsole() {
     setTimeout(() => setToastMessage(null), 4500);
   };
 
-  // Load core data
+  // Load all core data safely
   const loadAllData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
     setActionError(null);
 
     try {
-      const [uRes, iRes, rRes, cRes] = await Promise.all([
+      const [uRes, iRes, rRes, pRes] = await Promise.all([
         fetch('/api/admin/users'),
         fetch('/api/admin/invitations'),
         fetch('/api/admin/roles'),
         fetch('/api/admin/permissions'),
       ]);
 
-      if (uRes.status === 403) {
+      if (uRes.status === 403 || rRes.status === 403) {
         setIsForbidden(true);
         setLoading(false);
         setRefreshing(false);
         return;
       }
 
-      const [uData, iData, rData, cData] = await Promise.all([
-        uRes.json(),
-        iRes.json(),
-        rRes.json(),
-        cRes.json(),
-      ]);
+      const uData = uRes.ok ? await uRes.json().catch(() => ({ ok: false })) : { ok: false };
+      const iData = iRes.ok ? await iRes.json().catch(() => ({ ok: false })) : { ok: false };
+      const rData = rRes.ok ? await rRes.json().catch(() => ({ ok: false })) : { ok: false };
+      const pData = pRes.ok ? await pRes.json().catch(() => ({ ok: false })) : { ok: false };
 
-      if (uData.ok) setUsers(uData.users || []);
-      if (iData.ok) setInvitations(iData.invitations || []);
-      if (rData.ok) setRoles(rData.roles || []);
-      if (cData.ok) setCatalog(cData.catalog || []);
+      if (uData.ok && Array.isArray(uData.users)) {
+        setUsers(uData.users);
+      }
+      if (iData.ok && Array.isArray(iData.invitations)) {
+        setInvitations(iData.invitations);
+      }
+      if (rData.ok && Array.isArray(rData.roles)) {
+        setRoles(rData.roles);
+      }
+
+      // Handle permissions and categories
+      if (pData.ok) {
+        if (Array.isArray(pData.categories) && pData.categories.length > 0) {
+          setCategories(pData.categories);
+        } else if (pData.grouped && typeof pData.grouped === 'object') {
+          // Fallback construct categories from grouped
+          const constructed: PermissionCategory[] = Object.entries(pData.grouped).map(([resource, items]: [string, any]) => ({
+            resource,
+            name: resource.charAt(0).toUpperCase() + resource.slice(1),
+            description: '',
+            order: 50,
+            permissions: (items || []).map((it: any) => ({
+              key: it.key,
+              resource: it.resource,
+              action: it.action,
+              name: it.action ? it.action.replace(/_/g, ' ') : it.key,
+              description: it.description || '',
+              supports_scope: Boolean(it.supportsScope),
+              default_scope: 'all' as const,
+            })),
+          }));
+          setCategories(constructed);
+        }
+
+        if (Array.isArray(pData.permissions)) {
+          setAllPermissions(pData.permissions);
+        } else if (Array.isArray(pData.catalog)) {
+          setAllPermissions(
+            pData.catalog.map((it: any) => ({
+              key: it.key,
+              resource: it.resource,
+              action: it.action,
+              name: it.action ? it.action.replace(/_/g, ' ') : it.key,
+              description: it.description || '',
+              supports_scope: Boolean(it.supportsScope),
+              default_scope: 'all' as const,
+            }))
+          );
+        }
+      }
     } catch (err) {
       console.error('Failed to load access control data:', err);
       setActionError('Failed to synchronize user and role records with server.');
@@ -179,25 +235,77 @@ export default function TeamAndRolesConsole() {
   // Filtered Users
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
-      const matchesSearch =
-        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (u.phone && u.phone.includes(searchQuery));
+      if (!u) return false;
+      const userName = (u.name || '').toLowerCase();
+      const userEmail = (u.email || '').toLowerCase();
+      const userPhone = u.phone || '';
+      const query = searchQuery.trim().toLowerCase();
 
-      const userRoleNames = u.roles && u.roles.length > 0
-        ? u.roles.map((r) => r.name.toLowerCase())
-        : [u.role.toLowerCase()];
+      const matchesSearch =
+        !query ||
+        userName.includes(query) ||
+        userEmail.includes(query) ||
+        userPhone.includes(query);
+
+      const userRoleNames =
+        u.roles && u.roles.length > 0
+          ? u.roles.map((r) => (r.name || '').toLowerCase())
+          : [u.role ? u.role.toLowerCase() : ''];
 
       const matchesRole =
         selectedRoleFilter === 'all' ||
         userRoleNames.some((r) => r === selectedRoleFilter.toLowerCase());
 
-      return matchesSearch && matchesRole;
+      const userStatus = u.status === 'inactive' || u.status === 'suspended' ? 'deactivated' : u.status;
+      const matchesStatus =
+        selectedStatusFilter === 'all' ||
+        userStatus === selectedStatusFilter;
+
+      return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [users, searchQuery, selectedRoleFilter]);
+  }, [users, searchQuery, selectedRoleFilter, selectedStatusFilter]);
+
+  // Filtered Categories & Permissions for Matrix
+  const filteredCategories = useMemo(() => {
+    const q = matrixSearch.trim().toLowerCase();
+
+    return categories
+      .filter((cat) => {
+        if (selectedCategoryFilter !== 'all' && cat.resource !== selectedCategoryFilter) {
+          return false;
+        }
+        return true;
+      })
+      .map((cat) => {
+        const matchingPermissions = (cat.permissions || []).filter((p) => {
+          if (!q) return true;
+          return (
+            (p.name || '').toLowerCase().includes(q) ||
+            (p.key || '').toLowerCase().includes(q) ||
+            (p.description || '').toLowerCase().includes(q) ||
+            (cat.name || '').toLowerCase().includes(q)
+          );
+        });
+
+        return {
+          ...cat,
+          permissions: matchingPermissions,
+        };
+      })
+      .filter((cat) => cat.permissions.length > 0);
+  }, [categories, matrixSearch, selectedCategoryFilter]);
+
+  // Total permissions count matching
+  const matrixPermissionsCount = useMemo(() => {
+    return filteredCategories.reduce((acc, cat) => acc + cat.permissions.length, 0);
+  }, [filteredCategories]);
 
   // Copy link helper
   const copyInviteLink = (tokenOrUrl: string) => {
+    if (!tokenOrUrl) {
+      showToast('Invitation token missing', 'error');
+      return;
+    }
     const fullUrl = tokenOrUrl.startsWith('http')
       ? tokenOrUrl
       : `${window.location.origin}${tokenOrUrl.startsWith('/') ? tokenOrUrl : `/admin/invite/${tokenOrUrl}`}`;
@@ -225,8 +333,9 @@ export default function TeamAndRolesConsole() {
 
   // Toggle User Status (Deactivate / Activate)
   const handleToggleUserStatus = async (user: UserRecord) => {
-    const newStatus = user.status === 'deactivated' ? 'active' : 'deactivated';
-    const actionLabel = newStatus === 'deactivated' ? 'deactivate' : 'activate';
+    const isDeactivated = user.status === 'deactivated' || user.status === 'inactive' || user.status === 'suspended';
+    const newStatus = isDeactivated ? 'active' : 'deactivated';
+    const actionLabel = isDeactivated ? 'activate' : 'deactivate';
 
     if (!confirm(`Are you sure you want to ${actionLabel} ${user.name}?`)) return;
 
@@ -318,12 +427,16 @@ export default function TeamAndRolesConsole() {
               <ShieldCheck size={13} />
               Access Control &amp; RBAC
             </span>
+            <span className="text-slate-300 text-xs">•</span>
+            <span className="text-[11px] font-semibold text-slate-500">
+              {roles.length} Roles • {users.length} Active Users
+            </span>
           </div>
           <h1 className="text-2xl font-black text-[#0B1E33] tracking-tight">
             Team, Roles &amp; Permissions
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Configure freeform dynamic roles, assign granular permissions with data scopes, and invite team members.
+            Configure freeform dynamic roles, review the granular permission matrix, and invite team members.
           </p>
         </div>
 
@@ -382,7 +495,7 @@ export default function TeamAndRolesConsole() {
       <div className="flex items-center gap-2 border-b border-slate-200">
         <button
           onClick={() => setActiveTab('users')}
-          className={`pb-3 px-3 text-xs font-bold transition flex items-center gap-2 relative ${
+          className={`pb-3 px-3 text-xs font-bold transition flex items-center gap-2 relative cursor-pointer ${
             activeTab === 'users'
               ? 'text-[#0B1E33] border-b-2 border-[#1878B8]'
               : 'text-slate-400 hover:text-slate-600'
@@ -397,7 +510,7 @@ export default function TeamAndRolesConsole() {
 
         <button
           onClick={() => setActiveTab('roles')}
-          className={`pb-3 px-3 text-xs font-bold transition flex items-center gap-2 relative ${
+          className={`pb-3 px-3 text-xs font-bold transition flex items-center gap-2 relative cursor-pointer ${
             activeTab === 'roles'
               ? 'text-[#0B1E33] border-b-2 border-[#1878B8]'
               : 'text-slate-400 hover:text-slate-600'
@@ -405,8 +518,8 @@ export default function TeamAndRolesConsole() {
         >
           <Shield size={15} />
           <span>Roles &amp; Permission Matrix</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-bold">
-            {roles.length}
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#1878B8]/10 text-[#1878B8] font-bold">
+            {roles.length} Roles
           </span>
         </button>
       </div>
@@ -430,7 +543,7 @@ export default function TeamAndRolesConsole() {
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                 <Filter size={13} />
                 <span>Role:</span>
@@ -442,10 +555,24 @@ export default function TeamAndRolesConsole() {
               >
                 <option value="all">All Roles</option>
                 {roles.map((r) => (
-                  <option key={r.id} value={r.name}>
+                  <option key={r.id} value={r.name || ''}>
                     {r.name}
                   </option>
                 ))}
+              </select>
+
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium ml-2">
+                <span>Status:</span>
+              </div>
+              <select
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none shadow-2xs cursor-pointer"
+              >
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="invited">Invited</option>
+                <option value="deactivated">Deactivated</option>
               </select>
             </div>
           </div>
@@ -480,12 +607,16 @@ export default function TeamAndRolesConsole() {
                     </tr>
                   ) : (
                     filteredUsers.map((u) => {
-                      const userRoles = u.roles && u.roles.length > 0 ? u.roles : [{ id: 0, name: u.role, is_protected: u.role === 'owner' }];
-                      const isDeactivated = u.status === 'deactivated';
+                      const userRoles =
+                        u.roles && u.roles.length > 0
+                          ? u.roles
+                          : [{ id: 0, name: u.role || 'Staff', is_protected: (u.role || '').toLowerCase() === 'owner' }];
+                      const isDeactivated =
+                        u.status === 'deactivated' || u.status === 'inactive' || u.status === 'suspended';
 
                       return (
                         <tr
-                          key={u.id}
+                          key={String(u.id)}
                           className={`hover:bg-slate-50/60 transition-colors ${
                             isDeactivated ? 'opacity-60 bg-slate-50/40' : ''
                           }`}
@@ -495,7 +626,7 @@ export default function TeamAndRolesConsole() {
                             <div className="flex items-center gap-3">
                               <div className="relative group">
                                 <UserAvatar
-                                  name={u.name}
+                                  name={u.name || 'User'}
                                   avatarUrl={u.avatar_url}
                                   role={u.role}
                                   size="md"
@@ -510,10 +641,10 @@ export default function TeamAndRolesConsole() {
                               </div>
                               <div className="min-w-0">
                                 <span className="font-bold text-[#0B1E33] block truncate">
-                                  {u.name}
+                                  {u.name || 'Unnamed User'}
                                 </span>
                                 <span className="text-[11px] text-slate-500 block truncate">
-                                  {u.email}
+                                  {u.email || 'No email'}
                                 </span>
                               </div>
                             </div>
@@ -526,13 +657,15 @@ export default function TeamAndRolesConsole() {
                                 <span
                                   key={idx}
                                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
-                                    r.is_protected || r.name.toLowerCase() === 'owner'
+                                    r.is_protected || (r.name || '').toLowerCase() === 'owner'
                                       ? 'bg-amber-50 text-amber-900 border-amber-200'
                                       : 'bg-blue-50 text-sky-900 border-blue-200'
                                   }`}
                                 >
-                                  {r.is_protected && <ShieldCheck size={10} className="text-amber-700" />}
-                                  <span>{r.name}</span>
+                                  {(r.is_protected || (r.name || '').toLowerCase() === 'owner') && (
+                                    <ShieldCheck size={10} className="text-amber-700" />
+                                  )}
+                                  <span>{r.name || 'Role'}</span>
                                 </span>
                               ))}
                             </div>
@@ -558,7 +691,7 @@ export default function TeamAndRolesConsole() {
                                     : 'bg-rose-500'
                                 }`}
                               />
-                              {u.status}
+                              {u.status || 'unknown'}
                             </span>
                           </td>
 
@@ -573,11 +706,13 @@ export default function TeamAndRolesConsole() {
 
                           {/* Date */}
                           <td className="py-3 px-4 text-slate-500 text-[11px]">
-                            {new Date(u.created_at).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
+                            {u.created_at
+                              ? new Date(u.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })
+                              : '—'}
                           </td>
 
                           {/* Actions */}
@@ -659,7 +794,7 @@ export default function TeamAndRolesConsole() {
                       </tr>
                     ) : (
                       invitations.map((inv) => {
-                        const isExpired = new Date(inv.expires_at).getTime() < Date.now();
+                        const isExpired = inv.expires_at ? new Date(inv.expires_at).getTime() < Date.now() : false;
                         const isAccepted = inv.status === 'accepted';
 
                         return (
@@ -697,17 +832,19 @@ export default function TeamAndRolesConsole() {
                               </span>
                             </td>
                             <td className="py-2.5 px-4 text-slate-500 text-[11px]">
-                              {new Date(inv.expires_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: 'numeric',
-                              })}
+                              {inv.expires_at
+                                ? new Date(inv.expires_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                  })
+                                : '—'}
                             </td>
                             <td className="py-2.5 px-4 text-right">
                               <div className="flex items-center justify-end gap-1.5">
                                 {!isAccepted && (
                                   <button
-                                    onClick={() => copyInviteLink(`/admin/invite/${(inv as any).token || ''}`)}
+                                    onClick={() => copyInviteLink(`/admin/invite/${inv.token || ''}`)}
                                     className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition cursor-pointer flex items-center gap-1"
                                     title="Copy Invitation Link"
                                   >
@@ -741,63 +878,302 @@ export default function TeamAndRolesConsole() {
       {/* ── TAB 2: ROLES & PERMISSIONS MATRIX ────────────────────────────── */}
       {activeTab === 'roles' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Role Summary Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
             {roles.map((r) => {
-              const isOwner = r.is_protected || r.name.toLowerCase() === 'owner';
+              const isOwner = r.is_protected || (r.name || '').toLowerCase() === 'owner';
+              const permCount = r.permissions ? Object.keys(r.permissions).length : 0;
 
               return (
                 <div
                   key={r.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-[#1878B8]/40 transition flex flex-col justify-between"
+                  className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs hover:border-[#1878B8]/40 transition flex flex-col justify-between"
                 >
                   <div>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-black text-[#0B1E33] tracking-tight">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <h3 className="text-sm font-black text-[#0B1E33] truncate">
                           {r.name}
                         </h3>
                         {isOwner && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                            <ShieldCheck size={11} /> Protected
+                          <span className="flex-shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            <ShieldCheck size={10} /> Protected
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] font-bold text-slate-400">
-                        {r.member_count} {r.member_count === 1 ? 'member' : 'members'}
+                      <span className="text-[11px] font-bold text-slate-400 flex-shrink-0">
+                        {r.member_count} {r.member_count === 1 ? 'user' : 'users'}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 mb-4">
-                      {r.description || 'Custom organizational role for CRM operations.'}
+                    <p className="text-[11px] text-slate-500 line-clamp-2 mb-3">
+                      {r.description || 'Organizational CRM operational role.'}
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+                      <Key size={12} className="text-[#1878B8]" />
+                      <span>{isOwner ? 'All 43' : permCount} perms</span>
+                    </span>
+
                     <button
                       onClick={() => {
                         setEditingRole(r);
                         setIsNewRole(false);
                         setShowRoleEditor(true);
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold transition cursor-pointer flex items-center gap-1"
                     >
-                      <Sliders size={13} />
-                      <span>Edit Permissions &amp; Scopes</span>
+                      <Sliders size={11} />
+                      <span>Edit</span>
                     </button>
-
-                    {!isOwner && (
-                      <button
-                        onClick={() => handleDeleteRole(r)}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                        title="Delete Role"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
                   </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* Matrix Control Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+              {/* Matrix Search */}
+              <div className="relative flex-1 max-w-md">
+                <Search
+                  size={15}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Filter permissions (e.g. leads, margins, invoices, delete)..."
+                  value={matrixSearch}
+                  onChange={(e) => setMatrixSearch(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50/70 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1878B8]"
+                />
+              </div>
+
+              {/* Matrix Stats & Legend */}
+              <div className="flex flex-wrap items-center gap-2.5 text-[11px]">
+                <span className="text-slate-500 font-semibold">
+                  Showing {matrixPermissionsCount} permissions
+                </span>
+                <span className="text-slate-300">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    ALL
+                  </span>
+                  <span className="text-slate-400 text-[10px]">Org-Wide</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-sky-800 border border-blue-200">
+                    ASSIGNED
+                  </span>
+                  <span className="text-slate-400 text-[10px]">Assigned Deals</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    OWN
+                  </span>
+                  <span className="text-slate-400 text-[10px]">Creator Only</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar">
+              <button
+                onClick={() => setSelectedCategoryFilter('all')}
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition cursor-pointer ${
+                  selectedCategoryFilter === 'all'
+                    ? 'bg-[#0B1E33] text-white shadow-2xs'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                }`}
+              >
+                All Categories ({categories.length})
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.resource}
+                  onClick={() => setSelectedCategoryFilter(cat.resource)}
+                  className={`px-3 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition cursor-pointer ${
+                    selectedCategoryFilter === cat.resource
+                      ? 'bg-[#1878B8] text-white shadow-2xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  {cat.name} ({cat.permissions.length})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Interactive 2D Permissions Matrix Table */}
+          <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/90 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    {/* Sticky Left Header */}
+                    <th className="py-3 px-4 min-w-[280px] sm:min-w-[320px] sticky left-0 bg-slate-50/95 z-10 border-r border-slate-200/80 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                      Permission &amp; Action
+                    </th>
+
+                    {/* Role Columns */}
+                    {roles.map((r) => {
+                      const isOwner = r.is_protected || (r.name || '').toLowerCase() === 'owner';
+                      return (
+                        <th
+                          key={r.id}
+                          className={`py-3 px-3.5 text-center min-w-[130px] border-r border-slate-200/60 ${
+                            isOwner ? 'bg-amber-50/40 text-amber-950 font-black' : ''
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <div className="flex items-center gap-1">
+                              {isOwner && <ShieldCheck size={12} className="text-amber-600" />}
+                              <span className="truncate max-w-[115px]">{r.name}</span>
+                            </div>
+                            <span className="text-[10px] lowercase font-normal text-slate-400 mt-0.5">
+                              {r.member_count} {r.member_count === 1 ? 'user' : 'users'}
+                            </span>
+                            <button
+                              onClick={() => {
+                                setEditingRole(r);
+                                setIsNewRole(false);
+                                setShowRoleEditor(true);
+                              }}
+                              className="mt-1.5 text-[10px] font-bold text-[#1878B8] hover:underline cursor-pointer flex items-center gap-0.5"
+                            >
+                              <Sliders size={9} />
+                              <span>Configure</span>
+                            </button>
+                          </div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-slate-100">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={roles.length + 1} className="py-16 text-center text-slate-400">
+                        <div className="w-6 h-6 border-2 border-[#1878B8]/30 border-t-[#1878B8] rounded-full animate-spin mx-auto mb-2" />
+                        Loading roles &amp; permission matrix...
+                      </td>
+                    </tr>
+                  ) : filteredCategories.length === 0 ? (
+                    <tr>
+                      <td colSpan={roles.length + 1} className="py-12 text-center text-slate-400">
+                        No permissions match your filter query &quot;{matrixSearch}&quot;.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCategories.map((cat) => (
+                      <React.Fragment key={cat.resource}>
+                        {/* Category Row Banner */}
+                        <tr className="bg-slate-100/70 border-y border-slate-200/90 font-bold">
+                          <td
+                            colSpan={roles.length + 1}
+                            className="py-2 px-4 text-[#0B1E33] text-[11px] tracking-wide uppercase flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#1878B8]" />
+                              <span>{cat.name}</span>
+                              <span className="text-[10px] text-slate-400 lowercase font-normal">
+                                ({cat.permissions.length} actions)
+                              </span>
+                            </div>
+                            {cat.description && (
+                              <span className="text-[10px] text-slate-400 normal-case font-normal hidden md:inline">
+                                {cat.description}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* Category Permissions */}
+                        {cat.permissions.map((perm) => (
+                          <tr key={perm.key} className="hover:bg-slate-50/50 transition-colors">
+                            {/* Permission Title & Key (Sticky Left) */}
+                            <td className="py-2.5 px-4 sticky left-0 bg-white hover:bg-slate-50/50 z-10 border-r border-slate-200/80 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-[#0B1E33] text-xs">
+                                      {perm.name}
+                                    </span>
+                                    {perm.supports_scope && (
+                                      <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                        Scoped
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="font-mono text-[10px] text-slate-400 block mt-0.5">
+                                    {perm.key}
+                                  </span>
+                                  {perm.description && (
+                                    <p className="text-[10px] text-slate-500 leading-snug mt-0.5 line-clamp-1">
+                                      {perm.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Cells for Each Role */}
+                            {roles.map((r) => {
+                              const isOwner = r.is_protected || (r.name || '').toLowerCase() === 'owner';
+                              const roleScope = r.permissions ? r.permissions[perm.key] : undefined;
+                              const isGranted = isOwner || Boolean(roleScope);
+
+                              return (
+                                <td
+                                  key={r.id}
+                                  className={`py-2 px-3 text-center border-r border-slate-200/50 ${
+                                    isOwner ? 'bg-amber-50/20' : ''
+                                  }`}
+                                >
+                                  {isOwner ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100/70 text-amber-900 border border-amber-200">
+                                      <Check size={11} strokeWidth={3} className="text-amber-700" />
+                                      <span>ALL</span>
+                                    </span>
+                                  ) : isGranted ? (
+                                    perm.supports_scope ? (
+                                      <span
+                                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                          roleScope === 'all'
+                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                            : roleScope === 'assigned'
+                                            ? 'bg-sky-50 text-sky-800 border-sky-200'
+                                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                                        }`}
+                                      >
+                                        <Check size={10} strokeWidth={3} />
+                                        <span>{(roleScope || 'all').toUpperCase()}</span>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 mx-auto">
+                                        <Check size={12} strokeWidth={3} />
+                                      </span>
+                                    )
+                                  ) : (
+                                    <span className="text-slate-300 font-mono text-sm select-none">
+                                      —
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -835,7 +1211,7 @@ export default function TeamAndRolesConsole() {
         <RoleEditorModal
           role={editingRole}
           isNew={isNewRole}
-          catalog={catalog}
+          categories={categories}
           onClose={() => setShowRoleEditor(false)}
           onSuccess={() => {
             setShowRoleEditor(false);
@@ -850,7 +1226,7 @@ export default function TeamAndRolesConsole() {
         <AvatarPickerModal
           isOpen={Boolean(avatarUser)}
           onClose={() => setAvatarUser(null)}
-          userName={avatarUser.name}
+          userName={avatarUser.name || 'User'}
           userRole={avatarUser.role}
           currentAvatarUrl={avatarUser.avatar_url}
           onSelectAvatar={async (url) => {
@@ -947,7 +1323,7 @@ function InviteUserModal({
             </div>
             <h3 className="font-black text-sm text-[#0B1E33]">Invite Team Member</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -1019,14 +1395,14 @@ function InviteUserModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="admin-btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+              className="admin-btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? (
                 <>
@@ -1089,7 +1465,7 @@ function EditUserRolesModal({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role_ids: selectedRoleIds,
+          roleIds: selectedRoleIds,
         }),
       });
 
@@ -1114,7 +1490,7 @@ function EditUserRolesModal({
             <h3 className="font-black text-sm text-[#0B1E33]">Assign Roles: {user.name}</h3>
             <p className="text-[11px] text-slate-500">{user.email}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -1169,14 +1545,14 @@ function EditUserRolesModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="admin-btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+              className="admin-btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? 'Saving Changes...' : 'Save Role Assignment'}
             </button>
@@ -1193,27 +1569,27 @@ function EditUserRolesModal({
 function RoleEditorModal({
   role,
   isNew,
-  catalog,
+  categories,
   onClose,
   onSuccess,
 }: {
   role: RoleRecord | null;
   isNew: boolean;
-  catalog: CatalogCategory[];
+  categories: PermissionCategory[];
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const isProtected = role?.is_protected || false;
+  const isProtected = role?.is_protected || (role?.name || '').toLowerCase() === 'owner';
 
   const [roleName, setRoleName] = useState(role?.name || '');
   const [description, setDescription] = useState(role?.description || '');
 
-  // Map of permission_id -> scope ('own' | 'assigned' | 'all') or undefined if unselected
-  const [permissionsState, setPermissionsState] = useState<Record<number, 'own' | 'assigned' | 'all'>>(() => {
-    const init: Record<number, 'own' | 'assigned' | 'all'> = {};
-    if (role && role.permissions) {
-      role.permissions.forEach((p) => {
-        init[p.permission_id] = p.scope || 'all';
+  // Map of permission key -> scope ('own' | 'assigned' | 'all') or undefined if unselected
+  const [permissionsState, setPermissionsState] = useState<Record<string, 'own' | 'assigned' | 'all'>>(() => {
+    const init: Record<string, 'own' | 'assigned' | 'all'> = {};
+    if (role && role.permissions && typeof role.permissions === 'object') {
+      Object.entries(role.permissions).forEach(([k, s]) => {
+        init[k] = s;
       });
     }
     return init;
@@ -1223,41 +1599,41 @@ function RoleEditorModal({
   const [error, setError] = useState<string | null>(null);
 
   // Toggle single permission
-  const togglePermission = (perm: CatalogPermission) => {
+  const togglePermission = (perm: PermissionItem) => {
     if (isProtected) return; // Protected owner cannot have permissions removed
 
     setPermissionsState((prev) => {
       const next = { ...prev };
-      if (next[perm.id]) {
-        delete next[perm.id];
+      if (next[perm.key]) {
+        delete next[perm.key];
       } else {
-        next[perm.id] = perm.supports_scope ? perm.default_scope : 'all';
+        next[perm.key] = perm.supports_scope ? perm.default_scope : 'all';
       }
       return next;
     });
   };
 
   // Change scope for single permission
-  const changeScope = (permId: number, scope: 'own' | 'assigned' | 'all') => {
+  const changeScope = (permKey: string, scope: 'own' | 'assigned' | 'all') => {
     if (isProtected) return;
     setPermissionsState((prev) => ({
       ...prev,
-      [permId]: scope,
+      [permKey]: scope,
     }));
   };
 
   // Toggle entire category
-  const toggleCategory = (cat: CatalogCategory) => {
+  const toggleCategory = (cat: PermissionCategory) => {
     if (isProtected) return;
 
-    const allChecked = cat.permissions.every((p) => Boolean(permissionsState[p.id]));
+    const allChecked = (cat.permissions || []).every((p) => Boolean(permissionsState[p.key]));
     setPermissionsState((prev) => {
       const next = { ...prev };
-      cat.permissions.forEach((p) => {
+      (cat.permissions || []).forEach((p) => {
         if (allChecked) {
-          delete next[p.id];
+          delete next[p.key];
         } else {
-          next[p.id] = p.supports_scope ? p.default_scope : 'all';
+          next[p.key] = p.supports_scope ? p.default_scope : 'all';
         }
       });
       return next;
@@ -1273,13 +1649,9 @@ function RoleEditorModal({
       return;
     }
 
-    const permissionsPayload = Object.entries(permissionsState).map(([permId, scope]) => ({
-      permission_id: parseInt(permId, 10),
-      scope,
-    }));
-
-    if (permissionsPayload.length === 0) {
-      setError('Role must have at least one permission.');
+    const keysCount = Object.keys(permissionsState).length;
+    if (keysCount === 0) {
+      setError('Role must have at least one permission assigned.');
       return;
     }
 
@@ -1293,8 +1665,8 @@ function RoleEditorModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: roleName.trim(),
-          description: description.trim(),
-          permissions: permissionsPayload,
+          description: description ? description.trim() : null,
+          permissions: permissionsState,
         }),
       });
 
@@ -1331,7 +1703,7 @@ function RoleEditorModal({
               Configure name, description, and granular permission scopes for this role.
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -1387,9 +1759,10 @@ function RoleEditorModal({
             </div>
 
             <div className="space-y-4">
-              {catalog.map((cat) => {
-                const checkedCount = cat.permissions.filter((p) => Boolean(permissionsState[p.id])).length;
-                const isAllChecked = checkedCount === cat.permissions.length;
+              {categories.map((cat) => {
+                const perms = cat.permissions || [];
+                const checkedCount = perms.filter((p) => Boolean(permissionsState[p.key])).length;
+                const isAllChecked = perms.length > 0 && checkedCount === perms.length;
 
                 return (
                   <div
@@ -1403,10 +1776,10 @@ function RoleEditorModal({
                           {cat.name}
                         </span>
                         <span className="text-[10px] font-semibold text-slate-400">
-                          ({checkedCount}/{cat.permissions.length})
+                          ({checkedCount}/{perms.length})
                         </span>
                       </div>
-                      {!isProtected && (
+                      {!isProtected && perms.length > 0 && (
                         <button
                           type="button"
                           onClick={() => toggleCategory(cat)}
@@ -1419,13 +1792,13 @@ function RoleEditorModal({
 
                     {/* Permissions list */}
                     <div className="divide-y divide-slate-100 bg-white">
-                      {cat.permissions.map((perm) => {
-                        const isChecked = Boolean(permissionsState[perm.id]);
-                        const currentScope = permissionsState[perm.id] || perm.default_scope;
+                      {perms.map((perm) => {
+                        const isChecked = Boolean(permissionsState[perm.key]);
+                        const currentScope = permissionsState[perm.key] || perm.default_scope || 'all';
 
                         return (
                           <div
-                            key={perm.id}
+                            key={perm.key}
                             className={`p-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition ${
                               isChecked ? 'bg-sky-50/20' : 'opacity-70'
                             }`}
@@ -1444,10 +1817,15 @@ function RoleEditorModal({
                                 {isChecked && <Check size={11} strokeWidth={3} />}
                               </div>
                               <div className="min-w-0">
-                                <span className="text-xs font-bold text-[#0B1E33] block">
-                                  {perm.name}
-                                </span>
-                                <span className="text-[11px] text-slate-500 block leading-tight">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-[#0B1E33] block">
+                                    {perm.name}
+                                  </span>
+                                  <span className="font-mono text-[10px] text-slate-400">
+                                    {perm.key}
+                                  </span>
+                                </div>
+                                <span className="text-[11px] text-slate-500 block leading-tight mt-0.5">
                                   {perm.description}
                                 </span>
                               </div>
@@ -1462,7 +1840,7 @@ function RoleEditorModal({
                                 <select
                                   disabled={isProtected}
                                   value={currentScope}
-                                  onChange={(e) => changeScope(perm.id, e.target.value as any)}
+                                  onChange={(e) => changeScope(perm.key, e.target.value as any)}
                                   className="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1878B8] cursor-pointer"
                                 >
                                   <option value="all">All Records</option>
@@ -1493,14 +1871,14 @@ function RoleEditorModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/60"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/60 cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveRole}
               disabled={submitting}
-              className="admin-btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+              className="admin-btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? 'Saving Role...' : isNew ? 'Create Role' : 'Save Changes'}
             </button>

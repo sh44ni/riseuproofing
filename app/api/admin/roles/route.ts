@@ -99,21 +99,40 @@ export async function POST(req: NextRequest) {
 
     const newRole = inserted[0];
 
-    // Insert role_permissions if provided
-    if (permissions && typeof permissions === 'object') {
-      for (const [key, scope] of Object.entries(permissions)) {
-        if (!PERMISSION_MAP.has(key)) continue;
-        const validScope = scope === 'own' || scope === 'assigned' || scope === 'all' ? scope : 'all';
-
-        const pRow = await query<any>(`SELECT id FROM permissions WHERE key = $1`, [key]);
-        if (pRow.length > 0) {
-          await query(
-            `INSERT INTO role_permissions (role_id, permission_id, scope)
-             VALUES ($1, $2, $3)
-             ON CONFLICT (role_id, permission_id) DO UPDATE SET scope = EXCLUDED.scope`,
-            [newRole.id, pRow[0].id, validScope]
-          );
+    // Insert role_permissions if provided (supports object map or array)
+    const permEntries: [string, string][] = [];
+    if (Array.isArray(permissions)) {
+      for (const item of permissions) {
+        if (!item) continue;
+        if (typeof item === 'string') {
+          permEntries.push([item, 'all']);
+        } else if (typeof item === 'object') {
+          const key = item.key || (item.permission_id ? (await query<any>(`SELECT key FROM permissions WHERE id = $1`, [item.permission_id]))[0]?.key : null);
+          if (key) permEntries.push([key, item.scope || 'all']);
         }
+      }
+    } else if (permissions && typeof permissions === 'object') {
+      for (const [key, scope] of Object.entries(permissions)) {
+        if (typeof scope === 'string') {
+          permEntries.push([key, scope]);
+        } else if (scope && typeof scope === 'object' && (scope as any).scope) {
+          permEntries.push([key, (scope as any).scope]);
+        }
+      }
+    }
+
+    for (const [key, scope] of permEntries) {
+      if (!PERMISSION_MAP.has(key)) continue;
+      const validScope = scope === 'own' || scope === 'assigned' || scope === 'all' ? scope : 'all';
+
+      const pRow = await query<any>(`SELECT id FROM permissions WHERE key = $1`, [key]);
+      if (pRow.length > 0) {
+        await query(
+          `INSERT INTO role_permissions (role_id, permission_id, scope)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (role_id, permission_id) DO UPDATE SET scope = EXCLUDED.scope`,
+          [newRole.id, pRow[0].id, validScope]
+        );
       }
     }
 

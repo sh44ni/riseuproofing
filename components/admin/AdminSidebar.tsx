@@ -250,7 +250,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                 showStatus
               />
               <span className="text-xs font-bold text-[#0B1E33] max-w-[95px] truncate">
-                {user.name.split(' ')[0]}
+                {(user.name || 'Admin').split(' ')[0]}
               </span>
               <RoleIcon role={user.role} size={13} className="text-[#2F9FE3]" />
             </Link>

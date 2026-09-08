@@ -110,11 +110,32 @@ export async function PATCH(
       ]);
     }
 
-    if (permissions !== undefined && typeof permissions === 'object') {
+    if (permissions !== undefined && (typeof permissions === 'object' || Array.isArray(permissions))) {
       // Re-sync permissions
       await query(`DELETE FROM role_permissions WHERE role_id = $1`, [roleId]);
 
-      for (const [key, scope] of Object.entries(permissions)) {
+      const permEntries: [string, string][] = [];
+      if (Array.isArray(permissions)) {
+        for (const item of permissions) {
+          if (!item) continue;
+          if (typeof item === 'string') {
+            permEntries.push([item, 'all']);
+          } else if (typeof item === 'object') {
+            const key = item.key || (item.permission_id ? (await query<any>(`SELECT key FROM permissions WHERE id = $1`, [item.permission_id]))[0]?.key : null);
+            if (key) permEntries.push([key, item.scope || 'all']);
+          }
+        }
+      } else if (permissions && typeof permissions === 'object') {
+        for (const [key, scope] of Object.entries(permissions)) {
+          if (typeof scope === 'string') {
+            permEntries.push([key, scope]);
+          } else if (scope && typeof scope === 'object' && (scope as any).scope) {
+            permEntries.push([key, (scope as any).scope]);
+          }
+        }
+      }
+
+      for (const [key, scope] of permEntries) {
         if (!PERMISSION_MAP.has(key)) continue;
         const validScope = scope === 'own' || scope === 'assigned' || scope === 'all' ? scope : 'all';
 
