@@ -86,18 +86,18 @@ export async function GET(req: NextRequest) {
             SELECT 
               l.id, l.full_name, l.phone, l.email, l.address, COALESCE(l.city, 'San Diego') as city, 
               l.service_type, l.estimated_value, l.pipeline_stage, l.status, l.priority, 
-              l.assigned_to_name, l.assigned_to_user_id,
-              COALESCE(l.proposal_sent_at, l.updated_at, l.created_at) as last_activity_at,
-              ROUND(EXTRACT(EPOCH FROM (NOW() - COALESCE(l.proposal_sent_at, l.updated_at, l.created_at))) / 86400)::int as days_idle
+              l.assigned_to as assigned_to_name, l.assigned_to_user_id,
+              COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) as last_activity_at,
+              ROUND(EXTRACT(EPOCH FROM (NOW() - COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at))) / 86400)::int as days_idle
             FROM leads l
             WHERE l.status NOT IN ('won', 'lost')
               AND (
                 l.pipeline_stage IN ('stage_4_proposal_negotiation', 'stage_3_site_visit_estimate')
                 OR l.status IN ('quoted', 'contacted')
               )
-              AND COALESCE(l.proposal_sent_at, l.updated_at, l.created_at) < NOW() - ($1 * INTERVAL '1 hour')
+              AND COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) < NOW() - ($1 * INTERVAL '1 hour')
               ${isSalesRep ? `AND l.assigned_to_user_id = ${user.id}` : ''}
-            ORDER BY COALESCE(l.proposal_sent_at, l.updated_at, l.created_at) ASC
+            ORDER BY COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) ASC
             LIMIT 6
           `, [followUpThresholdHours])
         : Promise.resolve([]),
