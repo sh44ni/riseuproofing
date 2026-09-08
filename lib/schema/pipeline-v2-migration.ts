@@ -3,6 +3,9 @@ import { query } from '../db';
 export async function runPipelineV2Migration() {
   console.log('[PipelineV2 Migration] Starting migration...');
 
+  // 0. Ensure leads table has updated_at column
+  await query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`);
+
   // 1. lead_stage_checklists
   await query(`
     CREATE TABLE IF NOT EXISTS lead_stage_checklists (

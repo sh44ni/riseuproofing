@@ -153,42 +153,42 @@ export async function PATCH(
 
     const legacyStatus = STAGE_TO_LEGACY_STATUS[newStage] || lead.status;
 
-    // Update lead record
+    // Update lead record with explicit parameter casting to avoid Postgres type inference ambiguity
     const updatedRows = await query<any>(
       `UPDATE leads
        SET 
          pipeline_stage = $1,
          stage_entered_at = NOW(),
          status = $2,
-         assigned_to_user_id = $3,
-         assigned_at = CASE WHEN $3 IS NOT NULL AND assigned_at IS NULL THEN NOW() ELSE assigned_at END,
-         assigned_by_user_id = CASE WHEN $4 = true THEN $5 ELSE assigned_by_user_id END,
-         initial_contacted_at = COALESCE($6, initial_contacted_at),
-         site_visit_scheduled_at = COALESCE($7, site_visit_scheduled_at),
-         site_visit_completed_at = COALESCE($8, site_visit_completed_at),
-         proposal_sent_at = COALESCE($9, proposal_sent_at),
-         contract_signed_at = COALESCE($10, contract_signed_at),
-         job_completed_at = COALESCE($11, job_completed_at),
-         address_confirmed = CASE WHEN $12 = true THEN true ELSE address_confirmed END,
-         discount_applied = COALESCE($13, discount_applied),
-         financing_interested = CASE WHEN $14 = true THEN true ELSE financing_interested END,
+         assigned_to_user_id = $3::bigint,
+         assigned_at = CASE WHEN $3::bigint IS NOT NULL AND assigned_at IS NULL THEN NOW() ELSE assigned_at END,
+         assigned_by_user_id = CASE WHEN $4::boolean = true THEN $5::bigint ELSE assigned_by_user_id END,
+         initial_contacted_at = COALESCE($6::timestamptz, initial_contacted_at),
+         site_visit_scheduled_at = COALESCE($7::timestamptz, site_visit_scheduled_at),
+         site_visit_completed_at = COALESCE($8::timestamptz, site_visit_completed_at),
+         proposal_sent_at = COALESCE($9::timestamptz, proposal_sent_at),
+         contract_signed_at = COALESCE($10::timestamptz, contract_signed_at),
+         job_completed_at = COALESCE($11::timestamptz, job_completed_at),
+         address_confirmed = CASE WHEN $12::boolean = true THEN true ELSE address_confirmed END,
+         discount_applied = COALESCE($13::text, discount_applied),
+         financing_interested = CASE WHEN $14::boolean = true THEN true ELSE financing_interested END,
          updated_at = NOW()
-       WHERE id = $15
+       WHERE id = $15::bigint
        RETURNING *`,
       [
         newStage,
         legacyStatus,
-        assignedUserId,
-        didAutoClaim,
-        auth.user.id,
-        initialContactedAt,
-        siteVisitScheduledAt,
-        siteVisitCompletedAt,
-        proposalSentAt,
-        contractSignedAt,
-        jobCompletedAt,
+        assignedUserId ? Number(assignedUserId) : null,
+        Boolean(didAutoClaim),
+        auth.user?.id ? Number(auth.user.id) : null,
+        initialContactedAt ? new Date(initialContactedAt).toISOString() : null,
+        siteVisitScheduledAt ? new Date(siteVisitScheduledAt).toISOString() : null,
+        siteVisitCompletedAt ? new Date(siteVisitCompletedAt).toISOString() : null,
+        proposalSentAt ? new Date(proposalSentAt).toISOString() : null,
+        contractSignedAt ? new Date(contractSignedAt).toISOString() : null,
+        jobCompletedAt ? new Date(jobCompletedAt).toISOString() : null,
         Boolean(metadata.address_confirmed),
-        metadata.discount_applied || null,
+        metadata.discount_applied ? String(metadata.discount_applied) : null,
         Boolean(metadata.financing_interested),
         leadId,
       ]
@@ -328,8 +328,8 @@ export async function PATCH(
       job: createdJob,
       auto_claimed: didAutoClaim,
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error updating pipeline stage:', err);
-    return NextResponse.json({ ok: false, error: 'Database error updating stage' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: err.message || 'Database error updating stage' }, { status: 500 });
   }
 }
