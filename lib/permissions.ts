@@ -86,11 +86,21 @@ export const PERMISSIONS_CATALOG: PermissionCatalogItem[] = [
 
 export const PERMISSION_MAP = new Map(PERMISSIONS_CATALOG.map((p) => [p.key, p]));
 
+const PERMISSION_ALIASES: Record<string, string> = {
+  'finances.view_invoices': 'finances.view',
+  'finances.view_profit_ledger': 'finances.view',
+  'finances.create_invoices': 'finances.edit',
+  'finances.record_payment': 'finances.edit',
+  'jobs.view_jobs': 'jobs.view',
+  'clients.view_clients': 'clients.view',
+};
+
 /**
  * Normalized key converter (e.g. 'leads:view' -> 'leads.view')
  */
 export function normalizePermissionKey(key: string): string {
-  return key.replace(/:/g, '.');
+  const normalized = key.replace(/:/g, '.');
+  return PERMISSION_ALIASES[normalized] || normalized;
 }
 
 export interface UserRoleRecord {

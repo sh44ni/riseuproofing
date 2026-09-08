@@ -38,6 +38,7 @@ import JobPhotoGallery from '@/components/admin/jobs/JobPhotoGallery';
 import CustomSelect from '@/components/admin/shared/CustomSelect';
 import LifecycleStageStepper from '@/components/admin/shared/LifecycleStageStepper';
 import DurationStepper from '@/components/admin/shared/DurationStepper';
+import CreateInvoiceModal from '@/components/admin/finances/CreateInvoiceModal';
 
 const PERMIT_OPTIONS = [
   { value: 'not_filed', label: 'Not Filed', badge: 'Not Started', badgeColor: 'slate' as const },
@@ -150,6 +151,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   // Invoicing
   const [generatingInvoices, setGeneratingInvoices] = useState(false);
+  const [isCustomInvoiceOpen, setIsCustomInvoiceOpen] = useState(false);
   const [activePaymentInvoice, setActivePaymentInvoice] = useState<Invoice | null>(null);
   const [paymentMethod, setPaymentMethod] = useState('check');
   const [paymentTxId, setPaymentTxId] = useState('');
@@ -544,22 +546,50 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               CSLB 4-Stage Milestone Invoices
             </h4>
 
-            {invoices.length === 0 && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                disabled={generatingInvoices}
-                onClick={handleGenerateMilestones}
-                className="px-3 py-1.5 rounded-xl admin-btn-gold text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                onClick={() => setIsCustomInvoiceOpen(true)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <DollarSign size={13} />
-                {generatingInvoices ? 'Generating...' : 'Auto-Generate 4 Milestones'}
+                <Plus size={13} />
+                + Custom Invoice
               </button>
-            )}
+
+              {invoices.length === 0 && (
+                <button
+                  type="button"
+                  disabled={generatingInvoices}
+                  onClick={handleGenerateMilestones}
+                  className="px-3 py-1.5 rounded-xl admin-btn-gold text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <DollarSign size={13} />
+                  {generatingInvoices ? 'Generating...' : 'Auto-Generate 4 Milestones'}
+                </button>
+              )}
+            </div>
           </div>
 
           {invoices.length === 0 ? (
-            <div className="p-4 rounded-[16px] border border-dashed border-slate-200 text-center text-xs text-slate-400 bg-slate-50/50">
-              No invoices generated for this job yet. Click &quot;Auto-Generate 4 Milestones&quot; to build compliant CSLB progress billing.
+            <div className="p-5 rounded-[16px] border border-dashed border-slate-200 text-center text-xs text-slate-400 bg-slate-50/50 space-y-3">
+              <div>No invoices generated for this job yet. Click &quot;Auto-Generate 4 Milestones&quot; to build compliant CSLB progress billing or create a custom milestone.</div>
+              <div className="flex items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsCustomInvoiceOpen(true)}
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                >
+                  + Custom Invoice
+                </button>
+                <button
+                  type="button"
+                  disabled={generatingInvoices}
+                  onClick={handleGenerateMilestones}
+                  className="px-3.5 py-1.5 rounded-xl admin-btn-gold text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Auto-Generate 4 Milestones
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1151,6 +1181,30 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
           </form>
         </BottomSheet>
+      )}
+
+      {/* Custom & Milestone Invoice Modal */}
+      {job && (
+        <CreateInvoiceModal
+          isOpen={isCustomInvoiceOpen}
+          onClose={() => setIsCustomInvoiceOpen(false)}
+          initialJobId={job.id}
+          initialJob={{
+            id: job.id,
+            job_number: job.job_number,
+            customer_name: job.customer_name,
+            customer_phone: job.customer_phone,
+            customer_email: job.customer_email,
+            address: job.address,
+            city: job.city,
+            contract_value: job.contract_value,
+            client_id: job.client_id,
+            status: job.status,
+          }}
+          onSuccess={() => {
+            loadJob();
+          }}
+        />
       )}
     </div>
   );

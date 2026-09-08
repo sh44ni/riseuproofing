@@ -3,10 +3,11 @@ import { requirePermission, hasPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  const auth = await requirePermission('finances:view_invoices');
+  const auth = await requirePermission('finances.view');
   if (auth.response) return auth.response;
 
-  const canViewProfit = hasPermission(auth.user, 'finances:view_profit_ledger');
+  const canViewProfit = hasPermission(auth.user, 'finances.view');
+  const canCreateInvoice = hasPermission(auth.user, 'finances.edit');
 
   const [invoiceStats, expenseStats, contractStats, recentInvoices] = await Promise.all([
     query<{
@@ -69,6 +70,12 @@ export async function GET(req: NextRequest) {
       totalExpenses: canViewProfit ? totalExpenses : null,
       totalProfit: canViewProfit ? totalProfit : null,
       realizedMarginPct: canViewProfit ? parseFloat(realizedMarginPct) : null,
+    },
+    canCreateInvoice,
+    currentUser: {
+      id: auth.user.id,
+      name: auth.user.name,
+      role: auth.user.role,
     },
     recentInvoices,
   });

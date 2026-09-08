@@ -16,10 +16,12 @@ import {
   Building2,
   Calendar,
   Check,
+  Plus,
 } from 'lucide-react';
 import BottomSheet from '@/components/admin/shared/BottomSheet';
 import { FinancesSkeleton } from '@/components/admin/shared/AdminSkeletons';
 import SourceAttributionBadge from '@/components/admin/shared/SourceAttributionBadge';
+import CreateInvoiceModal from '@/components/admin/finances/CreateInvoiceModal';
 
 interface FinancialSummary {
   totalBilled: number;
@@ -82,6 +84,9 @@ export default function FinancesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
 
+  const [canCreateInvoice, setCanCreateInvoice] = useState(false);
+  const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
+
   // Record Payment Modal State
   const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
   const [paymentMethod, setPaymentMethod] = useState('check');
@@ -100,6 +105,9 @@ export default function FinancesPage() {
       if (finRes.ok) {
         const finData = await finRes.json();
         setSummary(finData.summary);
+        if (typeof finData.canCreateInvoice === 'boolean') {
+          setCanCreateInvoice(finData.canCreateInvoice);
+        }
       }
 
       if (invRes.ok) {
@@ -194,6 +202,17 @@ export default function FinancesPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {canCreateInvoice && (
+            <button
+              type="button"
+              onClick={() => setIsCreateInvoiceOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl admin-btn-gold text-xs font-bold shadow-2xs transition-all cursor-pointer"
+            >
+              <Plus size={14} />
+              + Create Invoice
+            </button>
+          )}
+
           <button
             onClick={() => {
               setRefreshing(true);
@@ -327,7 +346,17 @@ export default function FinancesPage() {
               ? 'No invoices match your current search query.'
               : 'Generate milestone invoices directly from any active roofing job.'}
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+            {canCreateInvoice && (
+              <button
+                type="button"
+                onClick={() => setIsCreateInvoiceOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl admin-btn-gold text-xs font-bold shadow-xs cursor-pointer"
+              >
+                <Plus size={14} />
+                Create Milestone Invoice
+              </button>
+            )}
             <Link
               href="/admin/jobs"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#1878B8] text-xs font-bold border border-slate-200"
@@ -645,6 +674,15 @@ export default function FinancesPage() {
           </form>
         </BottomSheet>
       )}
+
+      {/* Create Milestone Invoice Modal */}
+      <CreateInvoiceModal
+        isOpen={isCreateInvoiceOpen}
+        onClose={() => setIsCreateInvoiceOpen(false)}
+        onSuccess={() => {
+          fetchFinances();
+        }}
+      />
     </div>
   );
 }
