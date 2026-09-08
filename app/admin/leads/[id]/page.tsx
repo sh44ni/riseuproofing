@@ -29,6 +29,7 @@ import LogActivitySheet from '@/components/admin/timeline/LogActivitySheet';
 import QuickMessageModal from '@/components/admin/timeline/QuickMessageModal';
 import CustomSelect from '@/components/admin/shared/CustomSelect';
 import SourceAttributionBadge from '@/components/admin/shared/SourceAttributionBadge';
+import LeadStageChecklistCard from '@/components/admin/pipeline/LeadStageChecklistCard';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New Lead', badge: 'Fresh', badgeColor: 'sky' as const },
@@ -78,6 +79,7 @@ interface LeadDetailData {
   assigned_to?: string;
   last_contact_at?: string;
   client_id?: number;
+  pipeline_stage?: string;
 }
 
 interface TaskItem {
@@ -395,6 +397,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             teamMemberRole={lead.created_by_role}
             teamMemberAvatar={lead.created_by_avatar}
             variant="card"
+          />
+
+          {/* Official Sales Chart Stage Checklist */}
+          <LeadStageChecklistCard
+            leadId={lead.id}
+            stage={lead.pipeline_stage || 'stage_1_lead_gen'}
           />
 
           {/* Lead Scoring Intelligence Card */}

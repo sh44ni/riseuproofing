@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthUser } from '@/lib/admin-auth';
+import { hasPermission } from '@/lib/permissions';
 import { query } from '@/lib/db';
 import { PIPELINE_STAGES, PipelineStage } from '../../route';
 
@@ -54,6 +55,61 @@ export async function PATCH(
 
     const lead = existing[0];
     const oldStage = (lead.pipeline_stage as PipelineStage) || 'stage_1_lead_gen';
+
+    // ── Stage 3 -> Stage 4 Progression Gate ──
+    if (newStage === 'stage_4_closing' && oldStage === 'stage_3_site_visit_estimate') {
+      const [estCount, inspCount] = await Promise.all([
+        query<{ count: string }>('SELECT COUNT(*) as count FROM estimates WHERE lead_id = $1', [leadId]),
+        query<{ count: string }>('SELECT COUNT(*) as count FROM inspections WHERE lead_id = $1', [leadId]),
+      ]);
+
+      const hasEstimate = parseInt(estCount[0]?.count || '0', 10) > 0;
+      const hasInspection = parseInt(inspCount[0]?.count || '0', 10) > 0;
+
+      if (!hasEstimate && !hasInspection) {
+        const canOverride = auth.user.role === 'owner' || hasPermission(auth.user, 'pipeline.override_gate');
+        if (metadata.override_gate && canOverride) {
+          await query(
+            `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+             VALUES ('lead', $1, 'gate_override', 'Stage 3 Gate Overridden', $2, $3)`,
+            [
+              leadId,
+              `${auth.user.name} bypassed the Estimate/Inspection gate. Reason: "${metadata.override_reason || 'Manager authorization'}"`,
+              auth.user.name,
+            ]
+          );
+        } else {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: 'A formal roof inspection or estimate record is required before moving to Closing.',
+              gate_type: 'stage_3_estimate_required',
+              requires_override: true,
+              can_override: canOverride,
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // ── Stage 4 -> Stage 5 Advancement Restriction ──
+    if (newStage === 'stage_5_completion_followup' && oldStage === 'stage_4_closing') {
+      const hasSignedContract = Boolean(lead.contract_signed_at);
+      const isOwner = auth.user.role === 'owner' || hasPermission(auth.user, 'pipeline.override_gate');
+
+      if (!hasSignedContract && !metadata.confirm_signed && !isOwner) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: 'Advancement blocked: An accepted proposal or signed agreement is required before advancing to Job Completion & Production.',
+            gate_type: 'stage_4_contract_required',
+            requires_confirmation: true,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // ── Implicit Auto-Claim Logic ──
     // If the lead was unassigned and is moved forward by any staff member,

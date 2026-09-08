@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAnyPermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
+import { evaluateLeadSla } from '@/lib/pipeline-sla';
+import { SALES_CHART_STAGES, getAutoCompletedKeysForLead } from '@/lib/stage-checklists';
 
 export const PIPELINE_STAGES = [
   'stage_1_lead_gen',
@@ -47,12 +49,23 @@ export interface PipelineLead {
   address_confirmed: boolean;
   discount_applied: string | null;
   financing_interested: boolean;
+  financing_offered: boolean;
   estimated_value: number;
   created_at: string;
-  // SLA Info
+  // SLA Info (Calculated via lib/pipeline-sla)
   hours_in_stage: number;
   sla_hours_remaining?: number;
   sla_status?: 'met' | 'warning' | 'breached' | 'ok';
+  sla_badge_label?: string;
+  sla_badge_tone?: 'emerald' | 'amber' | 'rose' | 'sky' | 'slate';
+  sla_alert_message?: string;
+  // Checklist Metrics (Sales Chart operational activities)
+  checklist_completed_count: number;
+  checklist_total_count: number;
+  // Linked Contract Info
+  contract_id: number | null;
+  contract_number: string | null;
+  contract_status: 'action_required' | 'client_signed' | 'fully_executed' | null;
   // Linked Job Info
   job_id: number | null;
   job_number: string | null;
@@ -64,6 +77,7 @@ export interface PipelineLead {
   estimate_number: string | null;
   estimate_total: number | null;
   estimate_status: string | null;
+  estimate_financing_months: number | null;
   // Linked Inspection Info
   inspection_id: number | null;
   inspection_number: string | null;
@@ -122,8 +136,7 @@ export async function GET(req: NextRequest) {
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   try {
-    // Parallelize main pipeline fetch with users directory
-    const [rows, users] = await Promise.all([
+    const [rows, users, checklistCounts] = await Promise.all([
       query<any>(
         `SELECT 
           l.id,
@@ -172,19 +185,24 @@ export async function GET(req: NextRequest) {
           e.estimate_number,
           e.total as estimate_total,
           e.status as estimate_status,
+          e.financing_months as estimate_financing_months,
           -- Joined Latest Inspection details
           insp.id as inspection_id,
           insp.inspection_number,
           insp.roof_health_score,
           insp.inspection_date,
-          -- Photo count
+          -- Photo count (from job_photos tied to job or lead)
           COALESCE(jp.photo_count, 0) as photo_count,
           -- Warranty details
           w.warranty_number,
           CASE WHEN w.id IS NOT NULL THEN true ELSE false END as has_warranty,
           -- Review details
           r.rating as review_rating,
-          CASE WHEN r.id IS NOT NULL THEN true ELSE false END as has_review
+          CASE WHEN r.id IS NOT NULL THEN true ELSE false END as has_review,
+          -- Contract details
+          cnt.id as contract_id,
+          cnt.contract_number,
+          cnt.status as raw_contract_status
         FROM leads l
         LEFT JOIN users u_assigned ON l.assigned_to_user_id = u_assigned.id
         LEFT JOIN users u_creator ON l.created_by_user_id = u_creator.id
@@ -195,7 +213,7 @@ export async function GET(req: NextRequest) {
           ORDER BY id DESC LIMIT 1
         ) j ON true
         LEFT JOIN LATERAL (
-          SELECT id, estimate_number, total, status
+          SELECT id, estimate_number, total, status, financing_months
           FROM estimates 
           WHERE lead_id = l.id OR (l.client_id IS NOT NULL AND client_id = l.client_id)
           ORDER BY id DESC LIMIT 1
@@ -208,18 +226,24 @@ export async function GET(req: NextRequest) {
         ) insp ON true
         LEFT JOIN LATERAL (
           SELECT COUNT(*)::INT as photo_count
-          FROM job_photos WHERE job_id = j.id
+          FROM job_photos 
+          WHERE (j.id IS NOT NULL AND job_id = j.id) OR lead_id = l.id
         ) jp ON true
         LEFT JOIN LATERAL (
           SELECT id, warranty_number
-          FROM warranties WHERE lead_id = l.id OR job_id = j.id
+          FROM warranties WHERE lead_id = l.id OR (j.id IS NOT NULL AND job_id = j.id)
           ORDER BY id DESC LIMIT 1
         ) w ON true
         LEFT JOIN LATERAL (
           SELECT id, rating
-          FROM reviews WHERE lead_id = l.id OR job_id = j.id
+          FROM reviews WHERE lead_id = l.id OR (j.id IS NOT NULL AND job_id = j.id)
           ORDER BY id DESC LIMIT 1
         ) r ON true
+        LEFT JOIN LATERAL (
+          SELECT id, contract_number, status
+          FROM contracts WHERE lead_id = l.id OR (e.id IS NOT NULL AND estimate_id = e.id)
+          ORDER BY id DESC LIMIT 1
+        ) cnt ON true
         ${whereClause}
         ORDER BY l.stage_entered_at DESC, l.created_at DESC`,
         params
@@ -230,7 +254,18 @@ export async function GET(req: NextRequest) {
          WHERE status = 'active'
          ORDER BY name ASC`
       ),
+      // Aggregate completed checklist counts per lead
+      query<{ lead_id: string; stage: string; completed_count: string }>(
+        `SELECT lead_id, stage, COUNT(CASE WHEN completed = true THEN 1 END) as completed_count
+         FROM lead_stage_checklists
+         GROUP BY lead_id, stage`
+      ),
     ]);
+
+    const checklistMap = new Map<string, number>();
+    for (const c of checklistCounts) {
+      checklistMap.set(`${c.lead_id}_${c.stage}`, parseInt(c.completed_count, 10));
+    }
 
     const now = Date.now();
 
@@ -253,43 +288,38 @@ export async function GET(req: NextRequest) {
       const isTeam = Boolean(row.created_by_user_id || row.created_by_name);
       const sourceType = isTeam ? 'team_member' : 'website';
 
+      // Enhanced third-party portal label formatting
       let sourceDetail = row.lead_source_detail;
       if (!sourceDetail) {
         if (sourceType === 'website') {
           if (row.lead_source === 'google_ads') sourceDetail = 'Google Ads Search';
           else if (row.lead_source === 'yelp') sourceDetail = 'Yelp Directory';
+          else if (row.lead_source === 'thumbtack') sourceDetail = 'Thumbtack Inbound';
+          else if (row.lead_source === 'angies_list') sourceDetail = 'Angi / Angie\'s List';
+          else if (row.lead_source === 'nextdoor') sourceDetail = 'Nextdoor Inbound';
+          else if (row.lead_source === 'referral') sourceDetail = 'Client Referral';
           else sourceDetail = 'Website Inbound';
         } else {
-          sourceDetail = 'Sales Rep Outreach';
+          sourceDetail = row.lead_source === 'door_knock' ? 'Door Knock / Field Canvassing' : 'Sales Rep Outreach';
         }
       }
 
-      const stageEnteredTime = new Date(row.stage_entered_at || row.created_at).getTime();
-      const hoursInStage = Math.max(0, Math.round((now - stageEnteredTime) / (1000 * 60 * 60)));
-
-      let slaHoursRemaining: number | undefined;
-      let slaStatus: 'met' | 'warning' | 'breached' | 'ok' | undefined;
-
       const stage = (row.pipeline_stage as PipelineStage) || 'stage_1_lead_gen';
+
+      // ── Canonical SLA Calculation (via lib/pipeline-sla) ──
+      const sla = evaluateLeadSla({
+        stage,
+        stageEnteredAt: row.stage_entered_at,
+        initialContactedAt: row.initial_contacted_at,
+        proposalSentAt: row.proposal_sent_at,
+        contractSignedAt: row.contract_signed_at,
+        now,
+      });
 
       if (stage === 'stage_2_initial_contact') {
         s2Total++;
-        if (row.initial_contacted_at) {
-          slaStatus = 'met';
+        if (sla.status === 'met' || sla.status === 'ok' || sla.status === 'warning') {
           s2MetOrOk++;
-        } else {
-          // 48h SLA window
-          const deadline = stageEnteredTime + 48 * 60 * 60 * 1000;
-          slaHoursRemaining = Math.round((deadline - now) / (1000 * 60 * 60));
-          if (slaHoursRemaining <= 0) {
-            slaStatus = 'breached';
-          } else if (slaHoursRemaining <= 12) {
-            slaStatus = 'warning';
-            s2MetOrOk++;
-          } else {
-            slaStatus = 'ok';
-            s2MetOrOk++;
-          }
         }
       }
 
@@ -304,6 +334,29 @@ export async function GET(req: NextRequest) {
       if (stage === 'stage_5_completion_followup' && row.job_status !== 'complete') {
         activeInstallations++;
       }
+
+      // Financing indicator: True if customer flagged interest or estimate includes financing terms
+      const financingOffered = Boolean(
+        row.financing_interested || (row.estimate_financing_months && Number(row.estimate_financing_months) > 0)
+      );
+
+      // Contract status resolution
+      let contractStatus: 'action_required' | 'client_signed' | 'fully_executed' | null = row.raw_contract_status || null;
+      if (!contractStatus) {
+        if (row.contract_signed_at || row.estimate_status === 'accepted') {
+          contractStatus = row.job_id ? 'fully_executed' : 'client_signed';
+        } else if (row.proposal_sent_at || row.estimate_status === 'sent') {
+          contractStatus = 'action_required';
+        }
+      }
+
+      // Checklist metrics from config
+      const stageConfig = SALES_CHART_STAGES[stage] || SALES_CHART_STAGES.stage_1_lead_gen;
+      const totalChecklistCount = stageConfig.items.length;
+      const dbCompleted = checklistMap.get(`${row.id}_${stage}`) || 0;
+      const autoKeys = getAutoCompletedKeysForLead(row);
+      const autoCount = stageConfig.items.filter((i) => autoKeys.has(i.key)).length;
+      const completedChecklistCount = Math.min(totalChecklistCount, Math.max(dbCompleted, autoCount));
 
       const leadItem: PipelineLead = {
         id: Number(row.id),
@@ -340,24 +393,41 @@ export async function GET(req: NextRequest) {
         address_confirmed: Boolean(row.address_confirmed),
         discount_applied: row.discount_applied,
         financing_interested: Boolean(row.financing_interested),
+        financing_offered: financingOffered,
         estimated_value: dealValue,
         created_at: row.created_at,
-        hours_in_stage: hoursInStage,
-        sla_hours_remaining: slaHoursRemaining,
-        sla_status: slaStatus,
+        // SLA
+        hours_in_stage: sla.hoursInStage,
+        sla_hours_remaining: sla.hoursRemaining,
+        sla_status: sla.status,
+        sla_badge_label: sla.badgeLabel,
+        sla_badge_tone: sla.badgeTone,
+        sla_alert_message: sla.alertMessage,
+        // Checklists
+        checklist_completed_count: completedChecklistCount,
+        checklist_total_count: totalChecklistCount,
+        // Contract
+        contract_id: row.contract_id ? Number(row.contract_id) : null,
+        contract_number: row.contract_number || (row.contract_id ? `CNT-2026-${row.contract_id}` : null),
+        contract_status: contractStatus,
+        // Linked Job
         job_id: row.job_id ? Number(row.job_id) : null,
         job_number: row.job_number,
         job_status: row.job_status,
         contract_value: row.contract_value ? Number(row.contract_value) : null,
         crew_lead: row.crew_lead,
+        // Linked Estimate
         estimate_id: row.estimate_id ? Number(row.estimate_id) : null,
         estimate_number: row.estimate_number,
         estimate_total: row.estimate_total ? Number(row.estimate_total) : null,
         estimate_status: row.estimate_status,
+        estimate_financing_months: row.estimate_financing_months ? Number(row.estimate_financing_months) : null,
+        // Linked Inspection
         inspection_id: row.inspection_id ? Number(row.inspection_id) : null,
         inspection_number: row.inspection_number,
         roof_health_score: row.roof_health_score ? Number(row.roof_health_score) : null,
         inspection_date: row.inspection_date,
+        // Auxiliary
         photo_count: Number(row.photo_count || 0),
         has_warranty: Boolean(row.has_warranty),
         warranty_number: row.warranty_number,

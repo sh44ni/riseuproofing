@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { requireAuthUser } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 
@@ -135,6 +136,20 @@ export async function POST(
             auth.user.name,
           ]
         );
+
+        // Sync directly to Calendar / Tasks entity
+        await query(
+          `INSERT INTO tasks (title, description, event_type, entity_type, entity_id, due_at, assigned_to_user_id, created_by_user_id)
+           VALUES ($1, $2, 'roof_inspection', 'lead', $3, $4, $5, $6)`,
+          [
+            `12-Point Roof Inspection: ${lead.full_name}`,
+            `Inspection booked for property: ${lead.address || ''}, ${lead.city || ''}. Service needed: ${lead.service_type || 'Roof Replacement'}`,
+            leadId,
+            scheduledAt,
+            inspectorId,
+            auth.user.id,
+          ]
+        );
         break;
       }
 
@@ -183,12 +198,17 @@ export async function POST(
 
         const warNum = `WAR-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
         const warType = payload.warranty_type || '50-Year GAF Golden Pledge Lifetime Warranty';
+        const accessToken = crypto.randomBytes(16).toString('hex');
 
         const newWar = await query<any>(
           `INSERT INTO warranties (
-             job_id, lead_id, warranty_number, warranty_type, start_date, expiration_date, coverage_details
+             job_id, lead_id, warranty_number, warranty_type, start_date, expiration_date,
+             checkin_6mo_due, checkin_1yr_due, checkin_6mo_completed, checkin_1yr_completed,
+             coverage_details, status, access_token, client_id
            )
-           VALUES ($1, $2, $3, $4, CURRENT_DATE, CURRENT_DATE + INTERVAL '50 years', $5)
+           VALUES ($1, $2, $3, $4, CURRENT_DATE, CURRENT_DATE + INTERVAL '50 years',
+                   CURRENT_DATE + INTERVAL '6 months', CURRENT_DATE + INTERVAL '1 year', false, false,
+                   $5, 'active', $6, $7)
            RETURNING *`,
           [
             jobId,
@@ -196,6 +216,8 @@ export async function POST(
             warNum,
             warType,
             'Covers 100% manufacturer defects, non-prorated 50-year material coverage and 25-year workmanship warranty backed by Rise Up Roofing.',
+            accessToken,
+            lead.client_id || null,
           ]
         );
 
@@ -232,13 +254,14 @@ export async function POST(
           ]
         );
 
-        // Check or insert pending review stub
+        // Check or insert pending review stub with secure review_token
         const existingRev = await query<any>('SELECT id FROM reviews WHERE lead_id = $1', [leadId]);
         if (existingRev.length === 0) {
+          const reviewToken = crypto.randomBytes(16).toString('hex');
           await query(
-            `INSERT INTO reviews (lead_id, job_id, customer_name, customer_city, rating, status, source)
-             VALUES ($1, $2, $3, $4, 5, 'pending', 'sms_invite')`,
-            [leadId, jobId, lead.full_name, lead.city || 'Bay Area']
+            `INSERT INTO reviews (lead_id, job_id, customer_name, customer_city, rating, status, source, review_token, client_id)
+             VALUES ($1, $2, $3, $4, 5, 'pending', 'sms_invite', $5, $6)`,
+            [leadId, jobId, lead.full_name, lead.city || 'Bay Area', reviewToken, lead.client_id || null]
           );
         }
 

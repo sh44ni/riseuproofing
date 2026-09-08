@@ -88,7 +88,36 @@ export async function PATCH(
   updates.push(`updated_at = NOW()`);
 
   params.push(estimateId);
-  await query(`UPDATE estimates SET ${updates.join(', ')} WHERE id = $${params.length}`, params);
+  const updatedEst = await query<any>(`UPDATE estimates SET ${updates.join(', ')} WHERE id = $${params.length} RETURNING *`, params);
+
+  // If estimate was sent, advance linked lead directly to Stage 4 (Closing)
+  if (body.status === 'sent' && updatedEst.length > 0) {
+    const est = updatedEst[0];
+    if (est.lead_id) {
+      await query(
+        `UPDATE leads
+         SET 
+           pipeline_stage = 'stage_4_closing',
+           stage_entered_at = CASE WHEN pipeline_stage != 'stage_4_closing' THEN NOW() ELSE stage_entered_at END,
+           proposal_sent_at = NOW(),
+           status = 'proposal',
+           estimated_value = GREATEST(COALESCE(estimated_value, 0), $1),
+           updated_at = NOW()
+         WHERE id = $2`,
+        [Number(est.total) || 0, est.lead_id]
+      );
+
+      await query(
+        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+         VALUES ('lead', $1, 'proposal_sent', 'Proposal Sent to Homeowner', $2, $3)`,
+        [
+          est.lead_id,
+          `${auth.user.name} sent official estimate ${est.estimate_number} ($${Number(est.total).toLocaleString()}) to customer. Card advanced to Stage 4 (Closing).`,
+          auth.user.name,
+        ]
+      );
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

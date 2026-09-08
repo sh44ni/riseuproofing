@@ -903,7 +903,11 @@ async function handleMigration(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, message: 'Migrations, RBAC, and Client 360 initialization complete' });
+    // Run Pipeline v2 schema migration (checklists, estimate_templates, contracts)
+    const { runPipelineV2Migration } = await import('@/lib/schema/pipeline-v2-migration');
+    await runPipelineV2Migration();
+
+    return NextResponse.json({ ok: true, message: 'Migrations, RBAC, Client 360, and Pipeline v2 initialization complete' });
   } catch (err) {
     console.error('Migration error:', err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });

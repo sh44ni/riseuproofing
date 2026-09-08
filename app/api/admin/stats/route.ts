@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthUser } from '@/lib/admin-auth';
 import { hasPermission, getPermissionScope } from '@/lib/permissions';
 import { query } from '@/lib/db';
+import { getNeedsFollowUpSqlCondition } from '@/lib/pipeline-sla';
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuthUser();
@@ -119,11 +120,7 @@ export async function GET(req: NextRequest) {
               ROUND(EXTRACT(EPOCH FROM (NOW() - COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at))) / 86400)::int as days_idle
             FROM leads l
             WHERE l.status NOT IN ('won', 'lost')
-              AND (
-                l.pipeline_stage IN ('stage_4_proposal_negotiation', 'stage_3_site_visit_estimate')
-                OR l.status IN ('quoted', 'contacted')
-              )
-              AND COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) < NOW() - ($1 * INTERVAL '1 hour')
+              AND ${getNeedsFollowUpSqlCondition(1)}
               ${leadFilter}
             ORDER BY COALESCE(l.proposal_sent_at, l.last_contact_at, l.stage_entered_at, l.created_at) ASC
             LIMIT 6

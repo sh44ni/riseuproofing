@@ -24,10 +24,14 @@ import {
   Star,
   Sparkles,
   ArrowRight,
+  Plus,
 } from 'lucide-react';
 import { PipelineLead, PipelineStage, PIPELINE_STAGES } from '@/app/api/admin/pipeline/route';
 import PipelineCard from '@/components/admin/pipeline/PipelineCard';
 import StageTransitionModal from '@/components/admin/pipeline/StageTransitionModal';
+import QuickAddLeadModal from '@/components/admin/pipeline/QuickAddLeadModal';
+import EstimateTemplatePickerModal from '@/components/admin/pipeline/EstimateTemplatePickerModal';
+import StageChecklistPopover from '@/components/admin/pipeline/StageChecklistPopover';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
 import RoleBadge from '@/components/admin/shared/RoleBadge';
 
@@ -135,6 +139,13 @@ export default function PipelinePage() {
   const [activeModalLead, setActiveModalLead] = useState<PipelineLead | null>(null);
   const [modalActionType, setModalActionType] = useState<string | null>(null);
 
+  // Sales Chart V2 Modals
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [estimatePickerOpen, setEstimatePickerOpen] = useState(false);
+  const [estimatePickerLead, setEstimatePickerLead] = useState<PipelineLead | null>(null);
+  const [checklistOpen, setChecklistOpen] = useState(false);
+  const [checklistLead, setChecklistLead] = useState<PipelineLead | null>(null);
+
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'error' } | null>(null);
 
@@ -231,15 +242,36 @@ export default function PipelinePage() {
     }
   };
 
-  // Stage change handler (Drag & Drop or button)
-  const handleStageChange = async (leadId: number, newStage: PipelineStage, metadata?: any) => {
+  // Stage change handler (Drag & Drop or button) with Stage 3 soft-gate override
+  const handleStageChange = async (
+    leadId: number,
+    newStage: PipelineStage,
+    metadata?: any,
+    overrideGate = false
+  ) => {
     try {
       const res = await fetch(`/api/admin/pipeline/${leadId}/stage`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_stage: newStage, metadata }),
+        body: JSON.stringify({ new_stage: newStage, metadata, override_gate: overrideGate }),
       });
       const data = await res.json();
+
+      // Soft-gate check (e.g. Stage 3 -> Stage 4 requires Estimate or Inspection)
+      if (data.requires_override) {
+        if (data.can_override) {
+          const confirmed = window.confirm(
+            `⚠️ STAGE GATE REQUIREMENT:\n\n${data.message}\n\nAs an Owner/Manager, would you like to override this gate and proceed anyway?`
+          );
+          if (confirmed) {
+            return handleStageChange(leadId, newStage, metadata, true);
+          }
+        } else {
+          alert(`🚫 Cannot Advance Stage:\n\n${data.message}`);
+        }
+        return;
+      }
+
       if (data.ok) {
         const claimNote = data.auto_claimed ? ' (auto-claimed to you)' : '';
         const jobNote = data.job ? ` • Job #${data.job.job_number} created!` : '';
@@ -276,6 +308,16 @@ export default function PipelinePage() {
   };
 
   const handleOpenActionModal = (lead: PipelineLead, actionType: string) => {
+    if (actionType === 'create_estimate') {
+      setEstimatePickerLead(lead);
+      setEstimatePickerOpen(true);
+      return;
+    }
+    if (actionType === 'view_checklist') {
+      setChecklistLead(lead);
+      setChecklistOpen(true);
+      return;
+    }
     setActiveModalLead(lead);
     setModalActionType(actionType);
     setModalOpen(true);
@@ -355,6 +397,15 @@ export default function PipelinePage() {
               <ListFilter className="w-3.5 h-3.5" /> Table View
             </button>
           </div>
+
+          <button
+            onClick={() => setAddLeadOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+            title="Quick Add Prospect (Field Door Knock / Inbound)"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Lead</span>
+          </button>
 
           <button
             onClick={() => loadPipeline(true)}
@@ -586,9 +637,21 @@ export default function PipelinePage() {
                       </h2>
                     </div>
 
-                    <span className="text-xs font-black text-slate-700 bg-white/80 px-2 py-0.5 rounded-full border border-slate-200/80 shadow-2xs">
-                      {stageLeads.length}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {stageMeta.id === 'stage_1_lead_gen' && (
+                        <button
+                          type="button"
+                          onClick={() => setAddLeadOpen(true)}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-2xs transition-colors cursor-pointer"
+                          title="Quick Add Prospect (Door Knock / Inbound)"
+                        >
+                          <Plus className="w-3 h-3" /> Add Lead
+                        </button>
+                      )}
+                      <span className="text-xs font-black text-slate-700 bg-white/80 px-2 py-0.5 rounded-full border border-slate-200/80 shadow-2xs">
+                        {stageLeads.length}
+                      </span>
+                    </div>
                   </div>
 
                   <p className="text-[10px] text-slate-500 line-clamp-1 mb-2">
@@ -619,6 +682,14 @@ export default function PipelinePage() {
                         onAssign={handleAssign}
                         onStageChange={handleStageChange}
                         onOpenActionModal={handleOpenActionModal}
+                        onOpenChecklist={(l) => {
+                          setChecklistLead(l);
+                          setChecklistOpen(true);
+                        }}
+                        onOpenEstimatePicker={(l) => {
+                          setEstimatePickerLead(l);
+                          setEstimatePickerOpen(true);
+                        }}
                       />
                     ))
                   )}
@@ -783,6 +854,47 @@ export default function PipelinePage() {
         users={users}
         onExecuteAction={handleExecuteAction}
       />
+
+      {/* ── QUICK ADD LEAD MODAL (STAGE 1 DOOR KNOCK / FIELD ENTRY) ── */}
+      <QuickAddLeadModal
+        isOpen={addLeadOpen}
+        onClose={() => setAddLeadOpen(false)}
+        onSuccess={() => {
+          showToast('Prospect added to Stage 1! 🚀');
+          loadPipeline(true);
+        }}
+        currentUserId={currentUser?.id}
+      />
+
+      {/* ── STANDARDIZED ESTIMATE TEMPLATE PICKER MODAL (STAGE 3) ── */}
+      {/* ── STANDARDIZED ESTIMATE TEMPLATE PICKER MODAL (STAGE 3) ── */}
+      <EstimateTemplatePickerModal
+        isOpen={estimatePickerOpen}
+        lead={estimatePickerLead}
+        onClose={() => {
+          setEstimatePickerOpen(false);
+          setEstimatePickerLead(null);
+        }}
+        onSuccess={() => {
+          showToast('Estimate generated from Sales Chart Template! 📄');
+          loadPipeline(true);
+        }}
+      />
+
+      {/* ── STAGE ACTIVITY CHECKLIST POPOVER (STAGES 1–5) ── */}
+      {checklistLead && (
+        <StageChecklistPopover
+          isOpen={checklistOpen}
+          lead={checklistLead}
+          onClose={() => {
+            setChecklistOpen(false);
+            setChecklistLead(null);
+          }}
+          onChecklistUpdated={() => {
+            loadPipeline(true);
+          }}
+        />
+      )}
     </div>
   );
 }
