@@ -45,12 +45,12 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
-      <table className="w-full text-left border-collapse">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-card-blue transition-all">
+      <table className="w-full text-left border-collapse min-w-[850px]">
         <thead>
           <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-            <th className="py-3.5 px-4">Client Name & Contact</th>
-            <th className="py-3.5 px-4">Property & Roof Specs</th>
+            <th className="py-3.5 px-4 sticky left-0 bg-slate-50/95 backdrop-blur-xs z-20 shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)] min-w-[220px]">Client Name &amp; Contact</th>
+            <th className="py-3.5 px-4">Property &amp; Roof Specs</th>
             <th className="py-3.5 px-4">CRM Status</th>
             <th className="py-3.5 px-4">Lifetime Value</th>
             <th className="py-3.5 px-4">Assigned To</th>
@@ -68,8 +68,8 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
                 key={c.id}
                 className="hover:bg-sky-50/30 transition-colors group"
               >
-                {/* Name & Contact */}
-                <td className="py-3.5 px-4">
+                {/* Name & Contact (Sticky Left) */}
+                <td className="py-3.5 px-4 sticky left-0 bg-white group-hover:bg-slate-50/90 z-10 transition-colors shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)]">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0B1E33] to-[#1878B8] flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-2xs">
                       {c.full_name ? c.full_name[0].toUpperCase() : 'C'}

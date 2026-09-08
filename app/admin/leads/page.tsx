@@ -3,9 +3,22 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Users, Download, Filter, Search, Plus, Sparkles, RefreshCw, GitFork, ArrowRight } from 'lucide-react';
+import {
+  Users,
+  Download,
+  Filter,
+  Search,
+  Plus,
+  Sparkles,
+  RefreshCw,
+  GitFork,
+  ArrowRight,
+  LayoutList,
+  LayoutGrid,
+} from 'lucide-react';
 import LeadsTable, { Lead } from '@/components/admin/LeadsTable';
 import MobileLeadCard from '@/components/admin/leads/MobileLeadCard';
+import LeadQuickDrawer from '@/components/admin/leads/LeadQuickDrawer';
 import AddLeadSheet from '@/components/admin/leads/AddLeadSheet';
 import { AdminAreaChart } from '@/components/admin/Charts';
 import { LeadsTableSkeleton } from '@/components/admin/shared/AdminSkeletons';
@@ -20,14 +33,35 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Filters
+  // Filters & Layout Mode
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [priority, setPriority] = useState('all');
   const [page, setPage] = useState(1);
   const [showAddSheet, setShowAddSheet] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [drawerLead, setDrawerLead] = useState<Lead | null>(null);
 
   const router = useRouter();
+
+  // Load view preference or adapt to viewport
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('riseup_crm_leads_view');
+      if (saved === 'table' || saved === 'cards') {
+        setViewMode(saved);
+      } else if (window.innerWidth < 1024) {
+        setViewMode('cards');
+      }
+    }
+  }, []);
+
+  function handleToggleView(mode: 'table' | 'cards') {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('riseup_crm_leads_view', mode);
+    }
+  }
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -180,19 +214,51 @@ export default function LeadsPage() {
 
       {/* Search & Sticky Filters */}
       <div className="space-y-3 bg-white p-3.5 sm:p-4 rounded-[16px] border border-slate-200/80 shadow-xs">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by homeowner name, phone, address, city, or service..."
-            value={search}
-            onChange={e => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="admin-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
-          />
+        {/* Search Bar & View Mode Switcher */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by homeowner name, phone, address, city, or service..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="admin-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
+            />
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 shrink-0 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => handleToggleView('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'table'
+                  ? 'bg-white text-[#0B1E33] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+              title="Table View (Dense & Sortable)"
+            >
+              <LayoutList size={14} />
+              <span>Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleToggleView('cards')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'cards'
+                  ? 'bg-white text-[#0B1E33] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+              title="Card Grid View (Visual Touch)"
+            >
+              <LayoutGrid size={14} />
+              <span>Cards</span>
+            </button>
+          </div>
         </div>
 
         {/* Status Filter Chips (Horizontal scroll on mobile) */}
@@ -287,19 +353,37 @@ export default function LeadsPage() {
         </div>
       ) : (
         <>
-          {/* Mobile View: High-density touch cards */}
-          <div className="lg:hidden space-y-3">
-            {leads.map(lead => (
-              <MobileLeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} />
-            ))}
-          </div>
-
-          {/* Desktop View: Full data table */}
-          <div className="hidden lg:block">
-            <LeadsTable leads={leads} onStatusChange={handleStatusChange} />
-          </div>
+          {viewMode === 'cards' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+              {leads.map(lead => (
+                <MobileLeadCard
+                  key={lead.id}
+                  lead={lead}
+                  onStatusChange={handleStatusChange}
+                  onQuickPeek={setDrawerLead}
+                />
+              ))}
+            </div>
+          ) : (
+            <LeadsTable
+              leads={leads}
+              onStatusChange={handleStatusChange}
+              onQuickPeek={setDrawerLead}
+            />
+          )}
         </>
       )}
+
+      {/* Quick Peek Slide-over Drawer */}
+      <LeadQuickDrawer
+        lead={drawerLead}
+        isOpen={Boolean(drawerLead)}
+        onClose={() => setDrawerLead(null)}
+        onStatusChange={(id, newSt) => {
+          handleStatusChange(id, newSt);
+          setDrawerLead(prev => (prev ? { ...prev, status: newSt } : null));
+        }}
+      />
 
       {/* Pagination */}
       {totalPages > 1 && (

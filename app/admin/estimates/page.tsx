@@ -274,12 +274,19 @@ export default function EstimatesPage() {
           </div>
 
           {/* Desktop Table */}
-          <div className="hidden lg:block overflow-x-auto rounded-[16px] border border-slate-200/80 bg-white shadow-xs">
-            <table className="w-full text-sm">
+          <div className="hidden lg:block overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-card-blue transition-all">
+            <table className="w-full text-sm min-w-[850px]">
               <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/80">
-                  {['Estimate #', 'Customer', 'Specs', 'Material', 'Contract Total', 'Financing', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">
+                <tr className="border-b border-slate-200/80 bg-slate-50/90 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  {['Estimate #', 'Customer', 'Specs', 'Material', 'Contract Total', 'Financing', 'Status', 'Actions'].map((h, i) => (
+                    <th
+                      key={h}
+                      className={`text-left px-4 py-3 text-slate-500 font-bold text-[11px] uppercase tracking-wider whitespace-nowrap ${
+                        i === 0
+                          ? 'sticky left-0 bg-slate-50/95 backdrop-blur-xs z-20 shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)]'
+                          : ''
+                      }`}
+                    >
                       {h}
                     </th>
                   ))}
@@ -290,8 +297,8 @@ export default function EstimatesPage() {
                   const badge = STATUS_BADGES[est.status] || STATUS_BADGES.draft;
 
                   return (
-                    <tr key={est.id} className="hover:bg-slate-50/60 transition-all duration-300 ease-out">
-                      <td className="px-4 py-3 font-mono font-bold text-[#1878B8] text-xs">
+                    <tr key={est.id} className="hover:bg-sky-50/40 transition-colors group">
+                      <td className="px-4 py-3 font-mono font-bold text-[#1878B8] text-xs sticky left-0 bg-white group-hover:bg-slate-50/90 z-10 transition-colors shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)]">
                         {est.estimate_number}
                       </td>
                       <td className="px-4 py-3">
