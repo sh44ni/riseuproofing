@@ -10,6 +10,7 @@ interface BottomSheetProps {
   subtitle?: string;
   children: React.ReactNode;
   maxHeight?: string;
+  maxWidth?: string;
 }
 
 export default function BottomSheet({
@@ -18,9 +19,10 @@ export default function BottomSheet({
   title,
   subtitle,
   children,
-  maxHeight = 'max-h-[88vh]',
+  maxHeight = 'max-h-[90vh] sm:max-h-[88vh]',
+  maxWidth = 'max-w-xl',
 }: BottomSheetProps) {
-  // Lock body scroll when sheet is open
+  // Lock body scroll when dialog is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -44,42 +46,42 @@ export default function BottomSheet({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#0B1E33]/40 backdrop-blur-xs transition-opacity duration-300"
+        className="fixed inset-0 bg-[#0B1E33]/60 backdrop-blur-xs transition-opacity duration-200"
         onClick={onClose}
       />
 
-      {/* Sheet Container */}
+      {/* Centered Modal Window Container */}
       <div
-        className={`relative w-full max-w-xl bg-white border-t border-x border-slate-200/80 rounded-t-[24px] shadow-[0_-8px_32px_rgba(11,30,51,0.12)] flex flex-col z-10 ${maxHeight} transition-transform duration-300 ease-out`}
+        className={`relative w-full ${maxWidth} bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col z-10 ${maxHeight} overflow-hidden animate-in zoom-in-95 duration-200`}
         onClick={e => e.stopPropagation()}
       >
-        {/* Top Handle */}
-        <div className="w-full flex justify-center pt-3 pb-1 cursor-grab" onClick={onClose}>
-          <div className="w-10 h-1.5 rounded-full bg-slate-300 hover:bg-slate-400 transition-colors" />
-        </div>
-
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200/80 flex-shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-[#0B1E33] leading-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex-shrink-0">
+          <div className="min-w-0 pr-3">
+            <h2 className="text-base sm:text-lg font-bold text-[#0B1E33] leading-tight truncate">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5 truncate">{subtitle}</p>}
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-[#0B1E33] flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close dialog"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-[#0B1E33] flex items-center justify-center transition-colors cursor-pointer shrink-0"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 overflow-y-auto flex-1 overscroll-contain">
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1 overscroll-contain">
           {children}
         </div>
       </div>
     </div>
   );
 }
+
+// Semantic alias
+export const ModalWindow = BottomSheet;

@@ -354,7 +354,7 @@ export default function ClientDetailPage({
         onClose={() => setShowEditSpecs(false)}
         title="Edit Client & Property Specifications"
       >
-        <form onSubmit={handleSaveSpecs} className="space-y-4 max-w-xl mx-auto pb-4">
+        <form onSubmit={handleSaveSpecs} className="space-y-4">
           {editSpecsError && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold">
               {editSpecsError}

@@ -102,7 +102,7 @@ export default function AddClientSheet({ isOpen, onClose, onCreated }: AddClient
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Add New Client Profile">
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto pb-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold">
             {error}
