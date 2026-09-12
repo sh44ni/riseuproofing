@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/admin-auth';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import BottomNav from '@/components/admin/layout/BottomNav';
 import FAB from '@/components/admin/shared/FAB';
+import ConditionalAdminLayout from '@/components/admin/layout/ConditionalAdminLayout';
 
 export const metadata = {
   title: 'CRM Admin — Rise Up Roofing & Construction',
@@ -28,9 +29,6 @@ export default async function AdminLayout({
     pathname.startsWith('/admin/login');
 
   if (!user) {
-    // Only allow /admin/login through without an authenticated session.
-    // Safety: if on login page (or pathname unknown), render login.
-    // NEVER redirect to /admin/login when already serving /admin/login.
     if (isLoginPage || pathname === '') {
       return (
         <div className="admin-theme min-h-screen bg-[#F4F8FD] text-[#0B1E33]">
@@ -46,14 +44,16 @@ export default async function AdminLayout({
     redirect('/admin/dashboard');
   }
 
+  // ConditionalAdminLayout (Client Component) uses usePathname() to decide
+  // whether to show AdminSidebar/BottomNav or the bare dashboard wrapper.
+  // Pre-rendered Server Component slots are passed as props.
   return (
-    <div className="admin-theme min-h-screen bg-[#F4F8FD] text-[#0B1E33] flex flex-col lg:flex-row">
-      <AdminSidebar user={user} />
-      <main className="flex-1 min-h-screen overflow-x-hidden overflow-y-auto pt-[74px] lg:pt-8 px-4 sm:px-6 lg:px-8 pb-28 lg:pb-14">
-        {children}
-      </main>
-      <BottomNav user={user} />
-      <FAB />
-    </div>
+    <ConditionalAdminLayout
+      sidebar={<AdminSidebar user={user} />}
+      bottomNav={<BottomNav user={user} />}
+      fab={<FAB />}
+    >
+      {children}
+    </ConditionalAdminLayout>
   );
 }

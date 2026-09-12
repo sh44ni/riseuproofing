@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 's3-media0.fl.yelpcdn.com' },
       { protocol: 'https', hostname: 's3-media1.fl.yelpcdn.com' },
       { protocol: 'https', hostname: 's3-media2.fl.yelpcdn.com' },
+      { protocol: 'https', hostname: 'cdn.weatherapi.com' },
     ],
   },
   async headers() {

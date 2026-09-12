@@ -73,8 +73,18 @@ export default function DashboardPipelineSection() {
       const res = await fetch('/api/admin/pipeline');
       if (res.ok) {
         const data = await res.json();
-        const rawList = Array.isArray(data) ? data : data.leads || [];
-        setLeads(rawList);
+        // API returns { stages: { stage_1_lead_gen: [...], stage_2_initial_contact: [...], ... } }
+        // Flatten all stages into a single list for the kanban board
+        if (data.stages && typeof data.stages === 'object') {
+          const allLeads = Object.values(data.stages).flat() as DashboardPipelineLead[];
+          setLeads(allLeads);
+        } else if (Array.isArray(data)) {
+          setLeads(data);
+        } else if (data.leads) {
+          setLeads(data.leads);
+        } else {
+          setLeads([]);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch pipeline leads', err);
@@ -113,37 +123,31 @@ export default function DashboardPipelineSection() {
   }, [leads]);
 
   // Map each lead into one of the 8 visual Kanban stages
+  // The API already placed leads in correct stages — we just re-map to our visual columns
   const categorizedLeads = useMemo(() => {
     const map: Record<string, DashboardPipelineLead[]> = {
-      new_leads: [],
-      attempted: [],
-      connected: [],
-      site_visit: [],
-      proposal_sent: [],
-      under_review: [],
-      won: [],
-      lost: [],
+      new_leads: [], attempted: [], connected: [],
+      site_visit: [], proposal_sent: [], under_review: [],
+      won: [], lost: [],
     };
 
-    // Filter first
     const filtered = leads.filter((lead) => {
       if (sourceFilter !== 'all' && lead.lead_source !== sourceFilter) return false;
       if (repFilter !== 'all' && lead.assigned_to_name !== repFilter) return false;
       if (serviceFilter !== 'all' && lead.service_type !== serviceFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchName = lead.full_name?.toLowerCase().includes(q);
-        const matchPhone = lead.phone?.toLowerCase().includes(q);
-        const matchAddress = lead.address?.toLowerCase().includes(q);
-        const matchCity = lead.city?.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchAddress && !matchCity) return false;
+        if (!lead.full_name?.toLowerCase().includes(q)
+          && !lead.phone?.toLowerCase().includes(q)
+          && !lead.address?.toLowerCase().includes(q)
+          && !lead.city?.toLowerCase().includes(q)) return false;
       }
       return true;
     });
 
     filtered.forEach((lead) => {
       const status = lead.status?.toLowerCase() || '';
-      const stage = lead.pipeline_stage || '';
+      const stage = lead.pipeline_stage || 'stage_1_lead_gen';
 
       if (status === 'lost') {
         map.lost.push(lead);
@@ -151,21 +155,22 @@ export default function DashboardPipelineSection() {
         map.won.push(lead);
       } else if (stage === 'stage_4_closing') {
         map.under_review.push(lead);
-      } else if (lead.proposal_sent_at || status === 'quoted') {
+      } else if (stage === 'stage_3_site_visit_estimate' || lead.proposal_sent_at) {
+        // proposal_sent_at means estimate was sent from site visit
         map.proposal_sent.push(lead);
-      } else if (stage === 'stage_3_site_visit_estimate') {
-        map.site_visit.push(lead);
       } else if (stage === 'stage_2_initial_contact' && lead.initial_contacted_at) {
         map.connected.push(lead);
       } else if (stage === 'stage_2_initial_contact' || status === 'contacted') {
         map.attempted.push(lead);
       } else {
+        // stage_1_lead_gen and anything else → New Leads
         map.new_leads.push(lead);
       }
     });
 
     return map;
   }, [leads, sourceFilter, repFilter, serviceFilter, searchQuery]);
+
 
   const handleCardClick = (lead: DashboardPipelineLead) => {
     // Transform to Lead object for LeadQuickDrawer
@@ -292,30 +297,30 @@ export default function DashboardPipelineSection() {
         </div>
       </div>
 
-      {/* 8-Stage Horizontal Kanban Grid */}
-      <div className="overflow-x-auto pb-4">
-        <div className="grid grid-flow-col auto-cols-[230px] sm:auto-cols-[250px] gap-3 min-w-max">
+      {/* 8-Stage Kanban Grid — fills container, no horizontal scroll */}
+      <div className="crm-kanban-board">
+        <div className="crm-kanban-grid">
           {KANBAN_STAGES.map((stage) => {
             const stageLeads = categorizedLeads[stage.id] || [];
 
             return (
               <div
                 key={stage.id}
-                className={`bg-slate-50/80 rounded-xl p-3 border-t-4 ${stage.color} border border-slate-200/80 flex flex-col justify-between min-h-[360px]`}
+                className={`crm-kanban-col bg-slate-50/80 rounded-xl p-2.5 border-t-4 ${stage.color} border border-slate-200/80 flex flex-col justify-between min-h-[240px]`}
               >
                 <div>
                   {/* Column Header */}
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60">
-                    <span className="text-xs font-bold text-slate-800 tracking-tight">
+                    <span className="text-[11px] font-bold text-slate-800 tracking-tight truncate pr-1">
                       {stage.label}
                     </span>
-                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${stage.pill}`}>
+                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0 ${stage.pill}`}>
                       {stageLeads.length}
                     </span>
                   </div>
 
                   {/* Cards List */}
-                  <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-0.5 scrollbar-thin">
                     {stageLeads.length === 0 ? (
                       <div className="py-8 text-center text-slate-400 text-xs italic">
                         No leads in this stage
@@ -325,22 +330,22 @@ export default function DashboardPipelineSection() {
                         <div
                           key={lead.id}
                           onClick={() => handleCardClick(lead)}
-                          className="p-3 bg-white rounded-lg border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer group space-y-2"
+                          className="p-2 bg-white rounded-lg border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer group space-y-1.5"
                         >
                           {/* Name & Priority */}
                           <div className="flex items-start justify-between gap-1">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-1">
+                            <span className="text-[11px] font-bold text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-1 leading-tight">
                               {lead.full_name}
                             </span>
                             {lead.priority === 'urgent' && (
-                              <span className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0 mt-1" title="Urgent" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0 mt-1" title="Urgent" />
                             )}
                           </div>
 
                           {/* Service Tag & Value */}
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium truncate max-w-[130px]">
-                              {lead.service_type || 'Roof Inspection'}
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="px-1 py-0.5 rounded bg-slate-100 text-slate-600 font-medium truncate max-w-[90px]">
+                              {lead.service_type || 'Roof'}
                             </span>
                             <span className="font-mono font-bold text-emerald-700">
                               {lead.estimated_value
@@ -349,30 +354,19 @@ export default function DashboardPipelineSection() {
                             </span>
                           </div>
 
-                          {/* Address / City */}
-                          <div className="text-[10px] text-slate-500 flex items-center gap-1 truncate">
-                            <MapPin size={10} className="text-slate-400 flex-shrink-0" />
-                            <span className="truncate">
-                              {lead.address ? `${lead.address}, ${lead.city || 'Oceanside'}` : lead.city || 'Oceanside, CA'}
-                            </span>
-                          </div>
-
-                          {/* Footer: Assigned Rep & Time Ago */}
-                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-                            <div className="flex items-center gap-1.5">
-                              <div className="w-4 h-4 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[8px] uppercase">
+                          {/* Footer: rep & date */}
+                          <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1 border-t border-slate-100">
+                            <div className="flex items-center gap-1">
+                              <div className="w-3.5 h-3.5 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[7px] uppercase">
                                 {lead.assigned_to_name ? lead.assigned_to_name.slice(0, 2) : 'RU'}
                               </div>
-                              <span className="truncate max-w-[70px] text-slate-600 font-medium">
+                              <span className="truncate max-w-[55px] text-slate-500 font-medium">
                                 {lead.assigned_to_name || 'Unassigned'}
                               </span>
                             </div>
-                            <span className="text-slate-400">
+                            <span>
                               {lead.created_at
-                                ? new Date(lead.created_at).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })
+                                ? new Date(lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                 : 'Recent'}
                             </span>
                           </div>
@@ -382,13 +376,13 @@ export default function DashboardPipelineSection() {
                   </div>
                 </div>
 
-                {/* Column Footer: Quick + Add Lead */}
+                {/* Column Footer: + Add Lead */}
                 <button
                   type="button"
                   onClick={() => setIsAddLeadOpen(true)}
-                  className="mt-3 w-full py-1.5 rounded-lg border border-dashed border-slate-300 text-slate-500 hover:text-slate-800 hover:border-slate-400 hover:bg-white text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                  className="mt-2 w-full py-1 rounded-lg border border-dashed border-slate-300 text-slate-500 hover:text-slate-800 hover:border-slate-400 hover:bg-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
                 >
-                  <Plus size={13} />
+                  <Plus size={11} />
                   <span>Add Lead</span>
                 </button>
               </div>

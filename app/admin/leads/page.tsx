@@ -1,47 +1,98 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import '@/app/admin/dashboard/crm-dashboard.css';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Users,
+  UsersRound,
   Download,
   Filter,
-  Search,
   Plus,
   Sparkles,
-  RefreshCw,
-  GitFork,
-  ArrowRight,
+  GitMerge,
   LayoutList,
   LayoutGrid,
+  Phone,
+  FileText,
+  Trophy,
+  CheckCheck,
+  ArrowUp,
+  ArrowDown,
+  UserX,
+  X,
+  ArrowRight,
 } from 'lucide-react';
 import LeadsTable, { Lead } from '@/components/admin/LeadsTable';
 import MobileLeadCard from '@/components/admin/leads/MobileLeadCard';
 import LeadQuickDrawer from '@/components/admin/leads/LeadQuickDrawer';
 import AddLeadSheet from '@/components/admin/leads/AddLeadSheet';
 import MoveToLostModal from '@/components/admin/shared/MoveToLostModal';
-import { AdminAreaChart } from '@/components/admin/Charts';
 import { LeadsTableSkeleton } from '@/components/admin/shared/AdminSkeletons';
-import { UserX, X } from 'lucide-react';
+import CrmSidebar from '@/components/admin/layout/CrmSidebar';
+import CrmTopBar from '@/components/admin/layout/CrmTopBar';
+import CrmSparkline from '@/components/admin/shared/CrmSparkline';
+import type { AuthUser } from '@/lib/rbac';
 
 const STATUSES = ['all', 'new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
 const PRIORITIES = ['all', 'hot', 'warm', 'cool'];
 
+interface KpiItem {
+  count: number | string;
+  delta: string;
+  isPositive: boolean;
+  sparkPoints?: number[];
+}
+
+interface LeadsApiResponse {
+  leads: Lead[];
+  total: number;
+  page: number;
+  daily: { day: string; count: string }[];
+  kpis?: {
+    totalLeads: KpiItem;
+    newLeads: KpiItem;
+    inContact: KpiItem;
+    scheduledQuoted: KpiItem;
+    wonDeals: KpiItem;
+    winRate: KpiItem;
+  };
+  filterOptions?: {
+    sources: string[];
+    services: string[];
+    reps: string[];
+  };
+}
+
 export default function LeadsPage() {
+  const router = useRouter();
+
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [mobileNav, setMobileNav] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [total, setTotal] = useState(0);
-  const [daily, setDaily] = useState<{ day: string; count: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Filters & Layout Mode
+  // Filters & layout state
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [priority, setPriority] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [repFilter, setRepFilter] = useState('all');
+  const [serviceFilter, setServiceFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const [showAddSheet, setShowAddSheet] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+
+  // Dynamic filter options & KPIs
+  const [sourcesList, setSourcesList] = useState<string[]>([]);
+  const [repsList, setRepsList] = useState<string[]>([]);
+  const [servicesList, setServicesList] = useState<string[]>([]);
+  const [kpis, setKpis] = useState<LeadsApiResponse['kpis'] | null>(null);
+
+  // Modals & Drawers
+  const [showAddSheet, setShowAddSheet] = useState(false);
   const [drawerLead, setDrawerLead] = useState<Lead | null>(null);
   const [pendingLostLead, setPendingLostLead] = useState<{
     id: number;
@@ -53,9 +104,7 @@ export default function LeadsPage() {
   } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const router = useRouter();
-
-  // Load view preference or adapt to viewport
+  // View mode preference
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('riseup_crm_leads_view');
@@ -67,6 +116,16 @@ export default function LeadsPage() {
     }
   }, []);
 
+  // Fetch current authenticated user
+  useEffect(() => {
+    fetch('/api/admin/auth')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.authenticated && d.user) setUser(d.user);
+      })
+      .catch(() => {});
+  }, []);
+
   function handleToggleView(mode: 'table' | 'cards') {
     setViewMode(mode);
     if (typeof window !== 'undefined') {
@@ -74,34 +133,45 @@ export default function LeadsPage() {
     }
   }
 
-  const load = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    else setRefreshing(true);
+  // Load leads with all filters
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      else setRefreshing(true);
 
-    try {
-      const params = new URLSearchParams({ page: String(page) });
-      if (status !== 'all') params.set('status', status);
-      if (priority !== 'all') params.set('priority', priority);
-      if (search.trim()) params.set('search', search.trim());
+      try {
+        const params = new URLSearchParams({ page: String(page) });
+        if (status !== 'all') params.set('status', status);
+        if (priority !== 'all') params.set('priority', priority);
+        if (sourceFilter !== 'all') params.set('source', sourceFilter);
+        if (search.trim()) params.set('search', search.trim());
 
-      const res = await fetch(`/api/admin/leads?${params}`);
-      if (res.status === 401) {
-        router.push('/admin/login');
-        return;
+        const res = await fetch(`/api/admin/leads?${params}`);
+        if (res.status === 401) {
+          router.push('/admin/login');
+          return;
+        }
+        if (!res.ok) {
+          console.error('Failed to load leads:', res.status, res.statusText);
+          return;
+        }
+        const d: LeadsApiResponse = await res.json();
+        setLeads(d.leads ?? []);
+        setTotal(d.total ?? 0);
+
+        if (d.kpis) setKpis(d.kpis);
+        if (d.filterOptions) {
+          if (d.filterOptions.sources) setSourcesList(d.filterOptions.sources);
+          if (d.filterOptions.services) setServicesList(d.filterOptions.services);
+          if (d.filterOptions.reps) setRepsList(d.filterOptions.reps);
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-      if (!res.ok) {
-        console.error('Failed to load leads:', res.status, res.statusText);
-        return;
-      }
-      const d = await res.json();
-      setLeads(d.leads ?? []);
-      setTotal(d.total ?? 0);
-      setDaily(d.daily ?? []);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [status, priority, search, page, router]);
+    },
+    [status, priority, sourceFilter, search, page, router]
+  );
 
   useEffect(() => {
     load();
@@ -128,7 +198,7 @@ export default function LeadsPage() {
     meta?: { lostReason?: string; notes?: string }
   ) {
     if (newStatus === 'lost' && !meta?.lostReason) {
-      const target = leads.find(l => l.id === id);
+      const target = leads.find((l) => l.id === id);
       if (target) {
         setPendingLostLead({
           id: target.id,
@@ -143,12 +213,11 @@ export default function LeadsPage() {
     }
 
     if (newStatus === 'lost') {
-      // If currently viewing active leads (not explicitly filtering by 'lost'), remove immediately from queue
       if (status !== 'lost') {
-        setLeads(prev => prev.filter(l => l.id !== id));
-        setTotal(prev => Math.max(0, prev - 1));
+        setLeads((prev) => prev.filter((l) => l.id !== id));
+        setTotal((prev) => Math.max(0, prev - 1));
       } else {
-        setLeads(prev => prev.map(l => (l.id === id ? { ...l, status: newStatus } : l)));
+        setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: newStatus } : l)));
       }
       if (drawerLead && drawerLead.id === id) {
         setDrawerLead(null);
@@ -156,7 +225,7 @@ export default function LeadsPage() {
       setToastMessage('Lead archived to Lost Leads in Clients 360');
       setTimeout(() => setToastMessage(null), 5000);
     } else {
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, status: newStatus } : l)));
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: newStatus } : l)));
     }
 
     await fetch('/api/admin/leads', {
@@ -167,9 +236,12 @@ export default function LeadsPage() {
         status: newStatus,
         lost_reason: meta?.lostReason,
         notes: meta?.notes,
-        performedBy: 'Admin Staff',
+        performedBy: user?.name || 'Staff User',
       }),
     });
+
+    // Refresh KPI counts silently
+    load(true);
   }
 
   async function handleConfirmLost({ reason, notes }: { reason: string; notes: string }) {
@@ -180,10 +252,9 @@ export default function LeadsPage() {
   }
 
   function exportCsv() {
-    const header = ['ID', 'Type', 'Name', 'Phone', 'Email', 'Service', 'Priority', 'Score', 'Address', 'Status', 'Date'];
-    const rows = leads.map(l => [
+    const header = ['ID', 'Name', 'Phone', 'Email', 'Service', 'Priority', 'Score', 'Address', 'Status', 'Date'];
+    const rows = leads.map((l) => [
       l.id,
-      l.form_type,
       l.full_name,
       l.phone,
       l.email,
@@ -194,249 +265,356 @@ export default function LeadsPage() {
       l.status,
       l.created_at,
     ]);
-    const csv = [header, ...rows].map(r => r.map(c => `"${c ?? ''}"`).join(',')).join('\n');
+    const csv = [header, ...rows].map((r) => r.map((c) => `"${c ?? ''}"`).join(',')).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `rise-up-leads-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   }
 
+  // Filter client-side by rep / service if selected
+  const displayedLeads = leads.filter((lead) => {
+    if (repFilter !== 'all' && lead.assigned_to_name !== repFilter) return false;
+    if (serviceFilter !== 'all' && lead.service_type !== serviceFilter) return false;
+    return true;
+  });
+
   const totalPages = Math.ceil(total / 20);
 
-  if (loading && leads.length === 0) {
-    return <LeadsTableSkeleton />;
-  }
+  // 6 KPI strip definitions
+  const kpiCards = [
+    {
+      id: 0,
+      label: 'Total Leads',
+      data: kpis?.totalLeads ?? { count: total, delta: '—', isPositive: true },
+      Icon: UsersRound,
+      color: '#008fff',
+    },
+    {
+      id: 1,
+      label: 'New Leads',
+      data: kpis?.newLeads ?? { count: '—', delta: '—', isPositive: true },
+      Icon: Sparkles,
+      color: '#00b8fa',
+    },
+    {
+      id: 2,
+      label: 'In Contact',
+      data: kpis?.inContact ?? { count: '—', delta: '—', isPositive: true },
+      Icon: Phone,
+      color: '#f59e0b',
+    },
+    {
+      id: 3,
+      label: 'Est. Scheduled',
+      data: kpis?.scheduledQuoted ?? { count: '—', delta: '—', isPositive: true },
+      Icon: FileText,
+      color: '#8b5cf6',
+    },
+    {
+      id: 4,
+      label: 'Won Deals',
+      data: kpis?.wonDeals ?? { count: '—', delta: '—', isPositive: true },
+      Icon: Trophy,
+      color: '#10b981',
+    },
+    {
+      id: 5,
+      label: 'Win Rate',
+      data: kpis?.winRate ?? { count: '—', delta: '—', isPositive: true },
+      Icon: CheckCheck,
+      color: '#06b6d4',
+    },
+  ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-      {/* 5-Stage Sales Pipeline Announcement Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-emerald-500/10 border border-amber-300/70 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500 text-white shadow-2xs shrink-0">
-            <GitFork size={18} />
-          </div>
-          <div>
-            <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
-              <span>Looking for the Unified Sales Pipeline?</span>
-              <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-                5-Stage Journey
-              </span>
-            </div>
-            <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
-              Track leads through the official Rise Up 5 stages with unassigned hopper, 24–48h SLA countdowns, and 1-click self-claiming.
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/admin/pipeline"
-          className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-xs"
-        >
-          <span>Open Pipeline</span>
-          <ArrowRight size={14} />
-        </Link>
-      </div>
+    <div className="crm-shell crm-shell-full">
+      {/* ══ LEFT SIDEBAR ════════════════════════════════════ */}
+      <CrmSidebar user={user} mobileNav={mobileNav} setMobileNav={setMobileNav} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-[#0B1E33] flex items-center gap-2">
-            <Users size={24} className="text-[#1878B8]" />
-            <span>Leads CRM</span>
-          </h1>
-          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
-            {total} total homeowner & commercial inquiries tracked
-          </p>
-        </div>
+      {/* ══ MAIN WORKSPACE ══════════════════════════════════ */}
+      <main className="crm-main">
+        {/* ─ Top Bar ─ */}
+        <CrmTopBar
+          search={search}
+          setSearch={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          searchPlaceholder="Search homeowner name, phone, address, or service..."
+          refreshing={refreshing}
+          onRefresh={() => load(true)}
+          onNewLeadClick={() => setShowAddSheet(true)}
+          user={user}
+          mobileNav={mobileNav}
+          setMobileNav={setMobileNav}
+          extraActions={
+            <>
+              <Link
+                href="/admin/pipeline"
+                className="crm-btn"
+                title="Switch to 5-Stage Kanban Pipeline"
+              >
+                <GitMerge size={14} />
+                <span>Sales Pipeline</span>
+              </Link>
+              <button
+                type="button"
+                className="crm-btn"
+                onClick={exportCsv}
+                title="Export filtered leads to CSV"
+              >
+                <Download size={14} />
+                <span>Export CSV</span>
+              </button>
+            </>
+          }
+        />
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => load(true)}
-            disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-600 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
-            title="Refresh Leads"
-          >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#1878B8]' : ''} />
-          </button>
-
-          <button
-            onClick={exportCsv}
-            className="hidden sm:flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-700 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
-          >
-            <Download size={14} /> Export CSV
-          </button>
-
-          <button
-            onClick={() => setShowAddSheet(true)}
-            className="admin-btn-gold flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>Add Lead</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Search & Sticky Filters */}
-      <div className="space-y-3 bg-white p-3.5 sm:p-4 rounded-[16px] border border-slate-200/80 shadow-xs">
-        {/* Search Bar & View Mode Switcher */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search by homeowner name, phone, address, city, or service..."
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="admin-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
-            />
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 shrink-0 self-end sm:self-auto">
-            <button
-              type="button"
-              onClick={() => handleToggleView('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'table'
-                  ? 'bg-white text-[#0B1E33] shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Table View (Dense & Sortable)"
-            >
-              <LayoutList size={14} />
-              <span>Table</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleToggleView('cards')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'cards'
-                  ? 'bg-white text-[#0B1E33] shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Card Grid View (Visual Touch)"
-            >
-              <LayoutGrid size={14} />
-              <span>Cards</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Status Filter Chips (Horizontal scroll on mobile) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <Filter size={14} className="text-slate-400 flex-shrink-0 ml-1 mr-1" />
-          {STATUSES.map(s => (
-            <button
-              key={s}
-              onClick={() => {
-                setStatus(s);
-                setPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
-                status === s
-                  ? 'bg-sky-50 text-[#1878B8] border border-sky-200 shadow-xs'
-                  : 'text-slate-600 border border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-[#0B1E33]'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-
-          {/* Priority filter separator */}
-          <span className="text-slate-300 mx-1">|</span>
-
-          {PRIORITIES.map(p => (
-            <button
-              key={p}
-              onClick={() => {
-                setPriority(p);
-                setPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
-                priority === p
-                  ? p === 'hot'
-                    ? 'bg-rose-50 text-rose-700 border border-rose-200 shadow-xs'
-                    : 'bg-sky-50 text-[#1878B8] border border-sky-200 shadow-xs'
-                  : 'text-slate-600 border border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-[#0B1E33]'
-              }`}
-            >
-              {p === 'all' ? 'All Priority' : `${p === 'hot' ? '🔴' : p === 'warm' ? '🟡' : '🔵'} ${p}`}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Daily trend summary on desktop */}
-      {daily.length > 0 && (
-        <div className="hidden lg:block bg-white border border-slate-200/80 rounded-[16px] p-5 shadow-xs">
-          <h2 className="text-[#0B1E33] font-bold text-sm mb-3">Inbound Leads Velocity (30 Days)</h2>
-          <AdminAreaChart data={daily} keys={['count']} />
-        </div>
-      )}
-
-      {/* Main List Views */}
-      {loading ? (
-        <div className="rounded-[16px] border border-slate-200/80 bg-white overflow-hidden divide-y divide-slate-100 shadow-xs">
-          {[1, 2, 3, 4, 5].map((row) => (
-            <div key={row} className="p-4 flex items-center justify-between gap-4 admin-shimmer">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-sky-100" />
-                <div className="space-y-1.5">
-                  <div className="w-36 h-4 rounded bg-slate-200" />
-                  <div className="w-24 h-3 rounded bg-slate-200" />
+        {/* ─ 6-Metric Executive KPI Strip ─ */}
+        <div className="crm-stats-grid">
+          {kpiCards.map((kpi) => {
+            const Icon = kpi.Icon;
+            return (
+              <div key={kpi.id} className="crm-stat-card">
+                <div
+                  className="crm-stat-icon"
+                  style={{
+                    color: kpi.color,
+                    background: `${kpi.color}14`,
+                    borderColor: `${kpi.color}30`,
+                  }}
+                >
+                  <Icon size={22} />
                 </div>
+                <div className="crm-stat-info">
+                  <span className="crm-stat-label">{kpi.label}</span>
+                  <div className="crm-stat-numbers">
+                    <strong>{kpi.data.count}</strong>
+                    {kpi.data.delta && kpi.data.delta !== '—' && (
+                      <span className={`crm-stat-badge ${kpi.data.isPositive ? 'pos' : 'neg'}`}>
+                        {kpi.data.isPositive ? <ArrowUp size={9} /> : <ArrowDown size={9} />}
+                        {kpi.data.delta}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <CrmSparkline id={`kpi-${kpi.id}`} points={kpi.data.sparkPoints} color={kpi.color} />
               </div>
-              <div className="w-32 h-3.5 rounded bg-slate-200 hidden sm:block" />
-              <div className="w-20 h-5 rounded-full bg-slate-200" />
-              <div className="w-16 h-5 rounded-full bg-sky-100" />
+            );
+          })}
+        </div>
+
+        {/* ─ Main Content Area ─ */}
+        <div className="crm-leads-content">
+          {/* Filter & Command Toolbar */}
+          <div className="crm-filter-toolbar">
+            <div className="crm-filter-group">
+              {/* Status Chips */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Filter size={13} className="text-slate-400 mr-1 shrink-0" />
+                {STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setStatus(s);
+                      setPage(1);
+                    }}
+                    className={`crm-filter-chip capitalize ${status === s ? 'active' : ''}`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              {/* Priority Filter */}
+              <div className="flex items-center gap-1 ml-2 border-l border-slate-200/80 pl-2 flex-wrap">
+                {PRIORITIES.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => {
+                      setPriority(p);
+                      setPage(1);
+                    }}
+                    className={`crm-filter-chip capitalize ${
+                      priority === p
+                        ? p === 'hot'
+                          ? 'active-rose'
+                          : p === 'warm'
+                          ? 'active-amber'
+                          : 'active'
+                        : ''
+                    }`}
+                  >
+                    {p === 'all' ? 'All Priority' : `${p === 'hot' ? '🔴' : p === 'warm' ? '🟡' : '🔵'} ${p}`}
+                  </button>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      ) : leads.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-white rounded-[16px] border border-slate-200/80 shadow-xs space-y-3">
-          <div className="w-12 h-12 rounded-[16px] bg-amber-50 text-[#EAA636] border border-amber-200 flex items-center justify-center mx-auto">
-            <Sparkles size={24} />
+
+            {/* Dropdown Filters & View Switcher */}
+            <div className="crm-filter-group">
+              {/* Source Dropdown */}
+              <select
+                value={sourceFilter}
+                onChange={(e) => {
+                  setSourceFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="crm-select"
+                aria-label="Filter by Lead Source"
+              >
+                <option value="all">All Sources</option>
+                {sourcesList.map((s) => (
+                  <option key={s} value={s}>
+                    {s.replace(/_/g, ' ').toUpperCase()}
+                  </option>
+                ))}
+              </select>
+
+              {/* Rep Dropdown */}
+              {repsList.length > 0 && (
+                <select
+                  value={repFilter}
+                  onChange={(e) => setRepFilter(e.target.value)}
+                  className="crm-select"
+                  aria-label="Filter by Assigned Rep"
+                >
+                  <option value="all">All Reps</option>
+                  {repsList.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* Services Dropdown */}
+              {servicesList.length > 0 && (
+                <select
+                  value={serviceFilter}
+                  onChange={(e) => setServiceFilter(e.target.value)}
+                  className="crm-select"
+                  aria-label="Filter by Service"
+                >
+                  <option value="all">All Services</option>
+                  {servicesList.map((srv) => (
+                    <option key={srv} value={srv}>
+                      {srv}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* View Toggle */}
+              <div className="inline-flex rounded-lg border border-[#cce7ff] bg-[#eef7ff] p-0.5">
+                <button
+                  type="button"
+                  onClick={() => handleToggleView('table')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                    viewMode === 'table'
+                      ? 'bg-white text-[#0B1E33] shadow-xs'
+                      : 'text-slate-600 hover:text-[#0B1E33]'
+                  }`}
+                  title="Table View (Dense & Sortable)"
+                >
+                  <LayoutList size={13} />
+                  <span>Table</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleView('cards')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                    viewMode === 'cards'
+                      ? 'bg-white text-[#0B1E33] shadow-xs'
+                      : 'text-slate-600 hover:text-[#0B1E33]'
+                  }`}
+                  title="Card Grid View"
+                >
+                  <LayoutGrid size={13} />
+                  <span>Cards</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-[#0B1E33]">No leads match this filter</h3>
-          <p className="text-slate-500 text-xs max-w-sm mx-auto">
-            Try adjusting your search query or clear the status filter to see all active inquiries.
-          </p>
-          <button
-            onClick={() => {
-              setStatus('all');
-              setPriority('all');
-              setSearch('');
-            }}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
-          >
-            Clear Filters
-          </button>
-        </div>
-      ) : (
-        <>
-          {viewMode === 'cards' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
-              {leads.map(lead => (
-                <MobileLeadCard
-                  key={lead.id}
-                  lead={lead}
+
+          {/* Main List Views */}
+          {loading ? (
+            <LeadsTableSkeleton />
+          ) : displayedLeads.length === 0 ? (
+            <div className="crm-table-wrap py-16 px-4 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 border border-amber-200 flex items-center justify-center mx-auto">
+                <Sparkles size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-[#0B1E33]">No leads match your filter</h3>
+              <p className="text-slate-500 text-xs max-w-sm mx-auto">
+                Try clearing your search query, adjusting your priority, or changing the lead source.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setStatus('all');
+                  setPriority('all');
+                  setSourceFilter('all');
+                  setRepFilter('all');
+                  setServiceFilter('all');
+                  setSearch('');
+                  setPage(1);
+                }}
+                className="crm-btn crm-btn-primary"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          ) : (
+            <div className="crm-table-wrap">
+              {viewMode === 'cards' ? (
+                <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                  {displayedLeads.map((lead) => (
+                    <MobileLeadCard
+                      key={lead.id}
+                      lead={lead}
+                      onStatusChange={handleStatusChange}
+                      onQuickPeek={setDrawerLead}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <LeadsTable
+                  leads={displayedLeads}
                   onStatusChange={handleStatusChange}
                   onQuickPeek={setDrawerLead}
                 />
-              ))}
-            </div>
-          ) : (
-            <LeadsTable
-              leads={leads}
-              onStatusChange={handleStatusChange}
-              onQuickPeek={setDrawerLead}
-            />
-          )}
-        </>
-      )}
+              )}
 
+              {/* Pagination Footer */}
+              {totalPages > 1 && (
+                <div className="crm-pagination">
+                  <span>
+                    Showing {displayedLeads.length} of {total} leads (Page {page} of {totalPages})
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPage(p)}
+                        className={`crm-page-btn ${p === page ? 'active' : ''}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* ══ DRAWERS & MODALS ════════════════════════════════ */}
       {/* Quick Peek Slide-over Drawer */}
       <LeadQuickDrawer
         lead={drawerLead}
@@ -444,28 +622,9 @@ export default function LeadsPage() {
         onClose={() => setDrawerLead(null)}
         onStatusChange={(id, newSt) => {
           handleStatusChange(id, newSt);
-          setDrawerLead(prev => (prev ? { ...prev, status: newSt } : null));
+          setDrawerLead((prev) => (prev ? { ...prev, status: newSt } : null));
         }}
       />
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-9 h-9 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                p === page
-                  ? 'bg-sky-50 text-[#1878B8] border border-sky-300 font-bold shadow-xs'
-                  : 'text-slate-600 border border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-[#0B1E33]'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Add Lead Bottom Sheet */}
       <AddLeadSheet

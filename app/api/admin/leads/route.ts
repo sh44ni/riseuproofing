@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
         return res;
       });
 
-  const [rows, countRow, daily] = await Promise.all([
+  const [rows, countRow, daily, kpiRes, sparklineRows, filterOptionsRes] = await Promise.all([
     query<any>(
       `SELECT 
          l.*,
@@ -113,6 +113,47 @@ export async function GET(req: NextRequest) {
     ),
     query<{ count: string }>(`SELECT COUNT(*) AS count FROM leads l ${where}`, params),
     dailyPromise,
+    // 6-Metric Live Leads Strip with real month-over-month comparisons
+    query<{
+      total_leads: string; new_leads: string; in_contact: string; scheduled_quoted: string; won_jobs: string;
+      prev_total: string;  prev_new: string;  prev_contact: string; prev_quoted: string;       prev_won: string;
+    }>(`
+      WITH
+        prev_month_start AS (SELECT date_trunc('month', NOW()) - INTERVAL '1 month' AS d),
+        prev_month_end   AS (SELECT date_trunc('month', NOW()) AS d)
+      SELECT
+        COUNT(*) FILTER (WHERE l.status != 'lost') as total_leads,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND (l.status = 'new' OR l.pipeline_stage = 'stage_1_lead_gen')) as new_leads,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND (l.status = 'contacted' OR l.pipeline_stage = 'stage_2_initial_contact')) as in_contact,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND (l.status = 'quoted' OR l.pipeline_stage IN ('stage_3_site_visit_estimate', 'stage_4_closing') OR l.proposal_sent_at IS NOT NULL)) as scheduled_quoted,
+        COUNT(*) FILTER (WHERE l.status = 'won' OR l.pipeline_stage = 'stage_5_completion_followup') as won_jobs,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND l.created_at >= (SELECT d FROM prev_month_start) AND l.created_at < (SELECT d FROM prev_month_end)) as prev_total,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND (l.status = 'new' OR l.pipeline_stage = 'stage_1_lead_gen') AND l.created_at >= (SELECT d FROM prev_month_start) AND l.created_at < (SELECT d FROM prev_month_end)) as prev_new,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND (l.status = 'contacted' OR l.pipeline_stage = 'stage_2_initial_contact') AND l.updated_at >= (SELECT d FROM prev_month_start) AND l.updated_at < (SELECT d FROM prev_month_end)) as prev_contact,
+        COUNT(*) FILTER (WHERE l.status != 'lost' AND (l.status = 'quoted' OR l.pipeline_stage IN ('stage_3_site_visit_estimate', 'stage_4_closing') OR l.proposal_sent_at IS NOT NULL) AND l.updated_at >= (SELECT d FROM prev_month_start) AND l.updated_at < (SELECT d FROM prev_month_end)) as prev_quoted,
+        COUNT(*) FILTER ((l.status = 'won' OR l.pipeline_stage = 'stage_5_completion_followup') AND l.updated_at >= (SELECT d FROM prev_month_start) AND l.updated_at < (SELECT d FROM prev_month_end)) as prev_won
+      FROM leads l
+    `).catch(() => [] as any[]),
+    // Weekly sparklines (last 8 weeks)
+    query<{ week: string; total_leads: string; new_leads: string; in_contact: string; scheduled_quoted: string; won_jobs: string }>(`
+      SELECT
+        date_trunc('week', created_at)::date::text as week,
+        COUNT(*) FILTER (WHERE status != 'lost') as total_leads,
+        COUNT(*) FILTER (WHERE status != 'lost' AND (status = 'new' OR pipeline_stage = 'stage_1_lead_gen')) as new_leads,
+        COUNT(*) FILTER (WHERE status != 'lost' AND (status = 'contacted' OR pipeline_stage = 'stage_2_initial_contact')) as in_contact,
+        COUNT(*) FILTER (WHERE status != 'lost' AND (status = 'quoted' OR pipeline_stage IN ('stage_3_site_visit_estimate', 'stage_4_closing') OR proposal_sent_at IS NOT NULL)) as scheduled_quoted,
+        COUNT(*) FILTER (WHERE status = 'won' OR pipeline_stage = 'stage_5_completion_followup') as won_jobs
+      FROM leads
+      WHERE created_at >= NOW() - INTERVAL '8 weeks'
+      GROUP BY date_trunc('week', created_at)
+      ORDER BY week ASC
+    `).catch(() => [] as any[]),
+    // Distinct filter options
+    Promise.all([
+      query<{ val: string }>(`SELECT DISTINCT lead_source as val FROM leads WHERE lead_source IS NOT NULL AND lead_source != '' ORDER BY val`).catch(() => []),
+      query<{ val: string }>(`SELECT DISTINCT service_type as val FROM leads WHERE service_type IS NOT NULL AND service_type != '' ORDER BY val`).catch(() => []),
+      query<{ val: string }>(`SELECT DISTINCT u.name as val FROM users u JOIN leads l ON l.assigned_to_user_id = u.id WHERE u.name IS NOT NULL ORDER BY val`).catch(() => []),
+    ]).catch(() => [[], [], []]),
   ]);
 
   // Ensure every lead has source attribution & score & priority populated
@@ -164,13 +205,86 @@ export async function GET(req: NextRequest) {
     return item;
   });
 
+  // Helper — compute real % change vs previous period
+  function calcDelta(curr: string | number, prev: string | number): { delta: string; isPositive: boolean } {
+    const c = typeof curr === 'string' ? parseInt(curr, 10) : curr;
+    const p = typeof prev === 'string' ? parseInt(prev, 10) : prev;
+    if (isNaN(c) || isNaN(p)) return { delta: '—', isPositive: true };
+    if (p === 0 && c === 0) return { delta: '—', isPositive: true };
+    if (p === 0) return { delta: `+${c * 100}%`, isPositive: true };
+    const pct = Math.round(((c - p) / p) * 100);
+    if (pct === 0) return { delta: '0%', isPositive: true };
+    return { delta: `${pct > 0 ? '+' : ''}${pct}%`, isPositive: pct >= 0 };
+  }
+
+  // Convert sparkline rows to number arrays (oldest → newest, at least 2 points)
+  const toWeeklyPoints = (sRows: any[], field: string): number[] => {
+    const vals = (sRows || []).map(r => parseInt(r[field] ?? '0', 10) || 0);
+    while (vals.length < 2) vals.unshift(0);
+    return vals;
+  };
+
+  const kpiData = (kpiRes && kpiRes[0]) || {
+    total_leads: '0', new_leads: '0', in_contact: '0', scheduled_quoted: '0', won_jobs: '0',
+    prev_total: '0', prev_new: '0', prev_contact: '0', prev_quoted: '0', prev_won: '0',
+  };
+
+  const totalActive = parseInt(kpiData.total_leads || '0', 10);
+  const wonCount = parseInt(kpiData.won_jobs || '0', 10);
+  const prevTotal = parseInt(kpiData.prev_total || '0', 10);
+  const prevWon = parseInt(kpiData.prev_won || '0', 10);
+  const winRatePct = totalActive > 0 ? Math.round((wonCount / totalActive) * 100) : 0;
+  const prevWinRatePct = prevTotal > 0 ? Math.round((prevWon / prevTotal) * 100) : 0;
+
+  const kpis = {
+    totalLeads: {
+      count: totalActive,
+      ...calcDelta(kpiData.total_leads, kpiData.prev_total),
+      sparkPoints: toWeeklyPoints(sparklineRows, 'total_leads'),
+    },
+    newLeads: {
+      count: parseInt(kpiData.new_leads || '0', 10),
+      ...calcDelta(kpiData.new_leads, kpiData.prev_new),
+      sparkPoints: toWeeklyPoints(sparklineRows, 'new_leads'),
+    },
+    inContact: {
+      count: parseInt(kpiData.in_contact || '0', 10),
+      ...calcDelta(kpiData.in_contact, kpiData.prev_contact),
+      sparkPoints: toWeeklyPoints(sparklineRows, 'in_contact'),
+    },
+    scheduledQuoted: {
+      count: parseInt(kpiData.scheduled_quoted || '0', 10),
+      ...calcDelta(kpiData.scheduled_quoted, kpiData.prev_quoted),
+      sparkPoints: toWeeklyPoints(sparklineRows, 'scheduled_quoted'),
+    },
+    wonDeals: {
+      count: wonCount,
+      ...calcDelta(kpiData.won_jobs, kpiData.prev_won),
+      sparkPoints: toWeeklyPoints(sparklineRows, 'won_jobs'),
+    },
+    winRate: {
+      count: `${winRatePct}%`,
+      ...calcDelta(winRatePct, prevWinRatePct),
+      sparkPoints: toWeeklyPoints(sparklineRows, 'won_jobs'),
+    },
+  };
+
+  const [sourceRows, serviceRows, repRows] = (filterOptionsRes as any[]) || [[], [], []];
+
   return NextResponse.json({
     leads: enrichedLeads,
     total: parseInt(countRow[0]?.count ?? '0', 10),
     page,
     daily,
+    kpis,
+    filterOptions: {
+      sources: (sourceRows || []).map((r: any) => r.val).filter(Boolean),
+      services: (serviceRows || []).map((r: any) => r.val).filter(Boolean),
+      reps: (repRows || []).map((r: any) => r.val).filter(Boolean),
+    },
   });
 }
+
 
 export async function POST(req: NextRequest) {
   const auth = await requirePermission('leads:create');

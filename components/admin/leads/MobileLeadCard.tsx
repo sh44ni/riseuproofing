@@ -79,7 +79,7 @@ export default function MobileLeadCard({
 
   return (
     <div
-      className="admin-card p-4 transition-all bg-white border border-slate-200/80 shadow-xs rounded-2xl space-y-3 hover:border-slate-300"
+      className="admin-card p-4 transition-all bg-white border border-[#d6efff] shadow-2xs rounded-xl space-y-3 hover:border-[#99d2ff] hover:shadow-sm cursor-pointer"
       onClick={() => onQuickPeek?.(lead)}
     >
       {/* Top Bar: Avatar + Name + Deal Value */}

@@ -69,78 +69,128 @@ export async function GET(req: NextRequest) {
       jobsStageMapRes,
       recentActivitiesRes,
     ] = await Promise.all([
-      // 2.1 KPI Strip Aggregations (Live 6-Metric Strip matching executive mockup)
+      // 2.1 KPI Strip — current + previous month for real delta calculation
       query<{
-        new_leads: string;
-        connected_leads: string;
-        est_scheduled: string;
-        est_sent: string;
-        jobs_won: string;
-        lost_closed: string;
-        active_jobs: string;
-        revenue_mtd: string;
+        new_leads: string;      connected_leads: string;
+        est_scheduled: string;  est_sent: string;
+        jobs_won: string;       lost_closed: string;
+        active_jobs: string;    revenue_mtd: string;
+        // previous month
+        prev_new_leads: string; prev_connected: string;
+        prev_scheduled: string; prev_est_sent: string;
+        prev_jobs_won: string;  prev_lost_closed: string;
       }>(`
         WITH
+          -- Current month / running totals
           agg_leads AS (
             ${leadsScope !== null
               ? `SELECT COUNT(*) as count FROM leads l WHERE l.status != 'lost' ${leadFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_connected AS (
             ${leadsScope !== null
               ? `SELECT COUNT(*) as count FROM leads l WHERE l.status != 'lost' AND (l.pipeline_stage != 'stage_1_lead_gen' OR l.last_contact_at IS NOT NULL) ${leadFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_scheduled AS (
             ${leadsScope !== null
               ? `SELECT COUNT(*) as count FROM leads l WHERE l.status != 'lost' AND l.pipeline_stage = 'stage_3_site_visit_estimate' ${leadFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_est_sent AS (
             ${estimatesScope !== null
               ? `SELECT COUNT(*) as count FROM estimates WHERE 1=1 ${estimateFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_jobs_won AS (
             ${leadsScope !== null
               ? `SELECT COUNT(*) as count FROM leads l WHERE l.status = 'won' ${leadFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_lost AS (
             ${leadsScope !== null
               ? `SELECT COUNT(*) as count FROM leads l WHERE l.status = 'lost' ${leadFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_jobs AS (
             ${jobsScope !== null
               ? `SELECT COUNT(*) as count FROM jobs j WHERE j.status != 'complete' ${jobFilter}`
-              : `SELECT 0 as count`
-            }
+              : `SELECT 0 as count`}
           ),
           agg_revenue AS (
             ${canViewProfit
-              ? `SELECT COALESCE(SUM(amount), 0) as amount FROM invoices 
-                 WHERE status = 'paid' 
+              ? `SELECT COALESCE(SUM(amount), 0) as amount FROM invoices
+                 WHERE status = 'paid'
                    AND (paid_at >= date_trunc('month', NOW()) OR (paid_at IS NULL AND updated_at >= date_trunc('month', NOW())))`
-              : `SELECT 0 as amount`
-            }
+              : `SELECT 0 as amount`}
+          ),
+          -- Previous calendar month counts (for delta %)
+          prev_month_start AS (SELECT date_trunc('month', NOW()) - INTERVAL '1 month' AS d),
+          prev_month_end   AS (SELECT date_trunc('month', NOW()) AS d),
+          prev_leads AS (
+            ${leadsScope !== null
+              ? `SELECT COUNT(*) as count FROM leads l
+                 WHERE l.status != 'lost' AND l.created_at >= (SELECT d FROM prev_month_start)
+                   AND l.created_at <  (SELECT d FROM prev_month_end) ${leadFilter}`
+              : `SELECT 0 as count`}
+          ),
+          prev_connected AS (
+            ${leadsScope !== null
+              ? `SELECT COUNT(*) as count FROM leads l
+                 WHERE l.status != 'lost'
+                   AND (l.pipeline_stage != 'stage_1_lead_gen' OR l.last_contact_at IS NOT NULL)
+                   AND l.last_contact_at >= (SELECT d FROM prev_month_start)
+                   AND l.last_contact_at <  (SELECT d FROM prev_month_end) ${leadFilter}`
+              : `SELECT 0 as count`}
+          ),
+          prev_scheduled AS (
+            ${leadsScope !== null
+              ? `SELECT COUNT(*) as count FROM leads l
+                 WHERE l.status != 'lost' AND l.pipeline_stage = 'stage_3_site_visit_estimate'
+                   AND l.stage_entered_at >= (SELECT d FROM prev_month_start)
+                   AND l.stage_entered_at <  (SELECT d FROM prev_month_end) ${leadFilter}`
+              : `SELECT 0 as count`}
+          ),
+          prev_est AS (
+            ${estimatesScope !== null
+              ? `SELECT COUNT(*) as count FROM estimates
+                 WHERE created_at >= (SELECT d FROM prev_month_start)
+                   AND created_at <  (SELECT d FROM prev_month_end) ${estimateFilter}`
+              : `SELECT 0 as count`}
+          ),
+          prev_won AS (
+            ${leadsScope !== null
+              ? `SELECT COUNT(*) as count FROM leads l
+                 WHERE l.status = 'won'
+                   AND l.updated_at >= (SELECT d FROM prev_month_start)
+                   AND l.updated_at <  (SELECT d FROM prev_month_end) ${leadFilter}`
+              : `SELECT 0 as count`}
+          ),
+          prev_lost AS (
+            ${leadsScope !== null
+              ? `SELECT COUNT(*) as count FROM leads l
+                 WHERE l.status = 'lost'
+                   AND l.updated_at >= (SELECT d FROM prev_month_start)
+                   AND l.updated_at <  (SELECT d FROM prev_month_end) ${leadFilter}`
+              : `SELECT 0 as count`}
           )
-        SELECT 
-          (SELECT count FROM agg_leads) as new_leads,
-          (SELECT count FROM agg_connected) as connected_leads,
-          (SELECT count FROM agg_scheduled) as est_scheduled,
-          (SELECT count FROM agg_est_sent) as est_sent,
-          (SELECT count FROM agg_jobs_won) as jobs_won,
-          (SELECT count FROM agg_lost) as lost_closed,
-          (SELECT count FROM agg_jobs) as active_jobs,
-          (SELECT amount FROM agg_revenue) as revenue_mtd;
+        SELECT
+          (SELECT count FROM agg_leads)      as new_leads,
+          (SELECT count FROM agg_connected)  as connected_leads,
+          (SELECT count FROM agg_scheduled)  as est_scheduled,
+          (SELECT count FROM agg_est_sent)   as est_sent,
+          (SELECT count FROM agg_jobs_won)   as jobs_won,
+          (SELECT count FROM agg_lost)       as lost_closed,
+          (SELECT count FROM agg_jobs)       as active_jobs,
+          (SELECT amount FROM agg_revenue)   as revenue_mtd,
+          (SELECT count FROM prev_leads)     as prev_new_leads,
+          (SELECT count FROM prev_connected) as prev_connected,
+          (SELECT count FROM prev_scheduled) as prev_scheduled,
+          (SELECT count FROM prev_est)       as prev_est_sent,
+          (SELECT count FROM prev_won)       as prev_jobs_won,
+          (SELECT count FROM prev_lost)      as prev_lost_closed;
       `),
+
 
       // 2.2 Needs Follow-Up (Stale leads waiting on decision > threshold hours)
       leadsScope !== null
@@ -252,51 +302,85 @@ export async function GET(req: NextRequest) {
 
       // 2.9 Live Recent Activity Feed
       query<any>(`
-        SELECT 
-          a.id, 
-          a.activity_type, 
-          a.title, 
-          a.description, 
-          a.performed_by, 
+        SELECT
+          a.id,
+          a.activity_type,
+          a.title,
+          a.description,
+          a.performed_by,
           a.created_at,
-          COALESCE(l.full_name, c.full_name, 'Homeowner') as lead_name
+          COALESCE(l.full_name, c.full_name) as lead_name
         FROM activities a
         LEFT JOIN leads l ON a.entity_type = 'lead' AND a.entity_id = l.id
         LEFT JOIN clients c ON a.entity_type = 'client' AND a.entity_id = c.id
         ORDER BY a.created_at DESC
-        LIMIT 6
+        LIMIT 8
       `).catch(() => []),
     ]);
 
     // Build stage map
     const stageMap: Record<string, number> = {
-      permit_pending: 0,
-      material_order: 0,
-      scheduled: 0,
-      in_progress: 0,
-      punch_list: 0,
-      final_inspection: 0,
-      complete: 0,
+      permit_pending: 0, material_order: 0, scheduled: 0,
+      in_progress: 0,   punch_list: 0,     final_inspection: 0, complete: 0,
     };
     jobsStageMapRes.forEach((r: any) => {
-      if (r.status in stageMap) {
-        stageMap[r.status] = parseInt(String(r.count), 10) || 0;
-      }
+      if (r.status in stageMap) stageMap[r.status] = parseInt(String(r.count), 10) || 0;
     });
 
     const kpiData = kpisRes[0] || {
-      new_leads: '0',
-      connected_leads: '0',
-      est_scheduled: '0',
-      est_sent: '0',
-      jobs_won: '0',
-      lost_closed: '0',
-      active_jobs: '0',
-      revenue_mtd: '0',
+      new_leads: '0', connected_leads: '0', est_scheduled: '0', est_sent: '0',
+      jobs_won: '0',  lost_closed: '0',     active_jobs: '0',   revenue_mtd: '0',
+      prev_new_leads: '0', prev_connected: '0', prev_scheduled: '0',
+      prev_est_sent: '0',  prev_jobs_won: '0',  prev_lost_closed: '0',
     };
 
     const traffic = trafficRes[0] || { today: 0, past_7d: 0 };
     const recentActivities = (recentActivitiesRes as any[]) || [];
+
+    // Helper — compute real % change vs previous period
+    function calcDelta(curr: string | number, prev: string | number): { delta: string; isPositive: boolean } {
+      const c = typeof curr === 'string' ? parseInt(curr, 10) : curr;
+      const p = typeof prev === 'string' ? parseInt(prev, 10) : prev;
+      if (isNaN(c) || isNaN(p)) return { delta: '—', isPositive: true };
+      if (p === 0 && c === 0) return { delta: '—', isPositive: true };
+      if (p === 0) return { delta: `+${c * 100}%`, isPositive: true };
+      const pct = Math.round(((c - p) / p) * 100);
+      if (pct === 0) return { delta: '0%', isPositive: true };
+      return { delta: `${pct > 0 ? '+' : ''}${pct}%`, isPositive: pct >= 0 };
+    }
+
+    // 8-week weekly sparkline data per KPI (runs in parallel, gracefully skipped if table missing)
+    const sparklineRows = leadsScope !== null
+      ? await query<{ week: string; new_leads: string; connected: string; scheduled: string; won: string; lost: string }>(`
+          SELECT
+            date_trunc('week', created_at)::date::text as week,
+            COUNT(*) FILTER (WHERE status != 'lost')                                              as new_leads,
+            COUNT(*) FILTER (WHERE status != 'lost' AND (pipeline_stage != 'stage_1_lead_gen' OR last_contact_at IS NOT NULL)) as connected,
+            COUNT(*) FILTER (WHERE status != 'lost' AND pipeline_stage = 'stage_3_site_visit_estimate') as scheduled,
+            COUNT(*) FILTER (WHERE status = 'won')                                                as won,
+            COUNT(*) FILTER (WHERE status = 'lost')                                               as lost
+          FROM leads
+          WHERE created_at >= NOW() - INTERVAL '8 weeks'
+          GROUP BY date_trunc('week', created_at)
+          ORDER BY week ASC
+        `).catch(() => [] as any[])
+      : [];
+
+    // Convert rows to ordered number arrays (oldest → newest, always 8 slots)
+    const toWeeklyPoints = (rows: any[], field: string): number[] => {
+      const vals = rows.map(r => parseInt(r[field] ?? '0', 10) || 0);
+      while (vals.length < 2) vals.unshift(0); // ensure at least 2 points for rendering
+      return vals;
+    };
+
+    const sparkPoints = {
+      newLeads:     toWeeklyPoints(sparklineRows, 'new_leads'),
+      connected:    toWeeklyPoints(sparklineRows, 'connected'),
+      estScheduled: toWeeklyPoints(sparklineRows, 'scheduled'),
+      estSent:      toWeeklyPoints(sparklineRows, 'scheduled'), // best proxy available
+      jobsWon:      toWeeklyPoints(sparklineRows, 'won'),
+      lostClosed:   toWeeklyPoints(sparklineRows, 'lost'),
+    };
 
     return NextResponse.json({
       userRole: user.role,
@@ -306,28 +390,52 @@ export async function GET(req: NextRequest) {
       // Backward-compatible KPIs
       kpis: {
         newLeadsThisWeek: parseInt(kpiData.new_leads || '0', 10),
-        activeJobs: parseInt(kpiData.active_jobs || '0', 10),
+        activeJobs:       parseInt(kpiData.active_jobs || '0', 10),
         pendingEstimates: parseInt(kpiData.est_sent || '0', 10),
-        revenueMtd: canViewProfit ? parseFloat(kpiData.revenue_mtd || '0') : 0,
+        revenueMtd:       canViewProfit ? parseFloat(kpiData.revenue_mtd || '0') : 0,
       },
-      // Executive 6-Metric KPI Strip (100% Live DB Aggregations matching mockup)
+      // Executive 6-Metric KPI Strip — real counts, real deltas, real sparklines
       sixKpis: {
-        newLeads: { count: parseInt(kpiData.new_leads || '0', 10), delta: '+32% vs last month', isPositive: true },
-        connected: { count: parseInt(kpiData.connected_leads || '0', 10), delta: '+28%', isPositive: true },
-        estScheduled: { count: parseInt(kpiData.est_scheduled || '0', 10), delta: '+31%', isPositive: true },
-        estSent: { count: parseInt(kpiData.est_sent || '0', 10), delta: '+27%', isPositive: true },
-        jobsWon: { count: parseInt(kpiData.jobs_won || '0', 10), delta: '+60%', isPositive: true },
-        lostClosed: { count: parseInt(kpiData.lost_closed || '0', 10), delta: '-11%', isPositive: false },
+        newLeads: {
+          count: parseInt(kpiData.new_leads || '0', 10),
+          ...calcDelta(kpiData.new_leads, kpiData.prev_new_leads),
+          sparkPoints: sparkPoints.newLeads,
+        },
+        connected: {
+          count: parseInt(kpiData.connected_leads || '0', 10),
+          ...calcDelta(kpiData.connected_leads, kpiData.prev_connected),
+          sparkPoints: sparkPoints.connected,
+        },
+        estScheduled: {
+          count: parseInt(kpiData.est_scheduled || '0', 10),
+          ...calcDelta(kpiData.est_scheduled, kpiData.prev_scheduled),
+          sparkPoints: sparkPoints.estScheduled,
+        },
+        estSent: {
+          count: parseInt(kpiData.est_sent || '0', 10),
+          ...calcDelta(kpiData.est_sent, kpiData.prev_est_sent),
+          sparkPoints: sparkPoints.estSent,
+        },
+        jobsWon: {
+          count: parseInt(kpiData.jobs_won || '0', 10),
+          ...calcDelta(kpiData.jobs_won, kpiData.prev_jobs_won),
+          sparkPoints: sparkPoints.jobsWon,
+        },
+        lostClosed: {
+          count: parseInt(kpiData.lost_closed || '0', 10),
+          ...calcDelta(kpiData.lost_closed, kpiData.prev_lost_closed),
+          sparkPoints: sparkPoints.lostClosed,
+        },
       },
       recentActivities,
       needsFollowUp: needsFollowUpRes,
-      myTasks: myTasksRes,
-      activeJobs: activeJobsRes,
-      recentLeads: recentLeadsRes,
+      myTasks:       myTasksRes,
+      activeJobs:    activeJobsRes,
+      recentLeads:   recentLeadsRes,
       topPerformers: topPerformersRes,
       trafficSummary: {
-        visitorsToday: parseInt(traffic.today || '0', 10),
-        visitors7d: parseInt(traffic.past_7d || '0', 10),
+        visitorsToday: parseInt(String(traffic.today  || '0'), 10),
+        visitors7d:    parseInt(String(traffic.past_7d || '0'), 10),
       },
       jobsStageMap: stageMap,
     });

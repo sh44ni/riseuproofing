@@ -21,11 +21,11 @@ export async function GET() {
 
     const saved = typeof rows[0].value === 'string' ? JSON.parse(rows[0].value) : rows[0].value;
     const merged: DashboardConfig = {
-      hero: { ...DEFAULT_DASHBOARD_CONFIG.hero, ...(saved.hero || {}) },
+      hero:      { ...DEFAULT_DASHBOARD_CONFIG.hero,      ...(saved.hero      || {}) },
       quoteCard: { ...DEFAULT_DASHBOARD_CONFIG.quoteCard, ...(saved.quoteCard || {}) },
-      weather: { ...DEFAULT_DASHBOARD_CONFIG.weather, ...(saved.weather || {}) },
-      topPerformersSeed: saved.topPerformersSeed || DEFAULT_DASHBOARD_CONFIG.topPerformersSeed,
+      weather:   { ...DEFAULT_DASHBOARD_CONFIG.weather,   ...(saved.weather   || {}) },
     };
+
 
     return NextResponse.json({ ok: true, config: merged });
   } catch (error: any) {
@@ -61,8 +61,8 @@ export async function PATCH(req: NextRequest) {
         ...existing.weather,
         ...(body.weather || {}),
       },
-      topPerformersSeed: body.topPerformersSeed || existing.topPerformersSeed,
     };
+
 
     await query(
       `INSERT INTO app_settings (key, value, updated_at) 

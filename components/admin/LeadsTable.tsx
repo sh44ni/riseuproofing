@@ -95,25 +95,25 @@ export default function LeadsTable({ leads, onStatusChange, onQuickPeek }: Leads
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-card-blue transition-all">
-      <table className="w-full text-left border-collapse text-sm min-w-[850px]">
+    <div className="overflow-x-auto rounded-xl border border-[#d6efff] bg-white shadow-2xs transition-all">
+      <table className="w-full text-left border-collapse text-sm min-w-[880px] font-sans">
         <thead>
-          <tr className="border-b border-slate-200/80 bg-slate-50/90 text-[11px] font-black uppercase tracking-wider text-slate-500">
+          <tr className="border-b border-[#d6efff] bg-gradient-to-b from-[#f8fcff] to-[#edf7ff] text-[11px] font-black uppercase tracking-wider text-[#064a86]">
             {/* Sticky Lead/Contact Header */}
-            <th className="py-3.5 px-4 sticky left-0 bg-slate-50/95 backdrop-blur-xs z-20 shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)] min-w-[200px]">
+            <th className="py-3 px-4 sticky left-0 bg-[#f4faff] backdrop-blur-xs z-20 shadow-[2px_0_6px_-2px_rgba(0,143,255,0.08)] min-w-[210px]">
               Lead / Homeowner
             </th>
-            <th className="py-3.5 px-3 min-w-[110px]">Est. Value</th>
-            <th className="py-3.5 px-3 min-w-[95px]">Priority</th>
-            <th className="py-3.5 px-4 min-w-[160px]">Service &amp; Roof</th>
-            <th className="py-3.5 px-4 min-w-[140px]">Source</th>
-            <th className="py-3.5 px-4 min-w-[140px]">Location</th>
-            <th className="py-3.5 px-3 min-w-[110px]">Received</th>
-            <th className="py-3.5 px-3 min-w-[125px]">Status</th>
-            <th className="py-3.5 px-4 text-right min-w-[130px]">Actions</th>
+            <th className="py-3 px-3 min-w-[110px]">Est. Value</th>
+            <th className="py-3 px-3 min-w-[95px]">Priority</th>
+            <th className="py-3 px-4 min-w-[160px]">Service &amp; Roof</th>
+            <th className="py-3 px-4 min-w-[140px]">Source</th>
+            <th className="py-3 px-4 min-w-[140px]">Location</th>
+            <th className="py-3 px-3 min-w-[110px]">Received</th>
+            <th className="py-3 px-3 min-w-[130px]">Status</th>
+            <th className="py-3 px-4 text-right min-w-[120px]">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-[#edf6fc]">
           {leads.length === 0 ? (
             <tr>
               <td colSpan={9} className="px-4 py-16 text-center text-slate-400 text-sm">
@@ -169,22 +169,23 @@ export default function LeadsTable({ leads, onStatusChange, onQuickPeek }: Leads
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                          <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
                             {lead.phone ? (
                               <a
                                 href={`tel:${lead.phone.replace(/\D/g, '')}`}
                                 onClick={e => e.stopPropagation()}
-                                className="hover:text-[#1878B8] flex items-center gap-1 transition-colors"
+                                className="crm-quick-pill"
+                                title="Click to Call"
                               >
-                                <Phone size={10} className="text-slate-400" />
+                                <Phone size={10} />
                                 <span>{lead.phone}</span>
                               </a>
                             ) : lead.email ? (
-                              <span className="text-slate-400 truncate max-w-[130px]">
+                              <span className="text-slate-400 truncate max-w-[130px] text-[11px]">
                                 {lead.email}
                               </span>
                             ) : (
-                              <span className="text-slate-400 italic text-[11px]">No phone</span>
+                              <span className="text-slate-400 italic text-[11px]">No contact</span>
                             )}
                           </div>
                         </div>
@@ -194,15 +195,9 @@ export default function LeadsTable({ leads, onStatusChange, onQuickPeek }: Leads
                     {/* Deal Value */}
                     <td className="py-3 px-3">
                       {estVal > 0 ? (
-                        <div>
-                          <div className="font-black text-[#0B1E33] text-xs sm:text-sm tabular-nums flex items-center gap-0.5">
-                            <span className="text-emerald-600 font-bold">$</span>
-                            <span>{estVal.toLocaleString()}</span>
-                          </div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                            Est. Value
-                          </span>
-                        </div>
+                        <span className="crm-value-badge">
+                          ${estVal.toLocaleString()}
+                        </span>
                       ) : (
                         <span className="text-slate-300 font-mono text-xs">—</span>
                       )}
@@ -304,10 +299,10 @@ export default function LeadsTable({ leads, onStatusChange, onQuickPeek }: Leads
                             if (onQuickPeek) onQuickPeek(lead);
                             else setExpanded(expanded === lead.id ? null : lead.id);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-[#1878B8] font-bold text-xs transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                          className="crm-quick-pill cursor-pointer"
                           title="Quick Peek Drawer"
                         >
-                          <Eye size={12} />
+                          <Eye size={11} />
                           <span>Peek</span>
                         </button>
 
