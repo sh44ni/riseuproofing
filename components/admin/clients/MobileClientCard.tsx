@@ -12,6 +12,9 @@ import {
   Hammer,
   ShieldCheck,
   Award,
+  AlertCircle,
+  Sparkles,
+  ClipboardCheck,
 } from 'lucide-react';
 import { formatPhone } from '@/lib/crm-clients-utils';
 import SourceAttributionBadge from '../shared/SourceAttributionBadge';
@@ -27,6 +30,9 @@ export interface ClientListItem {
   roof_type?: string | null;
   roof_sqf?: number | null;
   status: string;
+  client_category?: 'lead' | 'new_client' | 'existing_client' | 'lost_lead' | string;
+  lost_reason?: string | null;
+  latest_estimate_total?: number | null;
   tags?: string[];
   total_revenue?: number | string;
   total_jobs_count?: number;
@@ -48,23 +54,36 @@ interface MobileClientCardProps {
 export default function MobileClientCard({ client }: MobileClientCardProps) {
   const ltv = Number(client.total_revenue || 0);
 
-  function getStatusBadge(status: string) {
-    switch (status) {
-      case 'active_job':
-        return { label: 'Active Job', bg: 'bg-amber-50 text-amber-800 border-amber-300' };
-      case 'repeat':
-        return { label: 'Repeat Client', bg: 'bg-emerald-50 text-emerald-800 border-emerald-300' };
-      case 'completed':
-        return { label: 'Completed', bg: 'bg-blue-50 text-blue-800 border-blue-300' };
-      case 'opportunity':
-        return { label: 'Proposal Out', bg: 'bg-purple-50 text-purple-800 border-purple-300' };
-      case 'lead':
-      default:
-        return { label: 'Lead', bg: 'bg-sky-50 text-sky-800 border-sky-300' };
+  function getLifecycleBadge(category?: string, status?: string) {
+    if (category === 'existing_client' || status === 'active_job' || status === 'completed' || status === 'repeat') {
+      return {
+        label: 'Existing Client',
+        bg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+        detail: status === 'active_job' ? 'Active Jobsite' : status === 'repeat' ? 'Repeat Client' : 'Job Completed',
+      };
     }
+    if (category === 'lost_lead' || status === 'lost') {
+      return {
+        label: 'Lost Lead',
+        bg: 'bg-rose-50 text-rose-800 border-rose-300',
+        detail: client.lost_reason || 'Lost Pre-Contract',
+      };
+    }
+    if (category === 'new_client' || status === 'opportunity') {
+      return {
+        label: 'New Client',
+        bg: 'bg-purple-50 text-purple-800 border-purple-300',
+        detail: client.latest_estimate_total ? `Proposal ($${Number(client.latest_estimate_total).toLocaleString()})` : 'Proposal / Inspection',
+      };
+    }
+    return {
+      label: 'Lead',
+      bg: 'bg-sky-50 text-sky-800 border-sky-300',
+      detail: 'Inbound Inquiry',
+    };
   }
 
-  const badge = getStatusBadge(client.status);
+  const badge = getLifecycleBadge(client.client_category, client.status);
   const location = client.city
     ? `${client.city}${client.zip ? `, ${client.zip}` : ''}`
     : client.address || 'San Diego County';
@@ -76,7 +95,7 @@ export default function MobileClientCard({ client }: MobileClientCardProps) {
     : null;
 
   return (
-    <div className="admin-card p-4 transition-all active:scale-[0.99] bg-white border border-slate-200/80 shadow-xs">
+    <div className={`admin-card p-4 transition-all active:scale-[0.99] bg-white border rounded-2xl shadow-xs ${client.client_category === 'lost_lead' ? 'border-rose-200/90' : 'border-slate-200/80'}`}>
       {/* Top Bar: Avatar + Name + Status Badge */}
       <div className="flex items-start justify-between gap-3 mb-2.5">
         <Link
@@ -84,7 +103,13 @@ export default function MobileClientCard({ client }: MobileClientCardProps) {
           className="flex items-center gap-3 flex-1 min-w-0"
         >
           <div className="relative flex-shrink-0">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0B1E33] to-[#1878B8] flex items-center justify-center text-white font-black text-base shadow-xs">
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white font-black text-base shadow-xs ${
+              client.client_category === 'lost_lead'
+                ? 'bg-gradient-to-br from-slate-600 to-rose-700'
+                : client.client_category === 'existing_client'
+                ? 'bg-gradient-to-br from-teal-700 to-emerald-600'
+                : 'bg-gradient-to-br from-[#0B1E33] to-[#1878B8]'
+            }`}>
               {client.full_name ? client.full_name[0].toUpperCase() : 'C'}
             </div>
             {client.status === 'active_job' && (
@@ -110,6 +135,16 @@ export default function MobileClientCard({ client }: MobileClientCardProps) {
           {badge.label}
         </span>
       </div>
+
+      {/* Lost Reason Alert Strip if applicable */}
+      {client.client_category === 'lost_lead' && (
+        <div className="mb-2.5 px-2.5 py-1.5 rounded-xl bg-rose-50/80 border border-rose-200 text-xs text-rose-800 flex items-center gap-1.5">
+          <AlertCircle size={13} className="text-rose-600 shrink-0" />
+          <span className="truncate font-medium">
+            <strong>Lost:</strong> {client.lost_reason || 'Lost prior to contract execution'}
+          </span>
+        </div>
+      )}
 
       {/* Middle Specs & Metrics */}
       <div className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-y border-slate-100 text-xs text-slate-600">

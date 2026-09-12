@@ -36,6 +36,8 @@ export interface ClientInput {
   leadSourceDetail?: string | null;
   serviceType?: string | null;
   clientSince?: string | Date | null;
+  clientCategory?: 'lead' | 'new_client' | 'existing_client' | 'lost_lead' | string | null;
+  lostReason?: string | null;
 }
 
 export interface ClientRecord {
@@ -55,6 +57,8 @@ export interface ClientRecord {
   stories: number | null;
   hoa: boolean;
   status: string;
+  client_category?: 'lead' | 'new_client' | 'existing_client' | 'lost_lead' | string;
+  lost_reason?: string | null;
   tags: string[];
   total_revenue: number;
   total_jobs_count: number;
@@ -71,7 +75,7 @@ export interface ClientRecord {
 let tableEnsured = false;
 
 /**
- * Self-healing table check to guarantee clients table and foreign keys exist in production
+ * Self-healing table check to guarantee clients table, category fields, and foreign keys exist in production
  */
 export async function ensureClientsTable(): Promise<void> {
   if (tableEnsured) return;
@@ -94,6 +98,8 @@ export async function ensureClientsTable(): Promise<void> {
         stories             INTEGER DEFAULT 1,
         hoa                 BOOLEAN DEFAULT false,
         status              TEXT DEFAULT 'lead',
+        client_category     TEXT DEFAULT 'lead',
+        lost_reason         TEXT,
         tags                TEXT[] DEFAULT '{"New Lead"}',
         total_revenue       NUMERIC(10,2) DEFAULT 0,
         total_jobs_count    INTEGER DEFAULT 0,
@@ -113,26 +119,95 @@ export async function ensureClientsTable(): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_clients_name ON clients (full_name);
       CREATE INDEX IF NOT EXISTS idx_clients_created ON clients (created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_clients_acquired_by ON clients (acquired_by_user_id);
+      CREATE INDEX IF NOT EXISTS idx_clients_category ON clients (client_category);
 
       ALTER TABLE clients ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'website';
       ALTER TABLE clients ADD COLUMN IF NOT EXISTS acquired_by_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
       ALTER TABLE clients ADD COLUMN IF NOT EXISTS lead_source_detail TEXT;
       ALTER TABLE clients ADD COLUMN IF NOT EXISTS client_since TIMESTAMPTZ DEFAULT NOW();
+      ALTER TABLE clients ADD COLUMN IF NOT EXISTS client_category TEXT DEFAULT 'lead';
+      ALTER TABLE clients ADD COLUMN IF NOT EXISTS lost_reason TEXT;
 
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'website';
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_source_detail TEXT;
-      CREATE INDEX IF NOT EXISTS idx_leads_source_type ON leads (source_type, created_by_user_id);
-
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS lost_reason TEXT;
+      CREATE INDEX IF NOT EXISTS idx_leads_source_type ON leads (source_type, created_by_user_id);
+      CREATE INDEX IF NOT EXISTS idx_leads_client_id ON leads (client_id);
+
       ALTER TABLE estimates ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      CREATE INDEX IF NOT EXISTS idx_estimates_client_id ON estimates (client_id);
+
       ALTER TABLE jobs ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      CREATE INDEX IF NOT EXISTS idx_jobs_client_id ON jobs (client_id);
+
       ALTER TABLE invoices ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
       ALTER TABLE warranties ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
       ALTER TABLE inspections ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      CREATE INDEX IF NOT EXISTS idx_inspections_client_id ON inspections (client_id);
+
       ALTER TABLE reviews ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
       ALTER TABLE activities ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
       ALTER TABLE tasks ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+
+      -- Future-proof dynamic contract foundation
+      CREATE TABLE IF NOT EXISTS contracts (
+        id                  BIGSERIAL PRIMARY KEY,
+        lead_id             BIGINT REFERENCES leads(id) ON DELETE CASCADE,
+        estimate_id         BIGINT REFERENCES estimates(id) ON DELETE CASCADE,
+        job_id              BIGINT REFERENCES jobs(id) ON DELETE SET NULL,
+        client_id           BIGINT REFERENCES clients(id) ON DELETE SET NULL,
+        contract_number     TEXT UNIQUE,
+        status              TEXT NOT NULL DEFAULT 'action_required',
+        client_signed_at    TIMESTAMPTZ,
+        counter_signed_at   TIMESTAMPTZ,
+        counter_signed_by   BIGINT REFERENCES users(id),
+        created_at          TIMESTAMPTZ DEFAULT NOW(),
+        updated_at          TIMESTAMPTZ DEFAULT NOW()
+      );
+      ALTER TABLE contracts ADD COLUMN IF NOT EXISTS client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL;
+      CREATE INDEX IF NOT EXISTS idx_contracts_client ON contracts (client_id);
+
+      -- Idempotent initial backfill for existing client classifications
+      UPDATE clients c
+      SET client_category = 'existing_client'
+      WHERE (client_category IS NULL OR client_category != 'existing_client')
+        AND (
+          c.total_jobs_count > 0 
+          OR c.status IN ('active_job', 'completed', 'repeat') 
+          OR c.total_revenue > 0
+          OR EXISTS (SELECT 1 FROM jobs j WHERE (j.client_id = c.id OR j.lead_id IN (SELECT id FROM leads WHERE client_id = c.id)) AND j.status NOT IN ('cancelled', 'draft'))
+          OR EXISTS (SELECT 1 FROM leads l WHERE l.client_id = c.id AND (l.contract_signed_at IS NOT NULL OR l.status = 'won' OR l.pipeline_stage = 'stage_5_completion_followup'))
+        );
+
+      UPDATE clients c
+      SET client_category = 'lost_lead', status = 'lost'
+      WHERE (client_category IS NULL OR client_category IN ('lead', 'new_client'))
+        AND c.status NOT IN ('active_job', 'completed', 'repeat')
+        AND c.total_jobs_count = 0
+        AND c.total_revenue = 0
+        AND (
+          c.status = 'lost'
+          OR EXISTS (SELECT 1 FROM leads l WHERE l.client_id = c.id AND l.status = 'lost')
+        );
+
+      UPDATE clients c
+      SET client_category = 'new_client', status = 'opportunity'
+      WHERE (client_category IS NULL OR client_category = 'lead')
+        AND c.status NOT IN ('active_job', 'completed', 'repeat', 'lost')
+        AND c.total_jobs_count = 0
+        AND c.total_revenue = 0
+        AND (
+          c.status = 'opportunity'
+          OR EXISTS (SELECT 1 FROM estimates e WHERE e.client_id = c.id OR e.lead_id IN (SELECT id FROM leads WHERE client_id = c.id))
+          OR EXISTS (SELECT 1 FROM inspections insp WHERE insp.client_id = c.id OR insp.lead_id IN (SELECT id FROM leads WHERE client_id = c.id))
+          OR EXISTS (SELECT 1 FROM leads l WHERE l.client_id = c.id AND (l.site_visit_scheduled_at IS NOT NULL OR l.proposal_sent_at IS NOT NULL OR l.status IN ('estimate_scheduled', 'estimate_sent', 'inspected', 'quoted') OR l.pipeline_stage IN ('stage_2_site_visit', 'stage_3_estimate_drafting', 'stage_4_proposal_review')))
+        );
+
+      UPDATE clients
+      SET client_category = 'lead'
+      WHERE client_category IS NULL OR client_category = '';
     `);
     tableEnsured = true;
   } catch (err) {
@@ -290,6 +365,7 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
       stories,
       hoa,
       status,
+      client_category,
       tags,
       notes,
       assigned_to_user_id,
@@ -297,7 +373,7 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
       acquired_by_user_id,
       lead_source_detail,
       client_since
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
     RETURNING *
   `;
 
@@ -317,6 +393,7 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
     safeStories,
     Boolean(input.hoa),
     'lead',
+    input.clientCategory || 'lead',
     ['New Lead'],
     input.notes ?? null,
     safeAssigned,
@@ -330,10 +407,64 @@ export async function findOrCreateClient(input: ClientInput): Promise<ClientReco
 }
 
 /**
- * Re-computes lifetime revenue, job counts, and status for a client
+ * Dynamic contract verification hook.
+ * Inspects signed agreements across contracts, signed leads, and active jobs.
+ * Extensible for future dedicated contract modules.
+ */
+export async function hasClientContract(clientId: number): Promise<boolean> {
+  // 1. Direct check on dedicated contracts table if available
+  try {
+    const contractRes = await query<{ count: string }>(
+      `SELECT COUNT(*) as count 
+       FROM contracts 
+       WHERE (client_id = $1 
+              OR lead_id IN (SELECT id FROM leads WHERE client_id = $1)
+              OR job_id IN (SELECT id FROM jobs WHERE client_id = $1)
+              OR estimate_id IN (SELECT id FROM estimates WHERE client_id = $1))
+         AND (status IN ('client_signed', 'fully_executed') OR client_signed_at IS NOT NULL)`,
+      [clientId]
+    );
+    if (parseInt(contractRes[0]?.count || '0', 10) > 0) {
+      return true;
+    }
+  } catch (err) {
+    // Graceful fallback if table is not yet migrated
+  }
+
+  // 2. Check signed milestones on linked leads
+  const leadRes = await query<{ count: string }>(
+    `SELECT COUNT(*) as count 
+     FROM leads 
+     WHERE client_id = $1 
+       AND (contract_signed_at IS NOT NULL 
+            OR status = 'won' 
+            OR pipeline_stage = 'stage_5_completion_followup')`,
+    [clientId]
+  );
+  if (parseInt(leadRes[0]?.count || '0', 10) > 0) {
+    return true;
+  }
+
+  // 3. Check active jobs (a job in production implies an executed deal)
+  const jobRes = await query<{ count: string }>(
+    `SELECT COUNT(*) as count 
+     FROM jobs 
+     WHERE (client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1))
+       AND status NOT IN ('cancelled', 'draft')`,
+    [clientId]
+  );
+  if (parseInt(jobRes[0]?.count || '0', 10) > 0) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Re-computes lifetime revenue, job counts, status, and 4-tier lifecycle category for a client
  */
 export async function recalculateClientStats(clientId: number): Promise<void> {
-  // Sum paid invoices (linked via job_id, estimate_id, or direct client_id)
+  // 1. Sum paid invoices (linked via job_id, estimate_id, or direct client_id)
   const revRes = await query<{ total: string }>(
     `SELECT COALESCE(SUM(amount), 0) as total 
      FROM invoices 
@@ -360,7 +491,7 @@ export async function recalculateClientStats(clientId: number): Promise<void> {
     }
   }
 
-  // Count jobs (linked directly or via client's leads)
+  // 2. Count jobs (linked directly or via client's leads)
   const jobRes = await query<{ count: string; has_active: string }>(
     `SELECT 
        COUNT(*) as count,
@@ -372,23 +503,85 @@ export async function recalculateClientStats(clientId: number): Promise<void> {
   const totalJobs = parseInt(jobRes[0]?.count || '0', 10);
   const hasActiveJob = parseInt(jobRes[0]?.has_active || '0', 10) > 0;
 
-  // Determine status
-  let status = 'lead';
-  if (hasActiveJob) {
-    status = 'active_job';
-  } else if (totalJobs > 1) {
-    status = 'repeat';
-  } else if (totalJobs === 1) {
-    status = 'completed';
-  } else {
-    // Check if proposals exist
-    const estRes = await query<{ count: string }>(
+  // 3. Dynamic contract validation
+  const hasContract = await hasClientContract(clientId);
+
+  // 4. Query linked leads for milestones, proposals, inspections, or lost status
+  const leadRes = await query<{
+    has_won: string;
+    has_lost: string;
+    lost_reason: string | null;
+    has_inspection: string;
+    has_proposal: string;
+  }>(
+    `SELECT 
+       COUNT(CASE WHEN status = 'won' OR contract_signed_at IS NOT NULL OR pipeline_stage = 'stage_5_completion_followup' THEN 1 END) as has_won,
+       COUNT(CASE WHEN status = 'lost' THEN 1 END) as has_lost,
+       (SELECT lost_reason FROM leads WHERE client_id = $1 AND status = 'lost' AND lost_reason IS NOT NULL ORDER BY updated_at DESC LIMIT 1) as lost_reason,
+       COUNT(CASE WHEN site_visit_scheduled_at IS NOT NULL OR site_visit_completed_at IS NOT NULL OR status IN ('estimate_scheduled', 'inspected') OR pipeline_stage IN ('stage_2_site_visit', 'stage_3_estimate_drafting') THEN 1 END) as has_inspection,
+       COUNT(CASE WHEN proposal_sent_at IS NOT NULL OR status IN ('estimate_sent', 'quoted') OR pipeline_stage = 'stage_4_proposal_review' THEN 1 END) as has_proposal
+     FROM leads
+     WHERE client_id = $1`,
+    [clientId]
+  );
+  const leadInfo = leadRes[0];
+  const hasWonLead = parseInt(leadInfo?.has_won || '0', 10) > 0;
+  const hasLostLead = parseInt(leadInfo?.has_lost || '0', 10) > 0;
+  const leadLostReason = leadInfo?.lost_reason || null;
+  const hasLeadInspection = parseInt(leadInfo?.has_inspection || '0', 10) > 0;
+  const hasLeadProposal = parseInt(leadInfo?.has_proposal || '0', 10) > 0;
+
+  // 5. Query estimates and inspections
+  const [estRes, inspRes, clientRow] = await Promise.all([
+    query<{ count: string }>(
       `SELECT COUNT(*) as count FROM estimates WHERE client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1)`,
       [clientId]
-    );
-    if (parseInt(estRes[0]?.count || '0', 10) > 0) {
-      status = 'opportunity';
+    ),
+    query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM inspections WHERE client_id = $1 OR lead_id IN (SELECT id FROM leads WHERE client_id = $1)`,
+      [clientId]
+    ),
+    query<{ status: string; lost_reason: string | null }>(
+      `SELECT status, lost_reason FROM clients WHERE id = $1`,
+      [clientId]
+    ),
+  ]);
+
+  const hasEstimates = parseInt(estRes[0]?.count || '0', 10) > 0;
+  const hasInspections = parseInt(inspRes[0]?.count || '0', 10) > 0;
+  const currentStatus = clientRow[0]?.status;
+  const currentLostReason = clientRow[0]?.lost_reason;
+
+  // 6. 4-Tier Lifecycle Hierarchy
+  // Tier 1: Existing Clients ("The ones we are already dealing with")
+  const isExistingClient = hasActiveJob || totalJobs > 0 || totalRevenue > 0 || hasContract || hasWonLead;
+
+  let clientCategory: 'existing_client' | 'lost_lead' | 'new_client' | 'lead' = 'lead';
+  let status = 'lead';
+  let lostReason = currentLostReason;
+
+  if (isExistingClient) {
+    clientCategory = 'existing_client';
+    if (hasActiveJob) {
+      status = 'active_job';
+    } else if (totalJobs > 1) {
+      status = 'repeat';
+    } else {
+      status = 'completed';
     }
+  } else if (hasLostLead || currentStatus === 'lost') {
+    // Tier 2: Lost Leads ("Captured before contract/job execution")
+    clientCategory = 'lost_lead';
+    status = 'lost';
+    lostReason = leadLostReason || currentLostReason || 'Lost before contract';
+  } else if (hasEstimates || hasInspections || hasLeadInspection || hasLeadProposal || currentStatus === 'opportunity') {
+    // Tier 3: New Clients ("Estimate sent or inspection done, actively engaged")
+    clientCategory = 'new_client';
+    status = 'opportunity';
+  } else {
+    // Tier 4: Inbound Leads ("Fresh inquiries, not yet estimated/inspected")
+    clientCategory = 'lead';
+    status = 'lead';
   }
 
   await query(
@@ -396,8 +589,73 @@ export async function recalculateClientStats(clientId: number): Promise<void> {
      SET total_revenue = $1, 
          total_jobs_count = $2, 
          status = $3, 
+         client_category = $4,
+         lost_reason = $5,
          updated_at = NOW() 
-     WHERE id = $4`,
-    [totalRevenue, totalJobs, status, clientId]
+     WHERE id = $6`,
+    [totalRevenue, totalJobs, status, clientCategory, lostReason, clientId]
   );
+}
+
+/**
+ * Reconciles and auto-heals all client records across the entire database:
+ * 1. Links any unlinked leads to client profiles via findOrCreateClient
+ * 2. Runs recalculateClientStats on every client profile
+ * Returns metrics on healed/recalculated clients
+ */
+export async function autoHealDataflowSync(): Promise<{
+  syncedClients: number;
+  linkedLeads: number;
+}> {
+  await ensureClientsTable();
+
+  // 1. Link orphan leads that have phone/email but no client_id
+  const unlinkedLeads = await query<{
+    id: number;
+    full_name: string;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+    city: string | null;
+    zip: string | null;
+    service_type: string | null;
+    notes: string | null;
+    created_at: string;
+  }>(`SELECT id, full_name, phone, email, address, city, zip, service_type, notes, created_at FROM leads WHERE client_id IS NULL AND (phone IS NOT NULL OR email IS NOT NULL)`);
+
+  let linkedLeads = 0;
+  for (const l of unlinkedLeads) {
+    try {
+      const client = await findOrCreateClient({
+        fullName: l.full_name,
+        phone: l.phone,
+        email: l.email,
+        address: l.address,
+        city: l.city,
+        zip: l.zip,
+        notes: l.notes,
+        clientSince: l.created_at,
+        serviceType: l.service_type,
+      });
+      await query(`UPDATE leads SET client_id = $1 WHERE id = $2`, [client.id, l.id]);
+      linkedLeads++;
+    } catch (e) {
+      console.warn(`[autoHealDataflowSync] Failed to link lead #${l.id}:`, e);
+    }
+  }
+
+  // 2. Recalculate stats & categories for all clients
+  const allClients = await query<{ id: number }>(`SELECT id FROM clients`);
+  for (const c of allClients) {
+    try {
+      await recalculateClientStats(c.id);
+    } catch (e) {
+      console.warn(`[autoHealDataflowSync] Failed to recalculate client #${c.id}:`, e);
+    }
+  }
+
+  return {
+    syncedClients: allClients.length,
+    linkedLeads,
+  };
 }

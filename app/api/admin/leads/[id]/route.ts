@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
 import { calculateLeadScore } from '@/lib/crm-scoring';
+import { recalculateClientStats } from '@/lib/crm-clients';
 
 export async function GET(
   req: NextRequest,
@@ -132,18 +133,30 @@ export async function PATCH(
   const sql = `UPDATE leads SET ${updates.join(', ')} WHERE id = $${params.length}`;
   await query(sql, params);
 
-  // If status changed, log activity entry
-  if (body.status) {
-    await query(
-      `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-       VALUES ('lead', $1, 'status_change', $2, $3, $4)`,
-      [
-        leadId,
-        `Status changed to ${body.status}`,
-        body.lost_reason ? `Reason: ${body.lost_reason}` : `Pipeline status updated to ${body.status}`,
-        body.performed_by || 'Admin',
-      ]
-    );
+  // If status changed or lost_reason updated, log activity and recalculate linked client stats
+  if (body.status || body.lost_reason !== undefined) {
+    if (body.status) {
+      await query(
+        `INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+         VALUES ('lead', $1, 'status_change', $2, $3, $4)`,
+        [
+          leadId,
+          `Status changed to ${body.status}`,
+          body.lost_reason ? `Reason: ${body.lost_reason}` : `Pipeline status updated to ${body.status}`,
+          body.performed_by || 'Admin',
+        ]
+      );
+    }
+
+    try {
+      const leadRows = await query<{ client_id: number | null }>(`SELECT client_id FROM leads WHERE id = $1`, [leadId]);
+      const clientId = leadRows[0]?.client_id;
+      if (clientId) {
+        await recalculateClientStats(Number(clientId));
+      }
+    } catch (syncErr) {
+      console.warn('Could not recalculate client stats in leads/[id] PATCH:', syncErr);
+    }
   }
 
   return NextResponse.json({ ok: true });

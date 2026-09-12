@@ -36,23 +36,32 @@ export default function ClientProfileHeader({
 }: ClientProfileHeaderProps) {
   const router = useRouter();
 
-  function getStatusBadge(status: string) {
-    switch (status) {
-      case 'active_job':
-        return { label: 'Active Jobsite', bg: 'bg-amber-500 text-white border-amber-600' };
-      case 'repeat':
-        return { label: 'Repeat Client', bg: 'bg-emerald-600 text-white border-emerald-700' };
-      case 'completed':
-        return { label: 'Past Completed Client', bg: 'bg-blue-600 text-white border-blue-700' };
-      case 'opportunity':
-        return { label: 'Proposal Out', bg: 'bg-purple-600 text-white border-purple-700' };
-      case 'lead':
-      default:
-        return { label: 'Active Lead', bg: 'bg-[#2F9FE3] text-white border-[#1878B8]' };
+  function getLifecycleBadge(category?: string, status?: string) {
+    if (category === 'existing_client' || status === 'active_job' || status === 'completed' || status === 'repeat') {
+      return {
+        label: status === 'active_job' ? 'Existing Client • Active Jobsite' : status === 'repeat' ? 'Existing Client • Repeat' : 'Existing Client',
+        bg: 'bg-emerald-600 text-white border-emerald-700',
+      };
     }
+    if (category === 'lost_lead' || status === 'lost') {
+      return {
+        label: 'Lost Lead (Pre-Contract)',
+        bg: 'bg-rose-600 text-white border-rose-700',
+      };
+    }
+    if (category === 'new_client' || status === 'opportunity') {
+      return {
+        label: 'New Client • In Proposal / Inspection',
+        bg: 'bg-purple-600 text-white border-purple-700',
+      };
+    }
+    return {
+      label: 'Inbound Lead',
+      bg: 'bg-[#0284C7] text-white border-sky-700',
+    };
   }
 
-  const badge = getStatusBadge(client.status);
+  const badge = getLifecycleBadge(client.client_category, client.status);
   const ltv = Number(client.total_revenue || 0);
   const balanceDue = Number(client.balance_due || 0);
 
@@ -157,6 +166,15 @@ export default function ClientProfileHeader({
                 variant="badge"
               />
             </div>
+
+            {client.lost_reason && (client.client_category === 'lost_lead' || client.status === 'lost') && (
+              <div className="mt-2.5 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2">
+                <AlertCircle size={14} className="text-rose-600 shrink-0" />
+                <span>
+                  <strong>Lost Lead:</strong> {client.lost_reason}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

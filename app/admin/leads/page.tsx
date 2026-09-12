@@ -20,8 +20,10 @@ import LeadsTable, { Lead } from '@/components/admin/LeadsTable';
 import MobileLeadCard from '@/components/admin/leads/MobileLeadCard';
 import LeadQuickDrawer from '@/components/admin/leads/LeadQuickDrawer';
 import AddLeadSheet from '@/components/admin/leads/AddLeadSheet';
+import MoveToLostModal from '@/components/admin/shared/MoveToLostModal';
 import { AdminAreaChart } from '@/components/admin/Charts';
 import { LeadsTableSkeleton } from '@/components/admin/shared/AdminSkeletons';
+import { UserX, X } from 'lucide-react';
 
 const STATUSES = ['all', 'new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
 const PRIORITIES = ['all', 'hot', 'warm', 'cool'];
@@ -41,6 +43,15 @@ export default function LeadsPage() {
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [drawerLead, setDrawerLead] = useState<Lead | null>(null);
+  const [pendingLostLead, setPendingLostLead] = useState<{
+    id: number;
+    fullName: string;
+    phone?: string | null;
+    serviceType?: string | null;
+    address?: string | null;
+    estimatedValue?: number | string | null;
+  } | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -78,6 +89,10 @@ export default function LeadsPage() {
         router.push('/admin/login');
         return;
       }
+      if (!res.ok) {
+        console.error('Failed to load leads:', res.status, res.statusText);
+        return;
+      }
       const d = await res.json();
       setLeads(d.leads ?? []);
       setTotal(d.total ?? 0);
@@ -107,13 +122,61 @@ export default function LeadsPage() {
     return () => window.removeEventListener('crm:open-add-lead', handleOpenAdd);
   }, []);
 
-  async function handleStatusChange(id: number, newStatus: string) {
-    setLeads(prev => prev.map(l => (l.id === id ? { ...l, status: newStatus } : l)));
+  async function handleStatusChange(
+    id: number,
+    newStatus: string,
+    meta?: { lostReason?: string; notes?: string }
+  ) {
+    if (newStatus === 'lost' && !meta?.lostReason) {
+      const target = leads.find(l => l.id === id);
+      if (target) {
+        setPendingLostLead({
+          id: target.id,
+          fullName: target.full_name,
+          phone: target.phone,
+          serviceType: target.service_type,
+          address: target.address,
+          estimatedValue: target.estimated_value,
+        });
+        return;
+      }
+    }
+
+    if (newStatus === 'lost') {
+      // If currently viewing active leads (not explicitly filtering by 'lost'), remove immediately from queue
+      if (status !== 'lost') {
+        setLeads(prev => prev.filter(l => l.id !== id));
+        setTotal(prev => Math.max(0, prev - 1));
+      } else {
+        setLeads(prev => prev.map(l => (l.id === id ? { ...l, status: newStatus } : l)));
+      }
+      if (drawerLead && drawerLead.id === id) {
+        setDrawerLead(null);
+      }
+      setToastMessage('Lead archived to Lost Leads in Clients 360');
+      setTimeout(() => setToastMessage(null), 5000);
+    } else {
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, status: newStatus } : l)));
+    }
+
     await fetch('/api/admin/leads', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status: newStatus, performedBy: 'Admin Staff' }),
+      body: JSON.stringify({
+        id,
+        status: newStatus,
+        lost_reason: meta?.lostReason,
+        notes: meta?.notes,
+        performedBy: 'Admin Staff',
+      }),
     });
+  }
+
+  async function handleConfirmLost({ reason, notes }: { reason: string; notes: string }) {
+    if (!pendingLostLead) return;
+    const targetId = Number(pendingLostLead.id);
+    setPendingLostLead(null);
+    await handleStatusChange(targetId, 'lost', { lostReason: reason, notes });
   }
 
   function exportCsv() {
@@ -410,6 +473,40 @@ export default function LeadsPage() {
         onClose={() => setShowAddSheet(false)}
         onCreated={() => load(true)}
       />
+
+      {/* Branded Move-to-Lost Confirmation Modal */}
+      <MoveToLostModal
+        isOpen={Boolean(pendingLostLead)}
+        onClose={() => setPendingLostLead(null)}
+        onConfirm={handleConfirmLost}
+        lead={pendingLostLead}
+      />
+
+      {/* Floating Status Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-[#0B1E33] text-white rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold shrink-0">
+            <UserX size={16} />
+          </div>
+          <div className="text-xs">
+            <p className="font-bold text-white">{toastMessage}</p>
+            <Link
+              href="/admin/clients"
+              className="text-sky-400 hover:text-sky-300 hover:underline font-semibold text-[11px] inline-flex items-center gap-1 mt-0.5"
+            >
+              <span>View in Clients 360 Lost Leads</span>
+              <ArrowRight size={11} />
+            </Link>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="text-slate-400 hover:text-white ml-2 p-1 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

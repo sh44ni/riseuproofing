@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/lib/admin-auth';
 import { query } from '@/lib/db';
-import { findOrCreateClient, normalizePhone, ensureClientsTable } from '@/lib/crm-clients';
+import { findOrCreateClient, normalizePhone, ensureClientsTable, autoHealDataflowSync } from '@/lib/crm-clients';
 
 export async function GET(req: NextRequest) {
   const auth = await requirePermission('clients:view');
@@ -10,7 +10,17 @@ export async function GET(req: NextRequest) {
   await ensureClientsTable();
 
   const { searchParams } = new URL(req.url);
+  const sync = searchParams.get('sync') === 'true';
+  if (sync) {
+    try {
+      await autoHealDataflowSync();
+    } catch (syncErr) {
+      console.warn('[clients GET] autoHealDataflowSync error:', syncErr);
+    }
+  }
+
   const search = searchParams.get('search')?.trim();
+  const category = searchParams.get('category');
   const status = searchParams.get('status');
   const tag = searchParams.get('tag');
   const sort = searchParams.get('sort') || 'recent';
@@ -21,14 +31,31 @@ export async function GET(req: NextRequest) {
   const conditions: string[] = [];
   const params: unknown[] = [];
 
-  if (status && status !== 'all') {
-    params.push(status);
-    conditions.push(`status = $${params.length}`);
+  // Lifecycle category filtering
+  if (category && category !== 'all') {
+    let targetCat = category;
+    if (targetCat === 'leads') targetCat = 'lead';
+    else if (targetCat === 'new_clients') targetCat = 'new_client';
+    else if (targetCat === 'existing_clients') targetCat = 'existing_client';
+    else if (targetCat === 'lost_leads') targetCat = 'lost_lead';
+
+    params.push(targetCat);
+    conditions.push(`c.client_category = $${params.length}`);
+  } else if (status && status !== 'all') {
+    if (status === 'lost') {
+      conditions.push(`(c.client_category = 'lost_lead' OR c.status = 'lost')`);
+    } else {
+      params.push(status);
+      conditions.push(`c.status = $${params.length}`);
+    }
+  } else {
+    // Default active view: Exclude lost leads so they remain strictly inside "Lost Leads" tab
+    conditions.push(`(c.client_category IS NULL OR c.client_category != 'lost_lead')`);
   }
 
   if (tag && tag !== 'all') {
     params.push(tag);
-    conditions.push(`$${params.length} = ANY(tags)`);
+    conditions.push(`$${params.length} = ANY(c.tags)`);
   }
 
   if (search) {
@@ -40,35 +67,35 @@ export async function GET(req: NextRequest) {
       params.push(`%${norm}%`);
       const pNorm = `$${params.length}`;
       conditions.push(`(
-        LOWER(full_name) LIKE ${pSearch} OR
-        LOWER(COALESCE(email, '')) LIKE ${pSearch} OR
-        LOWER(COALESCE(address, '')) LIKE ${pSearch} OR
-        LOWER(COALESCE(city, '')) LIKE ${pSearch} OR
-        phone_normalized LIKE ${pNorm} OR
-        phone LIKE ${pSearch}
+        LOWER(c.full_name) LIKE ${pSearch} OR
+        LOWER(COALESCE(c.email, '')) LIKE ${pSearch} OR
+        LOWER(COALESCE(c.address, '')) LIKE ${pSearch} OR
+        LOWER(COALESCE(c.city, '')) LIKE ${pSearch} OR
+        c.phone_normalized LIKE ${pNorm} OR
+        c.phone LIKE ${pSearch}
       )`);
     } else {
       conditions.push(`(
-        LOWER(full_name) LIKE ${pSearch} OR
-        LOWER(COALESCE(email, '')) LIKE ${pSearch} OR
-        LOWER(COALESCE(address, '')) LIKE ${pSearch} OR
-        LOWER(COALESCE(city, '')) LIKE ${pSearch} OR
-        phone LIKE ${pSearch}
+        LOWER(c.full_name) LIKE ${pSearch} OR
+        LOWER(COALESCE(c.email, '')) LIKE ${pSearch} OR
+        LOWER(COALESCE(c.address, '')) LIKE ${pSearch} OR
+        LOWER(COALESCE(c.city, '')) LIKE ${pSearch} OR
+        c.phone LIKE ${pSearch}
       )`);
     }
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  let orderBy = 'updated_at DESC';
+  let orderBy = 'c.updated_at DESC';
   if (sort === 'ltv') {
-    orderBy = 'total_revenue DESC, updated_at DESC';
+    orderBy = 'c.total_revenue DESC, c.updated_at DESC';
   } else if (sort === 'name') {
-    orderBy = 'full_name ASC';
+    orderBy = 'c.full_name ASC';
   } else if (sort === 'jobs') {
-    orderBy = 'total_jobs_count DESC, updated_at DESC';
+    orderBy = 'c.total_jobs_count DESC, c.updated_at DESC';
   } else if (sort === 'created') {
-    orderBy = 'created_at DESC';
+    orderBy = 'c.created_at DESC';
   }
 
   const [clients, countRows, summaryRows] = await Promise.all([
@@ -78,7 +105,17 @@ export async function GET(req: NextRequest) {
          u.name as assigned_to_name,
          u_acq.name as acquired_by_name,
          u_acq.role as acquired_by_role,
-         u_acq.avatar_url as acquired_by_avatar
+         u_acq.avatar_url as acquired_by_avatar,
+         (
+           SELECT lost_reason FROM leads 
+           WHERE client_id = c.id AND status = 'lost' AND lost_reason IS NOT NULL 
+           ORDER BY updated_at DESC LIMIT 1
+         ) as lead_lost_reason,
+         (
+           SELECT total FROM estimates 
+           WHERE client_id = c.id OR lead_id IN (SELECT id FROM leads WHERE client_id = c.id) 
+           ORDER BY created_at DESC LIMIT 1
+         ) as latest_estimate_total
        FROM clients c
        LEFT JOIN users u ON c.assigned_to_user_id = u.id
        LEFT JOIN users u_acq ON c.acquired_by_user_id = u_acq.id
@@ -87,18 +124,24 @@ export async function GET(req: NextRequest) {
        LIMIT ${limit} OFFSET ${offset}`,
       params
     ),
-    query<{ count: string }>(`SELECT COUNT(*) as count FROM clients ${where}`, params),
+    query<{ count: string }>(`SELECT COUNT(*) as count FROM clients c ${where}`, params),
     query<{
       total_clients: string;
-      active_jobs: string;
+      existing_clients_count: string;
+      new_clients_count: string;
       leads_count: string;
+      lost_leads_count: string;
+      active_jobs: string;
       total_ltv: string;
     }>(`
       SELECT 
-        COUNT(*) as total_clients,
+        COUNT(CASE WHEN client_category != 'lost_lead' OR client_category IS NULL THEN 1 END) as total_clients,
+        COUNT(CASE WHEN client_category = 'existing_client' OR status IN ('active_job', 'completed', 'repeat') THEN 1 END) as existing_clients_count,
+        COUNT(CASE WHEN client_category = 'new_client' OR (client_category != 'existing_client' AND client_category != 'lost_lead' AND status = 'opportunity') THEN 1 END) as new_clients_count,
+        COUNT(CASE WHEN client_category = 'lead' OR (client_category IS NULL AND status = 'lead') THEN 1 END) as leads_count,
+        COUNT(CASE WHEN client_category = 'lost_lead' OR (client_category != 'existing_client' AND status = 'lost') THEN 1 END) as lost_leads_count,
         COUNT(CASE WHEN status = 'active_job' THEN 1 END) as active_jobs,
-        COUNT(CASE WHEN status = 'lead' THEN 1 END) as leads_count,
-        COALESCE(SUM(total_revenue), 0) as total_ltv
+        COALESCE(SUM(CASE WHEN client_category != 'lost_lead' THEN total_revenue ELSE 0 END), 0) as total_ltv
       FROM clients
     `),
   ]);
@@ -106,6 +149,10 @@ export async function GET(req: NextRequest) {
   const total = parseInt(countRows[0]?.count || '0', 10);
   const summary = {
     totalClients: parseInt(summaryRows[0]?.total_clients || '0', 10),
+    existingClientsCount: parseInt(summaryRows[0]?.existing_clients_count || '0', 10),
+    newClientsCount: parseInt(summaryRows[0]?.new_clients_count || '0', 10),
+    leadsCount: parseInt(summaryRows[0]?.leads_count || '0', 10),
+    lostLeadsCount: parseInt(summaryRows[0]?.lost_leads_count || '0', 10),
     activeProjects: parseInt(summaryRows[0]?.active_jobs || '0', 10),
     leadCount: parseInt(summaryRows[0]?.leads_count || '0', 10),
     totalLtv: parseFloat(summaryRows[0]?.total_ltv || '0'),
@@ -115,6 +162,9 @@ export async function GET(req: NextRequest) {
     const isTeam = Boolean(c.acquired_by_user_id || c.acquired_by_name);
     return {
       ...c,
+      client_category: c.client_category || 'lead',
+      lost_reason: c.lost_reason || c.lead_lost_reason || null,
+      latest_estimate_total: c.latest_estimate_total ? Number(c.latest_estimate_total) : null,
       source_type: isTeam ? 'team_member' : 'website',
       lead_source_detail: c.lead_source_detail || (isTeam ? 'Sales Rep Outreach' : 'Website Inbound'),
     };

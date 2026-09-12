@@ -3,6 +3,7 @@ import { requirePermission } from '@/lib/admin-auth';
 import { buildScopeFilter } from '@/lib/permissions';
 import { query } from '@/lib/db';
 import { calculateLeadScore } from '@/lib/crm-scoring';
+import { recalculateClientStats } from '@/lib/crm-clients';
 
 // Cache 30-day lead trend to prevent re-querying on every pagination / filter
 interface CachedDaily {
@@ -47,33 +48,36 @@ export async function GET(req: NextRequest) {
 
   if (status && status !== 'all') {
     params.push(status);
-    conditions.push(`status = $${params.length}`);
+    conditions.push(`l.status = $${params.length}`);
+  } else {
+    // Default active queue: Exclude lost leads so active sales pipeline stays clean
+    conditions.push(`l.status != 'lost'`);
   }
 
   if (formType && formType !== 'all') {
     params.push(formType);
-    conditions.push(`form_type = $${params.length}`);
+    conditions.push(`l.form_type = $${params.length}`);
   }
 
   if (priority && priority !== 'all') {
     params.push(priority);
-    conditions.push(`priority = $${params.length}`);
+    conditions.push(`l.priority = $${params.length}`);
   }
 
   if (source && source !== 'all') {
     params.push(source);
-    conditions.push(`lead_source = $${params.length}`);
+    conditions.push(`l.lead_source = $${params.length}`);
   }
 
   if (search && search.trim()) {
     params.push(`%${search.trim().toLowerCase()}%`);
     const pIdx = `$${params.length}`;
     conditions.push(`(
-      LOWER(full_name) LIKE ${pIdx} OR 
-      phone LIKE ${pIdx} OR 
-      LOWER(COALESCE(email, '')) LIKE ${pIdx} OR 
-      LOWER(COALESCE(address, '')) LIKE ${pIdx} OR
-      LOWER(COALESCE(service_type, '')) LIKE ${pIdx}
+      LOWER(l.full_name) LIKE ${pIdx} OR 
+      l.phone LIKE ${pIdx} OR 
+      LOWER(COALESCE(l.email, '')) LIKE ${pIdx} OR 
+      LOWER(COALESCE(l.address, '')) LIKE ${pIdx} OR
+      LOWER(COALESCE(l.service_type, '')) LIKE ${pIdx}
     )`);
   }
 
@@ -107,7 +111,7 @@ export async function GET(req: NextRequest) {
        LIMIT ${limit} OFFSET ${offset}`,
       params
     ),
-    query<{ count: string }>(`SELECT COUNT(*) AS count FROM leads ${where}`, params),
+    query<{ count: string }>(`SELECT COUNT(*) AS count FROM leads l ${where}`, params),
     dailyPromise,
   ]);
 
@@ -323,17 +327,18 @@ export async function PATCH(req: NextRequest) {
   const auth = await requirePermission('leads:edit');
   if (auth.response) return auth.response;
 
-  const { id, status, performedBy } = await req.json();
+  const { id, status, performedBy, lost_reason, notes } = await req.json();
   const valid = ['new', 'contacted', 'inspected', 'quoted', 'won', 'lost'];
   if (!valid.includes(status)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
   // Enforce leads.edit dynamic scope (§3 & §8)
+  // $1=status, $2=lost_reason, $3=notes, $4=id, $5=performedBy -> params offset = 6
   const patchScope = buildScopeFilter(auth.user, 'leads.edit', {
     creatorCol: 'COALESCE(leads.created_by, leads.created_by_user_id)',
     assignedCol: 'leads.assigned_to_user_id',
-    paramOffset: 3, // $1=status, $2=id
+    paramOffset: 6,
   });
 
   if (!patchScope.allowed) {
@@ -341,18 +346,51 @@ export async function PATCH(req: NextRequest) {
   }
 
   const scopeClause = patchScope.clause !== '1=1' ? `AND ${patchScope.clause}` : '';
-  const queryParams = [status, id, ...patchScope.params];
+  const noteAppend = notes?.trim() ? `\n[${new Date().toLocaleDateString()}] ${notes.trim()}` : null;
 
-  // Atomically update status and log activity in a single round-trip
+  // Atomically update status, lost_reason, notes, and log activity in a single round-trip
   const updateRes = await query<any>(`
     WITH updated_lead AS (
-      UPDATE leads SET status = $1 WHERE id = $2 ${scopeClause} RETURNING id
+      UPDATE leads 
+      SET status = $1,
+          lost_reason = CASE WHEN $1 = 'lost' THEN COALESCE($2, lost_reason) ELSE NULL END,
+          notes = CASE 
+            WHEN $3::text IS NOT NULL THEN COALESCE(notes, '') || $3::text 
+            ELSE notes 
+          END,
+          updated_at = NOW()
+      WHERE id = $4 ${scopeClause} 
+      RETURNING id, client_id
     )
     INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-    SELECT 'lead', id, 'status_change', 'Status updated', 'Lead status changed to ' || $1, $3
+    SELECT 'lead', id, 'status_change', 
+      CASE WHEN $1 = 'lost' THEN 'Lead Moved to Lost Archive' ELSE 'Status updated' END,
+      CASE 
+        WHEN $1 = 'lost' THEN 'Lead marked as lost. Reason: ' || COALESCE($2, 'Unspecified') || CASE WHEN $3::text IS NOT NULL THEN ' | Notes: ' || $3::text ELSE '' END
+        ELSE 'Lead status changed to ' || $1 
+      END, 
+      $5
     FROM updated_lead
     RETURNING entity_id
-  `, [status, id, performedBy || auth.user.name || 'Staff']);
+  `, [
+    status,
+    lost_reason || null,
+    noteAppend,
+    id,
+    performedBy || auth.user.name || 'Staff',
+    ...patchScope.params,
+  ]);
+
+  // Recalculate linked client stats & 4-tier lifecycle category
+  try {
+    const leadRows = await query<{ client_id: number | null }>(`SELECT client_id FROM leads WHERE id = $1`, [id]);
+    const clientId = leadRows[0]?.client_id;
+    if (clientId) {
+      await recalculateClientStats(Number(clientId));
+    }
+  } catch (syncErr) {
+    console.warn('Could not recalculate client stats on lead status change:', syncErr);
+  }
 
   cachedDaily = null; // Invalidate daily sparkline cache
 

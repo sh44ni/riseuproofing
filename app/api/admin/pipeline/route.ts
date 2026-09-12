@@ -103,6 +103,9 @@ export async function GET(req: NextRequest) {
   const conditions: string[] = [];
   const params: unknown[] = [];
 
+  // Exclude archived/lost leads from active pipeline stages
+  conditions.push("l.status != 'lost'");
+
   if (assignedTo) {
     if (assignedTo === 'unassigned') {
       conditions.push('l.assigned_to_user_id IS NULL');

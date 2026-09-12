@@ -31,6 +31,7 @@ import CustomSelect from '@/components/admin/shared/CustomSelect';
 import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
 import SourceAttributionBadge from '@/components/admin/shared/SourceAttributionBadge';
 import LeadStageChecklistCard from '@/components/admin/pipeline/LeadStageChecklistCard';
+import MoveToLostModal from '@/components/admin/shared/MoveToLostModal';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New Lead', badge: 'Fresh', badgeColor: 'sky' as const },
@@ -108,12 +109,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [savingProperty, setSavingProperty] = useState(false);
   const [isEditingSpecs, setIsEditingSpecs] = useState(false);
 
-  // Sheets
+  // Sheets & Modals
   const [showLogSheet, setShowLogSheet] = useState(false);
   const [messageModalChannel, setMessageModalChannel] = useState<'sms' | 'email' | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDue, setNewTaskDue] = useState('');
+  const [isLostModalOpen, setIsLostModalOpen] = useState(false);
 
   // Editable specs state
   const [specs, setSpecs] = useState({
@@ -185,11 +187,35 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   async function handleStatusChange(newStatus: string) {
     if (!lead) return;
+    if (newStatus === 'lost') {
+      setIsLostModalOpen(true);
+      return;
+    }
     setLead({ ...lead, status: newStatus });
     await fetch(`/api/admin/leads/${leadId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
+    });
+    // Reload activities to see status change in timeline
+    const actRes = await fetch(`/api/admin/leads/${leadId}/activities`);
+    const actData = await actRes.json();
+    setActivities(actData.activities ?? []);
+  }
+
+  async function handleConfirmLost({ reason, notes }: { reason: string; notes: string }) {
+    if (!lead) return;
+    setIsLostModalOpen(false);
+    setLead({ ...lead, status: 'lost' });
+    await fetch(`/api/admin/leads/${leadId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'lost',
+        lost_reason: reason,
+        notes: notes ? (lead.notes ? `${lead.notes}\n[Lost Reason: ${reason}] ${notes}` : `[Lost Reason: ${reason}] ${notes}`) : lead.notes,
+        performed_by: 'Admin Staff',
+      }),
     });
     // Reload activities to see status change in timeline
     const actRes = await fetch(`/api/admin/leads/${leadId}/activities`);
@@ -776,6 +802,20 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           onSent={loadData}
         />
       )}
+
+      {/* Move to Lost Confirmation Modal */}
+      <MoveToLostModal
+        isOpen={isLostModalOpen}
+        onClose={() => setIsLostModalOpen(false)}
+        onConfirm={handleConfirmLost}
+        lead={lead ? {
+          id: lead.id,
+          fullName: lead.full_name,
+          phone: lead.phone,
+          serviceType: lead.service_type,
+          address: lead.address,
+        } : null}
+      />
     </div>
   );
 }

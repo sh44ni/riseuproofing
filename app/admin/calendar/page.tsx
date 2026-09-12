@@ -25,6 +25,8 @@ import {
   CheckCircle2,
   Tag,
   AlertTriangle,
+  Check,
+  Link2,
 } from 'lucide-react';
 import { CalendarEvent, CalendarEventType } from '@/app/api/admin/calendar/route';
 import TeamDayView from '@/components/admin/calendar/TeamDayView';
@@ -41,6 +43,35 @@ const EVENT_TYPES: Array<{ id: string; label: string; color: string }> = [
   { id: 'warranty_checkin', label: 'Warranty Check-ins', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
   { id: 'task', label: 'Manual Tasks', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
 ];
+
+function getEventDotColor(eventType: CalendarEventType): string {
+  switch (eventType) {
+    case 'roof_install':
+      return 'bg-amber-500';
+    case 'boom_delivery':
+      return 'bg-purple-500';
+    case 'city_permit':
+      return 'bg-[#0284C7]';
+    case 'warranty_checkin':
+      return 'bg-emerald-500';
+    case 'roof_inspection':
+      return 'bg-teal-500';
+    case 'task':
+    default:
+      return 'bg-cyan-500';
+  }
+}
+
+function isEventCompleted(ev: CalendarEvent): boolean {
+  if (ev.completed) return true;
+  if (ev.status) {
+    const s = ev.status.toLowerCase().trim();
+    if (s === 'completed' || s === 'done' || s === 'closed') {
+      return true;
+    }
+  }
+  return false;
+}
 
 export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -167,20 +198,40 @@ export default function CalendarPage() {
     return true;
   });
 
-  // Selected date events
-  const selectedDayEvents = filteredEvents.filter((e) => {
-    if (e.date === selectedDateStr) return true;
-    if (e.endDate && e.date <= selectedDateStr && e.endDate >= selectedDateStr) return true;
-    return false;
-  });
+  // Selected date events (incomplete first, completed at the bottom)
+  const selectedDayEvents = filteredEvents
+    .filter((e) => {
+      if (e.date === selectedDateStr) return true;
+      if (e.endDate && e.date <= selectedDateStr && e.endDate >= selectedDateStr) return true;
+      return false;
+    })
+    .sort((a, b) => {
+      const aDone = isEventCompleted(a) ? 1 : 0;
+      const bDone = isEventCompleted(b) ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time && !b.time) return -1;
+      if (!a.time && b.time) return 1;
+      return 0;
+    });
 
   function getEventsForDay(day: number) {
     const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return filteredEvents.filter((e) => {
-      if (e.date === dStr) return true;
-      if (e.endDate && e.date <= dStr && e.endDate >= dStr) return true;
-      return false;
-    });
+    return filteredEvents
+      .filter((e) => {
+        if (e.date === dStr) return true;
+        if (e.endDate && e.date <= dStr && e.endDate >= dStr) return true;
+        return false;
+      })
+      .sort((a, b) => {
+        const aDone = isEventCompleted(a) ? 1 : 0;
+        const bDone = isEventCompleted(b) ? 1 : 0;
+        if (aDone !== bDone) return aDone - bDone;
+        if (a.time && b.time) return a.time.localeCompare(b.time);
+        if (a.time && !b.time) return -1;
+        if (!a.time && b.time) return 1;
+        return 0;
+      });
   }
 
   // Handle Save Task (Create or Update)
@@ -444,7 +495,7 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={`empty-${idx}`}
-                      className="min-h-[64px] sm:min-h-[88px] rounded-2xl bg-slate-50/40 border border-transparent"
+                      className="min-h-[70px] sm:min-h-[116px] rounded-2xl bg-slate-50/40 border border-transparent"
                     />
                   );
                 }
@@ -457,8 +508,14 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={`day-${day}`}
-                    onClick={() => setSelectedDateStr(dStr)}
-                    className={`min-h-[64px] sm:min-h-[88px] p-2 rounded-2xl border text-left cursor-pointer transition-all duration-200 flex flex-col justify-between ${
+                    onClick={() => {
+                      setSelectedDateStr(dStr);
+                      setHighlightedEventId(null);
+                      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                        document.getElementById('selected-day-panel')?.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className={`min-h-[70px] sm:min-h-[116px] p-2 rounded-2xl border text-left cursor-pointer transition-all duration-200 flex flex-col ${
                       isSelected
                         ? 'bg-gradient-to-b from-sky-500/15 via-sky-500/8 to-blue-500/5 border-[#2F9FE3] shadow-[0_4px_16px_rgba(47,159,227,0.2)] ring-2 ring-[#2F9FE3]/40'
                         : isToday
@@ -480,16 +537,28 @@ export default function CalendarPage() {
                       </span>
 
                       {dayEvents.length > 0 && (
-                        <span className="text-[10px] font-mono font-black text-[#1878B8]">
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${
+                            dayEvents.length > 3
+                              ? 'bg-sky-100 text-[#0284C7] font-black shadow-2xs'
+                              : 'text-slate-400 font-semibold'
+                          }`}
+                          title={`${dayEvents.length} operation${dayEvents.length !== 1 ? 's' : ''} scheduled`}
+                        >
                           {dayEvents.length}
                         </span>
                       )}
                     </div>
 
                     {/* Event Chips (Desktop) */}
-                    <div className="hidden sm:block space-y-1 mt-1">
-                      {dayEvents.slice(0, 2).map((ev) => {
+                    <div className="hidden sm:block space-y-1 mt-1.5">
+                      {dayEvents.slice(0, 3).map((ev) => {
                         const firstAssignee = ev.assignees && ev.assignees.length > 0 ? ev.assignees[0] : null;
+                        const isCompleted = isEventCompleted(ev);
+                        const hasAssignee =
+                          firstAssignee &&
+                          !firstAssignee.name.toLowerCase().includes('unassigned');
+                        const displayTitle = ev.title.replace(/^Unassigned:\s*/i, '');
 
                         return (
                           <div
@@ -499,47 +568,52 @@ export default function CalendarPage() {
                               setSelectedDateStr(dStr);
                               setHighlightedEventId(ev.id);
                             }}
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded-lg truncate border leading-tight shadow-2xs flex items-center gap-1 ${
-                              ev.event_type === 'roof_install'
-                                ? 'bg-amber-50 text-amber-900 border-amber-200'
+                            className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-md truncate border leading-tight shadow-2xs flex items-center gap-1.5 transition-all duration-150 hover:brightness-95 hover:shadow-xs cursor-pointer ${
+                              isCompleted
+                                ? 'bg-slate-50/90 text-slate-400 border-slate-200/90 line-through'
+                                : ev.event_type === 'roof_install'
+                                ? 'bg-amber-50/90 text-amber-950 border-amber-200/90'
                                 : ev.event_type === 'boom_delivery'
-                                ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                ? 'bg-purple-50/90 text-purple-950 border-purple-200/90'
                                 : ev.event_type === 'city_permit'
-                                ? 'bg-sky-50 text-[#1878B8] border-sky-200'
+                                ? 'bg-sky-50/90 text-sky-950 border-sky-200/90'
                                 : ev.event_type === 'warranty_checkin'
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                ? 'bg-emerald-50/90 text-emerald-950 border-emerald-200/90'
                                 : ev.event_type === 'roof_inspection'
-                                ? 'bg-teal-50 text-teal-800 border-teal-200'
-                                : 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                                ? 'bg-teal-50/90 text-teal-950 border-teal-200/90'
+                                : 'bg-cyan-50/90 text-cyan-950 border-cyan-200/90'
                             }`}
+                            title={`${ev.title}${hasAssignee ? ` • ${firstAssignee.name}` : ''}`}
                           >
-                            {ev.is_synced ? (
-                              <span className="text-[8px] opacity-75 shrink-0" title="Synced from pipeline">
-                                🔗
-                              </span>
+                            {/* Modern Status / Event Type Indicator */}
+                            {isCompleted ? (
+                              <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3] shrink-0" />
+                            ) : ev.is_synced ? (
+                              <Link2 className="w-2.5 h-2.5 text-slate-400 shrink-0 opacity-80" />
                             ) : (
-                              <span className="text-[8px] opacity-75 shrink-0">✓</span>
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${getEventDotColor(
+                                  ev.event_type
+                                )}`}
+                              />
                             )}
 
-                            {firstAssignee && (
-                              <span className="shrink-0 text-[8px] opacity-80 font-normal">
+                            {/* Assignee Name (Clean display if assigned) */}
+                            {hasAssignee && (
+                              <span className="shrink-0 text-[8.5px] font-bold opacity-75">
                                 {firstAssignee.name.split(' ')[0]}:
                               </span>
                             )}
 
-                            <span className="truncate">{ev.title}</span>
+                            {/* Event Title */}
+                            <span className="truncate">{displayTitle}</span>
                           </div>
                         );
                       })}
-                      {dayEvents.length > 2 && (
-                        <span className="text-[9px] font-bold text-slate-400 pl-1 block">
-                          +{dayEvents.length - 2} more
-                        </span>
-                      )}
                     </div>
 
                     {/* Mobile Dot Indicators */}
-                    <div className="sm:hidden flex gap-1 mt-auto pt-1">
+                    <div className="sm:hidden flex items-center gap-1 mt-auto pt-1">
                       {dayEvents.slice(0, 3).map((ev) => (
                         <span
                           key={ev.id}
@@ -554,6 +628,11 @@ export default function CalendarPage() {
                           }`}
                         />
                       ))}
+                      {dayEvents.length > 3 && (
+                        <span className="text-[8px] font-black text-slate-400 leading-none">
+                          +{dayEvents.length - 3}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -562,7 +641,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Right (1/3): Selected Day Event Drawer */}
-          <div className="admin-card p-5 sm:p-6 space-y-4 shadow-xs">
+          <div id="selected-day-panel" className="admin-card p-5 sm:p-6 space-y-4 shadow-xs">
             <div className="border-b border-slate-100/80 pb-3.5 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-black text-[#0284C7] tracking-wider block">
@@ -604,7 +683,7 @@ export default function CalendarPage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[750px] overflow-y-auto pr-1">
                 {selectedDayEvents.map((ev) => (
                   <div
                     key={ev.id}

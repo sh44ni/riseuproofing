@@ -12,6 +12,10 @@ import {
   Hammer,
   DollarSign,
   User,
+  Sparkles,
+  ClipboardCheck,
+  UserX,
+  AlertCircle,
 } from 'lucide-react';
 import { ClientListItem } from './MobileClientCard';
 import { formatPhone } from '@/lib/crm-clients-utils';
@@ -22,20 +26,41 @@ interface ClientsTableProps {
 }
 
 export default function ClientsTable({ clients }: ClientsTableProps) {
-  function getStatusBadge(status: string) {
-    switch (status) {
-      case 'active_job':
-        return { label: 'Active Job', bg: 'bg-amber-50 text-amber-800 border-amber-300' };
-      case 'repeat':
-        return { label: 'Repeat Client', bg: 'bg-emerald-50 text-emerald-800 border-emerald-300' };
-      case 'completed':
-        return { label: 'Completed', bg: 'bg-blue-50 text-blue-800 border-blue-300' };
-      case 'opportunity':
-        return { label: 'Proposal Out', bg: 'bg-purple-50 text-purple-800 border-purple-300' };
-      case 'lead':
-      default:
-        return { label: 'Lead', bg: 'bg-sky-50 text-sky-800 border-sky-300' };
+  function getLifecycleBadge(category?: string, status?: string, lostReason?: string | null, estimateTotal?: number | null) {
+    if (category === 'existing_client' || status === 'active_job' || status === 'completed' || status === 'repeat') {
+      return {
+        label: 'Existing Client',
+        bg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+        icon: Hammer,
+        iconColor: 'text-emerald-600',
+        detail: status === 'active_job' ? 'Active Jobsite in Production' : status === 'repeat' ? 'Repeat Customer' : 'Contract Executed / Complete',
+      };
     }
+    if (category === 'lost_lead' || status === 'lost') {
+      return {
+        label: 'Lost Lead',
+        bg: 'bg-rose-50 text-rose-800 border-rose-300',
+        icon: UserX,
+        iconColor: 'text-rose-600',
+        detail: lostReason ? `Lost: ${lostReason}` : 'Lost pre-contract',
+      };
+    }
+    if (category === 'new_client' || status === 'opportunity') {
+      return {
+        label: 'New Client',
+        bg: 'bg-purple-50 text-purple-800 border-purple-300',
+        icon: ClipboardCheck,
+        iconColor: 'text-purple-600',
+        detail: estimateTotal ? `Proposal Out ($${Number(estimateTotal).toLocaleString()})` : 'In Inspection / Proposal',
+      };
+    }
+    return {
+      label: 'Lead',
+      bg: 'bg-sky-50 text-sky-800 border-sky-300',
+      icon: Sparkles,
+      iconColor: 'text-sky-600',
+      detail: 'Inbound Inquiry',
+    };
   }
 
   function formatDate(dateStr: string) {
@@ -51,7 +76,7 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
           <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
             <th className="py-3.5 px-4 sticky left-0 bg-slate-50/95 backdrop-blur-xs z-20 shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)] min-w-[220px]">Client Name &amp; Contact</th>
             <th className="py-3.5 px-4">Property &amp; Roof Specs</th>
-            <th className="py-3.5 px-4">CRM Status</th>
+            <th className="py-3.5 px-4">Lifecycle Stage</th>
             <th className="py-3.5 px-4">Lifetime Value</th>
             <th className="py-3.5 px-4">Assigned To</th>
             <th className="py-3.5 px-4">Last Activity</th>
@@ -60,7 +85,8 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
         </thead>
         <tbody className="divide-y divide-slate-100 text-sm">
           {clients.map(c => {
-            const badge = getStatusBadge(c.status);
+            const lifecycle = getLifecycleBadge(c.client_category, c.status, c.lost_reason, c.latest_estimate_total);
+            const LifecycleIcon = lifecycle.icon;
             const ltv = Number(c.total_revenue || 0);
 
             return (
@@ -71,7 +97,13 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
                 {/* Name & Contact (Sticky Left) */}
                 <td className="py-3.5 px-4 sticky left-0 bg-white group-hover:bg-slate-50/90 z-10 transition-colors shadow-[2px_0_6px_-2px_rgba(11,30,51,0.06)]">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0B1E33] to-[#1878B8] flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-2xs">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-2xs ${
+                      c.client_category === 'lost_lead'
+                        ? 'bg-gradient-to-br from-slate-600 to-rose-700'
+                        : c.client_category === 'existing_client'
+                        ? 'bg-gradient-to-br from-teal-700 to-emerald-600'
+                        : 'bg-gradient-to-br from-[#0B1E33] to-[#1878B8]'
+                    }`}>
                       {c.full_name ? c.full_name[0].toUpperCase() : 'C'}
                     </div>
                     <div className="min-w-0">
@@ -135,17 +167,23 @@ export default function ClientsTable({ clients }: ClientsTableProps) {
                   </div>
                 </td>
 
-                {/* Status Badge */}
+                {/* Lifecycle Stage Badge */}
                 <td className="py-3.5 px-4">
                   <div className="flex flex-col items-start gap-1">
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${badge.bg}`}>
-                      {badge.label}
-                    </span>
-                    {c.tags && c.tags.length > 0 && c.tags[0] !== 'New Lead' && (
-                      <span className="text-[10px] text-slate-500 font-medium">
-                        {c.tags.slice(0, 2).join(', ')}
+                    <div className="flex items-center gap-1.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${lifecycle.bg}`}>
+                        <LifecycleIcon size={12} className={lifecycle.iconColor} />
+                        {lifecycle.label}
                       </span>
-                    )}
+                      {c.status === 'active_job' && (
+                        <span className="px-1.5 py-0.2 rounded-md bg-amber-500 text-white font-black text-[9px] tracking-wider uppercase">
+                          Active Job
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-medium truncate max-w-[200px]" title={lifecycle.detail}>
+                      {lifecycle.detail}
+                    </span>
                   </div>
                 </td>
 
