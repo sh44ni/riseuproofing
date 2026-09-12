@@ -771,22 +771,42 @@ export default function CalendarPage() {
                     )}
 
                     {/* Assignee Avatars */}
-                    {ev.assignees && ev.assignees.length > 0 && (
-                      <div className="flex items-center gap-2 pt-1 border-t border-slate-100 text-xs">
-                        <span className="text-[10px] text-slate-400">Assigned:</span>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {ev.assignees.map((a, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
-                            >
-                              <UserAvatar name={a.name} avatarUrl={a.avatar_url} role={a.role} size="xs" />
-                              <span>{a.name}</span>
+                    {(() => {
+                      const realAssignees = (ev.assignees || []).filter(
+                        (a) => a.name && !a.name.toLowerCase().includes('unassigned')
+                      );
+
+                      if (realAssignees.length > 0) {
+                        return (
+                          <div className="flex items-center gap-2 pt-1 border-t border-slate-100 text-xs">
+                            <span className="text-[10px] text-slate-400">Assigned:</span>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {realAssignees.map((a, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
+                                >
+                                  <UserAvatar name={a.name} avatarUrl={a.avatar_url} role={a.role} size="xs" />
+                                  <span>{a.name}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (!ev.is_synced || ev.event_type === 'task') {
+                        return (
+                          <div className="flex items-center gap-2 pt-1 border-t border-slate-100 text-xs">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold">
+                              <span>⚠️ Unassigned</span>
                             </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                          </div>
+                        );
+                      }
+
+                      return null;
+                    })()}
 
                     {/* Action buttons for manual task */}
                     {!ev.is_synced && (

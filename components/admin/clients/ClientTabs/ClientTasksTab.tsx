@@ -4,12 +4,19 @@ import React, { useState } from 'react';
 import { CheckSquare, Plus, Clock, CheckCircle2, User, AlertCircle } from 'lucide-react';
 import CustomSelect from '../../shared/CustomSelect';
 import CustomDatePicker from '../../shared/CustomDatePicker';
+import {
+  TASK_PRIORITY_OPTIONS,
+  WORK_CATEGORY_OPTIONS,
+  PRIORITY_BADGE_MAP,
+  CATEGORY_BADGE_MAP,
+} from '@/components/admin/shared/taskConstants';
 
 interface TaskItem {
   id: number;
   title: string;
   description?: string;
-  due_at: string;
+  due_at?: string | null;
+  work_category?: string | null;
   completed_at?: string;
   priority?: string;
   assigned_to?: string;
@@ -31,6 +38,7 @@ export default function ClientTasksTab({
   const [description, setDescription] = useState('');
   const [dueAt, setDueAt] = useState('');
   const [priority, setPriority] = useState('normal');
+  const [workCategory, setWorkCategory] = useState('Rise Up');
   const [submitting, setSubmitting] = useState(false);
 
   async function handleToggleTask(task: TaskItem) {
@@ -52,7 +60,8 @@ export default function ClientTasksTab({
 
   async function handleCreateTask(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !dueAt) return;
+    const trimmed = title.trim();
+    if (!trimmed) return;
 
     setSubmitting(true);
     try {
@@ -63,16 +72,20 @@ export default function ClientTasksTab({
           entityType: 'client',
           entityId: clientId,
           clientId,
-          title,
-          description,
-          dueAt,
+          title: trimmed,
+          description: description.trim() || undefined,
+          dueAt: dueAt || undefined,
           priority,
+          workCategory,
+          eventType: dueAt ? 'task' : 'todo',
         }),
       });
 
       setTitle('');
       setDescription('');
       setDueAt('');
+      setPriority('normal');
+      setWorkCategory('Rise Up');
       setShowAdd(false);
       onTaskUpdated();
     } catch (err) {
@@ -129,33 +142,37 @@ export default function ClientTasksTab({
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Due Date & Time <span className="text-red-500">*</span>
-              </label>
-              <CustomDatePicker
-                mode="datetime"
-                required
-                value={dueAt}
-                onChange={setDueAt}
-                size="sm"
-                placeholder="Pick due date..."
-              />
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Priority</label>
               <CustomSelect
                 value={priority}
                 onChange={setPriority}
                 size="sm"
-                options={[
-                  { value: 'low', label: 'Low' },
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'high', label: 'High', badge: 'High', badgeColor: 'sky' },
-                  { value: 'urgent', label: 'Urgent ⚡', badge: 'Urgent', badgeColor: 'rose' },
-                ]}
+                options={TASK_PRIORITY_OPTIONS}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Work Category</label>
+              <CustomSelect
+                value={workCategory}
+                onChange={setWorkCategory}
+                size="sm"
+                options={WORK_CATEGORY_OPTIONS}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Due Date & Time <span className="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <CustomDatePicker
+                mode="datetime"
+                value={dueAt}
+                onChange={setDueAt}
+                size="sm"
+                placeholder="Pick due date..."
               />
             </div>
           </div>
@@ -197,7 +214,9 @@ export default function ClientTasksTab({
         </h4>
 
         {pendingTasks.map(t => {
-          const isOverdue = new Date(t.due_at).getTime() < Date.now();
+          const isOverdue = t.due_at ? new Date(t.due_at).getTime() < Date.now() : false;
+          const pConfig = PRIORITY_BADGE_MAP[t.priority || 'normal'] || PRIORITY_BADGE_MAP.normal;
+          const cConfig = t.work_category ? CATEGORY_BADGE_MAP[t.work_category] : null;
 
           return (
             <div
@@ -211,20 +230,34 @@ export default function ClientTasksTab({
               />
 
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center justify-between gap-1">
-                  <span className="font-bold text-slate-800 text-sm">{t.title}</span>
-                  <span
-                    className={`text-[11px] font-semibold flex items-center gap-1 ${
-                      isOverdue ? 'text-red-600 font-bold' : 'text-slate-500'
-                    }`}
-                  >
-                    <Clock size={12} />
-                    {new Date(t.due_at).toLocaleDateString()} at{' '}
-                    {new Date(t.due_at).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-800 text-sm">{t.title}</span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-semibold ${pConfig.badgeClass}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${pConfig.dot}`} />
+                      {pConfig.label}
+                    </span>
+                    {cConfig && (
+                      <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-md border ${cConfig.badgeClass}`}>
+                        {cConfig.label}
+                      </span>
+                    )}
+                  </div>
+
+                  {t.due_at && (
+                    <span
+                      className={`text-[11px] font-semibold flex items-center gap-1 ${
+                        isOverdue ? 'text-red-600 font-bold' : 'text-slate-500'
+                      }`}
+                    >
+                      <Clock size={12} />
+                      {new Date(t.due_at).toLocaleDateString()} at{' '}
+                      {new Date(t.due_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  )}
                 </div>
 
                 {t.description && (
@@ -249,23 +282,32 @@ export default function ClientTasksTab({
             Completed ({completedTasks.length})
           </h4>
 
-          {completedTasks.map(t => (
-            <div
-              key={t.id}
-              className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center gap-3 opacity-70 hover:opacity-100 transition-opacity"
-            >
-              <button
-                onClick={() => handleToggleTask(t)}
-                className="w-5 h-5 rounded-md bg-emerald-500 border border-emerald-600 text-white flex items-center justify-center cursor-pointer flex-shrink-0"
-                title="Mark Incomplete"
+          {completedTasks.map(t => {
+            const pConfig = PRIORITY_BADGE_MAP[t.priority || 'normal'] || PRIORITY_BADGE_MAP.normal;
+            return (
+              <div
+                key={t.id}
+                className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center gap-3 opacity-70 hover:opacity-100 transition-opacity"
               >
-                <CheckCircle2 size={13} />
-              </button>
-              <span className="text-xs font-medium line-through text-slate-500 flex-1">
-                {t.title}
-              </span>
-            </div>
-          ))}
+                <button
+                  onClick={() => handleToggleTask(t)}
+                  className="w-5 h-5 rounded-md bg-emerald-500 border border-emerald-600 text-white flex items-center justify-center cursor-pointer flex-shrink-0"
+                  title="Mark Incomplete"
+                >
+                  <CheckCircle2 size={13} />
+                </button>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="text-xs font-medium line-through text-slate-500 truncate">
+                    {t.title}
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-semibold opacity-75 ${pConfig.badgeClass}`}>
+                    <span className={`w-1 h-1 rounded-full ${pConfig.dot}`} />
+                    {pConfig.label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
       // 2.3 My Tasks (CRUD-backed personal task list for current_user.id)
       query<any>(`
         SELECT 
-          t.id, t.title, t.description, t.priority, t.due_at, t.end_at, t.completed_at,
+          t.id, t.title, t.description, t.priority, t.work_category, t.due_at, t.end_at, t.completed_at,
           t.entity_type, t.entity_id,
           COALESCE(l.full_name, j.customer_name) as related_name,
           COALESCE(l.phone, j.customer_phone) as related_phone
@@ -139,8 +139,18 @@ export async function GET(req: NextRequest) {
         LEFT JOIN jobs j ON t.entity_type = 'job' AND t.entity_id = j.id
         WHERE (t.assigned_to_user_id = $1 OR t.created_by_user_id = $1)
           AND (t.completed_at IS NULL OR t.completed_at >= CURRENT_DATE)
-        ORDER BY (t.completed_at IS NOT NULL) ASC, t.due_at ASC
-        LIMIT 10
+        ORDER BY 
+          (t.completed_at IS NOT NULL) ASC,
+          CASE t.priority 
+            WHEN 'urgent' THEN 1 
+            WHEN 'high' THEN 2 
+            WHEN 'normal' THEN 3 
+            WHEN 'low' THEN 4 
+            ELSE 5 
+          END ASC,
+          t.due_at ASC NULLS LAST,
+          t.created_at DESC
+        LIMIT 25
       `, [user.id]),
 
       // 2.4 Active Jobs in Field

@@ -17,6 +17,7 @@ import { CalendarEvent, CalendarEventType } from '@/app/api/admin/calendar/route
 import UserAvatar from '@/components/admin/shared/UserAvatar';
 import CustomSelect from '@/components/admin/shared/CustomSelect';
 import CustomDatePicker from '@/components/admin/shared/CustomDatePicker';
+import { TASK_PRIORITY_OPTIONS } from '@/components/admin/shared/taskConstants';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -147,7 +148,7 @@ export default function TaskModal({
         eventType,
         priority,
         assignedToUserId: assignedUserId ? parseInt(assignedUserId, 10) : null,
-        assignedTo: selectedMember ? selectedMember.name : (assignedUserId ? undefined : 'Unassigned Operations Pool'),
+        assignedTo: selectedMember ? selectedMember.name : null,
         completed: isCompleted,
       };
 
@@ -244,11 +245,7 @@ export default function TaskModal({
                 value={priority}
                 onChange={(val) => setPriority(val as any)}
                 size="sm"
-                options={[
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'high', label: 'High Priority', badge: 'High', badgeColor: 'sky' },
-                  { value: 'urgent', label: '🔴 Urgent / Critical', badge: 'Urgent', badgeColor: 'rose' },
-                ]}
+                options={TASK_PRIORITY_OPTIONS}
               />
             </div>
           </div>
@@ -304,9 +301,9 @@ export default function TaskModal({
               value={assignedUserId}
               onChange={setAssignedUserId}
               size="sm"
-              placeholder="Unassigned Operations Pool"
+              placeholder="None (Unassigned)"
               options={[
-                { value: '', label: 'Unassigned Operations Pool' },
+                { value: '', label: 'None (Unassigned)' },
                 ...teamMembers.map((u) => ({
                   value: String(u.id),
                   label: u.name,

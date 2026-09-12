@@ -119,6 +119,7 @@ export async function GET(req: NextRequest) {
         LEFT JOIN users u ON t.assigned_to_user_id = u.id
         LEFT JOIN users u_creator ON t.created_by_user_id = u_creator.id
         WHERE t.due_at IS NOT NULL
+          AND t.event_type NOT IN ('todo', 'sticky_note')
         ORDER BY t.due_at ASC
       `),
 
@@ -447,7 +448,7 @@ export async function GET(req: NextRequest) {
           avatar_url: t.user_avatar,
         });
         taskAssigneeIds.push(Number(t.assigned_to_user_id));
-      } else if (t.assigned_to) {
+      } else if (t.assigned_to && !t.assigned_to.toLowerCase().includes('unassigned')) {
         const matched = userByName.get(t.assigned_to.toLowerCase().trim());
         if (matched) {
           taskAssignees.push({

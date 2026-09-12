@@ -339,9 +339,9 @@ export default function TeamDayView({
                   <Zap className="w-3.5 h-3.5 fill-white" />
                 </div>
                 <div>
-                  <div className="text-xs font-black text-amber-950">Unassigned Pool</div>
+                  <div className="text-xs font-black text-amber-950">Unassigned Queue</div>
                   <div className="text-[10px] text-amber-700 font-semibold">
-                    {unassignedEvents.length} items need rep/crew
+                    {unassignedEvents.length} operation{unassignedEvents.length !== 1 ? 's' : ''} need assignee
                   </div>
                 </div>
               </div>
