@@ -31,26 +31,40 @@ import { AuthUser, ROLE_CONFIG, canAccessPath } from '@/lib/rbac';
 import UserAvatar from '@/components/admin/shared/UserAvatar';
 import RoleBadge, { RoleIcon } from '@/components/admin/shared/RoleBadge';
 
-const NAV = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+  future?: boolean;
+  badge?: string;
+}
+
+// 1. Primary Navigation (Strictly matches executive mockup order)
+const PRIMARY_NAV: NavItem[] = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/pipeline', label: 'Sales Pipeline', icon: GitFork },
   { href: '/admin/leads', label: 'Leads', icon: Users },
-  { href: '/admin/clients', label: 'Clients 360', icon: UserCheck },
-  { href: '/admin/calendar', label: 'Calendar', icon: Calendar },
-  { href: '/admin/inspections', label: 'Inspections', icon: ClipboardCheck },
+  { href: '/admin/pipeline', label: 'Pipeline', icon: GitFork },
+  { href: '/admin/clients', label: 'Clients', icon: UserCheck },
   { href: '/admin/estimates', label: 'Estimates', icon: FileText },
-  { href: '/admin/estimator', label: 'Estimator Settings', icon: Calculator },
+  { href: '/admin/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/admin/tasks', label: 'Tasks', icon: CheckSquare },
+  { href: '#', label: 'Content Creation', icon: BarChart3, future: true, badge: 'Future' },
+  { href: '/admin/reports', label: 'Reports', icon: PieChart },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/admin/users', label: 'Users', icon: ShieldCheck },
+];
+
+// 2. Secondary Operations (Moved down below primary sequence)
+const SECONDARY_NAV: NavItem[] = [
   { href: '/admin/jobs', label: 'Jobs', icon: Hammer },
+  { href: '/admin/inspections', label: 'Inspections', icon: ClipboardCheck },
+  { href: '/admin/estimator', label: 'Estimator Pricing', icon: Calculator },
   { href: '/admin/crew', label: 'Crew', icon: HardHat },
   { href: '/admin/warranties', label: 'Warranties', icon: ShieldCheck },
   { href: '/admin/finances', label: 'Finances', icon: DollarSign },
-  { href: '/admin/reports', label: 'Reports', icon: PieChart },
   { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/templates', label: 'Templates', icon: MessageSquareCode },
-  { href: '/admin/tasks', label: 'Tasks', icon: CheckSquare },
-  { href: '/admin/users', label: 'Team & Roles', icon: ShieldCheck },
   { href: '/admin/analytics', label: 'Web & Marketing', icon: BarChart3 },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 interface AdminSidebarProps {
@@ -61,6 +75,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [showSecondary, setShowSecondary] = useState(true);
 
   const roleConfig = (user?.role && (ROLE_CONFIG as Record<string, any>)[user.role]) || ROLE_CONFIG.owner;
 
@@ -70,7 +85,8 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
   }
 
   // Filter navigation items by dynamic user permissions (§10)
-  const visibleNav = NAV.filter((item) => canAccessPath(user, item.href));
+  const visiblePrimary = PRIMARY_NAV.filter((item) => item.future || canAccessPath(user, item.href));
+  const visibleSecondary = SECONDARY_NAV.filter((item) => canAccessPath(user, item.href));
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -108,39 +124,132 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
         )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {visibleNav.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/');
+      {/* Main Nav Scroll Area */}
+      <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+        {/* Primary Group */}
+        {visiblePrimary.map(({ href, label, icon: Icon, future, badge }) => {
+          if (future) {
+            return (
+              <div
+                key={label}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-50/50 border border-dashed border-slate-200/80 cursor-not-allowed select-none ${
+                  collapsed ? 'justify-center' : ''
+                }`}
+                title={collapsed ? `${label} (${badge})` : undefined}
+              >
+                <Icon size={16} className="flex-shrink-0 text-slate-300" />
+                {!collapsed && (
+                  <>
+                    <span className="truncate">{label}</span>
+                    <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 uppercase tracking-wider">
+                      {badge}
+                    </span>
+                  </>
+                )}
+              </div>
+            );
+          }
+
+          const active = pathname === href || (href !== '/admin/dashboard' && pathname.startsWith(href + '/'));
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative cursor-pointer
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group relative cursor-pointer
                 ${
                   active
-                    ? 'bg-gradient-to-r from-sky-50 via-sky-50/70 to-blue-50/30 text-[#0284C7] font-bold shadow-2xs border-l-[3px] border-[#2F9FE3]'
-                    : 'text-slate-600 hover:bg-slate-100/70 hover:text-[#0B1E33] hover:translate-x-0.5'
+                    ? 'bg-[#1878B8] text-white shadow-xs'
+                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-[#0B1E33]'
                 }
-                ${collapsed ? 'justify-center !border-l-0' : ''}
+                ${collapsed ? 'justify-center' : ''}
               `}
               title={collapsed ? label : undefined}
             >
-              {active && collapsed && (
-                <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-[#2F9FE3] rounded-full shadow-[0_0_8px_rgba(47,159,227,0.5)]" />
-              )}
               <Icon
-                size={18}
-                className={`flex-shrink-0 transition-colors ${active ? 'text-[#0284C7]' : 'text-slate-500 group-hover:text-[#0B1E33]'}`}
+                size={16}
+                className={`flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-slate-500 group-hover:text-[#0B1E33]'}`}
               />
               {!collapsed && <span>{label}</span>}
-              {!collapsed && active && (
-                <ChevronRight size={14} className="ml-auto text-[#0284C7]/80" />
+              {!collapsed && (
+                <ChevronRight
+                  size={13}
+                  className={`ml-auto transition-colors ${active ? 'text-white/80' : 'text-slate-300 group-hover:text-slate-500'}`}
+                />
               )}
             </Link>
           );
         })}
+
+        {/* Secondary Operations Divider & Section */}
+        {visibleSecondary.length > 0 && (
+          <div className="pt-3">
+            {!collapsed ? (
+              <div className="px-2 pb-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span>Operations &amp; Tools</span>
+              </div>
+            ) : (
+              <div className="w-6 h-px bg-slate-200 mx-auto my-2" />
+            )}
+
+            <div className="space-y-0.5">
+              {visibleSecondary.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href || pathname.startsWith(href + '/');
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 group cursor-pointer
+                      ${
+                        active
+                          ? 'bg-sky-50 text-[#1878B8] font-bold border-l-2 border-[#1878B8]'
+                          : 'text-slate-500 hover:bg-slate-100/70 hover:text-[#0B1E33]'
+                      }
+                      ${collapsed ? 'justify-center !border-l-0' : ''}
+                    `}
+                    title={collapsed ? label : undefined}
+                  >
+                    <Icon
+                      size={15}
+                      className={`flex-shrink-0 ${active ? 'text-[#1878B8]' : 'text-slate-400 group-hover:text-[#0B1E33]'}`}
+                    />
+                    {!collapsed && <span className="truncate">{label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </nav>
+
+      {/* Mockup Brand Footer Card (Good Roofs. Better People.) */}
+      {!collapsed && (
+        <div className="mx-3 my-2 p-3 rounded-2xl bg-gradient-to-br from-sky-50/90 via-blue-50/50 to-slate-50 border border-sky-100 text-center relative overflow-hidden shadow-2xs">
+          <div className="absolute -right-2 -bottom-2 w-12 h-12 rounded-full bg-sky-200/20 blur-sm pointer-events-none" />
+          <p className="font-serif italic text-xs font-bold text-[#0B1E33] leading-snug tracking-tight">
+            GOOD ROOFS.
+            <br />
+            BETTER PEOPLE.
+          </p>
+          <div className="flex items-center justify-center gap-2.5 mt-2 text-slate-500">
+            <span className="text-[11px] hover:text-[#1878B8] transition-colors cursor-pointer" title="Instagram">
+              📷
+            </span>
+            <span className="text-[11px] hover:text-[#1878B8] transition-colors cursor-pointer" title="Facebook">
+              📘
+            </span>
+            <span className="text-[11px] hover:text-[#1878B8] transition-colors cursor-pointer" title="Google">
+              🌐
+            </span>
+            <span className="text-[11px] hover:text-rose-500 transition-colors cursor-pointer" title="Yelp">
+              ⭐
+            </span>
+          </div>
+          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">
+            RISEUPRAC.COM
+          </p>
+          <p className="text-[9px] text-slate-400">Oceanside, CA</p>
+        </div>
+      )}
 
       {/* User Profile & Logout Bottom Section */}
       <div className="px-3 pb-4 space-y-2 border-t border-slate-200/80 pt-3">
@@ -203,7 +312,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className={`hidden lg:flex flex-col h-screen sticky top-0 admin-sidebar-glass border-r border-slate-200/80 transition-all duration-300 ${
-          collapsed ? 'w-16' : 'w-56'
+          collapsed ? 'w-16' : 'w-60'
         }`}
       >
         <button
