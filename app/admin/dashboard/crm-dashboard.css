@@ -20,7 +20,9 @@
   display: grid;
   grid-template-columns: 196px minmax(0, 1fr) 268px;
   gap: 5px;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background: linear-gradient(110deg, #edf9ff, #f4fbff 60%, #e3f5ff);
   max-width: 2400px;
   margin: 0 auto;
@@ -49,9 +51,17 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
   background: linear-gradient(105deg, #f1fbff, #e0f2ff);
   position: relative;
-  overflow: hidden;
+  flex-shrink: 0;
+}
+.crm-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Brand area */
@@ -201,8 +211,26 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding-right: 2px;
-  overflow: hidden;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  padding-right: 4px;
+}
+
+.crm-main::-webkit-scrollbar {
+  width: 6px;
+}
+.crm-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crm-main::-webkit-scrollbar-thumb {
+  background: #c2e5ff;
+  border-radius: 999px;
+}
+.crm-main::-webkit-scrollbar-thumb:hover {
+  background: #008fff;
 }
 
 /* Top bar */
@@ -212,6 +240,13 @@
   gap: 8px;
   padding: 10px 10px 8px 6px;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(110deg, rgba(237, 249, 255, 0.94), rgba(244, 251, 255, 0.94) 60%, rgba(227, 245, 255, 0.94));
+  border-bottom: 1px solid rgba(214, 239, 255, 0.7);
 }
 .crm-search {
   flex: 1;
@@ -481,7 +516,7 @@
   display: flex;
   align-items: center;
   gap: 28px;
-  padding: 4px 12px 6px 4px;
+  padding: 4px 12px 28px 4px;
   color: #002668;
   font-size: 12px;
   margin: auto 10px 0 1px;
@@ -505,12 +540,30 @@
 
 /* ── RIGHT SIDEBAR ───────────────────────────────────────── */
 .crm-right-sidebar {
-  padding: 10px 12px 10px 0;
+  padding: 10px 12px 24px 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
-  overflow: hidden;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #c2e5ff transparent;
+}
+.crm-right-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.crm-right-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crm-right-sidebar::-webkit-scrollbar-thumb {
+  background: #c2e5ff;
+  border-radius: 999px;
+}
+.crm-right-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #008fff;
 }
 
 /* Profile */
@@ -863,7 +916,21 @@
 }
 
 @media (max-width: 1050px) {
-  .crm-shell { grid-template-columns: 150px minmax(0,1fr); }
+  .crm-shell {
+    grid-template-columns: 150px minmax(0,1fr);
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .crm-sidebar {
+    height: auto;
+    max-height: none;
+  }
+  .crm-main {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
   .crm-right-sidebar {
     grid-column: 2;
     display: grid;
@@ -871,6 +938,9 @@
     align-items: start;
     padding: 0 8px 12px 0;
     gap: 8px;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
   .crm-profile-area { display: none; }
   .crm-today-panel-wrap { grid-column: 2; grid-row: 1 / span 2; }
@@ -882,13 +952,21 @@
 }
 
 @media (max-width: 760px) {
-  .crm-shell { display: flex; flex-direction: column; }
+  .crm-shell {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
   .crm-sidebar {
     position: fixed;
     z-index: 60;
     left: 0;
     top: 0;
     bottom: 0;
+    height: 100vh;
+    max-height: 100vh;
     width: 196px;
     overflow-y: auto;
     transform: translateX(-100%);
@@ -906,6 +984,9 @@
     grid-template-columns: 1fr 1fr;
     padding: 4px 8px 8px;
     gap: 8px;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
   .crm-profile-area { display: block; }
   .crm-today-panel-wrap { grid-column: 2; grid-row: 1 / span 2; }
