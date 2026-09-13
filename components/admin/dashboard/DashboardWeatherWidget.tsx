@@ -171,7 +171,7 @@ export default function DashboardWeatherWidget({
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm bg-white">
+    <div className="rounded-2xl overflow-hidden border-2 border-white shadow-[0_4px_16px_rgba(255,255,255,0.9),0_2px_8px_rgba(160,223,255,0.35)] bg-white">
       {/* ── Hero strip ── */}
       <div className="relative min-h-[150px] flex flex-col justify-between p-4 group overflow-hidden">
         {/* BG photo */}
@@ -179,26 +179,26 @@ export default function DashboardWeatherWidget({
           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
           style={{ backgroundImage: `url(${backgroundImage})` }}
         />
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-900/70 to-slate-800/40" />
+        {/* Whitish sunlit daylight overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/96 via-white/85 to-white/20" />
 
         {/* Header row */}
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-slate-200 text-xs font-semibold">
-            <MapPin size={12} className="text-amber-400 flex-shrink-0" />
+          <div className="flex items-center gap-1.5 text-slate-800 text-xs font-bold">
+            <MapPin size={12} className="text-[#008fff] flex-shrink-0" />
             <span>{weather.location}</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => fetchWeather(true)}
               disabled={refreshing}
-              className="text-slate-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              className="text-slate-500 hover:text-slate-900 transition-colors cursor-pointer disabled:opacity-50"
               title="Refresh weather"
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
             </button>
-            <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
             </span>
           </div>
@@ -208,19 +208,19 @@ export default function DashboardWeatherWidget({
         <div className="relative z-10 flex items-end justify-between mt-3">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-5xl font-black tracking-tight text-white font-mono leading-none">
+              <span className="text-5xl font-black tracking-tight text-[#090d26] font-mono leading-none">
                 {current.temp_f}°
               </span>
-              <span className="text-sm text-slate-200 font-medium pb-1">F</span>
+              <span className="text-sm text-slate-600 font-medium pb-1">F</span>
             </div>
-            <div className="text-sm font-semibold text-slate-100 mt-0.5">{current.condition.text}</div>
-            <div className="text-[11px] text-slate-300 font-medium mt-0.5">
+            <div className="text-sm font-bold text-[#008fff] mt-0.5">{current.condition.text}</div>
+            <div className="text-[11px] text-slate-600 font-medium mt-0.5">
               Feels {current.feelslike_f}° &nbsp;·&nbsp; H: {today?.maxtemp_f ?? '--'}° &nbsp; L: {today?.mintemp_f ?? '--'}°
             </div>
           </div>
 
           {/* Condition icon */}
-          <div className="p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex-shrink-0">
+          <div className="p-2 rounded-2xl bg-white/85 backdrop-blur-md border border-white shadow-xs flex-shrink-0">
             {iconSrc ? (
               <Image
                 src={iconSrc}
