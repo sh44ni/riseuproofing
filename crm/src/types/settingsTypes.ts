@@ -1,0 +1,170 @@
+export type SettingsTab =
+  | 'users'
+  | 'company'
+  | 'pricing'
+  | 'pipeline'
+  | 'notifications'
+  | 'integrations'
+  | 'security';
+
+export type RoleType =
+  | 'owner'
+  | 'senior_estimator'
+  | 'production_manager'
+  | 'field_foreman'
+  | 'crew_lead'
+  | 'office_admin';
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: RoleType;
+  roleLabel: string;
+  branch: string;
+  avatarColor: string;
+  initials: string;
+  status: 'active' | 'suspended' | 'invited';
+  twoFactorEnabled: boolean;
+  lastActive: string;
+  joinedDate: string;
+  avatarUrl?: string;
+}
+
+export interface UserRole {
+  id: RoleType;
+  title: string;
+  description: string;
+  memberCount: number;
+  badgeColor: string;
+  permissions: {
+    viewFinancials: boolean;
+    editPricingFormulas: boolean;
+    createEstimates: boolean;
+    signContracts: boolean;
+    dispatchCrews: boolean;
+    deleteRecords: boolean;
+    exportReports: boolean;
+    manageUsers: boolean;
+  };
+}
+
+export type PermissionKey = keyof UserRole['permissions'];
+
+export interface CompanyProfile {
+  legalName: string;
+  dba: string;
+  licenseNumber: string;
+  licenseType: string;
+  licenseExpiration: string;
+  bondNumber: string;
+  bondAmount: string;
+  workersCompStatus: string;
+  workersCompPolicy: string;
+  epaLeadCert: string;
+  hqAddress: string;
+  yardAddress: string;
+  publicPhone: string;
+  dispatchHotline: string;
+  primaryEmail: string;
+  dispatchEmail: string;
+  websiteUrl: string;
+  taxRateDefault: number;
+  taxRateOceanside: number;
+  primaryColor: string;
+  accentColor: string;
+}
+
+export interface PricingConfig {
+  pitchMultipliers: {
+    flatTo3_12: number;
+    fourTo6_12: number;
+    sevenTo9_12: number;
+    tenPlus_12: number;
+  };
+  storyMultipliers: {
+    oneStory: number;
+    twoStory: number;
+    threeStoryCoastal: number;
+  };
+  tearOffRates: {
+    shingle1Layer: number;
+    shingle2Layer: number;
+    tileConcrete: number;
+    woodShake: number;
+  };
+  marginGuardrails: {
+    targetGrossMargin: number;
+    hardFloorMargin: number;
+    salesCommissionRate: number;
+  };
+  wasteFactors: {
+    gableSimple: number;
+    hipValleyComplex: number;
+    mansardTurret: number;
+  };
+  permitFees: {
+    oceanside: number;
+    carlsbad: number;
+    encinitas: number;
+    vista: number;
+  };
+}
+
+export interface PipelineAutomation {
+  speedToLeadEnabled: boolean;
+  responseSlaMinutes: number;
+  smsTemplate: string;
+  afterHoursRouting: 'emergency_dispatcher' | 'queue_morning' | 'voicemail';
+  autoAssignMode: 'round_robin' | 'territory_zip' | 'manual';
+  lossReasons: string[];
+  inboundWebhookLsa: string;
+  zapierWebhookSecret: string;
+}
+
+export interface NotificationSettings {
+  crewRolloutTime: string;
+  crewMorningSmsActive: boolean;
+  weatherWindAlertActive: boolean;
+  windThresholdMph: number;
+  weatherRainAlertActive: boolean;
+  rainThresholdPct: number;
+  clientMilestones: {
+    inspectionScheduled: boolean;
+    tearOffStarted: boolean;
+    dryInCompleted: boolean;
+    finalWalkthroughReady: boolean;
+  };
+}
+
+export interface IntegrationItem {
+  id: string;
+  name: string;
+  category: 'backend' | 'aerial' | 'communication' | 'payments' | 'manufacturer';
+  status: 'connected' | 'disconnected' | 'degraded';
+  latencyMs?: number;
+  description: string;
+  endpointUrl?: string;
+  lastSync: string;
+}
+
+export interface SecuritySession {
+  id: string;
+  device: string;
+  browser: string;
+  ip: string;
+  location: string;
+  isCurrent: boolean;
+  lastActive: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  user: string;
+  userInitials: string;
+  action: string;
+  category: 'security' | 'pricing' | 'team' | 'billing' | 'compliance';
+  ip: string;
+}
