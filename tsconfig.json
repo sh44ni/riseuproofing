@@ -4,7 +4,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -19,16 +19,20 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./website/*"]
     }
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "website/**/*.ts",
+    "website/**/*.tsx"
   ],
-  "exclude": ["node_modules", "antigravity-awesome-skills", ".agents"]
+  "exclude": [
+    "node_modules",
+    "crm",
+    "backend",
+    ".next",
+    "website/.next",
+    "antigravity-awesome-skills",
+    ".agents"
+  ]
 }

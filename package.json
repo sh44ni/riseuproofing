@@ -1,37 +1,21 @@
 {
-  "name": "rise-up-next",
-  "version": "0.1.0",
+  "name": "rise-up-roofing-platform",
+  "version": "2.0.0",
   "private": true,
+  "description": "Rise Up Roofing & Construction - Monorepo (Website, CRM & FastAPI Backend)",
+  "workspaces": [
+    "website",
+    "crm"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@types/pg": "^8.23.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "leaflet": "^1.9.4",
-    "lucide-react": "^1.34.0",
-    "next": "16.3.3",
-    "pg": "^8.23.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "recharts": "^3.10.1",
-    "sharp": "^0.35.4",
-    "tailwind-merge": "^3.6.0",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/leaflet": "^1.9.22",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "dev:website": "npm --prefix website run dev",
+    "dev:crm": "npm --prefix crm run dev",
+    "dev:backend": "powershell -Command \"cd backend; .\\.venv\\Scripts\\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000\"",
+    "build:website": "npm --prefix website run build",
+    "build:crm": "npm --prefix crm run build",
+    "build": "npm run build:website",
+    "build:all": "npm run build:website && npm run build:crm",
+    "start:website": "npm --prefix website run start",
+    "preview:crm": "npm --prefix crm run preview"
   }
 }

@@ -110,6 +110,42 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const fastApiUrl = process.env.FASTAPI_BACKEND_URL || (process.env.USE_FASTAPI === 'true' ? 'http://127.0.0.1:8000' : null);
+    if (!fastApiUrl) {
+      return [];
+    }
+    return {
+      beforeFiles: [
+        {
+          source: '/api/:path*',
+          destination: `${fastApiUrl}/api/:path*`,
+        },
+        {
+          source: '/developer',
+          destination: `${fastApiUrl}/developer`,
+        },
+        {
+          source: '/developer/:path*',
+          destination: `${fastApiUrl}/developer/:path*`,
+        },
+        {
+          source: '/docs',
+          destination: `${fastApiUrl}/docs`,
+        },
+        {
+          source: '/docs/:path*',
+          destination: `${fastApiUrl}/docs/:path*`,
+        },
+        {
+          source: '/openapi.json',
+          destination: `${fastApiUrl}/openapi.json`,
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 

@@ -1,8 +1,5 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/sync-reviews",
-      "schedule": "0 3 * * *"
-    }
-  ]
+  "framework": "nextjs",
+  "buildCommand": "npm --prefix website run build",
+  "outputDirectory": "website/.next"
 }
