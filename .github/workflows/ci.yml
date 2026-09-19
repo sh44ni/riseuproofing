@@ -7,9 +7,13 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    name: Build & Type Check
+  website:
+    name: Build Website (Next.js)
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./website
 
     steps:
       - name: Checkout
@@ -20,6 +24,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: website/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -27,17 +32,34 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-      - name: Lint
-        run: npm run lint
-        continue-on-error: true
-
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://riseuprac.com
+          FASTAPI_BACKEND_URL: https://backend.riseuprac.com
+          USE_FASTAPI: 'true'
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        if: success()
+  crm:
+    name: Build CRM (Vite)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./crm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: nextjs-build
-          path: .next/
-          retention-days: 1
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: crm/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build CRM
+        run: npm run build
