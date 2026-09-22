@@ -15,22 +15,23 @@ import { JobsPage } from '@/pages/JobsPage';
 import { CalendarPage } from '@/pages/CalendarPage';
 import { InspectionsPage } from '@/pages/InspectionsPage';
 import { FinancesPage } from '@/pages/FinancesPage';
-import { ReviewsPage } from '@/pages/ReviewsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { TasksPage } from '@/pages/TasksPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { WarrantiesPage } from '@/pages/WarrantiesPage';
-import { TemplatesPage } from '@/pages/TemplatesPage';
 import { MarketingPage } from '@/pages/MarketingPage';
+
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 export function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <CompanyProvider>
-          <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/accept-invite" element={<AcceptInvitePage />} />
+    <ErrorBoundary fallbackTitle="CRM Application Error">
+      <BrowserRouter>
+        <AuthProvider>
+          <CompanyProvider>
+            <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/accept-invite" element={<AcceptInvitePage />} />
 
           <Route element={<CrmLayout />}>
             <Route index element={<DashboardPage />} />
@@ -124,26 +125,10 @@ export function App() {
               }
             />
             <Route
-              path="reviews"
-              element={
-                <PermissionRoute permission="leads.view">
-                  <ReviewsPage />
-                </PermissionRoute>
-              }
-            />
-            <Route
               path="warranties"
               element={
                 <PermissionRoute permission="warranties.view">
                   <WarrantiesPage />
-                </PermissionRoute>
-              }
-            />
-            <Route
-              path="templates"
-              element={
-                <PermissionRoute permission="estimates.edit_pricing_templates">
-                  <TemplatesPage />
                 </PermissionRoute>
               }
             />
@@ -164,6 +149,7 @@ export function App() {
         </CompanyProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

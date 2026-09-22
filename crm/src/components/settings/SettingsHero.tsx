@@ -7,6 +7,7 @@ import {
   Download,
   Search,
   CheckCircle2,
+  User,
   Users,
   Building2,
   Calculator,
@@ -65,12 +66,10 @@ export function SettingsHero({
   };
 
   const TAB_SHORTCUTS: { tab: SettingsTab; label: string; icon: any }[] = [
+    { tab: 'profile', label: 'My Profile', icon: User },
     { tab: 'users', label: 'Team & Users', icon: Users },
     { tab: 'company', label: 'Company & CSLB', icon: Building2 },
     { tab: 'pricing', label: 'Roofing Pricing', icon: Calculator },
-    { tab: 'pipeline', label: 'Pipeline & SLA', icon: Sliders },
-    { tab: 'notifications', label: 'Rollout & Alerts', icon: Bell },
-    { tab: 'integrations', label: 'Integrations', icon: Cpu },
     { tab: 'security', label: 'Security & Cloud', icon: Lock },
   ];
 

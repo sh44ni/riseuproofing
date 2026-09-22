@@ -40,7 +40,7 @@ export function CalendarPage() {
     setSelectedDay(today.getDate());
   };
 
-  const teamMembers = useRegisteredUsers();
+  const { users: teamMembers, isLoading: isTeamMembersLoading } = useRegisteredUsers();
   const stats = useCalendarStats();
   const weather = useCalendarWeather();
 

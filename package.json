@@ -10,7 +10,7 @@
   "scripts": {
     "dev:website": "npm --prefix website run dev",
     "dev:crm": "npm --prefix crm run dev",
-    "dev:backend": "powershell -Command \"cd backend; .\\.venv\\Scripts\\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000\"",
+    "dev:backend": "python backend/run.py server --port 8000",
     "build:website": "npm --prefix website run build",
     "build:crm": "npm --prefix crm run build",
     "build": "npm run build:website",

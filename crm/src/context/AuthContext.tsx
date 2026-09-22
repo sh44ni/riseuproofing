@@ -19,6 +19,7 @@ export interface AuthContextType {
   isOwner: boolean;
   login: (password: string, email?: string) => Promise<void>;
   setSessionUser: (token: string, user: User) => void;
+  updateUserProfile: (data: Partial<User>) => void;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
   hasPermission: (permission: string, requiredScope?: 'all' | 'assigned' | 'own') => boolean;
@@ -72,6 +73,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     api.setToken(newToken);
     setUser(newUser);
     localStorage.setItem('crm_user', JSON.stringify(newUser));
+  };
+
+  const updateUserProfile = (data: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...data };
+      localStorage.setItem('crm_user', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const login = async (password: string, email?: string) => {
@@ -172,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isOwner,
         login,
         setSessionUser,
+        updateUserProfile,
         refreshUser,
         logout,
         hasPermission,

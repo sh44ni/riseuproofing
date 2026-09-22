@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown, Users, LayoutGrid, CheckSquare, Layers } from 'lucide-react';
 import { OperationCategory, TeamMemberResource } from '@/types/calendarTypes';
-import { CATEGORY_CONFIG, REGISTERED_TEAM_MEMBERS } from '@/data/calendarData';
+import { CATEGORY_CONFIG, CREW_RESOURCES } from '@/data/calendarData';
 
 interface CalendarFilterBarProps {
   viewMode?: 'month' | 'swimlanes';
@@ -28,7 +28,7 @@ export function CalendarFilterBar({
   eventCounts,
   teamMembers,
 }: CalendarFilterBarProps) {
-  const membersList = teamMembers && teamMembers.length > 0 ? teamMembers : REGISTERED_TEAM_MEMBERS;
+  const membersList = teamMembers && teamMembers.length > 0 ? teamMembers : CREW_RESOURCES;
 
   const CATEGORIES: Array<{ id: 'all' | OperationCategory; label: string }> = [
     { id: 'all', label: 'All Operations' },

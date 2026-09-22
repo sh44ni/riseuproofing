@@ -116,7 +116,7 @@ export function AcceptInvitePage() {
         {/* Brand Header */}
         <div className="text-center mb-6">
           <div className="inline-flex justify-center mb-3">
-            <BrandLogo size="lg" />
+            <BrandLogo size="lg" themeMode="light" />
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 shadow-2xs">
             <ShieldCheck size={14} className="text-sky-600" />

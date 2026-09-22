@@ -1,9 +1,9 @@
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Any
 from sqlalchemy import (
     BigInteger, Integer, Numeric, Text, Boolean, Date, DateTime, ForeignKey, func, Index
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -38,6 +38,7 @@ class Job(Base):
     actual_start: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     actual_end: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     weather_delays: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    milestones: Mapped[Optional[Any]] = mapped_column(JSONB, server_default='[]', nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     project_manager_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     foreman_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)

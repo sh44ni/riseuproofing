@@ -36,7 +36,9 @@ export interface SinglePersonalTaskResponse {
   message?: string;
 }
 
-const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'http://localhost:8000');
+import { API_ORIGIN } from '@/lib/api';
+
+const BACKEND_BASE_URL = API_ORIGIN;
 const API_ENDPOINT = `${BACKEND_BASE_URL}/api/admin/users/me/tasks`;
 
 function getAuthHeaders(extra: Record<string, string> = {}): Record<string, string> {

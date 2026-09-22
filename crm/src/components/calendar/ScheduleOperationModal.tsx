@@ -20,7 +20,7 @@ import {
   TeamOperationEvent,
   TeamMemberResource,
 } from '@/types/calendarTypes';
-import { REGISTERED_TEAM_MEMBERS, CATEGORY_CONFIG } from '@/data/calendarData';
+import { CATEGORY_CONFIG } from '@/data/calendarData';
 import { fetchRealJobs, fetchPipelineJobs } from '@/api/calendarApi';
 
 interface ScheduleOperationModalProps {
@@ -57,7 +57,7 @@ export function ScheduleOperationModal({
 }: ScheduleOperationModalProps) {
   const year = currentYear || 2026;
   const month = currentMonth || 9;
-  const teamMembersList = teamMembers && teamMembers.length > 0 ? teamMembers : REGISTERED_TEAM_MEMBERS;
+  const teamMembersList = teamMembers && teamMembers.length > 0 ? teamMembers : [];
 
   const isEditMode = Boolean(initialEvent);
 

@@ -44,6 +44,9 @@ export const MarketingKpiCards: React.FC<MarketingKpiCardsProps> = ({ data, load
     conversionRate,
   } = data;
 
+  const pageviewsTimeline = data.timeline?.map(t => t.pageviews) || [];
+  const sessionsTimeline = data.timeline?.map(t => t.sessions) || [];
+
   const durationSec = Math.round((avgDurationMs || 0) / 1000);
   const durationMin = Math.floor(durationSec / 60);
   const durationRemainderSec = durationSec % 60;
@@ -67,6 +70,7 @@ export const MarketingKpiCards: React.FC<MarketingKpiCardsProps> = ({ data, load
         thisPeriodText={`${totalPageviews.toLocaleString()} views`}
         sharePct={100}
         shareLabel="Traffic share"
+        sparklineData={pageviewsTimeline}
       />
 
       {/* 2. Unique Visitors */}
@@ -85,6 +89,7 @@ export const MarketingKpiCards: React.FC<MarketingKpiCardsProps> = ({ data, load
         thisPeriodText={`${uniqueVisitors.toLocaleString()} visitors`}
         sharePct={totalSessions > 0 ? Math.min(100, Math.round((uniqueVisitors / totalSessions) * 100)) : 0}
         shareLabel="Session ratio"
+        sparklineData={pageviewsTimeline}
       />
 
       {/* 3. Bounce Rate */}
@@ -121,6 +126,7 @@ export const MarketingKpiCards: React.FC<MarketingKpiCardsProps> = ({ data, load
         thisPeriodText={`${totalCalls} calls`}
         sharePct={Math.min(100, Math.round(callConversionRate * 10))}
         shareLabel="Conversion share"
+        sparklineData={sessionsTimeline}
       />
 
       {/* 5. Website Leads */}
@@ -139,6 +145,7 @@ export const MarketingKpiCards: React.FC<MarketingKpiCardsProps> = ({ data, load
         thisPeriodText={`${websiteLeadsCount} leads`}
         sharePct={Math.min(100, Math.round(conversionRate * 10))}
         shareLabel="Lead conversion"
+        sparklineData={sessionsTimeline}
         onClick={() => {
           window.location.href = '/leads';
         }}

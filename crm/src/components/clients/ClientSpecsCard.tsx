@@ -49,15 +49,22 @@ export function ClientSpecsCard({ specs, onEdit }: ClientSpecsCardProps) {
           <div className="py-2.5 flex items-center justify-between">
             <span className="text-slate-500 font-medium">Roof Area</span>
             <span className="font-semibold text-slate-900 text-right">
-              {specs.roofAreaSqFt.toLocaleString()} sq ft
-              {specs.roofSquares ? ` (${specs.roofSquares} sq)` : ''}
+              {specs.roofAreaSqFt > 0 ? (
+                <>
+                  {specs.roofAreaSqFt.toLocaleString()} sq ft
+                  {specs.roofSquares > 0 ? ` (${specs.roofSquares} sq)` : ''}
+                </>
+              ) : (
+                'Not Specified'
+              )}
             </span>
           </div>
 
           <div className="py-2.5 flex items-center justify-between">
             <span className="text-slate-500 font-medium">Stories / Age</span>
             <span className="font-semibold text-slate-900 text-right">
-              {specs.stories} • {specs.roofAgeYears} yrs old
+              {specs.stories !== 'Not Specified' ? specs.stories : '1-Story'}
+              {specs.roofAgeYears > 0 ? ` • ${specs.roofAgeYears} yrs old` : ' • Age Unknown'}
             </span>
           </div>
 

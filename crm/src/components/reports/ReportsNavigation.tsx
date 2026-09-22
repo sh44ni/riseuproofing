@@ -24,12 +24,6 @@ export function ReportsNavigation({
       accentColor: 'text-[#0284c7]',
     },
     {
-      id: 'lead_sources',
-      label: 'Lead Acquisition & Channel ROI',
-      icon: Target,
-      accentColor: 'text-amber-500',
-    },
-    {
       id: 'sales_reps',
       label: 'Estimator & Sales Leaderboard',
       icon: Trophy,

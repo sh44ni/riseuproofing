@@ -49,9 +49,10 @@ export interface HeroImageUploadResult {
   size_bytes: number;
 }
 
+import { API_ORIGIN } from '@/lib/api';
+
 // Configurable API base URL: defaults to local FastAPI port 8000
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:8000';
+const API_BASE_URL = API_ORIGIN;
 
 const API_TIMEOUT_MS = 3500;
 

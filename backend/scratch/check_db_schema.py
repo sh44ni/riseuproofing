@@ -9,10 +9,11 @@ from sqlalchemy import text
 
 async def check():
     async with engine.begin() as conn:
-        res = await conn.execute(text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'estimates'"))
-        rows = res.fetchall()
-        for col, dtype in rows:
-            print(f"{col}: {dtype}")
+        for tbl in ['leads', 'tasks', 'estimates', 'users']:
+            res = await conn.execute(text(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{tbl}'"))
+            cols = [r[0] for r in res.fetchall()]
+            print(f"=== {tbl} columns ({len(cols)}) ===")
+            print(", ".join(cols))
 
 if __name__ == "__main__":
     asyncio.run(check())

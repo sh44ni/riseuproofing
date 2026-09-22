@@ -4,7 +4,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { TeamOperationEvent, TeamMemberResource } from '@/types/calendarTypes';
-import { REGISTERED_TEAM_MEMBERS, CATEGORY_CONFIG } from '@/data/calendarData';
+import { CATEGORY_CONFIG } from '@/data/calendarData';
 
 interface CalendarSwimlanesViewProps {
   events: TeamOperationEvent[];
@@ -31,7 +31,7 @@ export function CalendarSwimlanesView({
   const month = currentMonth || 9;
   const daysInMonth = new Date(year, month, 0).getDate();
 
-  const teamMembersList = teamMembers && teamMembers.length > 0 ? teamMembers : REGISTERED_TEAM_MEMBERS;
+  const teamMembersList = teamMembers && teamMembers.length > 0 ? teamMembers : [];
 
   // Dynamic 7 days of the active week (Monday to Sunday)
   const targetDate = new Date(year, month - 1, Math.min(selectedDay || 15, daysInMonth));

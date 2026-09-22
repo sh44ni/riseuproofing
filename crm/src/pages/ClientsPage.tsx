@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Client360Record, TimelineEvent, RoofSpecs } from '@/types/client360Types';
 import { useClients } from '@/hooks/useClients';
+import { useDashboardStats } from '@/lib/dashboardStatsStore';
 import { CreateClientModal } from '@/components/clients/CreateClientModal';
 import { useAuth } from '@/context/AuthContext';
 import { ClientHeroBanner } from '@/components/clients/ClientHeroBanner';
@@ -49,6 +50,7 @@ import { ClientEditSpecsModal } from '@/components/clients/ClientEditSpecsModal'
 
 export function ClientsPage() {
   const { user } = useAuth();
+  const { stats } = useDashboardStats();
   const {
     clients,
     setClients,
@@ -64,6 +66,8 @@ export function ClientsPage() {
     reactivateClient,
     createNewClient,
     refetch,
+    createClientTask,
+    toggleClientTask,
   } = useClients();
 
   const [viewMode, setViewMode] = useState<'profile' | 'directory'>('directory');
@@ -112,22 +116,32 @@ export function ClientsPage() {
   };
 
   // Handler: Toggle Task
-  const handleToggleTask = (taskId: string) => {
-    // Optimistic toggle for task list
+  const handleToggleTask = async (taskId: string) => {
+    if (!currentClient) return;
+    try {
+      await toggleClientTask(currentClient.id, taskId);
+      showToast('Task status updated!');
+      refetch();
+    } catch (err: any) {
+      showToast('Failed to update task.');
+    }
   };
 
   // Handler: Add simple task
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     const title = prompt('Enter task or reminder description:');
     if (!title || !title.trim() || !currentClient) return;
-    logActivity(currentClient.id, {
-      title: `Task Added: ${title.trim()}`,
-      details: 'Follow-up task scheduled.',
-      type: 'note',
-      author: user?.name || 'Staff',
-      date: 'Just Now',
-    });
-    showToast('Reminder task added to client schedule!');
+    
+    try {
+      await createClientTask(currentClient.id, { 
+        title: title.trim(), 
+        description: 'Follow-up task scheduled.' 
+      });
+      showToast('Reminder task added to client schedule!');
+      refetch();
+    } catch (err: any) {
+      showToast('Failed to add task.');
+    }
   };
 
   // Handler: Reactivate lost deal
@@ -253,7 +267,7 @@ export function ClientsPage() {
               sharePct={100}
               shareLabel="Client directory"
               stageLabel="Homeowner Base"
-              miniSvgPath="M 2 22 Q 18 20, 30 14 T 54 10 T 73 3"
+              sparklineData={stats?.sparklines?.newLeads}
             />
 
             <UniversalStatCard
@@ -269,7 +283,7 @@ export function ClientsPage() {
               sharePct={clients.length > 0 ? Math.round(((summary?.activeProjects ?? clients.filter((c) => c.status === 'active_job').length) / (summary?.totalClients || clients.length || 1)) * 100) : 0}
               shareLabel="Site share"
               stageLabel="Production"
-              miniSvgPath="M 2 16 Q 22 14, 40 16 T 58 12 T 73 6"
+              sparklineData={stats?.sparklines?.jobsWon}
             />
 
             <UniversalStatCard
@@ -285,7 +299,7 @@ export function ClientsPage() {
               sharePct={clients.length > 0 ? Math.round(((summary?.existingClientsCount ?? clients.filter((c) => c.status === 'completed').length) / (summary?.totalClients || clients.length || 1)) * 100) : 0}
               shareLabel="Warranty share"
               stageLabel="Protected Roofs"
-              miniSvgPath="M 2 24 Q 16 16, 32 18 T 52 11 T 73 4"
+              sparklineData={stats?.sparklines?.jobsWon}
             />
 
             <UniversalStatCard
@@ -301,7 +315,7 @@ export function ClientsPage() {
               sharePct={clients.length > 0 ? Math.round(((summary?.lostLeadsCount ?? clients.filter((c) => c.status === 'closed_lost').length) / (summary?.totalClients || clients.length || 1)) * 100) : 0}
               shareLabel="Lost share"
               stageLabel="Win-Back Radar"
-              miniSvgPath="M 2 8 Q 18 12, 34 16 T 56 22 T 73 24"
+              sparklineData={stats?.sparklines?.lostClosed}
             />
           </div>
 
@@ -749,37 +763,6 @@ export function ClientsPage() {
           {activeTab === 'billing' && (
             <ClientBillingTab
               billing={currentClient.billingSummary}
-              onNewInvoice={() => {
-                const num = `INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
-                const newInv = {
-                  id: `inv-${Date.now()}`,
-                  invoiceNumber: num,
-                  date: 'Today',
-                  amount: 5000,
-                  status: 'pending' as const,
-                  description: 'Progress Milestone Invoice',
-                };
-                setClients((prev) =>
-                  prev.map((c) => {
-                    if (c.id === currentClient.id) {
-                      return {
-                        ...c,
-                        billingSummary: {
-                          ...c.billingSummary,
-                          totalBilled: c.billingSummary.totalBilled + 5000,
-                          pendingDeposit: 5000,
-                          invoicesOnFileCount: c.billingSummary.invoices.length + 1,
-                          paymentHealthStatus: 'deposit_pending',
-                          paymentHealthMessage: '$5,000 Milestone Invoice Issued',
-                          invoices: [newInv, ...c.billingSummary.invoices],
-                        },
-                      };
-                    }
-                    return c;
-                  })
-                );
-                showToast(`Generated invoice ${num} for $5,000!`);
-              }}
             />
           )}
 

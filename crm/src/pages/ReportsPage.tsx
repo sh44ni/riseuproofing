@@ -1,19 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
 import { ChevronDown, Download, FileDown, RotateCcw, TrendingUp, Award } from 'lucide-react';
 import { CrmPageHero } from '@/components/common/CrmPageHero';
 import { ReportsKpis } from '@/components/reports/ReportsKpis';
 import { ReportsNavigation } from '@/components/reports/ReportsNavigation';
 import { RevenueVelocityTab } from '@/components/reports/RevenueVelocityTab';
-import { LeadSourcesRoiTab } from '@/components/reports/LeadSourcesRoiTab';
 import { SalesRepLeaderboardTab } from '@/components/reports/SalesRepLeaderboardTab';
-import { ExecutiveInsightsBar } from '@/components/reports/ExecutiveInsightsBar';
-import { DateRangeFilter, ReportTab } from '@/types/reportTypes';
+import { DateRangeFilter, ReportTab, dateRangeToDates } from '@/types/reportTypes';
 
 export function ReportsPage() {
   const [dateRange, setDateRange] = useState<DateRangeFilter>('this_quarter');
   const [activeTab, setActiveTab] = useState<ReportTab>('revenue');
   const [search, setSearch] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [heroKpis, setHeroKpis] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadKpis() {
+      try {
+        const { from, to } = dateRangeToDates(dateRange);
+        const res = await api.getReportKpis(from, to);
+        if (res?.ok && res.kpis) {
+          setHeroKpis(res.kpis);
+        }
+      } catch (err) {
+        console.error('Failed to load hero KPIs:', err);
+      }
+    }
+    loadKpis();
+  }, [dateRange, refreshKey]);
+
+  function formatMoney(val: number): string {
+    if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
+    if (val >= 1_000) return `$${Math.round(val / 1000)}K`;
+    return `$${Math.round(val)}`;
+  }
 
   // Global keyboard shortcut: ⌘ / Win + K to focus search
   useEffect(() => {
@@ -30,25 +52,32 @@ export function ReportsPage() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    setRefreshKey((prev) => prev + 1);
     setTimeout(() => {
       setIsRefreshing(false);
     }, 600);
   };
 
   const handleExportPdf = () => {
-    alert('Generating High-Resolution Executive PDF Analytics Briefing for Rise Up Roofing Executive Board...');
+    window.print();
   };
 
-  const handleExportCsv = () => {
-    const csvContent =
-      'data:text/csv;charset=utf-8,Category,Metric,Value,Period\nRevenue,Booked YTD,$1626500,2026\nWin Rate,Average,68.4%,Q3\nGross Margin,Blended,39.4%,Q3\nSpeed to Lead,Average,4.2 min,Q3\n';
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `rise_up_analytics_export_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleExportCsv = async () => {
+    try {
+      const { from, to } = dateRangeToDates(dateRange);
+      const data = await api.getRevenueReport(from, to);
+      const csvContent = `data:text/csv;charset=utf-8,Category,Metric,Value,Period\nRevenue,Booked,$${data.ytdTotal || 0},${dateRange}\nAvg Ticket,Calculated,$${data.avgTicket || 0},${dateRange}\n`;
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `rise_up_analytics_export_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to export CSV');
+    }
   };
 
   return (
@@ -118,27 +147,24 @@ export function ReportsPage() {
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-[11px] font-semibold text-slate-700">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50/90 border border-emerald-200/90 text-[10px] font-bold text-emerald-800 shadow-2xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>YTD Revenue: $1,626,500</span>
+              <span>YTD Revenue: {heroKpis ? formatMoney(heroKpis.ytdBooked) : '—'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50/90 border border-sky-200/90 text-[10px] font-bold text-sky-800 shadow-2xs shrink-0">
               <TrendingUp size={11} className="text-sky-600" />
-              <span>+18.4% YoY Expansion</span>
+              <span>{heroKpis?.bookedRevenueDelta != null ? `${heroKpis.bookedRevenueDelta > 0 ? '+' : ''}${heroKpis.bookedRevenueDelta}% YoY Expansion` : '— YoY Expansion'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50/90 border border-amber-200/90 text-[10px] font-bold text-amber-800 shadow-2xs shrink-0">
               <Award size={11} className="text-amber-600" />
-              <span>68.4% Closing Ratio</span>
+              <span>{heroKpis ? `${heroKpis.winRate}% Closing Ratio` : '—'}</span>
             </span>
           </div>
         }
       />
 
       {/* 2. 4 Frosted Glass Executive KPI Cards */}
-      <ReportsKpis />
+      <ReportsKpis key={`kpis-${refreshKey}`} dateRange={dateRange} />
 
-      {/* 3. AI Executive Intelligence & Profit Recommendations */}
-      <ExecutiveInsightsBar />
-
-      {/* 4. Sleek Tab Navigation */}
+      {/* 3. Sleek Tab Navigation */}
       <ReportsNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -146,9 +172,8 @@ export function ReportsPage() {
 
       {/* 5. Deep-Dive Viewport by Selected Tab */}
       <div className="animate-in fade-in duration-200">
-        {activeTab === 'revenue' && <RevenueVelocityTab />}
-        {activeTab === 'lead_sources' && <LeadSourcesRoiTab />}
-        {activeTab === 'sales_reps' && <SalesRepLeaderboardTab />}
+        {activeTab === 'revenue' && <RevenueVelocityTab key={`rev-${refreshKey}`} dateRange={dateRange} />}
+        {activeTab === 'sales_reps' && <SalesRepLeaderboardTab key={`reps-${refreshKey}`} dateRange={dateRange} />}
       </div>
     </div>
   );

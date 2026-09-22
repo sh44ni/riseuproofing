@@ -21,6 +21,9 @@ export function useLeads() {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [page, setPage] = useState<number>(1);
+  const [perPage] = useState<number>(50); // or 25, 50 etc
+  const [sources, setSources] = useState<string[]>([]);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -38,7 +41,8 @@ export function useLeads() {
     setError(null);
 
     try {
-      const data = await leadsApi.listLeads({ limit: 100 });
+      const offset = (page - 1) * perPage;
+      const data = await leadsApi.listLeads({ limit: perPage, offset });
       if (isMountedRef.current) {
         setLeads(data.leads);
         setTotalCount(data.total);
@@ -57,12 +61,15 @@ export function useLeads() {
         setIsRefreshing(false);
       }
     }
-  }, [leads.length]);
+  }, [leads.length, page, perPage]);
 
   // Initial fetch on mount
   useEffect(() => {
     fetchLeads(false);
-  }, []);
+    leadsApi.fetchLeadSources().then((res) => {
+      if (isMountedRef.current) setSources(res);
+    }).catch(console.error);
+  }, [page]);
 
   // Background auto-refresh poll every 60 seconds
   useEffect(() => {
@@ -222,5 +229,9 @@ export function useLeads() {
     markAsLost,
     reactivateLead,
     addNote,
+    page,
+    setPage,
+    perPage,
+    sources,
   };
 }

@@ -431,7 +431,15 @@ async def get_sales_pipeline(
             unassigned_count += 1
 
         deal_value = float(row.get("contract_value") or row.get("estimate_total") or row.get("estimated_value") or 0)
-        if row.get("status") != "lost" and granular_st != "closed_lost":
+        is_deal_lost = row.get("status") in ("lost", "closed_lost") or granular_st == "closed_lost"
+        is_deal_completed = (
+            row.get("status") in ("completed", "job_completed")
+            or row.get("job_status") == "complete"
+            or bool(row.get("job_completed_at"))
+            or macro_st in ("completed", "job_completed")
+            or granular_st in ("completed", "job_completed")
+        )
+        if not is_deal_lost and not is_deal_completed:
             total_pipeline_value += deal_value
 
         if (macro_st == "stage_5_completion_followup" or granular_st in ("closed_won", "active_jobs")) and row.get("job_status") != "complete" and not row.get("job_completed_at"):
@@ -520,6 +528,68 @@ async def get_sales_pipeline(
         "currentUser": current_user.to_dict(),
     }
 
+@router.get("/analytics", dependencies=[Depends(require_any_permission(["leads:view", "jobs:view"]))])
+async def get_pipeline_analytics(
+    db: AsyncSession = Depends(get_db),
+    user = Depends(require_auth)
+):
+    """
+    Get pipeline analytics including stage probabilities, velocity, and conversion metrics.
+    """
+    stats_query = text("""
+        SELECT 
+            COUNT(*) AS total_leads,
+            COUNT(*) FILTER (WHERE status = 'won' OR contract_signed_at IS NOT NULL) AS won_leads,
+            COUNT(*) FILTER (WHERE status = 'lost') AS lost_leads,
+            COUNT(*) FILTER (WHERE status = 'completed' OR job_completed_at IS NOT NULL) AS completed_leads,
+            COALESCE(SUM(estimated_value) FILTER (WHERE status NOT IN ('lost', 'completed') AND (pipeline_stage IS NULL OR pipeline_stage NOT IN ('lost', 'closed_lost', 'completed', 'job_completed')) AND job_completed_at IS NULL), 0) AS active_pipeline_value,
+            COALESCE(SUM(estimated_value) FILTER (WHERE status = 'completed' OR pipeline_stage IN ('completed', 'job_completed') OR job_completed_at IS NOT NULL), 0) AS realized_completed_value,
+            COALESCE(AVG(estimated_value) FILTER (WHERE estimated_value > 0), 0) AS avg_deal_size
+        FROM leads
+    """)
+    stats_row = (await db.execute(stats_query)).mappings().first()
+    
+    total = stats_row["total_leads"] if stats_row else 0
+    won = stats_row["won_leads"] if stats_row else 0
+    win_rate = round((won / total), 2) if total > 0 else 0.0
+    
+    # Compute real probabilities per stage from historical data
+    prob_query = text("""
+        SELECT 
+            pipeline_stage,
+            COUNT(*) AS total_in_stage,
+            COUNT(*) FILTER (WHERE status = 'won' OR contract_signed_at IS NOT NULL) AS won_from_stage
+        FROM leads
+        WHERE pipeline_stage IS NOT NULL
+        GROUP BY pipeline_stage
+    """)
+    prob_rows = (await db.execute(prob_query)).mappings().all()
+    probabilities = {}
+    for pr in prob_rows:
+        stage = pr["pipeline_stage"]
+        total_s = int(pr["total_in_stage"] or 0)
+        won_s = int(pr["won_from_stage"] or 0)
+        probabilities[stage] = round(won_s / total_s, 2) if total_s > 0 else 0.0
+    
+    # Compute real velocity (avg days from creation to contract signing)
+    vel_query = text("""
+        SELECT AVG(EXTRACT(DAY FROM (contract_signed_at - created_at))) AS avg_days
+        FROM leads 
+        WHERE contract_signed_at IS NOT NULL
+    """)
+    vel_row = (await db.execute(vel_query)).mappings().first()
+    real_velocity = round(float(vel_row["avg_days"])) if vel_row and vel_row["avg_days"] else 14
+
+    return {
+        "ok": True,
+        "probabilities": probabilities,
+        "win_rate": win_rate,
+        "active_pipeline_value": float(stats_row["active_pipeline_value"]) if stats_row else 0.0,
+        "realized_completed_value": float(stats_row["realized_completed_value"]) if stats_row else 0.0,
+        "avg_deal_size": round(float(stats_row["avg_deal_size"])) if stats_row else 0,
+        "velocity_days": real_velocity,
+    }
+
 async def _process_stage_update(lead_id: int, request: Request, db: AsyncSession, user):
     body = await request.json()
     new_stage = body.get("stage")
@@ -542,7 +612,10 @@ async def _process_stage_update(lead_id: int, request: Request, db: AsyncSession
     updates = ["pipeline_stage = CAST(:stage AS TEXT)", "stage_entered_at = NOW()", "updated_at = NOW()"]
     params: Dict[str, Any] = {"stage": str(new_stage), "id": int(lead_id)}
 
-    if new_stage == "initial_call" or new_stage == "stage_2_initial_contact":
+    if new_stage in ("cold_lead", "stage_1_lead_gen", "new_leads"):
+        updates.append("status = 'new'")
+        updates.append("lost_reason = NULL")
+    elif new_stage == "initial_call" or new_stage == "stage_2_initial_contact":
         updates.append("initial_contacted_at = COALESCE(initial_contacted_at, NOW())")
         updates.append("status = 'contacted'")
     elif new_stage == "inspection_scheduled":
@@ -553,10 +626,29 @@ async def _process_stage_update(lead_id: int, request: Request, db: AsyncSession
         updates.append("status = 'inspected'")
     elif new_stage == "estimate_building":
         updates.append("status = 'estimate_drafting'")
-    elif new_stage == "estimate_sent":
+    elif new_stage in ("estimate_sent", "est_sent"):
+        # Enforce gating: Estimate Sent is automated when proposal is created & sent via Estimates page
+        check_est = (await db.execute(text("""
+            SELECT id FROM estimates
+            WHERE (lead_id = :lid OR (client_id IS NOT NULL AND client_id = (SELECT client_id FROM leads WHERE id = :lid)))
+              AND status IN ('sent', 'accepted')
+            LIMIT 1
+        """), {"lid": int(lead_id)})).first()
+
+        check_lead_sent = (await db.execute(text("""
+            SELECT proposal_sent_at FROM leads WHERE id = :lid
+        """), {"lid": int(lead_id)})).first()
+
+        if not check_est and (not check_lead_sent or not check_lead_sent[0]):
+            raise HTTPException(
+                status_code=400,
+                detail="The Estimate Sent stage is automated. You must compile and send an official proposal via the Estimates page to advance this lead."
+            )
+
         updates.append("proposal_sent_at = COALESCE(proposal_sent_at, NOW())")
         updates.append("status = 'estimate_sent'")
         updates.append("follow_up_at = NOW() + INTERVAL '48 hours'")
+        params["stage"] = "estimate_sent"
     elif new_stage in ("follow_up", "followup_2day", "followup_7day", "decision_followup"):
         updates.append("status = 'follow_up'")
         updates.append("last_contact_at = NOW()")
@@ -567,10 +659,83 @@ async def _process_stage_update(lead_id: int, request: Request, db: AsyncSession
     elif new_stage == "active_jobs":
         updates.append("contract_signed_at = COALESCE(contract_signed_at, NOW())")
         updates.append("status = 'won'")
+
+        # ── Auto-provision a job record if one doesn't already exist ──
+        existing_job = (await db.execute(text(
+            "SELECT id FROM jobs WHERE lead_id = :lid"
+        ), {"lid": int(lead_id)})).first()
+
+        if not existing_job:
+            # Get lead details for job creation
+            lead_data = (await db.execute(text("""
+                SELECT full_name, phone, email, address, city, zip,
+                       service_type, estimated_value, client_id
+                FROM leads WHERE id = :lid
+            """), {"lid": int(lead_id)})).mappings().first()
+
+            if lead_data:
+                # Generate next job number
+                max_num_row = (await db.execute(text(
+                    "SELECT COALESCE(MAX(CAST(SUBSTRING(job_number FROM 10) AS INTEGER)), 0) FROM jobs WHERE job_number LIKE 'JOB-%%'"
+                ))).scalar()
+                next_num = (max_num_row or 0) + 1
+                from datetime import datetime as _dt
+                job_number = f"JOB-{_dt.now().year}-{next_num:04d}"
+
+                await db.execute(text("""
+                    INSERT INTO jobs (
+                        job_number, lead_id, client_id, customer_name,
+                        customer_phone, customer_email,
+                        address, city, zip,
+                        service_type, contract_value,
+                        status, milestones,
+                        created_at, updated_at
+                    ) VALUES (
+                        :job_number, :lead_id, :client_id, :customer_name,
+                        :customer_phone, :customer_email,
+                        :address, :city, :zip,
+                        :service_type, :contract_value,
+                        'scheduled', '[]'::jsonb,
+                        NOW(), NOW()
+                    )
+                """), {
+                    "job_number": job_number,
+                    "lead_id": int(lead_id),
+                    "client_id": lead_data.get("client_id"),
+                    "customer_name": lead_data.get("full_name") or "Unknown",
+                    "customer_phone": lead_data.get("phone"),
+                    "customer_email": lead_data.get("email"),
+                    "address": lead_data.get("address") or "",
+                    "city": lead_data.get("city") or "",
+                    "zip": lead_data.get("zip") or "",
+                    "service_type": lead_data.get("service_type") or "Residential Roofing",
+                    "contract_value": float(lead_data.get("estimated_value") or 0),
+                })
+                print(f"Auto-provisioned job {job_number} for lead {lead_id}")
+
     elif new_stage in ("job_completed", "completed"):
+        # Enforce job completion authorization: only claimer/assignee, creator, or unassigned (auto-claim)
+        check_lead = (await db.execute(text("SELECT id, assigned_to_user_id, created_by_user_id FROM leads WHERE id = :id"), {"id": int(lead_id)})).mappings().first()
+        if check_lead:
+            current_assignee = check_lead.get("assigned_to_user_id")
+            current_creator = check_lead.get("created_by_user_id")
+            uid = getattr(user, "id", None) if not isinstance(user, dict) else (user.get("id") or user.get("sub"))
+            user_role = (getattr(user, "role", None) if not isinstance(user, dict) else user.get("role")) or ""
+
+            if uid is not None:
+                uid_int = int(uid)
+                if current_assignee is not None and current_assignee != uid_int and current_creator != uid_int and user_role.lower() not in ("owner", "admin"):
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Only the staff member who claimed or added this lead is authorized to complete the job."
+                    )
+
         updates.append("job_completed_at = COALESCE(job_completed_at, NOW())")
         updates.append("contract_signed_at = COALESCE(contract_signed_at, NOW())")
-        updates.append("status = 'won'")
+        updates.append("status = 'completed'")
+        if user and getattr(user, "id", None):
+            updates.append("assigned_to_user_id = COALESCE(assigned_to_user_id, :uid_claim)")
+            params["uid_claim"] = user.id
         params["stage"] = "stage_5_completion_followup"
     elif new_stage == "closed_won":
         updates.append("contract_signed_at = COALESCE(contract_signed_at, NOW())")
@@ -617,26 +782,61 @@ async def _process_stage_update(lead_id: int, request: Request, db: AsyncSession
         UPDATE leads
         SET {', '.join(updates)}
         WHERE id = :id
-        RETURNING id, full_name, pipeline_stage, status, notes, lost_reason
+        RETURNING id, full_name, pipeline_stage, status, notes, lost_reason, estimated_value, assigned_to_user_id
     """)
     res = (await db.execute(sql, params)).mappings().first()
     if not res:
         raise HTTPException(status_code=404, detail="Lead not found")
 
+    # If completing job, also update linked jobs record and record realised revenue
+    if new_stage in ("job_completed", "completed"):
+        try:
+            await db.execute(text("""
+                UPDATE jobs
+                SET status = 'complete',
+                    actual_end = COALESCE(actual_end, CURRENT_DATE),
+                    updated_at = NOW()
+                WHERE lead_id = :lid
+            """), {"lid": int(lead_id)})
+        except Exception as e:
+            print(f"Linked job completion update note: {e}")
+
     # Insert into activities table (Permanent historical timeline)
     try:
-        act_title = f"Stage moved to {stage_title}"
-        act_desc = cleaned_note_text if cleaned_note_text else f"Pipeline progression to {stage_title}"
+        import json
+        if new_stage in ("job_completed", "completed"):
+            act_type = 'job_completed'
+            act_title = "Job Completed & Revenue Realised"
+            act_desc = f"Project certified complete by {author_name}. Realised contract value: ${float(res.get('estimated_value') or 0):,.2f}. {cleaned_note_text}".strip()
+            act_meta = {"lead_name": res.get("full_name"), "contract_value": float(res.get("estimated_value") or 0)}
+        elif new_stage == "contract_signed":
+            act_type = 'contract_signed'
+            act_title = "Contract Signed"
+            act_desc = f"Contract signed by homeowner. Amount: ${float(res.get('estimated_value') or 0):,.2f}. {cleaned_note_text}".strip()
+            act_meta = {"lead_name": res.get("full_name"), "amount": float(res.get("estimated_value") or 0)}
+        elif new_stage == "estimate_sent":
+            act_type = 'estimate_sent'
+            act_title = "Estimate Sent"
+            act_desc = f"Estimate proposal sent. Amount: ${float(res.get('estimated_value') or 0):,.2f}. {cleaned_note_text}".strip()
+            act_meta = {"lead_name": res.get("full_name"), "amount": float(res.get("estimated_value") or 0)}
+        else:
+            act_type = 'stage_changed'
+            act_title = f"Stage moved to {stage_title}"
+            act_desc = cleaned_note_text if cleaned_note_text else f"Pipeline progression to {stage_title}"
+            act_meta = {"lead_name": res.get("full_name"), "stage": new_stage}
+
         await db.execute(text("""
-            INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, user_id, user_name, created_at)
-            VALUES ('lead', :lead_id, 'stage_changed', :title, :desc, :perf_by, :uid, :uname, NOW())
+            INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, user_id, user_name, metadata, created_at)
+            VALUES ('lead', :lead_id, :atype, :title, :desc, :perf_by, :uid, :uname, CAST(:meta AS jsonb), NOW())
         """), {
             "lead_id": int(lead_id),
+            "atype": act_type,
             "title": act_title,
             "desc": act_desc,
             "perf_by": f"{author_name}{role_part}",
             "uid": user.id if user else None,
             "uname": author_name,
+            "meta": json.dumps(act_meta)
         })
     except Exception as e:
         print(f"Failed to record stage move activity: {e}")
@@ -645,6 +845,11 @@ async def _process_stage_update(lead_id: int, request: Request, db: AsyncSession
         db, "pipeline.stage_changed", "lead", lead_id, user.id, user.email, user.role,
         {"newStage": new_stage, "notes": notes, "moveNote": cleaned_note_text}, request
     )
+    try:
+        from app.core.redis import cache_delete
+        await cache_delete("crm:dashboard:stats")
+    except Exception:
+        pass
     return {"ok": True, "lead": dict(res)}
 
 @router.put("/{lead_id}/stage")
@@ -730,6 +935,11 @@ async def log_lead_follow_up(
     )
 
     next_deadline = (now + timedelta(days=7)).isoformat()
+    try:
+        from app.core.redis import cache_delete
+        await cache_delete("crm:dashboard:stats")
+    except Exception:
+        pass
     return {
         "ok": True,
         "lead_id": lead_id,
@@ -757,10 +967,38 @@ async def claim_pipeline_lead(
     if not res:
         raise HTTPException(status_code=404, detail="Lead not found")
 
+    try:
+        user_name = getattr(user, "name", None) or (user.email.split("@")[0] if getattr(user, "email", None) else "Staff")
+        author_role = getattr(user, "role", "Staff")
+        if author_role:
+            author_role = str(author_role).replace("_", " ").title()
+        perf_by = f"{user_name} ({author_role})" if author_role else str(user_name)
+        lead_name = res["full_name"] if res and res.get("full_name") else f"Lead #{lead_id}"
+        meta_dict = {"lead_name": lead_name}
+        import json
+        await db.execute(text("""
+            INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, user_id, user_name, metadata, created_at)
+            VALUES ('lead', :lid, 'lead_claimed', 'Lead Claimed', :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), NOW())
+        """), {
+            "lid": int(lead_id),
+            "desc": f"{user_name} claimed lead {lead_name}",
+            "pby": perf_by,
+            "uid": user.id if getattr(user, "id", None) else None,
+            "uname": user_name,
+            "meta": json.dumps(meta_dict)
+        })
+    except Exception as ex:
+        print(f"Failed to record lead_claimed activity: {ex}")
+
     await record_audit_log(
         db, "pipeline.lead_claimed", "lead", lead_id, user.id, user.email, user.role,
         {"claimedBy": user.email}, request
     )
+    try:
+        from app.core.redis import cache_delete
+        await cache_delete("crm:dashboard:stats")
+    except Exception:
+        pass
     return {"ok": True, "lead": dict(res)}
 
 class ChecklistItemPayload(BaseModel):

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CompanyProfile } from '@/types/settingsTypes';
 import { INITIAL_COMPANY_PROFILE } from '@/data/settingsData';
+import { api } from '@/lib/api';
 
 export interface CompanyContextType {
   company: CompanyProfile;
@@ -29,32 +30,26 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 const STORAGE_KEY = 'rise_up_company_profile';
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
-  const [company, setCompanyState] = useState<CompanyProfile>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return { ...INITIAL_COMPANY_PROFILE, ...parsed };
+  const [company, setCompanyState] = useState<CompanyProfile>(INITIAL_COMPANY_PROFILE);
+
+  // Load from API on mount
+  useEffect(() => {
+    async function fetchCompany() {
+      try {
+        const { getSettings } = await import('@/api/systemApi');
+        const settings = await getSettings();
+        if (settings.company_profile) {
+          setCompanyState({ ...INITIAL_COMPANY_PROFILE, ...settings.company_profile });
+        }
+      } catch (err) {
+        console.warn('Failed to load company profile from API', err);
       }
-    } catch (e) {
-      console.warn('Failed to parse saved company profile', e);
     }
-    return INITIAL_COMPANY_PROFILE;
-  });
+    fetchCompany();
+  }, []);
 
   // Keep state synchronized across tabs, windows, and modules
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          setCompanyState({ ...INITIAL_COMPANY_PROFILE, ...parsed });
-        } catch {
-          // ignore
-        }
-      }
-    };
-
     const handleCustomEvent = (e: Event) => {
       const custom = e as CustomEvent<CompanyProfile>;
       if (custom.detail) {
@@ -62,10 +57,8 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('company_profile_updated', handleCustomEvent);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('company_profile_updated', handleCustomEvent);
     };
   }, []);
@@ -74,10 +67,14 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     setCompanyState((prev) => {
       const next = { ...prev, ...updated };
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        import('@/api/systemApi').then(({ updateSettings }) => {
+          updateSettings('company_profile', next).catch(err => {
+             console.error('Failed to save company profile to API', err);
+          });
+        });
         window.dispatchEvent(new CustomEvent('company_profile_updated', { detail: next }));
       } catch (err) {
-        console.error('Failed to save company profile to localStorage', err);
+        console.error('Failed to dispatch update', err);
       }
       return next;
     });
@@ -86,7 +83,11 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const resetCompany = useCallback(() => {
     setCompanyState(INITIAL_COMPANY_PROFILE);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_COMPANY_PROFILE));
+      import('@/api/systemApi').then(({ updateSettings }) => {
+        updateSettings('company_profile', INITIAL_COMPANY_PROFILE).catch(err => {
+           console.error('Failed to save company profile to API', err);
+        });
+      });
       window.dispatchEvent(new CustomEvent('company_profile_updated', { detail: INITIAL_COMPANY_PROFILE }));
     } catch (err) {
       console.error('Failed to reset company profile', err);

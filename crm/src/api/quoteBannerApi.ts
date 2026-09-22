@@ -32,9 +32,9 @@ export interface QuoteBannerApiResponse {
   message?: string;
 }
 
-import { api } from '@/lib/api';
+import { api, API_ORIGIN } from '@/lib/api';
 
-const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const API_BASE = API_ORIGIN;
 const API_ENDPOINT = `${API_BASE}/api/admin/quote-banner`;
 const UPLOAD_ENDPOINT = `${API_BASE}/api/admin/quote-banner/upload`;
 

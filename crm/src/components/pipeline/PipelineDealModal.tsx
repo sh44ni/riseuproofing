@@ -20,6 +20,7 @@ import {
   Send,
   ExternalLink,
   User,
+  UserCheck,
 } from 'lucide-react';
 import { EnrichedDeal } from './pipelineTypes';
 import { ProfileNotesFeed } from '@/components/common/ProfileNotesFeed';
@@ -143,6 +144,7 @@ export function PipelineDealModal({
   const [logMethod, setLogMethod] = useState<'call' | 'sms' | 'email' | 'meeting' | 'note'>('call');
   const [logNotes, setLogNotes] = useState('');
   const [isLogging, setIsLogging] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   // Resolved author
   const cleanAuthor = cleanseAuthor(user?.name, user?.role);
@@ -277,6 +279,33 @@ export function PipelineDealModal({
     }
   };
 
+  const isUnassigned = !deal?.assignedToUserId || (deal as any)?.estimator?.name === 'Unassigned' || (leadDetail && !leadDetail.assigned_to_user_id);
+
+  const handleClaim = async () => {
+    if (isClaiming || !deal?.id) return;
+    setIsClaiming(true);
+    try {
+      await api.claimLead(deal.id);
+      await fetchLeadData(deal.id);
+      if (onUpdateDeal) {
+        onUpdateDeal({
+          ...deal,
+          assignedToUserId: user?.id,
+          assignedToName: user?.name,
+          estimator: {
+            name: user?.name || 'Assigned',
+            avatar: (user as any)?.avatar_url || (user as any)?.avatar || '',
+            role: 'Estimator',
+          },
+        });
+      }
+    } catch (err) {
+      console.error('Failed to claim lead:', err);
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   return createPortal(
     <div
       onClick={onClose}
@@ -292,7 +321,7 @@ export function PipelineDealModal({
         {/* Header Strip */}
         <div className="flex items-start justify-between gap-4 pb-3 border-b border-slate-200/70 shrink-0">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span
                 className={`text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-2xs ${stagePillClass}`}
               >
@@ -310,13 +339,31 @@ export function PipelineDealModal({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl liquid-glass-btn text-slate-500 hover:text-slate-900 transition-all cursor-pointer"
-            title="Close modal"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            {isUnassigned && (
+              <button
+                type="button"
+                onClick={handleClaim}
+                disabled={isClaiming}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isClaiming ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <UserCheck size={13} />
+                )}
+                <span>Claim Lead</span>
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl liquid-glass-btn text-slate-500 hover:text-slate-900 transition-all cursor-pointer"
+              title="Close modal"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation Segmented Control */}

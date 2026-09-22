@@ -1,5 +1,7 @@
 import os
 import time
+import asyncio
+from datetime import date, timedelta
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +24,130 @@ async def lifespan(app: FastAPI):
     # ── Startup ──
     print(f"[{settings.APP_ENV.upper()}] Starting Rise Up Roofing FastAPI backend & Developer Engine...")
     await init_redis()
+
+    # Ensure required table columns exist on every startup (idempotent, failsafe)
+    try:
+        from sqlalchemy import text
+        async with engine.begin() as conn:
+            for sql in [
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS follow_up_at TIMESTAMP WITH TIME ZONE;",
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_contact_at TIMESTAMP WITH TIME ZONE;",
+                "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS work_category TEXT DEFAULT 'Rise Up';",
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS roof_sqf INTEGER;",
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS roof_squares NUMERIC(6, 1);",
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS roof_pitch TEXT;",
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS stories INTEGER DEFAULT 1;",
+                "ALTER TABLE leads ADD COLUMN IF NOT EXISTS roof_type TEXT;",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;",
+                "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS milestones JSONB DEFAULT '[]'::jsonb;",
+            ]:
+                await conn.execute(text(sql))
+    except Exception as e:
+        print(f"Startup DB migration notice: {e}")
+
+    # Create daily_stats_snapshots and client_documents tables
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS daily_stats_snapshots (
+                    id SERIAL PRIMARY KEY,
+                    snapshot_date DATE UNIQUE NOT NULL,
+                    new_leads INTEGER DEFAULT 0,
+                    contacted INTEGER DEFAULT 0,
+                    est_scheduled INTEGER DEFAULT 0,
+                    est_sent INTEGER DEFAULT 0,
+                    jobs_won INTEGER DEFAULT 0,
+                    lost_closed INTEGER DEFAULT 0,
+                    ytd_revenue NUMERIC(14,2) DEFAULT 0,
+                    active_crew INTEGER DEFAULT 0,
+                    total_pipeline_value NUMERIC(14,2) DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS client_documents (
+                    id SERIAL PRIMARY KEY,
+                    client_id BIGINT REFERENCES clients(id) ON DELETE CASCADE,
+                    name TEXT NOT NULL,
+                    file_url TEXT NOT NULL,
+                    file_type TEXT DEFAULT 'document',
+                    file_size INTEGER DEFAULT 0,
+                    uploaded_by TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            """))
+    except Exception as e:
+        print(f"Snapshot/Document table migration notice: {e}")
+
+    # Background task: take daily stats snapshot + backfill
+    async def _take_snapshot():
+        from app.core.database import async_session_factory
+        from sqlalchemy import text as _text
+        from datetime import date as _date, datetime as _datetime, time as _time, timedelta as _timedelta
+        try:
+            async with async_session_factory() as session:
+                # Backfill last 30 days if empty
+                existing = await session.execute(_text("SELECT COUNT(*) FROM daily_stats_snapshots"))
+                count = existing.scalar() or 0
+                if count == 0:
+                    today = _date.today()
+                    # Backfill: for each of last 30 days, count leads created on or before that date
+                    for days_ago in range(30, -1, -1):
+                        snap_date = today - _timedelta(days=days_ago)
+                        cutoff_dt = _datetime.combine(snap_date + _timedelta(days=1), _time.min)
+                        await session.execute(_text("""
+                            INSERT INTO daily_stats_snapshots (snapshot_date, new_leads, contacted, est_scheduled, est_sent, jobs_won, lost_closed, ytd_revenue, active_crew, total_pipeline_value)
+                            SELECT
+                                :snap_date,
+                                COUNT(*) FILTER (WHERE (pipeline_stage IN ('stage_1_lead_gen','cold_lead','new_leads') OR pipeline_stage IS NULL) AND status != 'lost' AND created_at <= :cutoff_dt),
+                                COUNT(*) FILTER (WHERE pipeline_stage IN ('stage_2_initial_contact','initial_call','contacted') AND status != 'lost' AND created_at <= :cutoff_dt),
+                                COUNT(*) FILTER (WHERE pipeline_stage IN ('est_scheduled','inspection_scheduled','inspection_completed','estimate_building') AND status != 'lost' AND created_at <= :cutoff_dt),
+                                COUNT(*) FILTER (WHERE pipeline_stage IN ('estimate_sent','est_sent','follow_up','followup_2day','followup_7day','decision_followup') AND status NOT IN ('lost','won') AND created_at <= :cutoff_dt),
+                                COUNT(*) FILTER (WHERE (pipeline_stage IN ('contract_signed','active_jobs','closed_won','job_completed','completed') OR status = 'won') AND created_at <= :cutoff_dt),
+                                COUNT(*) FILTER (WHERE (status = 'lost' OR pipeline_stage IN ('lost','closed_lost')) AND created_at <= :cutoff_dt),
+                                0, 0, 0
+                            FROM leads
+                            ON CONFLICT (snapshot_date) DO NOTHING
+                        """), {"snap_date": snap_date, "cutoff_dt": cutoff_dt})
+                    await session.commit()
+                    print(f"[Snapshots] Backfilled 31 days of dashboard history")
+                else:
+                    # Just take today's snapshot
+                    await session.execute(_text("""
+                        INSERT INTO daily_stats_snapshots (snapshot_date, new_leads, contacted, est_scheduled, est_sent, jobs_won, lost_closed, ytd_revenue, active_crew, total_pipeline_value)
+                        SELECT
+                            CURRENT_DATE,
+                            COUNT(*) FILTER (WHERE (pipeline_stage IN ('stage_1_lead_gen','cold_lead','new_leads') OR pipeline_stage IS NULL) AND status != 'lost'),
+                            COUNT(*) FILTER (WHERE pipeline_stage IN ('stage_2_initial_contact','initial_call','contacted') AND status != 'lost'),
+                            COUNT(*) FILTER (WHERE pipeline_stage IN ('est_scheduled','inspection_scheduled','inspection_completed','estimate_building') AND status != 'lost'),
+                            COUNT(*) FILTER (WHERE pipeline_stage IN ('estimate_sent','est_sent','follow_up','followup_2day','followup_7day','decision_followup') AND status NOT IN ('lost','won')),
+                            COUNT(*) FILTER (WHERE (pipeline_stage IN ('contract_signed','active_jobs','closed_won','job_completed','completed') OR status = 'won')),
+                            COUNT(*) FILTER (WHERE status = 'lost' OR pipeline_stage IN ('lost','closed_lost')),
+                            COALESCE((SELECT SUM(contract_value) FROM jobs WHERE EXTRACT(year FROM created_at) = EXTRACT(year FROM NOW()) AND status != 'cancelled'), 0),
+                            COALESCE((SELECT COUNT(*) FROM crew_members WHERE active = true), 0),
+                            COALESCE(SUM(estimated_value) FILTER (WHERE status NOT IN ('lost','completed')), 0)
+                        FROM leads
+                        ON CONFLICT (snapshot_date) DO UPDATE SET
+                            new_leads = EXCLUDED.new_leads,
+                            contacted = EXCLUDED.contacted,
+                            est_scheduled = EXCLUDED.est_scheduled,
+                            est_sent = EXCLUDED.est_sent,
+                            jobs_won = EXCLUDED.jobs_won,
+                            lost_closed = EXCLUDED.lost_closed,
+                            ytd_revenue = EXCLUDED.ytd_revenue,
+                            active_crew = EXCLUDED.active_crew,
+                            total_pipeline_value = EXCLUDED.total_pipeline_value
+                    """))
+                    await session.commit()
+                    print(f"[Snapshots] Today's dashboard snapshot recorded")
+        except Exception as e:
+            print(f"[Snapshots] Error: {e}")
+    
+    asyncio.create_task(_take_snapshot())
+
+    # Ensure uploads directory structure exists
+    avatars_dir = os.path.join(STATIC_DIR, "uploads", "avatars")
+    os.makedirs(avatars_dir, exist_ok=True)
+
     yield
     # ── Shutdown ──
     print("Shutting down Rise Up Roofing FastAPI backend...")
@@ -50,6 +176,8 @@ origins = [
     "https://crm.riseuprac.com",
     "https://backend.riseuprac.com",
     "https://development.riseuprac.com",
+    "https://riseuproofing.vercel.app",
+    "https://riseup-roofing.vercel.app",
 ]
 if hasattr(settings, "CORS_ORIGINS") and settings.CORS_ORIGINS:
     if isinstance(settings.CORS_ORIGINS, list):
@@ -58,6 +186,7 @@ if hasattr(settings, "CORS_ORIGINS") and settings.CORS_ORIGINS:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"^https:\/\/.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,31 +199,40 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # ── Telemetry & Live Request Ring Buffer Middleware ──
 app.add_middleware(TelemetryMiddleware)
 
-# ── Custom Error Handlers ──
+# ── Custom Error Handlers with CORS Header Preservation ──
+def _with_cors(response: JSONResponse, request: Request) -> JSONResponse:
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return JSONResponse(
+    return _with_cors(JSONResponse(
         status_code=exc.status_code,
-        content={"ok": False, "error": exc.detail},
-    )
+        content={"ok": False, "error": exc.detail, "detail": exc.detail},
+    ), request)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = exc.errors()
     first_error = errors[0]["msg"] if errors else "Invalid request data"
-    return JSONResponse(
+    return _with_cors(JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"ok": False, "error": first_error, "details": errors},
-    )
+        content={"ok": False, "error": first_error, "detail": first_error, "details": errors},
+    ), request)
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     import traceback
     traceback.print_exc()
-    return JSONResponse(
+    return _with_cors(JSONResponse(
         status_code=500,
-        content={"ok": False, "error": str(exc), "traceback": traceback.format_exc()},
-    )
+        content={"ok": False, "error": str(exc), "detail": str(exc)},
+    ), request)
 
 # ── Mount Static Files ──
 from fastapi.staticfiles import StaticFiles

@@ -350,13 +350,13 @@ export function CompanyProfileTab({ company, onChange }: CompanyProfileTabProps)
             {/* Logo Preview in Dark and Light Containers */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl bg-[#090E17] border border-white/10 flex flex-col items-center justify-center gap-2">
-                <BrandLogo size="sm" showTagline={false} />
+                <BrandLogo size="sm" showTagline={true} themeMode="dark" />
                 <span className="text-[10px] text-slate-400 font-semibold">
                   Charcoal Sidebar
                 </span>
               </div>
               <div className="p-3 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center gap-2">
-                <BrandLogo size="sm" showTagline={false} />
+                <BrandLogo size="sm" showTagline={true} themeMode="light" />
                 <span className="text-[10px] text-slate-500 font-semibold">
                   Pearl Glass Canvas
                 </span>
@@ -364,20 +364,36 @@ export function CompanyProfileTab({ company, onChange }: CompanyProfileTabProps)
             </div>
 
             {/* Brand Colors */}
-            <div className="flex items-center justify-between text-xs pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#1878B8] shadow-xs border border-white" />
+                <div className="w-6 h-6 rounded-lg bg-[#00B0ED] shadow-xs border border-white" />
                 <div>
-                  <div className="font-bold text-slate-800">Deep Coastal Azure</div>
-                  <div className="font-mono text-[10px] text-slate-400">#1878B8</div>
+                  <div className="font-bold text-slate-800 text-[11px]">Rise Up Cyan</div>
+                  <div className="font-mono text-[9px] text-slate-400">#00B0ED</div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#2F9FE3] shadow-xs border border-white" />
+                <div className="w-6 h-6 rounded-lg bg-[#F1B91B] shadow-xs border border-white" />
                 <div>
-                  <div className="font-bold text-slate-800">Vibrant Cyan Accent</div>
-                  <div className="font-mono text-[10px] text-slate-400">#2F9FE3</div>
+                  <div className="font-bold text-slate-800 text-[11px]">Solar Gold</div>
+                  <div className="font-mono text-[9px] text-slate-400">#F1B91B</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-[#1F3C47] shadow-xs border border-white" />
+                <div>
+                  <div className="font-bold text-slate-800 text-[11px]">Coastal Slate</div>
+                  <div className="font-mono text-[9px] text-slate-400">#1F3C47</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-[#ED1C24] shadow-xs border border-white" />
+                <div>
+                  <div className="font-bold text-slate-800 text-[11px]">Apex Red</div>
+                  <div className="font-mono text-[9px] text-slate-400">#ED1C24</div>
                 </div>
               </div>
             </div>

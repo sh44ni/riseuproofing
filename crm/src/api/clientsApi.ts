@@ -1,9 +1,9 @@
 // Rise Up CRM — Backend Clients API Client
 // Interfaces with FastAPI backend at /api/admin/clients
 
-import { api } from '@/lib/api';
+import { api, API_ORIGIN } from '@/lib/api';
 
-const BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const BASE = API_ORIGIN;
 
 export interface ClientSummary {
   totalClients: number;
@@ -72,6 +72,8 @@ export interface Client360ApiResponse {
   client: ClientApiRecord;
   leads: any[];
   inspections: any[];
+  inspection_photos?: any[];
+  documents?: any[];
   estimates: any[];
   jobs: any[];
   invoices: any[];

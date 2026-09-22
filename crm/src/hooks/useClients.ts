@@ -19,6 +19,7 @@ import {
 } from '@/lib/clientAdapter';
 import { Client360Record, RoofSpecs, TimelineEvent } from '@/types/client360Types';
 import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
 
 export function useClients() {
   const { user } = useAuth();
@@ -272,6 +273,44 @@ export function useClients() {
     [loadClients]
   );
 
+  // Handler: Tasks
+  const fetchClientTasks = useCallback(async (clientId: string | number) => {
+    return api.request(`/admin/clients/${clientId}/tasks`);
+  }, []);
+
+  const createClientTask = useCallback(async (clientId: string | number, task: any) => {
+    return api.request(`/admin/clients/${clientId}/tasks`, {
+      method: 'POST',
+      body: JSON.stringify(task),
+    });
+  }, []);
+
+  const toggleClientTask = useCallback(async (clientId: string | number, taskId: string | number) => {
+    return api.request(`/admin/clients/${clientId}/tasks/${taskId}`, {
+      method: 'PUT',
+    });
+  }, []);
+
+  // Handler: Documents
+  const fetchDocuments = useCallback(async (clientId: string | number) => {
+    return api.request(`/admin/clients/${clientId}/documents`);
+  }, []);
+
+  const uploadDocument = useCallback(async (clientId: string | number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.request(`/admin/clients/${clientId}/documents`, {
+      method: 'POST',
+      body: formData,
+    });
+  }, []);
+
+  const deleteDocument = useCallback(async (clientId: string | number, documentId: string | number) => {
+    return api.request(`/admin/clients/${clientId}/documents/${documentId}`, {
+      method: 'DELETE',
+    });
+  }, []);
+
   // Selected client object fallback
   const currentClient =
     (activeClientDetail && String(activeClientDetail.id) === String(selectedClientId)
@@ -299,5 +338,11 @@ export function useClients() {
     reactivateClient,
     createNewClient,
     refetch: loadClients,
+    fetchClientTasks,
+    createClientTask,
+    toggleClientTask,
+    fetchDocuments,
+    uploadDocument,
+    deleteDocument,
   };
 }

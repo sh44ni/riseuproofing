@@ -15,8 +15,6 @@ import {
   ClipboardCheck,
   ShieldCheck,
   DollarSign,
-  Star,
-  MessageSquare,
   Globe,
   ChevronRight,
 } from 'lucide-react';
@@ -26,6 +24,7 @@ import { CoastalPalmTrees, MicroPalmTree } from '@/components/common/CoastalPalm
 import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
 import { usePersonalTasks } from '@/lib/personalTasksStore';
+import { useDashboardStats } from '@/lib/dashboardStatsStore';
 
 interface NavItem {
   name: string;
@@ -49,25 +48,22 @@ const NAV_SECTIONS: NavSection[] = [
     iconAccentColor: 'bg-sky-400',
     items: [
       { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-      { name: 'Leads', path: '/leads', icon: Users, badge: '18 New', badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-400/30', permission: 'leads.view' },
+      { name: 'Leads', path: '/leads', icon: Users, permission: 'leads.view' },
       { name: 'Pipeline', path: '/pipeline', icon: Filter, permission: 'pipeline.view' },
       { name: 'Clients', path: '/clients', icon: UserCheck, permission: 'leads.view' },
       { name: 'Estimates', path: '/estimates', icon: Calculator, permission: 'estimates.view' },
       { name: 'Calendar', path: '/calendar', icon: Calendar, permission: 'calendar.view' },
-      { name: 'Tasks', path: '/tasks', icon: CheckSquare, badge: '5', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-400/30', permission: 'calendar.view' },
+      { name: 'Tasks', path: '/tasks', icon: CheckSquare, permission: 'calendar.view' },
     ],
   },
   {
     title: 'OPERATIONS & TOOLS',
     iconAccentColor: 'bg-[#38BDF8]',
     items: [
-      { name: 'Jobs', path: '/jobs', icon: Hammer, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'jobs.view' },
+      { name: 'Jobs', path: '/jobs', icon: Hammer, permission: 'jobs.view' },
       { name: 'Inspections', path: '/inspections', icon: ClipboardCheck, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'inspections.view' },
-      { name: 'Estimator Pricing', path: '/settings?tab=pricing', icon: Calculator, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'estimator_settings.view' },
       { name: 'Warranties', path: '/warranties', icon: ShieldCheck, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'warranties.view' },
       { name: 'Finances', path: '/finances', icon: DollarSign, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'finances.view' },
-      { name: 'Reviews', path: '/reviews', icon: Star, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'leads.view' },
-      { name: 'Templates', path: '/templates', icon: MessageSquare, disabled: true, badge: 'DIP', badgeColor: 'bg-amber-500/15 border-amber-400/30 text-amber-300', permission: 'estimates.edit_pricing_templates' },
       { name: 'Web & Marketing', path: '/marketing', icon: Globe, permission: 'reports.view' },
     ],
   },
@@ -87,6 +83,7 @@ export function CrmSidebar() {
   const { can, isOwner } = useAuth();
   const { city, websiteUrl } = useCompany();
   const { activeCount: pendingPersonalTasksCount } = usePersonalTasks();
+  const { stats } = useDashboardStats();
   const [sidebarPhoto, setSidebarPhoto] = useState<string>(() => {
     return localStorage.getItem('crm_sidebar_bg') || '/hero-bg.jpg';
   });
@@ -107,10 +104,7 @@ export function CrmSidebar() {
       return location.pathname === path && location.search.includes(query);
     }
     if (itemPath === '/settings') {
-      return (
-        location.pathname === '/settings' &&
-        !location.search.includes('tab=pricing')
-      );
+      return location.pathname === '/settings';
     }
     if (itemPath === '/reports') {
       return (
@@ -272,21 +266,28 @@ export function CrmSidebar() {
 
                       <div className="flex items-center gap-1.5 shrink-0">
                         {(() => {
-                          const badgeValue =
-                            item.name === 'Tasks'
-                              ? pendingPersonalTasksCount > 0
-                                ? String(pendingPersonalTasksCount)
-                                : null
-                              : item.badge;
+                          let badgeValue: string | null = null;
+                          let badgeColor: string = item.badgeColor || 'bg-sky-500/20 text-sky-300 border-sky-400/30';
+
+                          if (item.name === 'Leads') {
+                            if (stats?.newLeads && stats.newLeads > 0) {
+                              badgeValue = `${stats.newLeads} New`;
+                              badgeColor = 'bg-sky-500/20 text-sky-300 border-sky-400/30';
+                            }
+                          } else if (item.name === 'Tasks') {
+                            if (pendingPersonalTasksCount > 0) {
+                              badgeValue = String(pendingPersonalTasksCount);
+                              badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-400/30';
+                            }
+                          } else if (item.badge) {
+                            badgeValue = item.badge;
+                          }
+
                           if (!badgeValue) return null;
 
                           return (
                             <span
-                              className={`px-1.5 py-0.2 rounded-md border text-[9px] font-black uppercase tracking-wider shrink-0 shadow-2xs ${
-                                item.name === 'Tasks'
-                                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
-                                  : item.badgeColor || 'bg-sky-500/20 text-sky-300 border-sky-400/30'
-                              }`}
+                              className={`px-1.5 py-0.2 rounded-md border text-[9px] font-black uppercase tracking-wider shrink-0 shadow-2xs ${badgeColor}`}
                             >
                               {badgeValue}
                             </span>

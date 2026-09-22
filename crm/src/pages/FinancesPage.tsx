@@ -1,11 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DollarSign, ArrowDownRight, ArrowUpRight, FileCheck, CheckCircle2, Clock } from 'lucide-react';
 import { DevelopmentInProgressBanner } from '@/components/common/DevelopmentInProgressBanner';
 import { CrmPageHero } from '@/components/common/CrmPageHero';
 import { UniversalStatCard } from '@/components/common/UniversalStatCard';
+import { api } from '@/lib/api';
+import { useDashboardStats } from '@/lib/dashboardStatsStore';
+
+function formatMoney(val: number | undefined): string {
+  if (val === undefined || val === null) return '—';
+  if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
+  if (val >= 1_000) return `$${Math.round(val / 1000)}K`;
+  return `$${Math.round(val)}`;
+}
 
 export function FinancesPage() {
   const [search, setSearch] = useState('');
+  const [finances, setFinances] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { stats } = useDashboardStats();
+
+  useEffect(() => {
+    api.getFinances().then(data => {
+      setFinances(data);
+    }).finally(() => {
+      setIsLoading(false);
+    });
+  }, []);
+
   const INVOICES = [
     { id: 'INV-309', client: 'Patricia Gomez', amount: 15500, type: '50% Initial Deposit', status: 'Paid', date: 'Mar 12, 2026' },
     { id: 'INV-308', client: 'Carlos Morales', amount: 9800, type: 'Progress Milestone', status: 'Pending', date: 'Mar 13, 2026' },
@@ -45,9 +66,7 @@ export function FinancesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <UniversalStatCard
           label="Total Revenue (MTD)"
-          value="$112,400"
-          delta={14.8}
-          deltaLabel="+14.8% MTD"
+          value={finances ? formatMoney(finances.totalBilled || finances.summary?.totalBilled || stats?.ytdRevenue) : '—'}
           icon={DollarSign}
           iconGradient="from-emerald-600 to-teal-400"
           color="#10b981"
@@ -58,14 +77,13 @@ export function FinancesPage() {
           sharePct={82}
           shareLabel="Monthly target"
           stageLabel="Collections"
-          miniSvgPath="M 2 24 Q 18 18, 36 14 T 54 8 T 73 2"
+          sparklineData={stats?.sparklines?.jobsWon}
+          isLoading={isLoading}
         />
 
         <UniversalStatCard
           label="Outstanding Receivables"
-          value="$24,600"
-          delta={-8.2}
-          deltaLabel="2 Invoices"
+          value={finances ? formatMoney(finances.pendingAmount || finances.summary?.pendingAmount) : '—'}
           icon={Clock}
           iconGradient="from-amber-600 to-amber-400"
           color="#f59e0b"
@@ -76,14 +94,13 @@ export function FinancesPage() {
           sharePct={18}
           shareLabel="Receivables share"
           stageLabel="Pending Draw"
-          miniSvgPath="M 2 18 Q 18 12, 36 14 T 73 8"
+          sparklineData={stats?.sparklines?.estSent}
+          isLoading={isLoading}
         />
 
         <UniversalStatCard
           label="Average Gross Margin"
-          value="41.8%"
-          delta={3.8}
-          deltaLabel="Above Target"
+          value={finances?.realizedMarginPct != null ? `${finances.realizedMarginPct}%` : '—'}
           icon={FileCheck}
           iconGradient="from-[#1878B8] to-[#55C4F5]"
           color="#0284c7"
@@ -94,7 +111,8 @@ export function FinancesPage() {
           sharePct={42}
           shareLabel="Blended margin"
           stageLabel="Job Profitability"
-          miniSvgPath="M 2 22 Q 18 16, 36 12 T 56 6 T 73 2"
+          sparklineData={stats?.sparklines?.jobsWon}
+          isLoading={isLoading}
         />
       </div>
 

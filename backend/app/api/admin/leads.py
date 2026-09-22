@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, Request, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -178,27 +179,96 @@ async def create_lead(request: Request, db: AsyncSession = Depends(get_db), user
         "notes": notes,
     })
 
+    roof_sqf = body.get("roof_sqf") or body.get("roofSqf") or body.get("sqf")
+    roof_squares = body.get("roof_squares") or body.get("roofSquares")
+    if roof_sqf:
+        roof_sqf = int(roof_sqf)
+        if not roof_squares:
+            roof_squares = round(roof_sqf / 100.0, 1)
+    elif roof_squares:
+        roof_squares = float(roof_squares)
+        roof_sqf = round(roof_squares * 100)
+    else:
+        roof_sqf = 2500
+        roof_squares = 25.0
+
+    roof_pitch = body.get("roof_pitch") or body.get("pitch") or "4:12"
+    raw_stories = body.get("stories")
+    stories = 1
+    if raw_stories:
+        try:
+            stories = int(str(raw_stories).split()[0])
+        except Exception:
+            stories = 1
+    roof_type = body.get("roof_type") or body.get("roofType") or "Spanish Tile"
+
+    # Compute or accept estimated_value
+    estimated_value = body.get("estimated_value") or body.get("estimatedValue")
+    if estimated_value is not None and float(estimated_value) > 0:
+        estimated_value = float(estimated_value)
+    else:
+        from app.services.calculator import calculate_lead_estimated_value
+        calc = calculate_lead_estimated_value(roof_sqf, service_type, roof_pitch, stories)
+        estimated_value = float(calc["estimated_value"])
+
     insert_sql = text("""
         INSERT INTO leads (
             form_type, full_name, phone, email, address, city, zip, service_type,
             notes, status, priority, lead_score, lead_source, source_type,
             lead_source_detail, client_id, created_by_user_id, assigned_to_user_id,
-            assigned_to, pipeline_stage, stage_entered_at, created_at, updated_at
+            assigned_to, pipeline_stage, stage_entered_at,
+            roof_sqf, roof_squares, roof_pitch, stories, roof_type, estimated_value,
+            created_at, updated_at
         ) VALUES (
             'manual', :name, :phone, :email, :address, :city, :zip, :service,
             :notes, 'new', :priority, :score, 'manual', 'manual',
             :source_detail, :cid, :uid, :uid,
-            :assigned_to, 'stage_1_lead_gen', NOW(), NOW(), NOW()
-        ) RETURNING id, full_name, phone, email, status, pipeline_stage, client_id, lead_source, lead_source_detail, created_by_user_id, assigned_to_user_id
+            :assigned_to, 'stage_1_lead_gen', NOW(),
+            :roof_sqf, :roof_squares, :roof_pitch, :stories, :roof_type, :estimated_value,
+            NOW(), NOW()
+        ) RETURNING id, full_name, phone, email, status, pipeline_stage, client_id, lead_source, lead_source_detail, created_by_user_id, assigned_to_user_id, roof_sqf, roof_squares, estimated_value
     """)
     new_lead = (await db.execute(insert_sql, {
         "name": full_name, "phone": phone, "email": email, "address": address,
         "city": city, "zip": zip_code, "service": service_type, "notes": notes,
         "priority": priority, "score": score, "source_detail": lead_source_detail,
-        "assigned_to": creator_name, "cid": client_id, "uid": user.id
+        "assigned_to": creator_name, "cid": client_id, "uid": user.id,
+        "roof_sqf": roof_sqf, "roof_squares": roof_squares, "roof_pitch": roof_pitch,
+        "stories": stories, "roof_type": roof_type, "estimated_value": estimated_value
     })).mappings().first()
 
+    try:
+        creator_name = getattr(user, "name", None) or (user.email.split("@")[0] if getattr(user, "email", None) else "Staff")
+        author_role = getattr(user, "role", "Staff")
+        if author_role:
+            author_role = str(author_role).replace("_", " ").title()
+        perf_by = f"{creator_name} ({author_role})" if author_role else str(creator_name)
+        meta_dict = {
+            "lead_name": full_name,
+            "service_type": service_type,
+            "estimated_value": float(estimated_value or 0),
+        }
+        await db.execute(text("""
+            INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by, user_id, user_name, metadata, created_at)
+            VALUES ('lead', :lid, :cid, 'lead_created', 'Lead Added', :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), NOW())
+        """), {
+            "lid": int(new_lead["id"]),
+            "cid": int(client_id) if client_id else None,
+            "desc": f"{creator_name} added lead {full_name}",
+            "pby": perf_by,
+            "uid": user.id if getattr(user, "id", None) else None,
+            "uname": creator_name,
+            "meta": json.dumps(meta_dict)
+        })
+    except Exception as ex:
+        print(f"Failed to record lead_created activity: {ex}")
+
     await record_audit_log(db, "lead.create", "lead", new_lead["id"], user.id, user.email, user.role, body, request)
+    try:
+        from app.core.redis import cache_delete
+        await cache_delete("crm:dashboard:stats")
+    except Exception:
+        pass
     return {"ok": True, "lead": dict(new_lead)}
 
 @router.get("/{lead_id}", dependencies=[Depends(require_permission("leads:view"))])
@@ -233,13 +303,33 @@ async def update_lead(lead_id: int, request: Request, db: AsyncSession = Depends
     updates = []
     params = {"id": lead_id}
 
-    for k in ["full_name", "phone", "email", "address", "city", "zip", "service_type", "notes", "status", "priority", "pipeline_stage", "assigned_to_user_id", "lost_reason"]:
+    allowed_fields = [
+        "full_name", "phone", "email", "address", "city", "zip", "service_type",
+        "notes", "status", "priority", "pipeline_stage", "assigned_to_user_id", "lost_reason",
+        "roof_sqf", "roof_squares", "roof_pitch", "stories", "roof_type", "estimated_value"
+    ]
+
+    for k in allowed_fields:
         if k in body:
             updates.append(f"{k} = :{k}")
             params[k] = body[k]
 
+    # Auto-calculate estimated_value if roof_sqf provided and estimated_value is not
+    if ("roof_sqf" in body or "service_type" in body) and "estimated_value" not in body:
+        from app.services.calculator import calculate_lead_estimated_value
+        sqft_val = float(body.get("roof_sqf") or 2500)
+        svc_val = body.get("service_type")
+        pitch_val = body.get("roof_pitch")
+        stories_val = body.get("stories") or 1
+        calc = calculate_lead_estimated_value(sqft_val, svc_val, pitch_val, stories_val)
+        updates.append("estimated_value = :calc_est_val")
+        params["calc_est_val"] = float(calc["estimated_value"])
+
+    if body.get("status") == "completed" or body.get("pipeline_stage") in ("completed", "job_completed"):
+        updates.append("job_completed_at = COALESCE(job_completed_at, NOW())")
+
     if updates:
-        sql = f"UPDATE leads SET {', '.join(updates)}, updated_at = NOW() WHERE id = :id RETURNING id, full_name, status, pipeline_stage, client_id, lost_reason"
+        sql = f"UPDATE leads SET {', '.join(updates)}, updated_at = NOW() WHERE id = :id RETURNING id, full_name, status, pipeline_stage, client_id, lost_reason, roof_sqf, estimated_value"
         updated = (await db.execute(text(sql), params)).mappings().first()
         
         # Synchronize client category
@@ -260,6 +350,11 @@ async def update_lead(lead_id: int, request: Request, db: AsyncSession = Depends
                 await db.execute(text("UPDATE clients SET client_category = :cat, updated_at = NOW() WHERE id = :cid"), {"cat": new_cat, "cid": cid})
 
         await record_audit_log(db, "lead.update", "lead", lead_id, user.id, user.email, user.role, body, request)
+        try:
+            from app.core.redis import cache_delete
+            await cache_delete("crm:dashboard:stats")
+        except Exception:
+            pass
         return {"ok": True, "lead": dict(updated)}
 
     return {"ok": True}
@@ -272,6 +367,11 @@ async def delete_lead(lead_id: int, request: Request, db: AsyncSession = Depends
 
     await db.execute(text("DELETE FROM leads WHERE id = :id"), {"id": lead_id})
     await record_audit_log(db, "lead.delete", "lead", lead_id, user.id, user.email, user.role, {"deletedLead": lead}, request)
+    try:
+        from app.core.redis import cache_delete
+        await cache_delete("crm:dashboard:stats")
+    except Exception:
+        pass
     return {"ok": True}
 
 @router.get("/{lead_id}/activities", dependencies=[Depends(require_permission("leads:view"))])

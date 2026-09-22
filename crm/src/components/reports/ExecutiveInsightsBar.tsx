@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   TrendingUp,
@@ -6,11 +6,45 @@ import {
   Award,
   ChevronRight,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
+import api from '@/lib/api';
 import { EXECUTIVE_INSIGHTS } from '@/data/reportData';
+import { dateRangeToDates, ExecutiveInsight } from '@/types/reportTypes';
 
-export function ExecutiveInsightsBar() {
+export function ExecutiveInsightsBar({ dateRange }: { dateRange?: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [insights, setInsights] = useState<ExecutiveInsight[]>(EXECUTIVE_INSIGHTS);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const { from, to } = dateRangeToDates(dateRange);
+    setLoading(true);
+
+    api.getExecutiveInsights(from, to)
+      .then((res) => {
+        if (!isMounted) return;
+        if (Array.isArray(res) && res.length > 0) {
+          setInsights(res);
+        } else {
+          setInsights(EXECUTIVE_INSIGHTS);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load executive insights:', err);
+        if (isMounted) setInsights(EXECUTIVE_INSIGHTS);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [dateRange]);
+
+  const count = insights.length;
 
   return (
     <div className="rounded-3xl bg-gradient-to-r from-sky-50/90 via-white/95 to-amber-50/90 light-glass-panel border border-white/95 shadow-sm p-4 sm:p-5 select-none space-y-3">
@@ -24,9 +58,16 @@ export function ExecutiveInsightsBar() {
               <span className="font-black text-sm text-slate-900 tracking-tight">
                 AI Executive Intelligence &amp; Profit Recommendations
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9.5px] font-black uppercase">
-                3 Key Opportunities
-              </span>
+              {loading ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300 text-[9.5px] font-black uppercase animate-pulse">
+                  <Loader2 size={10} className="animate-spin" />
+                  <span>Analyzing...</span>
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9.5px] font-black uppercase">
+                  {count} Key {count === 1 ? 'Opportunity' : 'Opportunities'}
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
               Automated algorithmic analysis of pricing margins, territory economics, and response SLAs
@@ -46,16 +87,18 @@ export function ExecutiveInsightsBar() {
 
       {isExpanded && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-slate-200/60 animate-in fade-in slide-in-from-top-1 duration-200">
-          {EXECUTIVE_INSIGHTS.map((ins) => (
+          {insights.map((ins, idx) => (
             <div
-              key={ins.id}
+              key={ins.id || idx}
               className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-2xs space-y-1.5"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                   {ins.category}
                 </span>
-                <span className="text-[10.5px] font-bold text-emerald-700 font-mono">
+                <span className={`text-[10.5px] font-bold font-mono ${
+                  ins.type === 'warning' ? 'text-amber-700' : 'text-emerald-700'
+                }`}>
                   {ins.impact}
                 </span>
               </div>
@@ -72,3 +115,6 @@ export function ExecutiveInsightsBar() {
     </div>
   );
 }
+
+export default ExecutiveInsightsBar;
+

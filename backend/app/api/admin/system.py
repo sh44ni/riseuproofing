@@ -232,6 +232,32 @@ async def get_estimator_admin(
     """))
     leads = [dict(r._mapping) for r in leads_res.fetchall()]
 
+    # Load custom multipliers & guardrails from app_settings
+    settings_res = await db.execute(text("SELECT value FROM app_settings WHERE key = 'pricing_config'"))
+    row_val = settings_res.scalar_one_or_none()
+    pricing_config = {}
+    if row_val:
+        pricing_config = orjson.loads(row_val) if isinstance(row_val, str) else row_val
+
+    pricing_rules_flat = []
+    for s in services:
+        if s.get("pricing_id"):
+            pricing_rules_flat.append({
+                "id": s["pricing_id"],
+                "service_id": s["id"],
+                "slug": s["slug"],
+                "name": s["name"],
+                "price_per_sqft_low": float(s["price_per_sqft_low"] or 0),
+                "price_per_sqft_high": float(s["price_per_sqft_high"] or 0),
+                "base_fee_low": float(s["base_fee_low"] or 0),
+                "base_fee_high": float(s["base_fee_high"] or 0),
+                "min_sqft": int(s["min_sqft"] or 500),
+                "max_sqft": int(s["max_sqft"] or 12000),
+                "apr_available": bool(s["apr_available"]),
+                "financing_apr": float(s["financing_apr"] or 0),
+                "financing_term_months": int(s["financing_term_months"] or 60),
+            })
+
     return {
         "ok": True,
         "services": [
@@ -261,6 +287,40 @@ async def get_estimator_admin(
             }
             for s in services
         ],
+        "pricingRules": pricing_rules_flat,
+        "marginGuardrails": pricing_config.get("marginGuardrails", {
+            "targetGrossMargin": 38,
+            "hardFloorMargin": 28,
+            "salesCommissionRate": 10,
+        }),
+        "pitchMultipliers": pricing_config.get("pitchMultipliers", {
+            "flatTo3_12": 1.0,
+            "fourTo6_12": 1.05,
+            "sevenTo9_12": 1.15,
+            "tenPlus_12": 1.30,
+        }),
+        "storyMultipliers": pricing_config.get("storyMultipliers", {
+            "oneStory": 1.0,
+            "twoStory": 1.08,
+            "threeStoryCoastal": 1.22,
+        }),
+        "tearOffRates": pricing_config.get("tearOffRates", {
+            "shingle1Layer": 35,
+            "shingle2Layer": 55,
+            "tileConcrete": 75,
+            "woodShake": 95,
+        }),
+        "permitFees": pricing_config.get("permitFees", {
+            "oceanside": 485,
+            "carlsbad": 520,
+            "encinitas": 560,
+            "vista": 460,
+        }),
+        "wasteFactors": pricing_config.get("wasteFactors", {
+            "gableStandard": 10,
+            "hipComplex": 15,
+            "cutValleysDormers": 18,
+        }),
         "presets": [
             {
                 "id": p["id"],
@@ -293,6 +353,75 @@ async def manage_estimator(
     db: AsyncSession = Depends(get_db)
 ):
     action = payload.get("action")
+
+    # If payload contains pricingRules or multipliers directly (from CRM Settings save)
+    pricing_rules = payload.get("pricingRules")
+    if pricing_rules and isinstance(pricing_rules, list):
+        for rule in pricing_rules:
+            sid = rule.get("service_id")
+            if not sid:
+                continue
+            await db.execute(
+                text("""
+                    UPDATE estimator_pricing_rules
+                    SET price_per_sqft_low = :low,
+                        price_per_sqft_high = :high,
+                        base_fee_low = :blow,
+                        base_fee_high = :bhigh,
+                        min_sqft = :mins,
+                        max_sqft = :maxs,
+                        apr_available = :apr,
+                        financing_apr = :fapr,
+                        financing_term_months = :term,
+                        updated_at = NOW(),
+                        updated_by = :upby
+                    WHERE service_id = :sid
+                """),
+                {
+                    "sid": sid,
+                    "low": float(rule.get("price_per_sqft_low", 4.0)),
+                    "high": float(rule.get("price_per_sqft_high", 6.2)),
+                    "blow": float(rule.get("base_fee_low", 500.0)),
+                    "bhigh": float(rule.get("base_fee_high", 950.0)),
+                    "mins": int(rule.get("min_sqft", 500)),
+                    "maxs": int(rule.get("max_sqft", 12000)),
+                    "apr": bool(rule.get("apr_available", True)),
+                    "fapr": float(rule.get("financing_apr", 0.0)),
+                    "term": int(rule.get("financing_term_months", 60)),
+                    "upby": user.get("name") or "Staff",
+                }
+            )
+
+    stored_keys = ["marginGuardrails", "pitchMultipliers", "storyMultipliers", "tearOffRates", "permitFees", "wasteFactors"]
+    has_multipliers = any(k in payload for k in stored_keys)
+    if has_multipliers:
+        settings_res = await db.execute(text("SELECT value FROM app_settings WHERE key = 'pricing_config'"))
+        existing_val = settings_res.scalar_one_or_none()
+        config_dict = {}
+        if existing_val:
+            config_dict = orjson.loads(existing_val) if isinstance(existing_val, str) else existing_val
+        for k in stored_keys:
+            if k in payload:
+                config_dict[k] = payload[k]
+        json_str = orjson.dumps(config_dict).decode("utf-8")
+        await db.execute(
+            text("""
+                INSERT INTO app_settings (key, value, updated_at)
+                VALUES ('pricing_config', :val, NOW())
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+            """),
+            {"val": json_str}
+        )
+
+    if not action and (pricing_rules or has_multipliers):
+        await db.commit()
+        try:
+            from app.core.redis import cache_delete
+            await cache_delete("crm:dashboard:stats")
+            await cache_delete("estimator:config")
+        except Exception:
+            pass
+        return {"ok": True, "message": "Estimator settings saved successfully"}
 
     if action == "update_pricing":
         sid = payload.get("serviceId")
@@ -612,50 +741,82 @@ async def get_crm_dashboard(
         -- Current window: last 30 days
         current_window AS (
             SELECT
-                COUNT(*) FILTER (WHERE pipeline_stage = 'stage_1_lead_gen' AND status != 'lost')        AS new_leads,
-                COUNT(*) FILTER (WHERE pipeline_stage = 'stage_2_initial_contact' AND status != 'lost') AS contacted,
                 COUNT(*) FILTER (
-                    WHERE pipeline_stage = 'stage_3_site_visit_estimate'
-                    AND status != 'lost'
-                    AND proposal_sent_at IS NULL
-                )                                                                                         AS est_scheduled,
+                    WHERE (pipeline_stage IN ('stage_1_lead_gen', 'cold_lead', 'new_leads') OR pipeline_stage IS NULL)
+                      AND status != 'lost'
+                ) AS new_leads,
                 COUNT(*) FILTER (
-                    WHERE pipeline_stage = 'stage_3_site_visit_estimate'
+                    WHERE pipeline_stage IN ('stage_2_initial_contact', 'initial_call', 'contacted')
+                      AND status != 'lost'
+                ) AS contacted,
+                COUNT(*) FILTER (
+                    WHERE (
+                        pipeline_stage IN ('est_scheduled', 'inspection_scheduled', 'inspection_completed', 'estimate_building')
+                        OR (pipeline_stage = 'stage_3_site_visit_estimate' AND proposal_sent_at IS NULL)
+                    )
                     AND status != 'lost'
-                    AND proposal_sent_at IS NOT NULL
-                )                                                                                         AS est_sent,
-                COUNT(*) FILTER (WHERE contract_signed_at IS NOT NULL AND status != 'lost')               AS jobs_won,
-                COUNT(*) FILTER (WHERE status = 'lost')                                                   AS lost_closed,
-                COUNT(*) FILTER (WHERE status != 'lost')                                                  AS total_active
+                ) AS est_scheduled,
+                COUNT(*) FILTER (
+                    WHERE (
+                        pipeline_stage IN ('estimate_sent', 'est_sent', 'follow_up', 'followup_2day', 'followup_7day', 'decision_followup')
+                        OR (pipeline_stage = 'stage_3_site_visit_estimate' AND proposal_sent_at IS NOT NULL AND contract_signed_at IS NULL)
+                    )
+                    AND status NOT IN ('lost', 'won')
+                ) AS est_sent,
+                COUNT(*) FILTER (
+                    WHERE pipeline_stage IN ('contract_signed', 'active_jobs', 'closed_won', 'job_completed', 'completed', 'stage_5_completion_followup')
+                       OR status = 'won'
+                       OR (pipeline_stage = 'stage_4_closing' AND contract_signed_at IS NOT NULL)
+                ) AS jobs_won,
+                COUNT(*) FILTER (
+                    WHERE status = 'lost' OR pipeline_stage IN ('lost', 'closed_lost')
+                ) AS lost_closed,
+                COUNT(*) FILTER (WHERE status != 'lost') AS total_active
             FROM leads
             WHERE created_at >= NOW() - INTERVAL '30 days'
         ),
         -- Prior window: 31-60 days ago (for delta calculation)
         prior_window AS (
             SELECT
-                COUNT(*) FILTER (WHERE pipeline_stage = 'stage_1_lead_gen' AND status != 'lost')        AS new_leads,
-                COUNT(*) FILTER (WHERE pipeline_stage = 'stage_2_initial_contact' AND status != 'lost') AS contacted,
                 COUNT(*) FILTER (
-                    WHERE pipeline_stage = 'stage_3_site_visit_estimate'
-                    AND status != 'lost'
-                    AND proposal_sent_at IS NULL
-                )                                                                                         AS est_scheduled,
+                    WHERE (pipeline_stage IN ('stage_1_lead_gen', 'cold_lead', 'new_leads') OR pipeline_stage IS NULL)
+                      AND status != 'lost'
+                ) AS new_leads,
                 COUNT(*) FILTER (
-                    WHERE pipeline_stage = 'stage_3_site_visit_estimate'
+                    WHERE pipeline_stage IN ('stage_2_initial_contact', 'initial_call', 'contacted')
+                      AND status != 'lost'
+                ) AS contacted,
+                COUNT(*) FILTER (
+                    WHERE (
+                        pipeline_stage IN ('est_scheduled', 'inspection_scheduled', 'inspection_completed', 'estimate_building')
+                        OR (pipeline_stage = 'stage_3_site_visit_estimate' AND proposal_sent_at IS NULL)
+                    )
                     AND status != 'lost'
-                    AND proposal_sent_at IS NOT NULL
-                )                                                                                         AS est_sent,
-                COUNT(*) FILTER (WHERE contract_signed_at IS NOT NULL AND status != 'lost')               AS jobs_won,
-                COUNT(*) FILTER (WHERE status = 'lost')                                                   AS lost_closed
+                ) AS est_scheduled,
+                COUNT(*) FILTER (
+                    WHERE (
+                        pipeline_stage IN ('estimate_sent', 'est_sent', 'follow_up', 'followup_2day', 'followup_7day', 'decision_followup')
+                        OR (pipeline_stage = 'stage_3_site_visit_estimate' AND proposal_sent_at IS NOT NULL AND contract_signed_at IS NULL)
+                    )
+                    AND status NOT IN ('lost', 'won')
+                ) AS est_sent,
+                COUNT(*) FILTER (
+                    WHERE pipeline_stage IN ('contract_signed', 'active_jobs', 'closed_won', 'job_completed', 'completed', 'stage_5_completion_followup')
+                       OR status = 'won'
+                       OR (pipeline_stage = 'stage_4_closing' AND contract_signed_at IS NOT NULL)
+                ) AS jobs_won,
+                COUNT(*) FILTER (
+                    WHERE status = 'lost' OR pipeline_stage IN ('lost', 'closed_lost')
+                ) AS lost_closed
             FROM leads
             WHERE created_at >= NOW() - INTERVAL '60 days'
               AND created_at <  NOW() - INTERVAL '30 days'
         ),
-        -- All-time counts (for pipeline kanban total badge)
+        -- All-time counts (for active pipeline kanban total badge)
         all_time AS (
             SELECT
-                COUNT(*) FILTER (WHERE status != 'lost') AS total_leads,
-                COALESCE(SUM(estimated_value) FILTER (WHERE status != 'lost'), 0) AS total_pipeline_value
+                COUNT(*) FILTER (WHERE status NOT IN ('lost', 'completed') AND (pipeline_stage IS NULL OR pipeline_stage NOT IN ('lost', 'closed_lost', 'completed', 'job_completed')) AND job_completed_at IS NULL) AS total_leads,
+                COALESCE(SUM(estimated_value) FILTER (WHERE status NOT IN ('lost', 'completed') AND (pipeline_stage IS NULL OR pipeline_stage NOT IN ('lost', 'closed_lost', 'completed', 'job_completed')) AND job_completed_at IS NULL), 0) AS total_pipeline_value
             FROM leads
         ),
         -- YTD revenue from jobs
@@ -709,6 +870,89 @@ async def get_crm_dashboard(
             "totalPipelineValue": float(row["total_pipeline_value"] or 0.0),
         }
 
+        # Fetch sparkline history (last 14 days)
+        try:
+            spark_sql = text("""
+                SELECT snapshot_date, new_leads, contacted, est_scheduled, est_sent, jobs_won, lost_closed
+                FROM daily_stats_snapshots
+                WHERE snapshot_date >= CURRENT_DATE - INTERVAL '14 days'
+                ORDER BY snapshot_date ASC
+            """)
+            spark_rows = (await db.execute(spark_sql)).mappings().all()
+            stats["sparklines"] = {
+                "newLeads": [int(r["new_leads"] or 0) for r in spark_rows],
+                "contacted": [int(r["contacted"] or 0) for r in spark_rows],
+                "estScheduled": [int(r["est_scheduled"] or 0) for r in spark_rows],
+                "estSent": [int(r["est_sent"] or 0) for r in spark_rows],
+                "jobsWon": [int(r["jobs_won"] or 0) for r in spark_rows],
+                "lostClosed": [int(r["lost_closed"] or 0) for r in spark_rows],
+            }
+        except Exception:
+            stats["sparklines"] = None
+
+        # Fetch recent activities (top 10)
+        try:
+            act_sql = text("""
+                SELECT 
+                    a.id,
+                    a.activity_type,
+                    a.title,
+                    a.description,
+                    a.performed_by,
+                    COALESCE(a.user_name, u.name, split_part(u.email, '@', 1), a.performed_by, 'Team Member') as user_name,
+                    a.entity_type,
+                    a.entity_id,
+                    a.client_id,
+                    a.metadata,
+                    a.created_at,
+                    COALESCE(
+                        a.metadata->>'lead_name', 
+                        a.metadata->>'customer_name', 
+                        l.full_name, 
+                        c.full_name, 
+                        e.customer_name, 
+                        j.customer_name
+                    ) as target_name,
+                    COALESCE(
+                        (a.metadata->>'amount')::numeric, 
+                        (a.metadata->>'contract_value')::numeric, 
+                        (a.metadata->>'estimated_value')::numeric, 
+                        e.total, 
+                        j.contract_value, 
+                        l.estimated_value
+                    ) as amount
+                FROM activities a
+                LEFT JOIN leads l ON a.entity_type = 'lead' AND a.entity_id = l.id
+                LEFT JOIN clients c ON a.client_id = c.id
+                LEFT JOIN estimates e ON (a.entity_type = 'estimate' AND a.entity_id = e.id)
+                LEFT JOIN jobs j ON (a.entity_type = 'job' AND a.entity_id = j.id)
+                LEFT JOIN users u ON a.user_id = u.id
+                WHERE a.activity_type IN ('lead_created', 'lead_claimed', 'estimate_sent', 'proposal_sent', 'job_completed', 'contract_signed', 'stage_changed', 'call', 'note', 'email')
+                ORDER BY a.created_at DESC
+                LIMIT 10
+            """)
+            act_rows = (await db.execute(act_sql)).mappings().all()
+            stats["recentActivities"] = [
+                {
+                    "id": int(r["id"]),
+                    "activity_type": r["activity_type"],
+                    "title": r["title"],
+                    "description": r["description"],
+                    "performed_by": r["performed_by"],
+                    "user_name": r["user_name"],
+                    "entity_type": r["entity_type"],
+                    "entity_id": int(r["entity_id"]) if r["entity_id"] else None,
+                    "target_name": r["target_name"] or "Lead",
+                    "amount": float(r["amount"]) if r["amount"] is not None else None,
+                    "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                    "metadata": dict(r["metadata"]) if r["metadata"] else None,
+                }
+                for r in act_rows
+            ]
+        except Exception as e:
+            print(f"Error querying recent activities: {e}")
+            stats["recentActivities"] = []
+
     except Exception as exc:
         # Surface the actual error in dev, return zeros in prod
         import os
@@ -723,6 +967,8 @@ async def get_crm_dashboard(
             "lostClosed": 0, "lostClosedDelta": None,
             "ytdRevenue": 0.0, "activeCrewCount": 0,
             "totalLeads": 0, "totalPipelineValue": 0.0,
+            "sparklines": None,
+            "recentActivities": [],
         }
 
     # Cache for 60s
@@ -732,6 +978,76 @@ async def get_crm_dashboard(
         pass
 
     return {"ok": True, "stats": stats}
+
+
+@router.get("/system/recent-activities")
+@router.get("/recent-activities")
+async def get_recent_activities(
+    db: AsyncSession = Depends(get_db),
+    user: Dict[str, Any] = Depends(require_auth_user())
+):
+    try:
+        act_sql = text("""
+            SELECT 
+                a.id,
+                a.activity_type,
+                a.title,
+                a.description,
+                a.performed_by,
+                COALESCE(a.user_name, u.name, split_part(u.email, '@', 1), a.performed_by, 'Team Member') as user_name,
+                a.entity_type,
+                a.entity_id,
+                a.client_id,
+                a.metadata,
+                a.created_at,
+                COALESCE(
+                    a.metadata->>'lead_name', 
+                    a.metadata->>'customer_name', 
+                    l.full_name, 
+                    c.full_name, 
+                    e.customer_name, 
+                    j.customer_name
+                ) as target_name,
+                COALESCE(
+                    (a.metadata->>'amount')::numeric, 
+                    (a.metadata->>'contract_value')::numeric, 
+                    (a.metadata->>'estimated_value')::numeric, 
+                    e.total, 
+                    j.contract_value, 
+                    l.estimated_value
+                ) as amount
+            FROM activities a
+            LEFT JOIN leads l ON a.entity_type = 'lead' AND a.entity_id = l.id
+            LEFT JOIN clients c ON a.client_id = c.id
+            LEFT JOIN estimates e ON (a.entity_type = 'estimate' AND a.entity_id = e.id)
+            LEFT JOIN jobs j ON (a.entity_type = 'job' AND a.entity_id = j.id)
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE a.activity_type IN ('lead_created', 'lead_claimed', 'estimate_sent', 'proposal_sent', 'job_completed', 'contract_signed', 'stage_changed', 'call', 'note', 'email')
+            ORDER BY a.created_at DESC
+            LIMIT 50
+        """)
+        act_rows = (await db.execute(act_sql)).mappings().all()
+        activities = [
+            {
+                "id": int(r["id"]),
+                "activity_type": r["activity_type"],
+                "title": r["title"],
+                "description": r["description"],
+                "performed_by": r["performed_by"],
+                "user_name": r["user_name"],
+                "entity_type": r["entity_type"],
+                "entity_id": int(r["entity_id"]) if r["entity_id"] else None,
+                "target_name": r["target_name"] or "Lead",
+                "amount": float(r["amount"]) if r["amount"] is not None else None,
+                "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                "metadata": dict(r["metadata"]) if r["metadata"] else None,
+            }
+            for r in act_rows
+        ]
+        return {"ok": True, "activities": activities}
+    except Exception as e:
+        print(f"Error querying recent activities: {e}")
+        return {"ok": True, "activities": []}
 
 
 # ── SYSTEM KPIS & REAL-TIME PERFORMANCE TELEMETRY ────────────────────────────

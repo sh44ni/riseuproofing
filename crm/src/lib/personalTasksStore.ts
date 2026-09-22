@@ -57,6 +57,42 @@ export interface CategoryConfig {
   dotClass: string;
 }
 
+export interface StickyThemeConfig {
+  bg: string;
+  border: string;
+  hoverBorder: string;
+  stripe: string;
+  title: string;
+  accent: string;
+}
+
+export const STICKY_THEMES: Record<WorkCategory, StickyThemeConfig> = {
+  'Rise Up': {
+    bg: 'bg-sky-50/90',
+    border: 'border-sky-200/90',
+    hoverBorder: 'hover:border-sky-400',
+    stripe: 'bg-[#0284c7]',
+    title: 'text-sky-950',
+    accent: '#0284c7',
+  },
+  'Content Creation': {
+    bg: 'bg-purple-50/90',
+    border: 'border-purple-200/90',
+    hoverBorder: 'hover:border-purple-400',
+    stripe: 'bg-[#7c3aed]',
+    title: 'text-purple-950',
+    accent: '#7c3aed',
+  },
+  'Marketing': {
+    bg: 'bg-emerald-50/90',
+    border: 'border-emerald-200/90',
+    hoverBorder: 'hover:border-emerald-400',
+    stripe: 'bg-[#059669]',
+    title: 'text-emerald-950',
+    accent: '#059669',
+  },
+};
+
 export const WORK_CATEGORIES: CategoryConfig[] = [
   {
     id: 'Rise Up',
@@ -78,7 +114,73 @@ export const WORK_CATEGORIES: CategoryConfig[] = [
   },
 ];
 
-export const INITIAL_PERSONAL_TASKS: PersonalTaskPayload[] = [];
+export const INITIAL_PERSONAL_TASKS: PersonalTaskPayload[] = [
+  {
+    id: 'task-init-1',
+    title: 'Submit Carlsbad City Sheathing & Flashing Nail Permit',
+    workCategory: 'Rise Up',
+    priority: 'urgent',
+    completed: false,
+    dueDate: 'Today',
+    sortOrder: 0,
+    notes: 'Upload architectural plan revision to City of Carlsbad online portal before 4 PM cutoff.',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'task-init-2',
+    title: 'Follow-up on $24,850 Duration Shingles Proposal',
+    workCategory: 'Rise Up',
+    priority: 'high',
+    completed: false,
+    dueDate: 'Today',
+    sortOrder: 0,
+    notes: 'Review Good / Better / Best options and check if homeowner wants 120-mo financing walkthrough.',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'task-init-3',
+    title: 'Drone 4K Roof Audit Report Delivery',
+    workCategory: 'Content Creation',
+    priority: 'normal',
+    completed: false,
+    dueDate: 'Tomorrow',
+    sortOrder: 0,
+    notes: 'Sent PDF inspection certificate to homeowner via email.',
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export const PRIORITY_WEIGHTS: Record<TaskPriority, number> = {
+  urgent: 1,
+  high: 2,
+  normal: 3,
+  low: 4,
+};
+
+export function sortTasksByPriority(tasks: PersonalTaskPayload[]): PersonalTaskPayload[] {
+  return [...tasks].sort((a, b) => {
+    // 1. Incomplete first, completed last
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1;
+    }
+    // 2. Pinned items first
+    const aPinned = a.isPinned || (a.sortOrder !== undefined && a.sortOrder < 0);
+    const bPinned = b.isPinned || (b.sortOrder !== undefined && b.sortOrder < 0);
+    if (aPinned !== bPinned) {
+      return aPinned ? -1 : 1;
+    }
+    // 3. Priority order (urgent: 1, high: 2, normal: 3, low: 4)
+    const weightA = PRIORITY_WEIGHTS[a.priority] || 3;
+    const weightB = PRIORITY_WEIGHTS[b.priority] || 3;
+    if (weightA !== weightB) {
+      return weightA - weightB;
+    }
+    // 4. Date created descending (newest first)
+    const timeA = new Date(a.createdAt || 0).getTime();
+    const timeB = new Date(b.createdAt || 0).getTime();
+    return timeB - timeA;
+  });
+}
 
 const STORAGE_KEY = 'crm_personal_sticky_notes';
 const SYNC_EVENT_NAME = 'crm_personal_tasks_change';
@@ -87,15 +189,15 @@ const SYNC_EVENT_NAME = 'crm_personal_tasks_change';
  * Load personal tasks from local storage with fallback
  */
 export function loadPersonalTasks(): PersonalTaskPayload[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return INITIAL_PERSONAL_TASKS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) return INITIAL_PERSONAL_TASKS;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) && parsed.length > 0 ? sortTasksByPriority(parsed) : INITIAL_PERSONAL_TASKS;
   } catch (err) {
     console.error('Failed to parse personal tasks from storage:', err);
-    return [];
+    return INITIAL_PERSONAL_TASKS;
   }
 }
 
@@ -105,8 +207,9 @@ export function loadPersonalTasks(): PersonalTaskPayload[] {
 export function savePersonalTasks(tasks: PersonalTaskPayload[]): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    window.dispatchEvent(new CustomEvent(SYNC_EVENT_NAME, { detail: tasks }));
+    const sorted = sortTasksByPriority(tasks);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT_NAME, { detail: sorted }));
   } catch (err) {
     console.error('Failed to save personal tasks to storage:', err);
   }
@@ -123,7 +226,8 @@ export function usePersonalTasks() {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue) {
         try {
-          setTasks(JSON.parse(e.newValue));
+          const parsed = JSON.parse(e.newValue);
+          setTasks(sortTasksByPriority(parsed));
         } catch {
           // Ignore parse errors
         }
@@ -133,7 +237,7 @@ export function usePersonalTasks() {
     const handleCustomEvent = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail && Array.isArray(detail)) {
-        setTasks(detail);
+        setTasks(sortTasksByPriority(detail));
       }
     };
 
@@ -146,18 +250,25 @@ export function usePersonalTasks() {
     };
   }, []);
 
-  // Backend background revalidation on mount
+  // Backend background revalidation on mount and window focus
   useEffect(() => {
     let isMounted = true;
-    fetchPersonalTasksFromBackend().then((backendTasks) => {
-      if (backendTasks !== null && isMounted) {
-        setTasks(backendTasks);
-        savePersonalTasks(backendTasks);
-      }
-    });
+    const loadFromBackend = () => {
+      fetchPersonalTasksFromBackend().then((backendTasks) => {
+        if (backendTasks !== null && backendTasks.length > 0 && isMounted) {
+          const sorted = sortTasksByPriority(backendTasks);
+          setTasks(sorted);
+          savePersonalTasks(sorted);
+        }
+      });
+    };
+
+    loadFromBackend();
+    window.addEventListener('focus', loadFromBackend);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('focus', loadFromBackend);
     };
   }, []);
 
@@ -171,9 +282,10 @@ export function usePersonalTasks() {
 
   const refreshTasks = useCallback(async () => {
     const backendTasks = await fetchPersonalTasksFromBackend();
-    if (backendTasks !== null) {
-      setTasks(backendTasks);
-      savePersonalTasks(backendTasks);
+    if (backendTasks !== null && backendTasks.length > 0) {
+      const sorted = sortTasksByPriority(backendTasks);
+      setTasks(sorted);
+      savePersonalTasks(sorted);
     }
   }, []);
 
@@ -187,7 +299,7 @@ export function usePersonalTasks() {
       };
 
       setTasks((prev) => {
-        const updated = [newTask, ...prev];
+        const updated = sortTasksByPriority([newTask, ...prev]);
         savePersonalTasks(updated);
         return updated;
       });
@@ -202,8 +314,10 @@ export function usePersonalTasks() {
   const updateTask = useCallback(
     async (id: string, updates: Partial<PersonalTaskPayload>) => {
       setTasks((prev) => {
-        const updated = prev.map((t) =>
-          t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t
+        const updated = sortTasksByPriority(
+          prev.map((t) =>
+            t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t
+          )
         );
         savePersonalTasks(updated);
         return updated;
@@ -219,17 +333,19 @@ export function usePersonalTasks() {
     async (id: string) => {
       let nextStatus = false;
       setTasks((prev) => {
-        const updated = prev.map((t) => {
-          if (t.id === id) {
-            nextStatus = !t.completed;
-            return {
-              ...t,
-              completed: nextStatus,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return t;
-        });
+        const updated = sortTasksByPriority(
+          prev.map((t) => {
+            if (t.id === id) {
+              nextStatus = !t.completed;
+              return {
+                ...t,
+                completed: nextStatus,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return t;
+          })
+        );
         savePersonalTasks(updated);
         return updated;
       });
@@ -245,19 +361,21 @@ export function usePersonalTasks() {
       let nextPinned = false;
       let nextSortOrder = 0;
       setTasks((prev) => {
-        const updated = prev.map((t) => {
-          if (t.id === id) {
-            nextPinned = !t.isPinned && (t.sortOrder === undefined || t.sortOrder >= 0);
-            nextSortOrder = nextPinned ? -100 : 0;
-            return {
-              ...t,
-              isPinned: nextPinned,
-              sortOrder: nextSortOrder,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return t;
-        });
+        const updated = sortTasksByPriority(
+          prev.map((t) => {
+            if (t.id === id) {
+              nextPinned = !t.isPinned && (t.sortOrder === undefined || t.sortOrder >= 0);
+              nextSortOrder = nextPinned ? -100 : 0;
+              return {
+                ...t,
+                isPinned: nextPinned,
+                sortOrder: nextSortOrder,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return t;
+          })
+        );
         savePersonalTasks(updated);
         return updated;
       });

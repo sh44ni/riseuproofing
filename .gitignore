@@ -58,6 +58,11 @@ CLAUDE.md
 # Temporary scratch and scripts
 /scratch/
 /scripts/
+backend/scratch/
+backend/static/uploads/
+*.pdf
+*.zip
+
 
 # Python & virtual environments
 venv/

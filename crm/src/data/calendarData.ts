@@ -141,77 +141,8 @@ export const CATEGORY_CONFIG: Record<CalendarEventCategory, CategoryMeta> = {
   },
 };
 
-export const REGISTERED_TEAM_MEMBERS: TeamMemberResource[] = [
-  {
-    id: 1,
-    name: 'Sam Martinez',
-    role: 'owner',
-    roleLabel: 'Owner & Executive',
-    email: 'owner@riseuproofing.com',
-    phone: '(760) 555-0100',
-    avatarColor: 'from-sky-500 to-blue-600',
-    initials: 'SM',
-    status: 'active',
-  },
-  {
-    id: 2,
-    name: 'Carlos Ramirez',
-    role: 'project_manager',
-    roleLabel: 'Project Manager',
-    email: 'carlos.r@riseuproofing.com',
-    phone: '(760) 555-0142',
-    avatarColor: 'from-blue-500 to-indigo-600',
-    initials: 'CR',
-    status: 'active',
-  },
-  {
-    id: 3,
-    name: 'Marco Silva',
-    role: 'field_foreman',
-    roleLabel: 'Field Foreman',
-    email: 'marco.s@riseuproofing.com',
-    phone: '(760) 555-0198',
-    avatarColor: 'from-amber-500 to-orange-600',
-    initials: 'MS',
-    status: 'active',
-  },
-  {
-    id: 4,
-    name: 'Jessica Hayes',
-    role: 'senior_estimator',
-    roleLabel: 'Senior Estimator',
-    email: 'jessica.h@riseuproofing.com',
-    phone: '(760) 555-0211',
-    avatarColor: 'from-emerald-500 to-teal-600',
-    initials: 'JH',
-    status: 'active',
-  },
-  {
-    id: 5,
-    name: 'Sarah Jenkins',
-    role: 'field_foreman',
-    roleLabel: 'Field Inspector',
-    email: 'sarah.j@riseuproofing.com',
-    phone: '(760) 555-0912',
-    avatarColor: 'from-purple-500 to-pink-600',
-    initials: 'SJ',
-    status: 'active',
-  },
-  {
-    id: 6,
-    name: 'David Ortiz',
-    role: 'office_admin',
-    roleLabel: 'Logistics Coordinator',
-    email: 'david.o@riseuproofing.com',
-    phone: '(760) 555-0377',
-    avatarColor: 'from-rose-500 to-orange-500',
-    initials: 'DO',
-    status: 'active',
-  },
-];
-
-/** @deprecated Transitioned to REGISTERED_TEAM_MEMBERS */
-export const CREW_RESOURCES: TeamMemberResource[] = REGISTERED_TEAM_MEMBERS;
+/** @deprecated Transitioned to empty array as fallback */
+export const CREW_RESOURCES: TeamMemberResource[] = [];
 
 export const INITIAL_DISPATCH_EVENTS: DispatchEvent[] = [
   {

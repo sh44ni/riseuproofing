@@ -9,12 +9,18 @@ import {
   Clock,
   Trash2,
   Save,
-  ExternalLink,
+  Loader2,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { CrmTask, TaskPriority, TaskCategory, TaskStatus } from '@/types/taskTypes';
-import { PRIORITY_CONFIG, CATEGORY_BADGES } from '@/data/taskData';
 import { CrmModal } from '@/components/common/CrmModal';
+import { api } from '@/lib/api';
+
+interface UserItem {
+  id: number;
+  name: string;
+  email?: string;
+  role?: string;
+}
 
 export interface CrmTaskDetailModalProps {
   task: CrmTask | null;
@@ -23,6 +29,21 @@ export interface CrmTaskDetailModalProps {
   onUpdateTask?: (updated: CrmTask) => void;
   onDeleteTask?: (taskId: string) => void;
   onToggleStatus?: (taskId: string) => void;
+}
+
+function formatRole(role?: string): string {
+  if (!role) return 'Team Member';
+  const map: Record<string, string> = {
+    owner: 'Owner & Executive',
+    project_manager: 'Project Manager',
+    field_foreman: 'Field Foreman',
+    senior_estimator: 'Senior Estimator',
+    sales_rep: 'Sales Representative',
+    office_admin: 'Logistics Coordinator',
+    field_inspector: 'Field Inspector',
+    admin: 'Administrator',
+  };
+  return map[role.toLowerCase()] || role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function CrmTaskDetailModal({
@@ -40,8 +61,14 @@ export function CrmTaskDetailModal({
   const [category, setCategory] = useState<TaskCategory>('rise_up');
   const [status, setStatus] = useState<TaskStatus>('active');
   const [dueDateStr, setDueDateStr] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
+  const [assignedTo, setAssignedTo] = useState('Unassigned');
+  const [assignedToUserId, setAssignedToUserId] = useState<number | undefined>(undefined);
   const [description, setDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Dynamic team members from API
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   useEffect(() => {
     if (task && isOpen) {
@@ -53,9 +80,33 @@ export function CrmTaskDetailModal({
       setStatus(task.status || 'active');
       setDueDateStr(task.dueDateFormatted || 'Today, 5:00 PM');
       setAssignedTo(task.assignedTo || 'Unassigned');
+      setAssignedToUserId(task.assignedToUserId);
       setDescription(task.description || '');
     }
   }, [task, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    setIsLoadingUsers(true);
+
+    api.getUsers()
+      .then((res: any) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.users) ? res.users : Array.isArray(res) ? res : [];
+        setUsers(list);
+      })
+      .catch((err) => {
+        console.warn('Failed to load team users for task detail:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingUsers(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
 
   if (!isOpen || !task) return null;
 
@@ -69,29 +120,62 @@ export function CrmTaskDetailModal({
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === 'Unassigned' || !val) {
+      setAssignedTo('Unassigned');
+      setAssignedToUserId(undefined);
+    } else {
+      const uid = Number(val);
+      const matched = users.find((u) => u.id === uid);
+      if (matched) {
+        setAssignedTo(matched.name);
+        setAssignedToUserId(matched.id);
+      } else {
+        setAssignedTo(val);
+        setAssignedToUserId(undefined);
+      }
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    if (onUpdateTask) {
-      onUpdateTask({
-        ...task,
-        title: title.trim(),
-        clientName: clientName.trim() || undefined,
-        estimateAmount: estimateAmount ? Number(estimateAmount) : undefined,
-        priority,
-        category,
-        status,
-        dueDateFormatted: dueDateStr,
-        assignedTo,
-        description: description.trim() || undefined,
-      });
+    setIsSaving(true);
+    try {
+      if (onUpdateTask) {
+        onUpdateTask({
+          ...task,
+          title: title.trim(),
+          clientName: clientName.trim() || undefined,
+          estimateAmount: estimateAmount ? Number(estimateAmount) : undefined,
+          priority,
+          category,
+          status,
+          dueDateFormatted: dueDateStr,
+          assignedTo: assignedTo || 'Unassigned',
+          assignedToUserId,
+          assignedInitials:
+            assignedTo && assignedTo !== 'Unassigned'
+              ? assignedTo
+                  .split(' ')
+                  .map((p) => p[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
+              : undefined,
+          description: description.trim() || undefined,
+        });
+      }
+      onClose();
+    } finally {
+      setIsSaving(false);
     }
-    onClose();
   };
 
   const handleDelete = () => {
-    if (confirm('Delete this task?')) {
+    if (confirm('Are you sure you want to delete this operational task?')) {
       if (onDeleteTask) onDeleteTask(task.id);
       onClose();
     }
@@ -120,10 +204,10 @@ export function CrmTaskDetailModal({
         <button
           type="button"
           onClick={handleSave}
-          disabled={!title.trim()}
+          disabled={!title.trim() || isSaving}
           className="flex items-center justify-center gap-1.5 px-6 py-2 rounded-xl bg-gradient-to-r from-[#1878B8] via-[#0284c7] to-[#38bdf8] hover:brightness-105 active:scale-[0.98] text-white text-xs font-black shadow-[0_4px_16px_rgba(24,120,184,0.35)] hover:shadow-[0_6px_22px_rgba(24,120,184,0.45)] transition-all disabled:opacity-50 cursor-pointer"
         >
-          <Save size={14} className="stroke-[2.5]" />
+          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="stroke-[2.5]" />}
           <span>Save Changes</span>
         </button>
       </div>
@@ -269,7 +353,7 @@ export function CrmTaskDetailModal({
           </div>
         </div>
 
-        {/* Due Date & Assignee */}
+        {/* Due Date & Dynamic Assignee */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="text-[10.5px] font-bold text-slate-700 block">Due Date &amp; Time</label>
@@ -288,16 +372,17 @@ export function CrmTaskDetailModal({
           <div className="space-y-1.5">
             <label className="text-[10.5px] font-bold text-slate-700 block">Assigned To</label>
             <select
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
-              className="w-full p-2 rounded-xl bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-[#1878B8] text-xs font-semibold text-slate-900 outline-none shadow-2xs cursor-pointer"
+              value={assignedToUserId ? String(assignedToUserId) : assignedTo}
+              onChange={handleAssigneeChange}
+              disabled={isLoadingUsers}
+              className="w-full p-2 rounded-xl bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-[#1878B8] text-xs font-semibold text-slate-900 outline-none shadow-2xs cursor-pointer disabled:opacity-60"
             >
               <option value="Unassigned">⚠️ Unassigned</option>
-              <option value="Marco Silva">Marco Silva (Field Foreman)</option>
-              <option value="Carlos Ramirez">Carlos Ramirez (Project Manager)</option>
-              <option value="Jessica Hayes">Jessica Hayes (Sales Rep)</option>
-              <option value="Sarah Jenkins">Sarah Jenkins (Field Inspector)</option>
-              <option value="Sam Martinez">Sam Martinez (Owner)</option>
+              {users.map((u) => (
+                <option key={u.id} value={String(u.id)}>
+                  {u.name} ({formatRole(u.role)})
+                </option>
+              ))}
             </select>
           </div>
         </div>

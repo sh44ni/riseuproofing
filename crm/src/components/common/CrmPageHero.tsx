@@ -8,6 +8,8 @@ export interface CrmPageHeroProps {
   defaultEyebrow: string;
   defaultTitle: string;
   defaultSubtitle: string;
+  // Compact viewport mode for non-scrollable dashboards
+  compact?: boolean;
   // Search Bar options
   showSearch?: boolean;
   searchPlaceholder?: string;
@@ -32,6 +34,7 @@ export function CrmPageHero({
   defaultEyebrow,
   defaultTitle,
   defaultSubtitle,
+  compact = false,
   showSearch = true,
   searchPlaceholder = 'Search...',
   searchValue = '',
@@ -62,7 +65,11 @@ export function CrmPageHero({
   return (
     <>
       <div
-        className={`relative rounded-2xl overflow-hidden light-glass-panel border border-white/85 shadow-[0_12px_36px_rgba(15,23,42,0.06)] h-[220px] min-h-[220px] max-h-[220px] flex flex-col justify-between p-5 lg:p-6 select-none group/hero glossy-sheen ${className}`}
+        className={`relative rounded-2xl overflow-hidden light-glass-panel border border-white/85 shadow-[0_12px_36px_rgba(15,23,42,0.06)] ${
+          compact
+            ? 'h-[128px] min-h-[128px] max-h-[128px] p-3.5 lg:px-5 lg:py-3.5'
+            : 'h-[220px] min-h-[220px] max-h-[220px] p-5 lg:p-6'
+        } flex flex-col justify-between select-none group/hero glossy-sheen ${className}`}
       >
         {/* ========================================================
             1. DYNAMIC CROPPED PANORAMA BACKGROUND IMAGE
@@ -184,18 +191,18 @@ export function CrmPageHero({
         {customBottomRow ? (
           <div className="relative z-10">{customBottomRow}</div>
         ) : (
-          <div className="relative z-10 flex items-end justify-between gap-6 pt-4 flex-wrap">
+          <div className={`relative z-10 flex items-end justify-between gap-4 flex-wrap ${compact ? 'pt-1' : 'pt-4'}`}>
             <div className="max-w-2xl">
-              <div className="flex items-center gap-2 mb-1">
+              <div className={`flex items-center gap-2 ${compact ? 'mb-0.5' : 'mb-1'}`}>
                 <span className="w-2 h-2 rounded-full bg-[#1878B8] shadow-[0_0_8px_#55C4F5] animate-pulse" />
-                <span className="text-[10px] tracking-[0.24em] font-extrabold uppercase text-[#1878B8]">
+                <span className={`${compact ? 'text-[9px]' : 'text-[10px]'} tracking-[0.24em] font-extrabold uppercase text-[#1878B8]`}>
                   {activeBanner.eyebrow}
                 </span>
               </div>
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1F1F1F]">
+              <h1 className={`${compact ? 'text-lg lg:text-xl' : 'text-2xl lg:text-3xl'} font-black tracking-tight text-[#1F1F1F] leading-tight`}>
                 {activeBanner.title}
               </h1>
-              <p className="text-xs text-slate-600 font-medium mt-0.5 leading-relaxed">
+              <p className={`${compact ? 'text-[11px]' : 'text-xs'} text-slate-600 font-medium mt-0.5 leading-tight truncate max-w-xl`}>
                 {activeBanner.subtitle}
               </p>
             </div>

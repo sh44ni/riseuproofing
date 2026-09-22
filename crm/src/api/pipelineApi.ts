@@ -3,9 +3,9 @@
 // Provides live pipeline data for Dashboard (8-column) and PipelinePage (11-step + 4-phase)
 
 import type { ColumnData, DealCard, PipelineDealItem, PipelineStageId } from '../components/pipeline/pipelineTypes';
-import { api } from '@/lib/api';
+import { api, API_ORIGIN } from '@/lib/api';
 
-const BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const BASE = API_ORIGIN;
 const API_KEY = import.meta.env.VITE_CRM_API_KEY || 'rup_live_vhu3GEw1RtOSVEKNG881wT_whHOOiadXbnBzqiichUw';
 
 export interface PipelineSummary {
@@ -61,6 +61,7 @@ export interface BackendLeadRaw {
   created_by_name?: string | null;
   notes?: string | null;
   lost_reason?: string | null;
+  checklist?: Array<{ id: string; label: string; done: boolean }>;
   checklist_completed_count?: number;
   checklist_completed_keys?: string[];
   created_at: string;
@@ -227,6 +228,7 @@ export async function fetchPipelineForDashboard(): Promise<{ columns: ColumnData
           sourceType: lead.source_type || undefined,
           assignedToUserId: lead.assigned_to_user_id,
           assignedToName: lead.assigned_to_name,
+          createdByUserId: lead.created_by_user_id,
           createdByName: lead.created_by_name,
         });
       }
@@ -260,74 +262,6 @@ export async function fetchPipelineForDashboard(): Promise<{ columns: ColumnData
 // ──────────────────────────────────────────────────────────────────────────
 // 2. PIPELINE PAGE REAL DATA CLIENT (11-STAGE & 4-PHASE MODEL)
 // ──────────────────────────────────────────────────────────────────────────
-
-const DEFAULT_SOP_CHECKLISTS: Record<string, string[]> = {
-  cold_lead: [
-    'Review lead source & notes',
-    'Confirm property address & satellite pitch',
-    'Attempt initial call within 15 minutes',
-  ],
-  initial_call: [
-    'Introduce Rise Up Roofing value proposition',
-    'Discuss homeowner roof concerns & leaks',
-    'Schedule on-site inspection appointment',
-  ],
-  inspection_scheduled: [
-    'Confirm appointment time with client via SMS',
-    'Prep estimator ladders and inspection toolkit',
-    'Arrival notification sent to client',
-  ],
-  inspection_completed: [
-    'Take drone/ladder photos of all slopes',
-    'Measure squares, eaves, valleys, and flashing',
-    'Review findings with homeowner on-site',
-  ],
-  estimate_building: [
-    'Build multi-tier estimate (Good/Better/Best)',
-    'Apply current material manufacturer pricing',
-    'Verify warranty packages & financing terms',
-  ],
-  estimate_sent: [
-    'Send proposal via portal email and SMS',
-    'Follow up immediately to confirm receipt',
-    'Offer to answer immediate scope questions',
-  ],
-  follow_up: [
-    'Review proposal tier options with homeowner',
-    'Answer questions regarding materials, warranty & financing',
-    'Confirm decision timeline or schedule next follow-up call',
-  ],
-  followup_2day: [
-    'Check if homeowner reviewed proposal tiers',
-    'Answer questions regarding warranties & materials',
-    'Confirm timeline for roof replacement decision',
-  ],
-  followup_7day: [
-    'Second follow-up call & text message',
-    'Assess competitor bids & offer price match if valid',
-    'Address HOA / insurance adjuster requirements',
-  ],
-  decision_followup: [
-    'Obtain firm decision status or milestone date',
-    'Offer flexible financing promotion if budget concern',
-    'Establish final action step',
-  ],
-  future_followup: [
-    'Categorize into 30/60/90-day callback calendar',
-    'Log insurance claim or HOA approval status',
-    'Set scheduled automated reminder',
-  ],
-  closed_won: [
-    'Collect digital contract signature',
-    'Process deposit payment',
-    'Handoff project to Production Manager & Crew Lead',
-  ],
-  closed_lost: [
-    'Log root-cause loss reason',
-    'Record autopsy feedback in field notes',
-    'Archive contact for future seasonal campaigns',
-  ],
-};
 
 function normalizeStageId(rawStage: string | undefined): PipelineStageId {
   if (
@@ -404,24 +338,16 @@ export async function fetchPipelineDeals(): Promise<{
     const serviceName = l.service_type || 'Residential Roofing';
     const val = Number(l.contract_value || l.estimate_total || l.estimated_value || 0);
 
-    const checklistLabels = DEFAULT_SOP_CHECKLISTS[stageId] || DEFAULT_SOP_CHECKLISTS.cold_lead;
-    const completedCount = l.checklist_completed_count || 0;
-    const completedKeys = new Set(l.checklist_completed_keys || []);
-    const checklist = checklistLabels.map((label, idx) => {
-      const itemKey = `chk-${idx}`;
-      return {
-        id: itemKey,
-        label,
-        done: completedKeys.has(itemKey) || idx < completedCount,
-      };
-    });
+    const checklist = l.checklist || [];
 
     const slaStatus = normalizeSlaStatus(l.sla_status);
     const slaText = l.sla_badge_label || (slaStatus === 'overdue' ? 'Action overdue' : slaStatus === 'due_today' ? 'Due today' : 'On track');
 
-    const isWebsite = l.source_type === 'website' || (l.lead_source || '').toLowerCase().includes('website') || (!l.created_by_user_id && l.lead_source !== 'manual');
-    const estimatorName = l.assigned_to_name || (isWebsite ? 'Unassigned' : (l.lead_source_detail || l.created_by_name || 'Staff'));
-    const estimatorRole = l.assigned_to_role || (isWebsite && !l.assigned_to_name ? 'Unclaimed' : 'Estimator');
+    const rawSrc = `${l.source_type || ''} ${l.lead_source || ''} ${l.lead_source_detail || ''}`.toLowerCase();
+    const isWebsite = l.source_type === 'website' || rawSrc.includes('website') || rawSrc.includes('contact') || rawSrc.includes('estimate') || (!l.created_by_user_id && l.lead_source !== 'manual');
+    const hasAssignee = Boolean(l.assigned_to_user_id && l.assigned_to_name && l.assigned_to_name.trim() !== '' && l.assigned_to_name !== 'Unassigned');
+    const estimatorName = hasAssignee ? l.assigned_to_name : 'Unassigned';
+    const estimatorRole = l.assigned_to_role || (hasAssignee ? 'Estimator' : 'Unclaimed');
 
     return {
       id: String(l.id),
@@ -436,11 +362,11 @@ export async function fetchPipelineDeals(): Promise<{
       stageId,
       daysInStage: l.days_in_stage ?? 0,
       score: l.lead_score || 0,
-      leadSource: l.lead_source || (l.created_by_user_id ? 'manual' : 'website'),
-      leadSourceDetail: l.lead_source_detail || undefined,
-      sourceType: l.source_type || undefined,
-      assignedToUserId: l.assigned_to_user_id,
-      assignedToName: l.assigned_to_name,
+      leadSource: isWebsite ? 'website' : (l.lead_source || (l.created_by_user_id ? 'manual' : 'website')),
+      leadSourceDetail: l.lead_source_detail || (isWebsite ? 'Website Contact Form' : undefined),
+      sourceType: isWebsite ? 'website' : (l.source_type || undefined),
+      assignedToUserId: hasAssignee ? l.assigned_to_user_id : undefined,
+      assignedToName: hasAssignee ? l.assigned_to_name : undefined,
       createdByName: l.created_by_name,
       estimator: {
         name: estimatorName,
@@ -594,6 +520,51 @@ export async function logDealFollowUp(
   }
 
   return await res.json();
+}
+
+export async function fetchPipelineAnalytics() {
+  try {
+    const res = await fetch(`${BASE}/api/admin/pipeline/analytics`, {
+      headers: api.getAuthHeaders(),
+    });
+    if (!res.ok) {
+      return {
+        probabilities: {
+          cold_lead: 0.10,
+          initial_call: 0.20,
+          inspection_scheduled: 0.35,
+          inspection_completed: 0.50,
+          estimate_building: 0.60,
+          estimate_sent: 0.70,
+          follow_up: 0.75,
+          future_followup: 0.40,
+          contract_signed: 0.95,
+          active_jobs: 0.98,
+          closed_won: 1.0,
+          closed_lost: 0.0,
+        },
+      };
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn('Pipeline analytics endpoint error, using defaults:', err);
+    return {
+      probabilities: {
+        cold_lead: 0.10,
+        initial_call: 0.20,
+        inspection_scheduled: 0.35,
+        inspection_completed: 0.50,
+        estimate_building: 0.60,
+        estimate_sent: 0.70,
+        follow_up: 0.75,
+        future_followup: 0.40,
+        contract_signed: 0.95,
+        active_jobs: 0.98,
+        closed_won: 1.0,
+        closed_lost: 0.0,
+      },
+    };
+  }
 }
 
 /**

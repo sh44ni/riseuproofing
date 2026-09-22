@@ -18,6 +18,7 @@ from app.api.admin.audit import router as admin_audit_router
 from app.api.admin.rbac import router as admin_rbac_router
 from app.api.admin.leads import router as admin_leads_router
 from app.api.admin.pipeline import router as admin_pipeline_router
+from app.api.admin.reports import router as admin_reports_router
 from app.api.admin.clients import router as admin_clients_router
 from app.api.admin.estimates import router as admin_estimates_router
 from app.api.admin.jobs import router as admin_jobs_router
@@ -31,6 +32,7 @@ from app.api.admin.hero_banners import router as admin_hero_banners_router
 from app.api.admin.quote_banner import router as admin_quote_banner_router
 from app.api.admin.calendar_events import router as admin_calendar_events_router
 from app.api.admin.user_tasks import router as admin_user_tasks_router
+from app.api.admin.estimator import router as admin_estimator_router
 from app.api.developer import router as developer_router
 
 api_router = APIRouter()
@@ -60,6 +62,7 @@ api_router.include_router(admin_pipeline_router)
 # Routers mounted under /api/admin:
 api_router.include_router(admin_clients_router, prefix="/api/admin", tags=["Admin Clients"])
 api_router.include_router(admin_estimates_router, prefix="/api/admin", tags=["Admin Estimates"])
+api_router.include_router(admin_reports_router, prefix="/api/admin", tags=["Admin Reports"])
 api_router.include_router(admin_jobs_router, prefix="/api/admin", tags=["Admin Jobs"])
 api_router.include_router(admin_finances_router, prefix="/api/admin", tags=["Admin Finances"])
 api_router.include_router(admin_calendar_router, prefix="/api/admin", tags=["Admin Calendar & Tasks"])
@@ -74,3 +77,4 @@ api_router.include_router(admin_hero_banners_router, prefix="/api/admin", tags=[
 api_router.include_router(admin_quote_banner_router, prefix="/api/admin", tags=["Admin Quote Banner"])
 api_router.include_router(admin_calendar_events_router, prefix="/api/admin", tags=["Admin Calendar Events"])
 api_router.include_router(admin_user_tasks_router, prefix="/api/admin", tags=["User Personal Sticky Notes"])
+api_router.include_router(admin_estimator_router, prefix="/api/admin", tags=["Admin Estimator Pricing"])

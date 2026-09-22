@@ -1,3 +1,5 @@
+import json
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -10,15 +12,35 @@ from app.services.sync import find_or_create_client, recalculate_client_stats
 
 router = APIRouter()
 
-JOB_STAGES = [
-    "permit_pending",
-    "material_order",
-    "scheduled",
-    "in_progress",
-    "punch_list",
-    "final_inspection",
-    "complete",
-]
+def _parse_job_record(job: Dict[str, Any]) -> Dict[str, Any]:
+    """Helper to ensure milestones and numeric fields are properly formatted."""
+    res = dict(job)
+    
+    # Parse milestones JSONB
+    ms = res.get("milestones")
+    if ms is None:
+        res["milestones"] = []
+    elif isinstance(ms, str):
+        try:
+            res["milestones"] = json.loads(ms)
+        except Exception:
+            res["milestones"] = []
+    elif isinstance(ms, list):
+        res["milestones"] = ms
+    else:
+        res["milestones"] = []
+
+    # Calculate milestone completion progress
+    total_ms = len(res["milestones"])
+    completed_ms = sum(1 for m in res["milestones"] if m.get("status") == "completed")
+    res["milestone_progress"] = round((completed_ms / total_ms) * 100) if total_ms > 0 else 0
+    res["milestones_completed_count"] = completed_ms
+    res["milestones_total_count"] = total_ms
+
+    if res.get("contract_value") is not None:
+        res["contract_value"] = float(res["contract_value"])
+
+    return res
 
 @router.get("/jobs")
 async def get_jobs(
@@ -47,8 +69,13 @@ async def get_jobs(
         params.update(scope["params"])
 
     if status and status != "all":
-        params["status"] = status
-        conditions.append("status = :status")
+        if status == "active":
+            conditions.append("status != 'complete' AND status != 'cancelled'")
+        elif status == "completed" or status == "complete":
+            conditions.append("status = 'complete'")
+        else:
+            params["status"] = status
+            conditions.append("status = :status")
 
     if search and search.strip():
         s = search.strip().lower()
@@ -57,7 +84,9 @@ async def get_jobs(
             LOWER(customer_name) LIKE :search OR
             LOWER(job_number) LIKE :search OR
             LOWER(COALESCE(address, '')) LIKE :search OR
-            LOWER(COALESCE(city, '')) LIKE :search
+            LOWER(COALESCE(city, '')) LIKE :search OR
+            LOWER(COALESCE(service_type, '')) LIKE :search OR
+            LOWER(COALESCE(crew_lead, '')) LIKE :search
         )""")
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
@@ -66,36 +95,41 @@ async def get_jobs(
     stats_query = text("""
         SELECT 
             COUNT(*) as total_count,
-            COUNT(CASE WHEN status != 'complete' THEN 1 END) as active_count,
+            COUNT(CASE WHEN status != 'complete' AND status != 'cancelled' THEN 1 END) as active_count,
+            COUNT(CASE WHEN status = 'complete' THEN 1 END) as completed_count,
             COALESCE(SUM(contract_value), 0) as total_value,
-            COALESCE(SUM(CASE WHEN status != 'complete' THEN contract_value ELSE 0 END), 0) as active_value
+            COALESCE(SUM(CASE WHEN status != 'complete' AND status != 'cancelled' THEN contract_value ELSE 0 END), 0) as active_value
         FROM jobs
     """)
 
     res = await db.execute(jobs_query, params)
-    jobs_rows = [dict(r._mapping) for r in res.fetchall()]
+    raw_jobs = [dict(r._mapping) for r in res.fetchall()]
+    parsed_jobs = [_parse_job_record(j) for j in raw_jobs]
 
     stats_res = await db.execute(stats_query)
     s_row = stats_res.first()
 
-    kanban: Dict[str, List[Dict[str, Any]]] = {stage: [] for stage in JOB_STAGES}
-    for j in jobs_rows:
-        st = j.get("status")
-        if st in kanban:
-            kanban[st].append(j)
-        else:
-            kanban["permit_pending"].append(j)
+    # Calculate overall milestone progress across active jobs
+    active_jobs = [j for j in parsed_jobs if j.get("status") != "complete" and j.get("status") != "cancelled"]
+    total_active_ms = sum(j["milestones_total_count"] for j in active_jobs)
+    completed_active_ms = sum(j["milestones_completed_count"] for j in active_jobs)
+    milestone_velocity = round((completed_active_ms / total_active_ms) * 100) if total_active_ms > 0 else 0
+
+    # Count distinct active crew leads
+    active_crews = len(set(j["crew_lead"] for j in active_jobs if j.get("crew_lead")))
 
     summary = {
         "totalCount": int(s_row.total_count or 0) if s_row else 0,
         "activeCount": int(s_row.active_count or 0) if s_row else 0,
+        "completedCount": int(s_row.completed_count or 0) if s_row else 0,
         "totalValue": float(s_row.total_value or 0) if s_row else 0.0,
         "activeValue": float(s_row.active_value or 0) if s_row else 0.0,
+        "milestoneVelocity": milestone_velocity,
+        "activeCrews": active_crews,
     }
 
     return {
-        "jobs": jobs_rows,
-        "kanban": kanban,
+        "jobs": parsed_jobs,
         "summary": summary
     }
 
@@ -105,112 +139,144 @@ async def create_job(
     user: Dict[str, Any] = Depends(require_any_permission(["jobs:change_stage", "estimates:create"])),
     db: AsyncSession = Depends(get_db)
 ):
-    lead_id = payload.get("leadId")
-    if not lead_id:
-        raise HTTPException(
-            status_code=400,
-            detail="A valid sales pipeline lead is required to create a job. Please select an existing lead."
-        )
+    lead_id = payload.get("leadId") or payload.get("lead_id")
+    client_id = payload.get("clientId") or payload.get("client_id")
+    customer_name = payload.get("customerName") or payload.get("customer_name")
+    customer_phone = payload.get("customerPhone") or payload.get("customer_phone")
+    customer_email = payload.get("customerEmail") or payload.get("customer_email")
+    address = payload.get("address")
+    city = payload.get("city")
+    zip_code = payload.get("zip")
+    service_type = payload.get("serviceType") or payload.get("service_type") or "Residential Roofing"
+    contract_value = float(payload.get("contractValue") or payload.get("contract_value") or 0.0)
+    scheduled_start = payload.get("scheduledStart") or payload.get("scheduled_start")
+    estimated_days = int(payload.get("estimatedDays") or payload.get("estimated_days") or 3)
+    crew_lead = payload.get("crewLead") or payload.get("crew_lead")
+    crew_members = payload.get("crewMembers") or payload.get("crew_members") or []
+    notes = payload.get("notes")
+    status_val = payload.get("status") or "scheduled"
 
-    parsed_lead_id = int(lead_id)
-    l_res = await db.execute(text("SELECT * FROM leads WHERE id = :id"), {"id": parsed_lead_id})
-    lead_row = l_res.first()
-    if not lead_row:
-        raise HTTPException(status_code=404, detail="Selected lead not found in sales pipeline")
-    lead = dict(lead_row._mapping)
+    # Custom milestones start empty [] by default unless explicitly provided
+    milestones_payload = payload.get("milestones", [])
+    if isinstance(milestones_payload, str):
+        try:
+            milestones_payload = json.loads(milestones_payload)
+        except Exception:
+            milestones_payload = []
 
-    final_name = payload.get("customerName") or lead.get("full_name")
-    if not final_name:
-        raise HTTPException(status_code=400, detail="Customer name is required")
+    lead = None
+    estimate_id = None
+    if lead_id:
+        parsed_lead_id = int(lead_id)
+        l_res = await db.execute(text("SELECT * FROM leads WHERE id = :id"), {"id": parsed_lead_id})
+        lead_row = l_res.first()
+        if lead_row:
+            lead = dict(lead_row._mapping)
+            customer_name = customer_name or lead.get("full_name")
+            customer_phone = customer_phone or lead.get("phone")
+            customer_email = customer_email or lead.get("email")
+            address = address or lead.get("address")
+            city = city or lead.get("city")
+            zip_code = zip_code or lead.get("zip")
+            service_type = service_type or lead.get("service_type") or "Residential Roofing"
+            if not contract_value and lead.get("estimated_value"):
+                contract_value = float(lead.get("estimated_value") or 0)
+            if not client_id and lead.get("client_id"):
+                client_id = int(lead.get("client_id"))
 
-    client_id = int(lead["client_id"]) if lead.get("client_id") else None
+            # Find estimate to link if exists
+            est_res = await db.execute(
+                text("SELECT id, total FROM estimates WHERE lead_id = :lid OR (client_id = :cid AND client_id IS NOT NULL) ORDER BY created_at DESC LIMIT 1"),
+                {"lid": parsed_lead_id, "cid": client_id}
+            )
+            est_row = est_res.first()
+            if est_row:
+                estimate_id = int(est_row.id)
+                if not contract_value and est_row.total:
+                    contract_value = float(est_row.total)
+
+    if not customer_name:
+        raise HTTPException(status_code=400, detail="Customer name is required to create a job")
+
     if not client_id:
         c = await find_or_create_client(
             db=db,
-            full_name=final_name,
-            phone=payload.get("customerPhone") or lead.get("phone"),
-            email=payload.get("customerEmail") or lead.get("email"),
-            address=payload.get("address") or lead.get("address"),
-            city=payload.get("city") or lead.get("city"),
-            zip_code=payload.get("zip") or lead.get("zip"),
-            lead_source=lead.get("lead_source") or "job_creation"
+            full_name=customer_name,
+            phone=customer_phone,
+            email=customer_email,
+            address=address,
+            city=city,
+            zip_code=zip_code,
+            lead_source=lead.get("lead_source") if lead else "job_dispatch"
         )
         client_id = c.id
-        await db.execute(text("UPDATE leads SET client_id = :cid WHERE id = :id"), {"cid": client_id, "id": parsed_lead_id})
+        if lead_id:
+            await db.execute(text("UPDATE leads SET client_id = :cid WHERE id = :id"), {"cid": client_id, "id": int(lead_id)})
 
-    # Find estimate to link if exists
-    est_res = await db.execute(
-        text("SELECT id, total FROM estimates WHERE lead_id = :lid OR (client_id = :cid AND client_id IS NOT NULL) ORDER BY created_at DESC LIMIT 1"),
-        {"lid": parsed_lead_id, "cid": client_id}
+    job_created_by = (lead.get("created_by_user_id") or lead.get("created_by")) if lead else user.get("id")
+    job_role_snapshot = (lead.get("created_by_role_snapshot")) if lead else (
+        ", ".join([r["name"] for r in user.get("roles", [])]) if user.get("roles") else user.get("role", "Staff")
     )
-    est_row = est_res.first()
-    estimate_id = int(est_row.id) if est_row else None
-
-    job_created_by = lead.get("created_by") or lead.get("created_by_user_id")
-    job_role_snapshot = lead.get("created_by_role_snapshot")
-    if not job_created_by:
-        job_created_by = user["id"]
-        job_role_snapshot = ", ".join([r["name"] for r in user.get("roles", [])]) if user.get("roles") else user.get("role", "Staff")
 
     year = datetime.now(timezone.utc).year
     count_res = await db.execute(text("SELECT COUNT(*) FROM jobs"))
     seq = str(int(count_res.scalar() or 0) + 1).zfill(4)
     job_number = f"JOB-{year}-{seq}"
 
-    final_contract_val = float(payload.get("contractValue") or 0)
-    if not final_contract_val and est_row and est_row.total:
-        final_contract_val = float(est_row.total)
-
     insert_stmt = text("""
         INSERT INTO jobs (
             lead_id, client_id, estimate_id, job_number, status, customer_name, customer_phone, customer_email,
             address, city, zip, service_type, contract_value, scheduled_start,
-            estimated_days, crew_lead, notes,
+            estimated_days, crew_lead, crew_members, notes, milestones,
             created_by, created_by_role_snapshot
         ) VALUES (
-            :lead_id, :client_id, :est_id, :job_num, 'permit_pending', :c_name, :c_phone, :c_email,
+            :lead_id, :client_id, :est_id, :job_num, :status, :c_name, :c_phone, :c_email,
             :addr, :city, :zip, :svc_type, :c_val, :sched_start,
-            :est_days, :crew_lead, :notes,
+            :est_days, :crew_lead, :crew_members, :notes, CAST(:milestones AS jsonb),
             :creator, :role_snap
         ) RETURNING *
     """)
 
     res = await db.execute(insert_stmt, {
-        "lead_id": parsed_lead_id,
+        "lead_id": int(lead_id) if lead_id else None,
         "client_id": client_id,
         "est_id": estimate_id,
         "job_num": job_number,
-        "c_name": final_name,
-        "c_phone": payload.get("customerPhone") or lead.get("phone"),
-        "c_email": payload.get("customerEmail") or lead.get("email"),
-        "addr": payload.get("address") or lead.get("address"),
-        "city": payload.get("city") or lead.get("city"),
-        "zip": payload.get("zip") or lead.get("zip"),
-        "svc_type": payload.get("serviceType") or lead.get("service_type") or "Residential Roofing",
-        "c_val": final_contract_val,
-        "sched_start": payload.get("scheduledStart"),
-        "est_days": int(payload.get("estimatedDays") or 3),
-        "crew_lead": payload.get("crewLead"),
-        "notes": payload.get("notes"),
+        "status": status_val,
+        "c_name": customer_name,
+        "c_phone": customer_phone,
+        "c_email": customer_email,
+        "addr": address,
+        "city": city,
+        "zip": zip_code,
+        "svc_type": service_type,
+        "c_val": contract_value,
+        "sched_start": scheduled_start,
+        "est_days": estimated_days,
+        "crew_lead": crew_lead,
+        "crew_members": crew_members,
+        "notes": notes,
+        "milestones": json.dumps(milestones_payload),
         "creator": job_created_by,
         "role_snap": job_role_snapshot,
     })
-    new_job = dict(res.first()._mapping)
+    new_job_row = dict(res.first()._mapping)
+    new_job = _parse_job_record(new_job_row)
 
-    # Automatically transition lead to Stage 5 and mark won
-    await db.execute(
-        text("""
-            UPDATE leads 
-            SET pipeline_stage = 'stage_5_completion_followup',
-                stage_entered_at = CASE WHEN pipeline_stage != 'stage_5_completion_followup' THEN NOW() ELSE stage_entered_at END,
-                status = 'won',
-                contract_signed_at = COALESCE(contract_signed_at, NOW()),
-                estimated_value = GREATEST(COALESCE(estimated_value, 0), :val),
-                updated_at = NOW()
-            WHERE id = :id
-        """),
-        {"val": final_contract_val, "id": parsed_lead_id}
-    )
+    if lead_id:
+        await db.execute(
+            text("""
+                UPDATE leads 
+                SET pipeline_stage = 'stage_5_completion_followup',
+                    stage_entered_at = CASE WHEN pipeline_stage != 'stage_5_completion_followup' THEN NOW() ELSE stage_entered_at END,
+                    status = 'won',
+                    contract_signed_at = COALESCE(contract_signed_at, NOW()),
+                    estimated_value = GREATEST(COALESCE(estimated_value, 0), :val),
+                    updated_at = NOW()
+                WHERE id = :id
+            """),
+            {"val": contract_value, "id": int(lead_id)}
+        )
 
     if estimate_id:
         await db.execute(
@@ -221,34 +287,21 @@ async def create_job(
     if client_id:
         await recalculate_client_stats(db, client_id)
 
-    # Activity timelines
+    # Log initial dispatch activity
+    author_name = user.get("name") or "Staff"
     await db.execute(
         text("""
             INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
-            VALUES ('lead', :lid, :cid, 'status_change', :title, :desc, :pby)
+            VALUES ('job', :jid, :cid, 'status_change', :title, :desc, :pby)
         """),
         {
-            "lid": parsed_lead_id,
+            "jid": new_job["id"],
             "cid": client_id,
-            "title": f"Job Dispatched: {job_number}",
-            "desc": f"Moved to Stage 5 (Production / Permit Pending) with contract value ${final_contract_val:,.2f}",
-            "pby": user.get("name") or "Staff"
+            "title": f"Job Created: {job_number}",
+            "desc": f"Work order created for {customer_name}. Scope: {service_type}. Value: ${contract_value:,.2f}",
+            "pby": author_name
         }
     )
-
-    if client_id:
-        await db.execute(
-            text("""
-                INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by)
-                VALUES ('client', :cid, :cid, 'status_change', :title, :desc, :pby)
-            """),
-            {
-                "cid": client_id,
-                "title": f"New Project Started: {job_number}",
-                "desc": f"Contract Value: ${final_contract_val:,.2f} ({new_job.get('service_type')})",
-                "pby": user.get("name") or "Staff"
-            }
-        )
 
     await db.commit()
     return {"ok": True, "job": new_job}
@@ -264,7 +317,7 @@ async def get_job(
     if not row:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    job = dict(row._mapping)
+    job = _parse_job_record(dict(row._mapping))
     estimate = None
     if job.get("estimate_id"):
         est_res = await db.execute(text("SELECT * FROM estimates WHERE id = :id"), {"id": job["estimate_id"]})
@@ -281,22 +334,36 @@ async def update_job(
     user: Dict[str, Any] = Depends(require_any_permission(["jobs:change_stage", "jobs:manage_permits"])),
     db: AsyncSession = Depends(get_db)
 ):
-    allowed = [
+    allowed_fields = [
         "status", "customer_name", "customer_phone", "customer_email",
         "address", "city", "zip", "service_type", "contract_value",
-        "permit_status", "permit_number", "permit_filed_at", "permit_approved_at",
-        "material_status", "material_ordered_at", "material_delivered_at",
         "crew_lead", "crew_members", "scheduled_start", "estimated_days",
-        "actual_start", "actual_end", "weather_delays", "notes"
+        "actual_start", "actual_end", "weather_delays", "notes",
+        "permit_status", "permit_number", "permit_filed_at", "permit_approved_at",
+        "material_status", "material_ordered_at", "material_delivered_at"
     ]
 
     updates = []
     params: Dict[str, Any] = {"id": job_id}
 
-    for f in allowed:
-        if f in payload:
-            params[f] = payload[f]
+    for f in allowed_fields:
+        # Check snake_case and camelCase
+        camel_f = re.sub(r'_([a-z])', lambda m: m.group(1).upper(), f)
+        val = payload.get(f) if f in payload else payload.get(camel_f)
+        if val is not None or f in payload or camel_f in payload:
+            params[f] = val
             updates.append(f"{f} = :{f}")
+
+    if "milestones" in payload:
+        ms_val = payload["milestones"]
+        if isinstance(ms_val, (list, dict)):
+            ms_json = json.dumps(ms_val)
+        elif isinstance(ms_val, str):
+            ms_json = ms_val
+        else:
+            ms_json = "[]"
+        params["milestones"] = ms_json
+        updates.append("milestones = CAST(:milestones AS jsonb)")
 
     if not updates:
         return {"ok": True}
@@ -309,19 +376,205 @@ async def update_job(
     if not row:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    updated_job = dict(row._mapping)
+    updated_job = _parse_job_record(dict(row._mapping))
 
-    if payload.get("status") == "complete" and updated_job.get("lead_id"):
-        await db.execute(
-            text("UPDATE leads SET job_completed_at = NOW(), status = 'won', updated_at = NOW() WHERE id = :id"),
-            {"id": updated_job["lead_id"]}
-        )
+    # If status transitioned to complete
+    if payload.get("status") == "complete":
+        if updated_job.get("lead_id"):
+            await db.execute(
+                text("UPDATE leads SET job_completed_at = COALESCE(job_completed_at, NOW()), status = 'completed', updated_at = NOW() WHERE id = :id"),
+                {"id": updated_job["lead_id"]}
+            )
+        try:
+            author_name = user.get("name") if isinstance(user, dict) else (getattr(user, "name", None) or "Staff")
+            author_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+            contract_val = float(updated_job.get("contract_value") or 0)
+            meta_dict = {
+                "job_title": f"Job #{updated_job.get('job_number') or job_id}",
+                "contract_value": contract_val,
+                "customer_name": updated_job.get("customer_name")
+            }
+            await db.execute(
+                text("""
+                    INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by, user_id, user_name, metadata, created_at)
+                    VALUES ('job', :jid, :cid, 'job_completed', 'Job Completed', :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), NOW())
+                """),
+                {
+                    "jid": int(job_id),
+                    "cid": int(updated_job["client_id"]) if updated_job.get("client_id") else None,
+                    "desc": f"Job {updated_job.get('job_number') or job_id} marked complete. Contract value: ${contract_val:,.2f}",
+                    "pby": author_name,
+                    "uid": author_id,
+                    "uname": author_name,
+                    "meta": json.dumps(meta_dict)
+                }
+            )
+        except Exception as e:
+            print(f"Failed to record job_completed activity: {e}")
+
+        try:
+            from app.core.redis import cache_delete
+            await cache_delete("crm:dashboard:stats")
+        except Exception:
+            pass
 
     if updated_job.get("client_id"):
         await recalculate_client_stats(db, int(updated_job["client_id"]))
 
     await db.commit()
     return {"ok": True, "job": updated_job}
+
+@router.post("/jobs/{job_id}/complete")
+async def complete_job(
+    job_id: int,
+    payload: Dict[str, Any] = {},
+    user: Dict[str, Any] = Depends(require_any_permission(["jobs:change_stage", "jobs:manage_permits"])),
+    db: AsyncSession = Depends(get_db)
+):
+    """Explicit endpoint to mark a job completed, log notes, and update client & lead stats."""
+    res = await db.execute(text("SELECT * FROM jobs WHERE id = :id"), {"id": job_id})
+    row = res.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = dict(row._mapping)
+    notes = payload.get("notes", "").strip()
+    author_name = payload.get("authorName") or user.get("name") or "Staff"
+    author_role = payload.get("authorRole") or user.get("role") or "Field Manager"
+
+    # Append completion note to job notes if provided
+    updated_notes = job.get("notes") or ""
+    if notes:
+        now_str = datetime.now().strftime("%b %d, %Y • %I:%M %p")
+        note_entry = f"[{now_str} — {author_name} ({author_role})]\n➔ Job Completed: {notes}"
+        updated_notes = f"{updated_notes}\n\n{note_entry}".strip() if updated_notes else note_entry
+
+    stmt = text("""
+        UPDATE jobs
+        SET status = 'complete',
+            actual_end = COALESCE(actual_end, CURRENT_DATE),
+            notes = :notes,
+            updated_at = NOW()
+        WHERE id = :id
+        RETURNING *
+    """)
+    up_res = await db.execute(stmt, {"notes": updated_notes, "id": job_id})
+    completed_job = _parse_job_record(dict(up_res.first()._mapping))
+
+    # Sync lead
+    if completed_job.get("lead_id"):
+        await db.execute(
+            text("UPDATE leads SET job_completed_at = COALESCE(job_completed_at, NOW()), status = 'completed', updated_at = NOW() WHERE id = :id"),
+            {"id": completed_job["lead_id"]}
+        )
+
+    # Sync client stats
+    if completed_job.get("client_id"):
+        await recalculate_client_stats(db, int(completed_job["client_id"]))
+
+    # Insert activity log
+    contract_val = float(completed_job.get("contract_value") or 0)
+    meta_dict = {
+        "job_title": f"Job #{completed_job.get('job_number') or job_id}",
+        "contract_value": contract_val,
+        "customer_name": completed_job.get("customer_name")
+    }
+    await db.execute(
+        text("""
+            INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by, user_id, user_name, metadata, created_at)
+            VALUES ('job', :jid, :cid, 'job_completed', 'Job Completed & Warrantied', :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), NOW())
+        """),
+        {
+            "jid": int(job_id),
+            "cid": int(completed_job["client_id"]) if completed_job.get("client_id") else None,
+            "desc": f"Job {completed_job.get('job_number') or job_id} completed. Contract: ${contract_val:,.2f}. {notes}".strip(),
+            "pby": author_name,
+            "uid": user.get("id"),
+            "uname": author_name,
+            "meta": json.dumps(meta_dict)
+        }
+    )
+
+    try:
+        from app.core.redis import cache_delete
+        await cache_delete("crm:dashboard:stats")
+    except Exception:
+        pass
+
+    await db.commit()
+    return {"ok": True, "job": completed_job}
+
+@router.get("/jobs/{job_id}/activities")
+async def get_job_activities(
+    job_id: int,
+    user: Dict[str, Any] = Depends(require_permission("jobs:view")),
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve activity logs and notes for a specific job."""
+    res = await db.execute(
+        text("""
+            SELECT id, entity_type, entity_id, client_id, activity_type, title, description,
+                   performed_by, user_id, user_name, metadata, created_at
+            FROM activities
+            WHERE (entity_type = 'job' AND entity_id = :id)
+               OR (entity_type = 'lead' AND entity_id = (SELECT lead_id FROM jobs WHERE id = :id AND lead_id IS NOT NULL))
+            ORDER BY created_at DESC
+        """),
+        {"id": job_id}
+    )
+    activities = [dict(r._mapping) for r in res.fetchall()]
+    return {"activities": activities}
+
+@router.post("/jobs/{job_id}/activities")
+async def create_job_activity(
+    job_id: int,
+    payload: Dict[str, Any],
+    user: Dict[str, Any] = Depends(require_any_permission(["jobs:change_stage", "jobs:manage_permits"])),
+    db: AsyncSession = Depends(get_db)
+):
+    """Log a field note or progress update to the job activity timeline."""
+    note = payload.get("note", "").strip()
+    if not note:
+        raise HTTPException(status_code=400, detail="Activity note is required")
+
+    job_res = await db.execute(text("SELECT client_id, notes FROM jobs WHERE id = :id"), {"id": job_id})
+    job_row = job_res.first()
+    if not job_row:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    client_id = job_row.client_id
+    author_name = payload.get("authorName") or user.get("name") or "Staff"
+    author_role = payload.get("authorRole") or user.get("role") or "Field Manager"
+
+    now_str = datetime.now().strftime("%b %d, %Y • %I:%M %p")
+    note_entry = f"[{now_str} — {author_name} ({author_role})]\n{note}"
+
+    # Insert into activities table
+    await db.execute(
+        text("""
+            INSERT INTO activities (entity_type, entity_id, client_id, activity_type, title, description, performed_by, user_id, user_name, created_at)
+            VALUES ('job', :jid, :cid, 'note', 'Field Note Added', :desc, :pby, :uid, :uname, NOW())
+        """),
+        {
+            "jid": job_id,
+            "cid": client_id,
+            "desc": note_entry,
+            "pby": author_name,
+            "uid": user.get("id"),
+            "uname": author_name,
+        }
+    )
+
+    # Append to job notes column
+    existing_notes = job_row.notes or ""
+    updated_notes = f"{existing_notes}\n\n{note_entry}".strip() if existing_notes else note_entry
+    await db.execute(
+        text("UPDATE jobs SET notes = :notes, updated_at = NOW() WHERE id = :id"),
+        {"notes": updated_notes, "id": job_id}
+    )
+
+    await db.commit()
+    return {"ok": True, "note": note_entry}
 
 @router.delete("/jobs/{job_id}")
 async def delete_job(

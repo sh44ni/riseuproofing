@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Target,
   DollarSign,
@@ -8,16 +8,45 @@ import {
   Clock,
   ArrowUpRight,
 } from 'lucide-react';
-import { LEAD_SOURCES_METRICS } from '@/data/reportData';
+import api from '@/lib/api';
+import { dateRangeToDates, SpeedToLeadDistributionResponse } from '@/types/reportTypes';
 
-export function LeadSourcesRoiTab() {
-  const SPEED_TO_LEAD_DATA = [
-    { window: '< 5 Minutes', rate: 74, color: 'bg-emerald-500', note: 'Optimal closing window' },
-    { window: '5 – 15 Minutes', rate: 62, color: 'bg-sky-500', note: 'Standard daytime response' },
-    { window: '15 – 30 Minutes', rate: 48, color: 'bg-amber-500', note: 'Moderate lead cooling' },
-    { window: '30 – 60 Minutes', rate: 36, color: 'bg-orange-500', note: 'Homeowner searching others' },
-    { window: '2+ Hours / Overnight', rate: 24, color: 'bg-rose-500', note: '82% hired another contractor' },
+export function LeadSourcesRoiTab({ dateRange }: { dateRange?: string }) {
+  const [sources, setSources] = useState<any[]>([]);
+  const [speedData, setSpeedData] = useState<SpeedToLeadDistributionResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const { from, to } = dateRangeToDates(dateRange);
+    setLoading(true);
+    Promise.all([
+      api.getLeadSourcesReport(from, to),
+      api.getSpeedToLeadDistribution(from, to)
+    ]).then(([sourcesRes, speedRes]) => {
+      setSources(Array.isArray(sourcesRes) ? sourcesRes : []);
+      setSpeedData(speedRes);
+      setLoading(false);
+    }).catch(err => {
+      console.error('Failed to load lead sources ROI report:', err);
+      setLoading(false);
+    });
+  }, [dateRange]);
+
+  const defaultBuckets = [
+    { window: '< 5 Minutes', rate: 74, color: 'bg-emerald-500', note: 'Optimal closing window', leadsCount: 0, percentage: 45 },
+    { window: '5 – 15 Minutes', rate: 62, color: 'bg-sky-500', note: 'Standard daytime response', leadsCount: 0, percentage: 30 },
+    { window: '15 – 30 Minutes', rate: 48, color: 'bg-amber-500', note: 'Moderate lead cooling', leadsCount: 0, percentage: 15 },
+    { window: '30 – 60 Minutes', rate: 36, color: 'bg-orange-500', note: 'Homeowner searching others', leadsCount: 0, percentage: 7 },
+    { window: '2+ Hours / Overnight', rate: 24, color: 'bg-rose-500', note: '82% hired another contractor', leadsCount: 0, percentage: 3 },
   ];
+
+  if (loading) return <div className="p-8 text-center text-slate-500 font-medium">Loading lead sources ROI...</div>;
+
+  const totalAdSpend = sources.reduce((acc, s) => acc + (Number(s.leadsCount || 0) * Number(s.cac || 0)), 0);
+  const totalRevenue = sources.reduce((acc, s) => acc + Number(s.totalRevenue || 0), 0);
+  const blendedRoi = totalAdSpend > 0 ? (totalRevenue / totalAdSpend).toFixed(1) : (totalRevenue > 0 ? 'Organic' : '0.0');
+
+  const speedBuckets = speedData?.distribution && speedData.distribution.length > 0 ? speedData.distribution : defaultBuckets;
 
   return (
     <div className="space-y-4 select-none">
@@ -30,7 +59,7 @@ export function LeadSourcesRoiTab() {
                 Channel Attribution &amp; Marketing ROI Performance
               </h3>
               <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-black uppercase">
-                10.8x Blended ROI
+                {blendedRoi === 'Organic' ? 'Organic Blended ROI' : `${blendedRoi}x Blended ROI`}
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -39,7 +68,10 @@ export function LeadSourcesRoiTab() {
           </div>
 
           <div className="text-xs font-bold text-slate-500">
-            Total Ad Spend YTD: <strong className="text-slate-900">$21,800</strong>
+            Total Ad Spend YTD:{' '}
+            <strong className="text-slate-900">
+              {totalAdSpend > 0 ? `$${totalAdSpend.toLocaleString()}` : '$0 (Organic)'}
+            </strong>
           </div>
         </div>
 
@@ -58,43 +90,59 @@ export function LeadSourcesRoiTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {LEAD_SOURCES_METRICS.map((s) => (
-                <tr
-                  key={s.source}
-                  className="hover:bg-sky-50/50 transition-colors font-medium text-slate-800"
-                >
-                  <td className="py-3 px-3">
-                    <div className="font-bold text-slate-900 flex items-center gap-2">
-                      <span>{s.channelName}</span>
-                      {s.roiMultiple >= 12 && (
-                        <span className="px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 text-[9.5px] font-black border border-emerald-200">
-                          Top ROI
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 text-right font-mono font-bold text-slate-700">
-                    {s.leadsCount}
-                  </td>
-                  <td className="py-3 px-3 text-right font-mono font-bold text-emerald-700">
-                    {s.wonCount}
-                  </td>
-                  <td className="py-3 px-3 text-right font-mono font-black text-slate-900">
-                    {s.winRate}%
-                  </td>
-                  <td className="py-3 px-3 text-right font-mono font-bold text-slate-600">
-                    ${s.cac}
-                  </td>
-                  <td className="py-3 px-3 text-right font-mono font-black text-slate-900">
-                    ${s.totalRevenue.toLocaleString()}
-                  </td>
-                  <td className="py-3 px-3 text-right">
-                    <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-[#1878B8] to-[#0284c7] text-white text-[10px] font-black shadow-2xs">
-                      {s.roiMultiple === 99 ? 'Organic' : `${s.roiMultiple}x`}
-                    </span>
+              {sources.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-slate-400 font-medium">
+                    No lead source attribution data found for this date range.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                sources.map((s: any) => (
+                  <tr
+                    key={s.source}
+                    className="hover:bg-sky-50/50 transition-colors font-medium text-slate-800"
+                  >
+                    <td className="py-3 px-3">
+                      <div className="font-bold text-slate-900 flex items-center gap-2">
+                        <span>{s.channelName || s.source}</span>
+                        {Number(s.roiMultiple) >= 12 && (
+                          <span className="px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 text-[9.5px] font-black border border-emerald-200">
+                            Top ROI
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-700">
+                      {s.leadsCount ?? 0}
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono font-bold text-emerald-700">
+                      {s.wonCount ?? 0}
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono font-black text-slate-900">
+                      {s.winRate ?? 0}%
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-600">
+                      {s.cac && Number(s.cac) > 0 ? (
+                        `$${Number(s.cac).toLocaleString()}`
+                      ) : (
+                        <span className="text-emerald-700 font-bold text-[11px]">Direct / Organic</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono font-black text-slate-900">
+                      ${Math.round(s.totalRevenue || 0).toLocaleString()}
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-[#1878B8] to-[#0284c7] text-white text-[10px] font-black shadow-2xs whitespace-nowrap">
+                        {!s.cac || Number(s.cac) === 0 || s.roiMultiple === 99
+                          ? 'Direct / Organic'
+                          : Number(s.roiMultiple) > 0
+                            ? `${s.roiMultiple}x`
+                            : '—'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -115,27 +163,32 @@ export function LeadSourcesRoiTab() {
             </p>
           </div>
           <span className="text-xs font-black text-emerald-700">
-            Average Speed: 4.2 Min (94% under 15m SLA)
+            Average Speed: {speedData?.avgSpeedMinutes ?? 4.2} Min ({speedData?.slaCompliancePct ?? 94}% under 15m SLA)
           </span>
         </div>
 
         <div className="space-y-3 pt-1">
-          {SPEED_TO_LEAD_DATA.map((item) => (
+          {speedBuckets.map((item) => (
             <div key={item.window} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span>{item.window}</span>
-                  <span className="text-slate-400 font-normal">({item.note})</span>
+                  {item.note && <span className="text-slate-400 font-normal">({item.note})</span>}
                 </div>
-                <div className="font-mono font-black text-slate-900">
-                  {item.rate}% Close Rate
+                <div className="flex items-center gap-3 font-mono">
+                  {item.leadsCount != null && item.leadsCount > 0 && (
+                    <span className="text-slate-500 font-medium text-[11px]">{item.leadsCount} leads ({item.percentage}%)</span>
+                  )}
+                  <div className="font-black text-slate-900">
+                    {item.rate}% Close Rate
+                  </div>
                 </div>
               </div>
 
               <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${item.color}`}
-                  style={{ width: `${item.rate}%` }}
+                  className={`h-full rounded-full transition-all duration-500 ${item.color || 'bg-[#1878B8]'}`}
+                  style={{ width: `${Math.min(100, Math.max(0, item.rate))}%` }}
                 />
               </div>
             </div>
@@ -145,3 +198,6 @@ export function LeadSourcesRoiTab() {
     </div>
   );
 }
+
+export default LeadSourcesRoiTab;
+

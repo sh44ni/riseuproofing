@@ -90,11 +90,20 @@ export interface WarrantyCertificate {
   validUntil: string;
 }
 
+export interface InspectionPhoto {
+  id: string;
+  title: string;
+  url: string;
+  severity: string;
+  createdAt?: string;
+}
+
 export interface WarrantySummary {
   warrantiesCount: number;
   hasCertificate: boolean;
   statusText: string;
   certificates: WarrantyCertificate[];
+  inspectionPhotos?: InspectionPhoto[];
 }
 
 export interface ClientTask {
@@ -145,6 +154,7 @@ export interface Client360Record {
   completedJob?: CompletedJob;
   billingSummary: BillingSummary;
   warrantySummary: WarrantySummary;
+  inspectionPhotos?: InspectionPhoto[];
   tasks: ClientTask[];
   timeline: TimelineEvent[];
   quotes: ClientQuote[];

@@ -19,9 +19,14 @@ async def send_estimate_proposal_email(
     """
     Sends an estimate proposal email with the official PDF attached using the Resend API.
     """
-    key = api_key or getattr(settings, "RESEND_API_KEY", "")
+    key = api_key or getattr(settings, "RESEND_API_KEY", "") or os.environ.get("RESEND_API_KEY", "")
     if not key:
-        raise ValueError("Resend API key is not configured.")
+        return {
+            "success": False,
+            "missing_key": True,
+            "error": "Resend API key is not configured in server environment (RESEND_API_KEY).",
+            "recipient": to_email,
+        }
 
     if not pdf_filename:
         pdf_filename = f"RiseUp_Roofing_Proposal_{estimate_number}.pdf"
@@ -133,3 +138,277 @@ async def send_estimate_proposal_email(
                 "error": error_data,
                 "recipient": to_email,
             }
+
+
+async def send_customer_welcome_inquiry_email(
+    to_email: str,
+    customer_name: str,
+    service_type: Optional[str] = "Roofing Inquiry",
+    city_or_address: Optional[str] = "San Diego County, CA",
+    custom_message: Optional[str] = None,
+    estimate_range: Optional[str] = None,
+    form_type: Optional[str] = "contact",
+    api_key: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Sends an immediate, branded Welcome & Confirmation email to a homeowner
+    who submitted a contact query or estimate request on the website.
+    """
+    key = api_key or getattr(settings, "RESEND_API_KEY", "") or os.environ.get("RESEND_API_KEY", "")
+    if not key or not to_email:
+        return {"success": False, "missing_key": True, "error": "Missing key or email"}
+
+    subject = f"Thank you for contacting Rise Up Roofing - Project Inquiry Received"
+    if form_type in ("estimator", "estimator_full", "calculator"):
+        subject = f"Your Instant Roofing Estimate Details - Rise Up Roofing & Construction"
+
+    range_banner = ""
+    if estimate_range:
+        range_banner = f"""
+        <div style="margin: 20px 0; padding: 16px; background-color: #f0f9ff; border-radius: 10px; border: 1px solid #bae6fd; text-align: center;">
+          <span style="font-size: 11px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.08em; display: block;">Preliminary Estimate Range</span>
+          <span style="font-size: 20px; font-weight: 900; color: #0c4a6e; display: block; margin-top: 4px;">{estimate_range}</span>
+          <span style="font-size: 11px; color: #0284c7; display: block; margin-top: 2px;">Subject to on-site roof inspection &amp; scope verification</span>
+        </div>
+        """
+
+    notes_section = ""
+    if custom_message and custom_message.strip():
+        notes_section = f"""
+        <div style="margin: 16px 0; padding: 12px 16px; background-color: #f8fafc; border-left: 4px solid #0284c7; border-radius: 4px;">
+          <strong style="font-size: 11px; text-transform: uppercase; color: #64748b; display: block; letter-spacing: 0.05em;">Your Project Notes:</strong>
+          <span style="font-size: 13px; color: #334155; font-style: italic;">{custom_message.strip()}</span>
+        </div>
+        """
+
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>{subject}</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #0f172a; margin: 0; padding: 24px; background-color: #f1f5f9;">
+      <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        
+        <!-- Header -->
+        <div style="background-color: #091b36; padding: 24px; text-align: center; color: #ffffff;">
+          <h1 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
+            Rise Up Roofing &amp; Construction
+          </h1>
+          <p style="margin: 4px 0 0 0; font-size: 11px; color: #38bdf8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">
+            Roofing | Solar | General Construction • Lic #1096492
+          </p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 28px 24px;">
+          <h2 style="font-size: 18px; font-weight: 800; color: #091b36; margin-top: 0;">We've Received Your Inquiry!</h2>
+          <p style="font-size: 14px; color: #334155; margin-top: 0;">
+            Hello <strong>{customer_name}</strong>,
+          </p>
+          <p style="font-size: 14px; color: #334155;">
+            Thank you for reaching out to <strong>Rise Up Roofing &amp; Construction</strong>. We have received your project details for <strong>{service_type}</strong> in <strong>{city_or_address}</strong>.
+          </p>
+
+          {range_banner}
+          {notes_section}
+
+          <div style="margin: 24px 0; padding: 18px; background-color: #f0fdf4; border-radius: 10px; border: 1px solid #bbf7d0;">
+            <div style="font-size: 12px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.05em;">
+              What Happens Next?
+            </div>
+            <ul style="margin: 8px 0 0 0; padding-left: 18px; font-size: 13px; color: #15803d; line-height: 1.6;">
+              <li>Our licensed roofing specialist is reviewing your project requirements.</li>
+              <li>We will follow up with you directly within <strong>1 business hour</strong> (or during business hours: Mon–Sat, 7am–6pm).</li>
+              <li>We will arrange a free, no-obligation on-site roof inspection with photo diagnostics if required.</li>
+            </ul>
+          </div>
+
+          <p style="font-size: 14px; color: #334155;">
+            Need immediate assistance or emergency leak repair? Feel free to call our direct dispatch line anytime at <strong>(760) 622 - 1230</strong>.
+          </p>
+
+          <!-- Contact Footer -->
+          <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+            <strong>Rise Up Roofing &amp; Construction</strong><br>
+            2182 S El Camino Real, Ste 202, Oceanside, CA 92054<br>
+            Phone: <a href="tel:7606221230" style="color: #0284c7; text-decoration: none;">(760) 622 - 1230</a> • Email: <a href="mailto:estimates@riseuprac.com" style="color: #0284c7; text-decoration: none;">estimates@riseuprac.com</a><br>
+            Website: <a href="https://riseuprac.com" style="color: #0284c7; text-decoration: none;">https://riseuprac.com</a>
+          </div>
+        </div>
+
+        <!-- Trust Strip -->
+        <div style="background-color: #f8fafc; padding: 12px 24px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em;">
+          Owens Corning Preferred Contractor &bull; Veteran Owned &bull; BBB A+ Accredited
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    from_email = getattr(settings, "RESEND_FROM_EMAIL", "Rise Up Roofing <estimates@riseuprac.com>")
+    payload = {
+        "from": from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
+    }
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(RESEND_API_URL, json=payload, headers=headers)
+            if resp.status_code in (200, 201):
+                return {"success": True, "data": resp.json(), "recipient": to_email}
+            return {"success": False, "status_code": resp.status_code, "error": resp.text}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+async def send_internal_lead_alert_email(
+    lead_id: int | str,
+    customer_name: str,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    address: Optional[str] = None,
+    city: Optional[str] = None,
+    service_type: Optional[str] = "Roofing Project",
+    estimated_value: Optional[float] = None,
+    notes: Optional[str] = None,
+    source_detail: Optional[str] = "Website Form",
+    priority: Optional[str] = "high",
+    api_key: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Sends an immediate, high-priority alert to the internal sales/estimating team
+    when a new inquiry or estimate request is submitted from the website.
+    """
+    key = api_key or getattr(settings, "RESEND_API_KEY", "") or os.environ.get("RESEND_API_KEY", "")
+    if not key:
+        return {"success": False, "missing_key": True, "error": "Missing key"}
+
+    to_emails = ["estimates@riseuprac.com", "marc@riseuprac.com", "imzeeshankhann@gmail.com"]
+    # Filter unique valid recipients
+    to_emails = list(dict.fromkeys(to_emails))
+
+    val_str = f"${estimated_value:,.0f}" if estimated_value and estimated_value > 0 else "Pending Inspection"
+    subject = f"🚨 New Lead Alert: {customer_name} – {service_type} ({val_str})"
+
+    location_str = f"{address or ''}, {city or 'Oceanside'}".strip(", ")
+    crm_pipeline_url = f"https://crm.riseuprac.com/pipeline"
+
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>{subject}</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; color: #0f172a; margin: 0; padding: 20px; background-color: #0b1329;">
+      <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+        
+        <!-- Urgent Alert Banner -->
+        <div style="background-color: #0284c7; padding: 18px 24px; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #bae6fd; display: block;">
+              ⚡ Instant Lead Dispatch Alert
+            </span>
+            <h1 style="margin: 4px 0 0 0; font-size: 18px; font-weight: 900; color: #ffffff;">
+              New Website Inquiry Received
+            </h1>
+          </div>
+        </div>
+
+        <div style="padding: 24px;">
+          <!-- Lead Primary Info Box -->
+          <div style="padding: 16px; background-color: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700; width: 130px;">Customer Name:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 800; font-size: 15px;">{customer_name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700;">Phone Number:</td>
+                <td style="padding: 6px 0; color: #0284c7; font-weight: 800;">
+                  <a href="tel:{phone}" style="color: #0284c7; text-decoration: none; font-size: 14px;">{phone or 'Not provided'}</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700;">Email Address:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">
+                  <a href="mailto:{email}" style="color: #0284c7; text-decoration: none;">{email or 'Not provided'}</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700;">Property Location:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">{location_str or 'Oceanside / North County'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700;">Service Requested:</td>
+                <td style="padding: 6px 0; color: #091b36; font-weight: 800;">{service_type}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700;">Estimated Value:</td>
+                <td style="padding: 6px 0; color: #16a34a; font-weight: 900; font-size: 14px;">{val_str}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 700;">Lead Source:</td>
+                <td style="padding: 6px 0; color: #475569; font-weight: 600;">{source_detail}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Notes / Inquiry Message -->
+          {f'''
+          <div style="margin-bottom: 20px;">
+            <span style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Customer Notes / Inquiry:</span>
+            <div style="padding: 12px 16px; background-color: #f1f5f9; border-left: 4px solid #0284c7; border-radius: 6px; font-size: 13px; color: #1e293b; font-style: italic;">
+              {notes.strip()}
+            </div>
+          </div>
+          ''' if notes and notes.strip() else ''}
+
+          <!-- Action CTA Button -->
+          <div style="text-align: center; margin: 28px 0 10px 0;">
+            <a href="{crm_pipeline_url}" style="display: inline-block; background-color: #16a34a; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 14px 28px; border-radius: 10px; box-shadow: 0 4px 12px rgba(22,163,74,0.35); text-transform: uppercase; letter-spacing: 0.05em;">
+              👉 Open in CRM &amp; Claim Lead
+            </a>
+          </div>
+          <p style="text-align: center; font-size: 11px; color: #94a3b8; margin-top: 8px;">
+            Lead ID: #{lead_id} • Unclaimed • Follow-up SLA: 1 Hour
+          </p>
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 12px 24px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
+          Rise Up Roofing CRM Dispatch Engine • <a href="https://crm.riseuprac.com" style="color: #0284c7; text-decoration: none;">crm.riseuprac.com</a>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    from_email = getattr(settings, "RESEND_FROM_EMAIL", "Rise Up Roofing <estimates@riseuprac.com>")
+    payload = {
+        "from": from_email,
+        "to": to_emails,
+        "subject": subject,
+        "html": html_body,
+    }
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(RESEND_API_URL, json=payload, headers=headers)
+            if resp.status_code in (200, 201):
+                return {"success": True, "data": resp.json(), "recipients": to_emails}
+            return {"success": False, "status_code": resp.status_code, "error": resp.text}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+

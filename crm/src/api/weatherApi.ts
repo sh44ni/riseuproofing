@@ -105,8 +105,9 @@ export const FALLBACK_WEATHER_DATA: WeatherData = {
   is_fallback: true,
 };
 
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:8000';
+import { API_ORIGIN } from '@/lib/api';
+
+const API_BASE_URL = API_ORIGIN;
 
 const API_TIMEOUT_MS = 3000;
 

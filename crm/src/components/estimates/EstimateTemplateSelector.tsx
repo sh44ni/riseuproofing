@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   Sparkles,
@@ -14,7 +14,7 @@ import {
   Calculator,
 } from 'lucide-react';
 import { TemplateKey, EstimateTemplateMeta } from '@/types/estimateTypes';
-import { ESTIMATE_TEMPLATES_LIBRARY } from '@/data/estimateTemplatesData';
+import { api } from '@/lib/api';
 
 interface EstimateTemplateSelectorProps {
   selectedTemplate: TemplateKey;
@@ -26,17 +26,32 @@ export function EstimateTemplateSelector({
   onSelectTemplate,
 }: EstimateTemplateSelectorProps) {
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [templates, setTemplates] = useState<EstimateTemplateMeta[]>([]);
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const res = await api.getEstimateTemplates();
+        if (res?.templates) {
+          setTemplates(res.templates);
+        }
+      } catch (err) {
+        console.error('Failed to fetch estimate templates:', err);
+      }
+    };
+    fetchTemplates();
+  }, []);
 
   const categories = [
-    { id: 'all', label: 'All Templates', count: ESTIMATE_TEMPLATES_LIBRARY.length },
-    { id: 'Proposal', label: 'Proposals', count: ESTIMATE_TEMPLATES_LIBRARY.filter((t) => t.category === 'Proposal').length },
-    { id: 'Estimate', label: 'Estimates', count: ESTIMATE_TEMPLATES_LIBRARY.filter((t) => t.category === 'Estimate').length },
-    { id: 'Add-On', label: 'Add-Ons', count: ESTIMATE_TEMPLATES_LIBRARY.filter((t) => t.category === 'Add-On').length },
-    { id: 'Report', label: 'Reports', count: ESTIMATE_TEMPLATES_LIBRARY.filter((t) => t.category === 'Report').length },
-    { id: 'Commercial', label: 'Commercial', count: ESTIMATE_TEMPLATES_LIBRARY.filter((t) => t.category === 'Commercial').length },
+    { id: 'all', label: 'All Templates', count: templates.length },
+    { id: 'Proposal', label: 'Proposals', count: templates.filter((t) => t.category === 'Proposal').length },
+    { id: 'Estimate', label: 'Estimates', count: templates.filter((t) => t.category === 'Estimate').length },
+    { id: 'Add-On', label: 'Add-Ons', count: templates.filter((t) => t.category === 'Add-On').length },
+    { id: 'Report', label: 'Reports', count: templates.filter((t) => t.category === 'Report').length },
+    { id: 'Commercial', label: 'Commercial', count: templates.filter((t) => t.category === 'Commercial').length },
   ];
 
-  const filtered = ESTIMATE_TEMPLATES_LIBRARY.filter(
+  const filtered = templates.filter(
     (t) => filterCategory === 'all' || t.category === filterCategory
   );
 

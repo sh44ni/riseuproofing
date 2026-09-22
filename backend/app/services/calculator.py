@@ -168,3 +168,119 @@ def calculate_roof_estimate(data: Optional[Dict[str, Any]] = None, **kwargs) -> 
         "addons_detail": addons_detail,
         "addonsDetail": addons_detail,
     }
+
+
+FALLBACK_SERVICE_RATES: Dict[str, Dict[str, Any]] = {
+    "residential": {
+        "price_per_sqft_low": 4.00,
+        "price_per_sqft_high": 6.20,
+        "base_fee_low": 500.0,
+        "base_fee_high": 950.0,
+        "term_months": 60,
+    },
+    "repair": {
+        "price_per_sqft_low": 0.40,
+        "price_per_sqft_high": 0.80,
+        "base_fee_low": 100.0,
+        "base_fee_high": 600.0,
+        "term_months": 18,
+    },
+    "commercial": {
+        "price_per_sqft_low": 5.00,
+        "price_per_sqft_high": 8.00,
+        "base_fee_low": 2250.0,
+        "base_fee_high": 4000.0,
+        "term_months": 60,
+    },
+    "solar": {
+        "price_per_sqft_low": 7.50,
+        "price_per_sqft_high": 11.50,
+        "base_fee_low": 1500.0,
+        "base_fee_high": 3000.0,
+        "term_months": 120,
+    },
+}
+
+SERVICE_ALIAS_MAP: Dict[str, str] = {
+    "residential": "residential",
+    "tile": "residential",
+    "shingle": "residential",
+    "replacement": "residential",
+    "tile / shingle": "residential",
+    "tile / shingle roof": "residential",
+    "concrete / spanish tile relay & reset": "residential",
+    "asphalt & architectural shingle": "residential",
+    "spanish clay tile": "residential",
+    "concrete tile": "residential",
+    "repair": "repair",
+    "leak": "repair",
+    "leak & tile repair": "repair",
+    "emergency roof leak repair": "repair",
+    "commercial": "commercial",
+    "commercial flat": "commercial",
+    "commercial flat roof": "commercial",
+    "commercial flat roofing": "commercial",
+    "flat": "commercial",
+    "tpo": "commercial",
+    "solar": "solar",
+    "solar + roofing": "solar",
+    "solar detach & reset (r&r)": "solar",
+}
+
+def resolve_service_slug(service_name_or_slug: Optional[str]) -> str:
+    if not service_name_or_slug:
+        return "residential"
+    s = service_name_or_slug.strip().lower()
+    for pattern, slug in SERVICE_ALIAS_MAP.items():
+        if pattern in s:
+            return slug
+    return "residential"
+
+def calculate_lead_estimated_value(
+    sqft: float,
+    service_type: Optional[str] = None,
+    pitch: Optional[str] = None,
+    stories: int = 1,
+    db_rule: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """
+    Computes low, high, and midpoint estimated value for a lead or deal based on roof size and service type.
+    Formula:
+      low = base_fee_low + sqft * price_per_sqft_low
+      high = base_fee_high + sqft * price_per_sqft_high
+      midpoint = (low + high) / 2
+    Factors pitch and stories multipliers if specified.
+    """
+    sqft = max(100.0, float(sqft or 2500.0))
+    slug = resolve_service_slug(service_type)
+    
+    rule = db_rule or FALLBACK_SERVICE_RATES.get(slug, FALLBACK_SERVICE_RATES["residential"])
+    
+    p_low = float(rule.get("price_per_sqft_low", 4.0))
+    p_high = float(rule.get("price_per_sqft_high", 6.2))
+    b_low = float(rule.get("base_fee_low", 500.0))
+    b_high = float(rule.get("base_fee_high", 950.0))
+    term = int(rule.get("financing_term_months") or rule.get("term_months") or 60)
+
+    pitch_mult = PITCH_MULTIPLIERS.get(str(pitch), 1.0)
+    story_mult = STORY_MULTIPLIERS.get(int(stories or 1), 1.0)
+    multiplier = pitch_mult * story_mult
+
+    low = round((b_low + (sqft * p_low)) * multiplier)
+    high = round((b_high + (sqft * p_high)) * multiplier)
+    midpoint = round((low + high) / 2.0)
+    monthly_low = round(low / term)
+    monthly_high = round(high / term)
+
+    return {
+        "sqft": sqft,
+        "squares": round(sqft / 100.0, 1),
+        "service_slug": slug,
+        "estimate_low": low,
+        "estimate_high": high,
+        "estimated_value": midpoint,
+        "monthly_low": monthly_low,
+        "monthly_high": monthly_high,
+        "financing_term_months": term,
+    }
+

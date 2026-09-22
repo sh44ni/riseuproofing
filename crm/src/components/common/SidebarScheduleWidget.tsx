@@ -6,29 +6,17 @@ import { DispatchEvent } from '@/types/calendarTypes';
 
 export function SidebarScheduleWidget() {
   const navigate = useNavigate();
-  const { events, toggleEventStatus, getDotsForDay } = useCalendarEvents();
+  const { events, toggleEventStatus } = useCalendarEvents();
 
-  // Selected day number in September 2026 (defaults to 11 to match executive dashboard focus)
-  const [selectedDayNumber, setSelectedDayNumber] = useState<number>(11);
   const [showAllAgenda, setShowAllAgenda] = useState(false);
 
-  // 5-Day working week window
-  const weekDays = useMemo(
-    () => [
-      { label: 'Mon', num: 8, dateStr: 'Mon, Sep 8, 2026' },
-      { label: 'Tue', num: 9, dateStr: 'Tue, Sep 9, 2026' },
-      { label: 'Wed', num: 10, dateStr: 'Wed, Sep 10, 2026', isToday: true },
-      { label: 'Thu', num: 11, dateStr: 'Thu, Sep 11, 2026' },
-      { label: 'Fri', num: 12, dateStr: 'Fri, Sep 12, 2026' },
-    ],
-    []
-  );
+  // Selected day number in September 2026 (defaults to 11 to match executive dashboard focus)
+  const selectedDayNumber = 11;
+  const todayDateStr = 'Thu, Sep 11, 2026';
 
-  const activeDayObj = weekDays.find((d) => d.num === selectedDayNumber) || weekDays[3];
-
-  // Events filtered for the selected day
+  // Events filtered for the current day
   const dayEvents = useMemo(() => {
-    return events.filter((e) => e.dayNumber === selectedDayNumber);
+    return events.filter((e) => e.dayNumber === selectedDayNumber || e.date?.endsWith('-11'));
   }, [events, selectedDayNumber]);
 
   // Navigate to calendar with day filter
@@ -40,7 +28,7 @@ export function SidebarScheduleWidget() {
   };
 
   return (
-    <div className="relative z-10 rounded-2xl light-glass-panel glossy-sheen border border-white/85 shadow-xs p-3 space-y-2.5 select-none group/schedule hover:border-sky-300 transition-all">
+    <div className="relative z-10 rounded-2xl light-glass-panel glossy-sheen border border-white/85 shadow-xs p-3 space-y-2 select-none group/schedule hover:border-sky-300 transition-all">
       {/* ========================================================
           1. HEADER: Title, Date & Calendar Link
           ======================================================== */}
@@ -48,7 +36,7 @@ export function SidebarScheduleWidget() {
         <div>
           <h3 className="text-xs font-bold text-[#1F1F1F] leading-none">Today's Schedule</h3>
           <span className="text-[9.5px] text-slate-400 font-medium">
-            {activeDayObj.dateStr}
+            {todayDateStr}
           </span>
         </div>
         <button
@@ -62,53 +50,7 @@ export function SidebarScheduleWidget() {
       </div>
 
       {/* ========================================================
-          2. DAY SELECTOR STRIP: MON 8 to FRI 12 with Dynamic Event Dots
-          ======================================================== */}
-      <div className="grid grid-cols-5 gap-1 p-1 rounded-xl bg-white/50 border border-white/80 backdrop-blur-md shadow-2xs">
-        {weekDays.map((day) => {
-          const isSelected = selectedDayNumber === day.num;
-          const dots = getDotsForDay(day.num);
-
-          return (
-            <button
-              key={day.num}
-              type="button"
-              onClick={() => setSelectedDayNumber(day.num)}
-              className={`group flex flex-col items-center py-1.5 px-0.5 rounded-lg text-center transition-all cursor-pointer relative ${
-                isSelected
-                  ? 'bg-gradient-to-b from-[#1878B8] to-[#0ea5e9] text-white shadow-xs font-bold ring-1 ring-sky-300/60 scale-[1.02]'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-              }`}
-            >
-              <span
-                className={`text-[8.5px] uppercase tracking-wider font-semibold ${
-                  isSelected ? 'text-sky-100' : 'text-slate-400'
-                }`}
-              >
-                {day.label}
-              </span>
-              <span className="text-xs font-black leading-tight mt-0.5">{day.num}</span>
-
-              {/* Dynamic activity indicators computed from real events */}
-              <div className="flex items-center justify-center gap-0.5 mt-1 h-1">
-                {dots.length > 0 ? (
-                  dots.map((dotClass, i) => (
-                    <span
-                      key={i}
-                      className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white/90' : dotClass}`}
-                    />
-                  ))
-                ) : (
-                  <span className="w-1 h-1 rounded-full opacity-0" />
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ========================================================
-          3. INTERACTIVE AGENDA DISPATCH CARDS
+          2. INTERACTIVE AGENDA DISPATCH CARDS (Top 2 or All)
           ======================================================== */}
       <div className="space-y-1.5 pt-0.5">
         {dayEvents.length === 0 ? (
@@ -124,12 +66,7 @@ export function SidebarScheduleWidget() {
             </button>
           </div>
         ) : (
-          (showAllAgenda
-            ? dayEvents
-            : dayEvents.filter((e) => e.status === 'in_progress').length > 0
-            ? dayEvents.filter((e) => e.status === 'in_progress')
-            : [dayEvents[0]]
-          ).map((event) => {
+          (showAllAgenda ? dayEvents : dayEvents.slice(0, 2)).map((event) => {
             const isCompleted = event.status === 'completed';
             const isCurrent = event.status === 'in_progress';
             const accentColor = CATEGORY_ACCENT_COLORS[event.category] || '#0284c7';
@@ -231,9 +168,9 @@ export function SidebarScheduleWidget() {
       </div>
 
       {/* ========================================================
-          4. VIEW ALL / COLLAPSE EXPANDER
+          3. VIEW ALL / COLLAPSE EXPANDER
           ======================================================== */}
-      {dayEvents.length > 1 && (
+      {dayEvents.length > 2 ? (
         <button
           type="button"
           onClick={() => setShowAllAgenda((prev) => !prev)}
@@ -247,7 +184,19 @@ export function SidebarScheduleWidget() {
             }`}
           />
         </button>
-      )}
+      ) : dayEvents.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => handleOpenCalendar()}
+          className="w-full py-1.5 px-3 rounded-xl liquid-glass-btn text-[10px] font-bold text-slate-600 hover:text-[#0284c7] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-2xs"
+        >
+          <span>{`View All (${dayEvents.length})`}</span>
+          <ChevronDown
+            size={12}
+            className="text-slate-400 group-hover:text-[#0284c7] transition-transform duration-200"
+          />
+        </button>
+      ) : null}
     </div>
   );
 }

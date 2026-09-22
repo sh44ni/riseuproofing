@@ -4,12 +4,16 @@ import platform
 import asyncio
 import secrets
 import hashlib
+import shutil
+import importlib.metadata
+import psutil
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Request, Response, HTTPException, status, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text, select, update, delete
+import httpx
 import orjson
 
 from app.core.config import settings
@@ -556,6 +560,638 @@ async def roll_api_key(
             "last_four": key_obj.last_four,
         }
     }
+
+# ── Phase 1 & 2 Endpoints ──
+
+@router.get("/crm-stats")
+async def get_crm_stats(token: str = Depends(require_developer_session), db: AsyncSession = Depends(get_db)):
+    leads_data = {"total": 0, "today": 0, "this_week": 0, "by_stage": [], "pipeline_value": 0}
+    clients_data = {"total": 0}
+    estimates_data = {"total": 0, "by_status": []}
+    sessions_data = {"active": 0}
+    calendar_data = {"events_this_week": 0}
+    tasks_data = {"pending": 0}
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM leads"))
+        leads_data["total"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM leads WHERE created_at >= date_trunc('day', NOW())"))
+        leads_data["today"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM leads WHERE created_at >= date_trunc('week', NOW())"))
+        leads_data["this_week"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT pipeline_stage, COUNT(*) FROM leads GROUP BY pipeline_stage"))
+        leads_data["by_stage"] = [{"stage": row[0], "count": row[1]} for row in res.fetchall()]
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COALESCE(SUM(estimated_value), 0) FROM leads WHERE pipeline_stage NOT IN ('lost', 'closed_lost')"))
+        leads_data["pipeline_value"] = float(res.scalar() or 0)
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM clients"))
+        clients_data["total"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM estimates"))
+        estimates_data["total"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT status, COUNT(*) FROM estimates GROUP BY status"))
+        estimates_data["by_status"] = [{"status": row[0], "count": row[1]} for row in res.fetchall()]
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM admin_sessions WHERE expires_at > NOW()"))
+        sessions_data["active"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM crm_calendar_events WHERE start_time >= date_trunc('week', NOW()) AND start_time < date_trunc('week', NOW()) + interval '7 days'"))
+        calendar_data["events_this_week"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    try:
+        res = await db.execute(text("SELECT COUNT(*) FROM tasks WHERE completed_at IS NULL"))
+        tasks_data["pending"] = res.scalar() or 0
+    except Exception:
+        pass
+
+    return {
+        "ok": True,
+        "leads": leads_data,
+        "clients": clients_data,
+        "estimates": estimates_data,
+        "sessions": sessions_data,
+        "calendar": calendar_data,
+        "tasks": tasks_data,
+    }
+
+@router.get("/errors")
+async def get_error_groups(token: str = Depends(require_developer_session)):
+    candidate_items = list(in_memory_logs)
+    
+    try:
+        redis = await get_redis()
+        raw_entries = await asyncio.wait_for(redis.lrange("telemetry:recent_requests", 0, -1), timeout=0.25)
+        for raw in raw_entries:
+            try:
+                candidate_items.append(orjson.loads(raw))
+            except Exception:
+                pass
+    except Exception:
+        pass
+    
+    groups = {}
+    for item in candidate_items:
+        status_code = item.get("status", 200)
+        if status_code >= 400:
+            path = item.get("path", "unknown")
+            err_msg = item.get("error_message", "Unknown error")
+            first_line = err_msg.split("\\n")[0] if err_msg else "Unknown error"
+            key = (path, status_code, first_line)
+            
+            if key not in groups:
+                groups[key] = {
+                    "path": path,
+                    "status": status_code,
+                    "error_message_first_line": first_line,
+                    "count": 0,
+                    "first_seen": item.get("timestamp"),
+                    "last_seen": item.get("timestamp"),
+                    "sample_traceback": item.get("error_traceback"),
+                    "sample_request": {
+                        "method": item.get("method"),
+                        "query": item.get("query"),
+                        "client": item.get("client")
+                    }
+                }
+            
+            groups[key]["count"] += 1
+            
+            t1 = groups[key]["first_seen"]
+            t2 = groups[key]["last_seen"]
+            cur_t = item.get("timestamp")
+            if cur_t:
+                if not t1 or cur_t < t1:
+                    groups[key]["first_seen"] = cur_t
+                if not t2 or cur_t > t2:
+                    groups[key]["last_seen"] = cur_t
+
+    error_groups = sorted(list(groups.values()), key=lambda x: x["count"], reverse=True)
+    return {"ok": True, "error_groups": error_groups}
+
+@router.post("/errors/clear")
+async def clear_errors(token: str = Depends(require_developer_session)):
+    try:
+        redis = await get_redis()
+        await asyncio.wait_for(redis.delete("telemetry:recent_requests"), timeout=0.25)
+    except Exception:
+        pass
+    in_memory_logs.clear()
+    return {"ok": True, "message": "Error tracking cleared."}
+
+@router.get("/sessions")
+async def get_active_sessions(token: str = Depends(require_developer_session), db: AsyncSession = Depends(get_db)):
+    admin_sessions = []
+    try:
+        query = text("""
+            SELECT s.id, s.token, s.user_id, s.created_at, s.expires_at, s.ip_address, s.user_agent,
+                   u.name, u.email, u.role
+            FROM admin_sessions s
+            LEFT JOIN users u ON s.user_id = u.id
+            WHERE s.expires_at > NOW()
+            ORDER BY s.created_at DESC
+        """)
+        res = await db.execute(query)
+        for row in res.fetchall():
+            admin_sessions.append({
+                "id": row[0],
+                "token": row[1],
+                "user_id": row[2],
+                "created_at": row[3].isoformat() if row[3] else None,
+                "expires_at": row[4].isoformat() if row[4] else None,
+                "ip_address": row[5],
+                "user_agent": row[6],
+                "user_name": row[7],
+                "user_email": row[8],
+                "user_role": row[9]
+            })
+    except Exception:
+        pass
+    
+    dev_count = 0
+    try:
+        redis = await get_redis()
+        keys = await asyncio.wait_for(redis.keys("dev_session:*"), timeout=0.25)
+        dev_count = len(keys)
+    except Exception:
+        pass
+
+    return {"ok": True, "admin_sessions": admin_sessions, "developer_sessions_count": dev_count}
+
+@router.delete("/sessions/{session_id}")
+async def kill_session(session_id: int, token: str = Depends(require_developer_session), db: AsyncSession = Depends(get_db)):
+    try:
+        res = await db.execute(text("SELECT token FROM admin_sessions WHERE id = :id"), {"id": session_id})
+        session_token = res.scalar()
+        if session_token:
+            redis = await get_redis()
+            await asyncio.wait_for(redis.delete(f"session:{session_token}"), timeout=0.25)
+            
+        await db.execute(text("DELETE FROM admin_sessions WHERE id = :id"), {"id": session_id})
+        await db.commit()
+    except Exception:
+        pass
+    return {"ok": True, "message": "Session killed."}
+
+@router.get("/database/overview")
+async def get_database_overview(token: str = Depends(require_developer_session), db: AsyncSession = Depends(get_db)):
+    result = {
+        "ok": True,
+        "database_size": "0 B",
+        "database_size_bytes": 0,
+        "tables": [],
+        "active_connections": [],
+        "index_stats": [],
+    }
+    try:
+        # Total DB size
+        res = await db.execute(text("SELECT pg_database_size(current_database())"))
+        size_bytes = res.scalar() or 0
+        result["database_size_bytes"] = size_bytes
+        # Format human-readable
+        if size_bytes >= 1073741824:
+            result["database_size"] = f"{size_bytes / 1073741824:.1f} GB"
+        elif size_bytes >= 1048576:
+            result["database_size"] = f"{size_bytes / 1048576:.1f} MB"
+        elif size_bytes >= 1024:
+            result["database_size"] = f"{size_bytes / 1024:.1f} KB"
+        else:
+            result["database_size"] = f"{size_bytes} B"
+    except Exception:
+        pass
+
+    try:
+        # Table stats + sizes merged
+        res = await db.execute(text("""
+            SELECT 
+                s.relname as table_name,
+                s.n_live_tup as live_tuples,
+                s.n_dead_tup as dead_tuples,
+                s.last_vacuum,
+                s.last_autovacuum,
+                s.last_analyze,
+                pg_total_relation_size(s.schemaname||'.'||s.relname) as size_bytes
+            FROM pg_stat_user_tables s
+            WHERE s.schemaname = 'public'
+            ORDER BY s.n_live_tup DESC
+        """))
+        tables = []
+        for row in res.fetchall():
+            r = dict(row._mapping)
+            # Convert datetimes to strings
+            for key in ("last_vacuum", "last_autovacuum", "last_analyze"):
+                if r.get(key):
+                    r[key] = r[key].isoformat() if hasattr(r[key], 'isoformat') else str(r[key])
+                else:
+                    r[key] = None
+            # Format size
+            sb = r.get("size_bytes", 0) or 0
+            if sb >= 1048576:
+                r["size"] = f"{sb / 1048576:.1f} MB"
+            elif sb >= 1024:
+                r["size"] = f"{sb / 1024:.1f} KB"
+            else:
+                r["size"] = f"{sb} B"
+            tables.append(r)
+        result["tables"] = tables
+    except Exception:
+        pass
+
+    try:
+        # Active connections
+        res = await db.execute(text("""
+            SELECT pid, state, wait_event_type, query, usename, client_addr,
+                   EXTRACT(EPOCH FROM (now() - backend_start))::int as duration_seconds
+            FROM pg_stat_activity 
+            WHERE datname = current_database() AND pid != pg_backend_pid()
+            ORDER BY backend_start DESC
+        """))
+        conns = []
+        for row in res.fetchall():
+            r = dict(row._mapping)
+            r["client_addr"] = str(r.get("client_addr") or "local")
+            r["query"] = (r.get("query") or "")[:200]
+            conns.append(r)
+        result["active_connections"] = conns
+    except Exception:
+        pass
+
+    try:
+        # Index stats
+        res = await db.execute(text("""
+            SELECT indexrelname, idx_scan, idx_tup_read, idx_tup_fetch, 
+                   pg_relation_size(indexrelid) as size 
+            FROM pg_stat_user_indexes 
+            ORDER BY idx_scan ASC LIMIT 20
+        """))
+        result["index_stats"] = [dict(row._mapping) for row in res.fetchall()]
+    except Exception:
+        pass
+
+    return result
+
+@router.get("/environment")
+async def get_environment_info(token: str = Depends(require_developer_session)):
+    info = {
+        "python_version": platform.python_version(),
+        "platform": platform.platform(),
+        "fastapi_version": "unknown",
+        "sqlalchemy_version": "unknown",
+        "process_uptime_seconds": 0,
+        "disk_usage": {},
+        "hostname": platform.node(),
+        "cors_origins": getattr(settings, "CORS_ORIGINS", []),
+        "environment": getattr(settings, "ENVIRONMENT", "unknown"),
+        "database_host": "unknown",
+        "redis_url": "unknown"
+    }
+
+    try:
+        info["fastapi_version"] = importlib.metadata.version('fastapi')
+    except Exception:
+        pass
+
+    try:
+        info["sqlalchemy_version"] = importlib.metadata.version('sqlalchemy')
+    except Exception:
+        pass
+
+    try:
+        info["process_uptime_seconds"] = time.time() - psutil.Process().create_time()
+    except Exception:
+        pass
+
+    try:
+        usage = shutil.disk_usage('/')
+        info["disk_usage"] = {
+            "total": usage.total,
+            "used": usage.used,
+            "free": usage.free,
+            "percent": round(usage.used / usage.total * 100, 2) if usage.total > 0 else 0
+        }
+    except Exception:
+        pass
+    
+    try:
+        db_url = str(getattr(settings, "DATABASE_URL", ""))
+        if "@" in db_url:
+            creds, rest = db_url.split("@", 1)
+            prefix = creds.split("://")[0] + "://"
+            user = creds.split("://")[1].split(":")[0]
+            info["database_host"] = f"{prefix}{user}:***@{rest}"
+        else:
+            info["database_host"] = db_url
+    except Exception:
+        pass
+
+    try:
+        redis_url = str(getattr(settings, "REDIS_URL", ""))
+        if "@" in redis_url:
+            creds, rest = redis_url.split("@", 1)
+            prefix = creds.split("://")[0] + "://"
+            if ":" in creds.split("://")[1]:
+                user = creds.split("://")[1].split(":")[0]
+                info["redis_url"] = f"{prefix}{user}:***@{rest}"
+            else:
+                info["redis_url"] = f"{prefix}***@{rest}"
+        else:
+            info["redis_url"] = redis_url
+    except Exception:
+        pass
+
+    return {"ok": True, "environment": info}
+
+@router.get("/audit-logs")
+async def get_developer_audit_logs(
+    action: Optional[str] = None,
+    user_id: Optional[int] = None,
+    entity_type: Optional[str] = None,
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    token: str = Depends(require_developer_session),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        where_clauses = []
+        params = {"limit": limit, "offset": offset}
+
+        if action:
+            where_clauses.append("a.action = :action")
+            params["action"] = action
+        if user_id:
+            where_clauses.append("a.user_id = :user_id")
+            params["user_id"] = user_id
+        if entity_type:
+            where_clauses.append("a.entity_type = :entity_type")
+            params["entity_type"] = entity_type
+
+        where_sql = ""
+        if where_clauses:
+            where_sql = "WHERE " + " AND ".join(where_clauses)
+
+        query = f"""
+            SELECT a.*, u.name as user_name, u.email as user_email 
+            FROM audit_logs a 
+            LEFT JOIN users u ON a.user_id = u.id 
+            {where_sql}
+            ORDER BY a.created_at DESC 
+            LIMIT :limit OFFSET :offset
+        """
+        
+        count_query = f"SELECT COUNT(*) FROM audit_logs a {where_sql}"
+        
+        res = await db.execute(text(query), params)
+        rows = [dict(row._mapping) for row in res.fetchall()]
+        
+        # Convert datetimes to strings if needed
+        for r in rows:
+            if r.get("created_at"):
+                r["created_at"] = r["created_at"].isoformat()
+
+        count_res = await db.execute(text(count_query), params)
+        total = count_res.scalar() or 0
+
+        return {"ok": True, "audit_logs": rows, "total": total}
+    except Exception:
+        return {"ok": True, "audit_logs": [], "total": 0, "note": "audit_logs table not found"}
+
+@router.get("/integrations")
+async def get_integration_status(
+    token: str = Depends(require_developer_session)
+):
+    """Returns static integration config status without making outbound API requests to avoid wasting third-party quotas."""
+    integrations = {}
+
+    # Google Business
+    google_configured = bool(getattr(settings, "GOOGLE_CLIENT_ID", None) and getattr(settings, "GOOGLE_CLIENT_SECRET", None))
+    client_id = getattr(settings, "GOOGLE_CLIENT_ID", "")
+    prefix = client_id[:6] + "..." if client_id else ""
+    integrations["google_business"] = {
+        "configured": google_configured,
+        "status": "configured" if google_configured else "not_configured",
+        "client_id_prefix": prefix
+    }
+
+    # Yelp - pure config check, zero external calls to preserve quota
+    yelp_key = getattr(settings, "YELP_API_KEY", None)
+    yelp_configured = bool(yelp_key)
+    integrations["yelp"] = {
+        "configured": yelp_configured,
+        "status": "configured" if yelp_configured else "not_configured",
+        "business_id": getattr(settings, "YELP_BUSINESS_ID", "configured" if yelp_configured else "none")
+    }
+
+    # Weather API - pure config check, zero external calls to preserve quota
+    weather_key = getattr(settings, "WEATHER_API_KEY", None)
+    weather_configured = bool(weather_key)
+    integrations["weather"] = {
+        "configured": weather_configured,
+        "status": "configured" if weather_configured else "not_configured"
+    }
+
+    # Resend Email
+    resend_key = getattr(settings, "RESEND_API_KEY", None)
+    resend_configured = bool(resend_key)
+    integrations["resend_email"] = {
+        "configured": resend_configured,
+        "status": "configured" if resend_configured else "not_configured"
+    }
+
+    # S3 / MinIO
+    s3_endpoint = getattr(settings, "S3_ENDPOINT_URL", None)
+    s3_configured = bool(s3_endpoint)
+    integrations["s3_storage"] = {
+        "configured": s3_configured,
+        "status": "configured" if s3_configured else "not_configured",
+        "endpoint": s3_endpoint
+    }
+
+    return {"ok": True, "integrations": integrations}
+
+class SqlQueryRequest(BaseModel):
+    sql: str = Field(..., max_length=2000)
+
+@router.post("/tools/query")
+async def execute_readonly_query(
+    payload: SqlQueryRequest,
+    token: str = Depends(require_developer_session),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        query_upper = payload.sql.strip().upper()
+        forbidden = {"INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE", "GRANT", "REVOKE"}
+        # A simple check (in real life, a true SQL parser or read-only user should be used)
+        if any(word in query_upper for word in forbidden):
+            raise HTTPException(status_code=400, detail="Only SELECT statements are allowed.")
+        
+        await db.execute(text('SET statement_timeout = 5000'))
+        
+        t0 = time.perf_counter()
+        result = await db.execute(text(payload.sql))
+        rows = result.fetchall()
+        execution_ms = round((time.perf_counter() - t0) * 1000, 2)
+        
+        columns = list(result.keys()) if result.keys() else []
+        row_dicts = [dict(zip(columns, row)) for row in rows]
+        
+        return {
+            "ok": True,
+            "columns": columns,
+            "rows": row_dicts,
+            "row_count": len(row_dicts),
+            "execution_ms": execution_ms
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@router.get("/tools/redis-keys")
+async def browse_redis_keys(
+    pattern: str = Query(default="*", max_length=200),
+    limit: int = Query(default=50, ge=1, le=200),
+    token: str = Depends(require_developer_session)
+):
+    try:
+        redis = await get_redis()
+        keys_list = []
+        cursor, scanned_keys = await asyncio.wait_for(redis.scan(match=pattern, count=limit), timeout=0.25)
+        for key in scanned_keys[:limit]:
+            key_str = key.decode("utf-8") if isinstance(key, bytes) else str(key)
+            k_type = await asyncio.wait_for(redis.type(key), timeout=0.25)
+            k_type_str = k_type.decode("utf-8") if isinstance(k_type, bytes) else str(k_type)
+            k_ttl = await asyncio.wait_for(redis.ttl(key), timeout=0.25)
+            
+            preview = ""
+            if k_type_str == "string":
+                val = await asyncio.wait_for(redis.get(key), timeout=0.25)
+                val_str = val.decode("utf-8", errors="ignore") if isinstance(val, bytes) else str(val)
+                preview = val_str[:200] + ("..." if len(val_str) > 200 else "")
+            elif k_type_str == "list":
+                llen = await asyncio.wait_for(redis.llen(key), timeout=0.25)
+                preview = f"List with {llen} elements"
+            elif k_type_str == "set":
+                scard = await asyncio.wait_for(redis.scard(key), timeout=0.25)
+                preview = f"Set with {scard} elements"
+            elif k_type_str == "zset":
+                zcard = await asyncio.wait_for(redis.zcard(key), timeout=0.25)
+                preview = f"Sorted Set with {zcard} elements"
+            elif k_type_str == "hash":
+                hlen = await asyncio.wait_for(redis.hlen(key), timeout=0.25)
+                preview = f"Hash with {hlen} fields"
+                
+            keys_list.append({"key": key_str, "type": k_type_str, "ttl": k_ttl, "preview": preview})
+            
+        return {"ok": True, "keys": keys_list, "total_scanned": len(scanned_keys)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@router.post("/tools/health-check-all")
+async def health_check_all(
+    token: str = Depends(require_developer_session),
+    db: AsyncSession = Depends(get_db)
+):
+    async def check_postgres():
+        try:
+            t0 = time.perf_counter()
+            await db.execute(text("SELECT 1"))
+            return {"status": "ok", "ping_ms": round((time.perf_counter() - t0) * 1000, 2)}
+        except Exception as e:
+            return {"status": f"error: {str(e)}"}
+            
+    async def check_redis():
+        try:
+            redis = await get_redis()
+            t0 = time.perf_counter()
+            await asyncio.wait_for(redis.ping(), timeout=0.25)
+            return {"status": "ok", "ping_ms": round((time.perf_counter() - t0) * 1000, 2)}
+        except Exception as e:
+            return {"status": f"error: {str(e)}"}
+            
+    async def check_s3():
+        try:
+            return {"status": "ok" if settings.S3_ENDPOINT_URL else "unconfigured"}
+        except Exception as e:
+            return {"status": f"error: {str(e)}"}
+            
+    async def check_memory():
+        try:
+            return {"status": "ok", "rss_mb": round(psutil.Process().memory_info().rss / (1024 * 1024), 2)}
+        except Exception as e:
+            return {"status": f"error: {str(e)}"}
+
+    pg_res, redis_res, s3_res, mem_res = await asyncio.gather(
+        check_postgres(), check_redis(), check_s3(), check_memory(), return_exceptions=True
+    )
+
+    return {
+        "ok": True,
+        "services": {
+            "postgres": pg_res if not isinstance(pg_res, Exception) else {"status": str(pg_res)},
+            "redis": redis_res if not isinstance(redis_res, Exception) else {"status": str(redis_res)},
+            "s3": s3_res if not isinstance(s3_res, Exception) else {"status": str(s3_res)},
+            "memory": mem_res if not isinstance(mem_res, Exception) else {"status": str(mem_res)},
+        }
+    }
+
+@router.post("/tools/reset-telemetry")
+async def reset_telemetry(token: str = Depends(require_developer_session)):
+    try:
+        in_memory_counters["total_requests"] = 0
+        in_memory_counters["total_errors"] = 0
+        in_memory_counters["2xx"] = 0
+        in_memory_counters["3xx"] = 0
+        in_memory_counters["4xx"] = 0
+        in_memory_counters["5xx"] = 0
+        in_memory_rpm.clear()
+        in_memory_latencies.clear()
+
+        try:
+            redis = await get_redis()
+            keys_to_delete = []
+            for pattern in ["telemetry:status:*", "telemetry:total_*", "telemetry:rpm:*", "telemetry:latencies"]:
+                cursor, keys = await asyncio.wait_for(redis.scan(match=pattern, count=1000), timeout=0.25)
+                keys_to_delete.extend(keys)
+            
+            if keys_to_delete:
+                await asyncio.wait_for(redis.delete(*keys_to_delete), timeout=0.5)
+        except Exception:
+            pass
+
+        return {"ok": True, "message": "Telemetry reset successfully"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 # ── 6. Diagnostic & Health Tools ──
 

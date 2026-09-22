@@ -68,5 +68,38 @@ async def submit_contact_form(request: Request, db: AsyncSession = Depends(get_d
         "cid": client_id,
         "desc": f"Subject: {subject or 'General Inquiry'}. Message: {message}",
     })
+    await db.commit()
+
+    # ── Instant Automated Emails Dispatch (Customer Confirmation + Team Alert) ──
+    try:
+        from app.services.email_service import (
+            send_customer_welcome_inquiry_email,
+            send_internal_lead_alert_email,
+        )
+
+        # 1. Customer Welcome Email
+        if email and "@" in email:
+            await send_customer_welcome_inquiry_email(
+                to_email=email,
+                customer_name=full_name,
+                service_type=subject or "Roofing & Construction Inquiry",
+                city_or_address="Oceanside & San Diego County",
+                custom_message=message,
+                form_type="contact",
+            )
+
+        # 2. Internal Team High-Priority Alert
+        await send_internal_lead_alert_email(
+            lead_id=lead_id,
+            customer_name=full_name,
+            phone=phone,
+            email=email,
+            service_type=subject or "Website Contact Query",
+            notes=message,
+            source_detail="Website Contact Form",
+            priority="high",
+        )
+    except Exception as e:
+        print(f"Automated inquiry email dispatch notice: {e}")
 
     return {"ok": True, "leadId": lead_id}

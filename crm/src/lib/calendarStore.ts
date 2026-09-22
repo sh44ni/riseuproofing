@@ -18,7 +18,7 @@ import {
   fetchCalendarStats,
   fetchCalendarWeather,
 } from '@/api/calendarApi';
-import { REGISTERED_TEAM_MEMBERS } from '@/data/calendarData';
+
 
 const STORAGE_KEY = 'crm_team_operations_calendar';
 const SYNC_EVENT_NAME = 'crm_calendar_events_change';
@@ -247,9 +247,9 @@ export function useCalendarEvents() {
 /**
  * Hook to retrieve registered CRM user accounts for team assignments
  */
-export function useRegisteredUsers(): TeamMemberResource[] {
+export function useRegisteredUsers(): { users: TeamMemberResource[]; isLoading: boolean } {
   const [users, setUsers] = useState<TeamMemberResource[]>(() => {
-    if (typeof window === 'undefined') return REGISTERED_TEAM_MEMBERS;
+    if (typeof window === 'undefined') return [];
     try {
       const saved = localStorage.getItem('crm_registered_team_users');
       if (saved) {
@@ -257,11 +257,13 @@ export function useRegisteredUsers(): TeamMemberResource[] {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {}
-    return REGISTERED_TEAM_MEMBERS;
+    return [];
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
+    setIsLoading(true);
     fetchRegisteredUsers().then((backendUsers) => {
       if (active && Array.isArray(backendUsers) && backendUsers.length > 0) {
         const colors = [
@@ -301,13 +303,16 @@ export function useRegisteredUsers(): TeamMemberResource[] {
           localStorage.setItem('crm_registered_team_users', JSON.stringify(mapped));
         } catch {}
       }
+      if (active) setIsLoading(false);
+    }).catch(() => {
+      if (active) setIsLoading(false);
     });
     return () => {
       active = false;
     };
   }, []);
 
-  return users;
+  return { users, isLoading };
 }
 
 /**

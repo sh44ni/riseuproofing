@@ -1,13 +1,18 @@
-import React from 'react';
-import { DollarSign, Download, CheckCircle2, AlertCircle, Plus, FileText, CreditCard } from 'lucide-react';
-import { BillingSummary } from '@/types/client360Types';
+import React, { useState } from 'react';
+import { DollarSign, Download, CheckCircle2, AlertCircle, Plus, FileText, CreditCard, Printer, X } from 'lucide-react';
+import { BillingSummary, ClientInvoice } from '@/types/client360Types';
 
 interface ClientBillingTabProps {
   billing: BillingSummary;
-  onNewInvoice?: () => void;
 }
 
-export function ClientBillingTab({ billing, onNewInvoice }: ClientBillingTabProps) {
+export function ClientBillingTab({ billing }: ClientBillingTabProps) {
+  const [selectedInvoice, setSelectedInvoice] = useState<ClientInvoice | null>(null);
+
+  const handleDownloadInvoice = (inv: ClientInvoice) => {
+    setSelectedInvoice(inv);
+  };
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
@@ -44,14 +49,6 @@ export function ClientBillingTab({ billing, onNewInvoice }: ClientBillingTabProp
             <CreditCard size={18} className="text-[#0284C7]" />
             <h3 className="font-bold text-sm text-slate-900">Invoices & Payment Records</h3>
           </div>
-
-          <button
-            onClick={onNewInvoice}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0284C7] hover:bg-[#0369a1] text-white text-xs font-semibold shadow-sm transition-all"
-          >
-            <Plus size={14} />
-            <span>Generate Invoice</span>
-          </button>
         </div>
 
         {billing.invoices.length === 0 ? (
@@ -80,7 +77,12 @@ export function ClientBillingTab({ billing, onNewInvoice }: ClientBillingTabProp
 
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-bold text-slate-900">${inv.amount.toLocaleString()}</span>
-                  <button className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadInvoice(inv)}
+                    title="Download / View Invoice Receipt"
+                    className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
+                  >
                     <Download size={14} />
                   </button>
                 </div>
@@ -89,6 +91,62 @@ export function ClientBillingTab({ billing, onNewInvoice }: ClientBillingTabProp
           </div>
         )}
       </div>
+
+      {/* Invoice Receipt Modal */}
+      {selectedInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-200 w-full max-w-md shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <FileText size={18} className="text-[#0284C7]" />
+                <h3 className="font-bold text-base text-slate-900">Invoice Receipt</h3>
+              </div>
+              <button
+                onClick={() => setSelectedInvoice(null)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
+              <div className="flex justify-between font-bold text-slate-900 text-sm">
+                <span>{selectedInvoice.invoiceNumber}</span>
+                <span className="text-emerald-600">${selectedInvoice.amount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>Status:</span>
+                <span className="font-semibold uppercase text-slate-800">{selectedInvoice.status}</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>Date:</span>
+                <span className="font-semibold text-slate-800">{selectedInvoice.date}</span>
+              </div>
+              <div className="pt-2 border-t border-slate-200 text-slate-600">
+                <span className="font-semibold">Description:</span> {selectedInvoice.description}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 flex items-center gap-1.5"
+              >
+                <Printer size={14} />
+                <span>Print Receipt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedInvoice(null)}
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

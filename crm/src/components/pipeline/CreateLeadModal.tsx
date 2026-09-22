@@ -15,6 +15,7 @@ import {
   Plus,
   AlertCircle,
   CheckCircle2,
+  Calculator,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
@@ -134,6 +135,47 @@ export function CreateLeadModal({
     return 'blue';
   };
 
+  // Formula-based real-time valuation matching global estimator rules
+  const calculateLiveQuote = () => {
+    const sqft = Math.max(100, parseInt(formData.sqf) || 2500);
+    const svc = (formData.service || '').toLowerCase();
+
+    let lowRate = 4.0;
+    let highRate = 6.2;
+    let baseLow = 500;
+    let baseHigh = 950;
+    let term = 60;
+
+    if (svc.includes('repair') || svc.includes('leak')) {
+      lowRate = 0.4;
+      highRate = 0.8;
+      baseLow = 100;
+      baseHigh = 600;
+      term = 18;
+    } else if (svc.includes('commercial') || svc.includes('flat')) {
+      lowRate = 5.0;
+      highRate = 8.0;
+      baseLow = 2250;
+      baseHigh = 4000;
+      term = 60;
+    } else if (svc.includes('solar')) {
+      lowRate = 7.5;
+      highRate = 11.5;
+      baseLow = 1500;
+      baseHigh = 3000;
+      term = 120;
+    }
+
+    const low = Math.round(baseLow + sqft * lowRate);
+    const high = Math.round(baseHigh + sqft * highRate);
+    const midpoint = Math.round((low + high) / 2);
+    const monthly = Math.round(midpoint / term);
+
+    return { sqft, low, high, midpoint, monthly, term };
+  };
+
+  const liveQuote = calculateLiveQuote();
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,6 +220,13 @@ export function CreateLeadModal({
           service: formData.service,
           serviceType: formData.service,
           service_type: formData.service,
+          roof_sqf: liveQuote.sqft,
+          roofSqf: liveQuote.sqft,
+          roof_squares: Math.round((liveQuote.sqft / 100) * 10) / 10,
+          roof_type: formData.roofType,
+          stories: formData.stories,
+          estimated_value: liveQuote.midpoint,
+          estimatedValue: liveQuote.midpoint,
           notes: stampedNotes,
           leadSource: 'manual',
           lead_source: 'manual',
@@ -441,6 +490,34 @@ export function CreateLeadModal({
                   </select>
                   <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 </div>
+              </div>
+            </div>
+
+            {/* Live Auto-Calculated Pricing Card */}
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-sky-500/10 via-sky-500/5 to-white border border-sky-200/90 shadow-2xs flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <Calculator size={13} className="text-[#1878B8]" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                    Live Formula Deal Valuation
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg font-black text-[#1878B8]">
+                    ${liveQuote.midpoint.toLocaleString()}
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    (${liveQuote.low.toLocaleString()} – ${liveQuote.high.toLocaleString()})
+                  </span>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <span className="text-[10px] font-bold text-sky-800 bg-sky-100/90 px-2 py-0.5 rounded-lg border border-sky-200/80">
+                  ~${liveQuote.monthly}/mo (0% APR)
+                </span>
+                <span className="block text-[9.5px] text-slate-400 mt-0.5 font-mono">
+                  {liveQuote.sqft.toLocaleString()} sq ft @ global rule
+                </span>
               </div>
             </div>
 

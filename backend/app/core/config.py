@@ -3,9 +3,15 @@ from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+import os
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(
+            ".env",
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env.production"),
+        ),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"
@@ -21,10 +27,12 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://riseuprac.com",
+        "https://riseuproofing.vercel.app",
+        "https://riseup-roofing.vercel.app",
     ]
 
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://neondb_owner:npg_TF2pB0VeqJYz@ep-misty-leaf-axndubth-pooler.c-4.us-east-2.aws.neon.tech/neondb?ssl=require"
+    # Database — must be set in .env, no hardcoded fallback
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgrespassword@localhost:5434/riseup_db"
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 10
     DB_POOL_PRE_PING: bool = True

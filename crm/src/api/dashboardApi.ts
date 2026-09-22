@@ -1,6 +1,21 @@
-import { api } from '@/lib/api';
+import { api, API_ORIGIN } from '@/lib/api';
 
-const BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const BASE = API_ORIGIN;
+
+export interface RecentActivityItem {
+  id: number;
+  activity_type: string;
+  title: string;
+  description?: string | null;
+  performed_by?: string | null;
+  user_name?: string | null;
+  entity_type: string;
+  entity_id?: number | null;
+  target_name?: string | null;
+  amount?: number | null;
+  created_at: string;
+  metadata?: Record<string, any> | null;
+}
 
 export interface DashboardStats {
   newLeads: number;
@@ -19,6 +34,15 @@ export interface DashboardStats {
   activeCrewCount: number;
   totalLeads: number;
   totalPipelineValue: number;
+  sparklines?: {
+    newLeads: number[];
+    contacted: number[];
+    estScheduled: number[];
+    estSent: number[];
+    jobsWon: number[];
+    lostClosed: number[];
+  } | null;
+  recentActivities?: RecentActivityItem[];
 }
 
 export async function fetchDashboardStats(): Promise<DashboardStats | null> {

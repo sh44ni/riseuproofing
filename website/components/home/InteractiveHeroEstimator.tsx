@@ -198,8 +198,8 @@ export function InteractiveHeroEstimator() {
   const [step, setStep] = useState<1 | 2>(1);
   const [serviceSlug, setServiceSlug] = useState<string>('residential');
   const [sqft, setSqft] = useState<number>(2750);
+  const [customSqftInput, setCustomSqftInput] = useState<string>('2,750');
   const [activePresetIndex, setActivePresetIndex] = useState<number>(1); // default medium
-  const [isCustomSlider, setIsCustomSlider] = useState<boolean>(false);
   const [isHighlightPulsing, setIsHighlightPulsing] = useState<boolean>(false);
 
   const [contactData, setContactData] = useState({
@@ -276,37 +276,65 @@ export function InteractiveHeroEstimator() {
     const service = servicesData.find((s) => s.slug === slug);
     if (service) {
       // Keep sqft within bounds of new service
-      const clamped = Math.min(Math.max(sqft, service.pricing.minSqft), service.pricing.maxSqft);
+      const clamped = Math.min(Math.max(sqft, service.pricing.minSqft || 500), service.pricing.maxSqft || 25000);
       setSqft(clamped);
-      syncWithServer(slug, clamped, isCustomSlider ? 'custom' : 'preset');
+      setCustomSqftInput(clamped.toLocaleString());
+      syncWithServer(slug, clamped, activePresetIndex >= 0 ? 'preset' : 'custom');
     }
   };
 
   const handleSelectPreset = (preset: { sqftValue: number }, index: number) => {
-    setIsCustomSlider(false);
     setActivePresetIndex(index);
     setSqft(preset.sqftValue);
+    setCustomSqftInput(preset.sqftValue.toLocaleString());
     triggerPulse();
     syncWithServer(serviceSlug, preset.sqftValue, 'preset');
   };
 
-  const handleSliderChange = (newVal: number) => {
-    setIsCustomSlider(true);
-    // Tactile snap points near preset breakpoints (±60 sqft)
-    let snappedVal = newVal;
-    for (let i = 0; i < presets.length; i++) {
-      if (Math.abs(newVal - presets[i].sqftValue) < 65) {
-        snappedVal = presets[i].sqftValue;
-        setActivePresetIndex(i);
-        break;
-      } else {
-        setActivePresetIndex(-1);
-      }
+  const handleCustomSqftChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawDigits = e.target.value.replace(/[^0-9]/g, '');
+    if (!rawDigits) {
+      setCustomSqftInput('');
+      setActivePresetIndex(-1);
+      return;
     }
+    const num = parseInt(rawDigits, 10);
+    setCustomSqftInput(num.toLocaleString());
+    
+    // Check if matches a preset
+    const matchIdx = presets.findIndex((p) => p.sqftValue === num);
+    setActivePresetIndex(matchIdx);
 
-    setSqft(snappedVal);
+    setSqft(num);
     triggerPulse();
-    syncWithServer(serviceSlug, snappedVal, 'custom');
+    syncWithServer(serviceSlug, num, 'custom');
+  };
+
+  const handleCustomSqftBlur = () => {
+    const min = activeService.pricing.minSqft || 500;
+    const max = activeService.pricing.maxSqft || 25000;
+    let num = parseInt(customSqftInput.replace(/[^0-9]/g, ''), 10);
+    if (isNaN(num) || num < min) {
+      num = min;
+    } else if (num > max) {
+      num = max;
+    }
+    setSqft(num);
+    setCustomSqftInput(num.toLocaleString());
+    const matchIdx = presets.findIndex((p) => p.sqftValue === num);
+    setActivePresetIndex(matchIdx);
+  };
+
+  const adjustSqft = (delta: number) => {
+    const min = activeService.pricing.minSqft || 500;
+    const max = activeService.pricing.maxSqft || 25000;
+    const nextVal = Math.min(Math.max(sqft + delta, min), max);
+    setSqft(nextVal);
+    setCustomSqftInput(nextVal.toLocaleString());
+    const matchIdx = presets.findIndex((p) => p.sqftValue === nextVal);
+    setActivePresetIndex(matchIdx);
+    triggerPulse();
+    syncWithServer(serviceSlug, nextVal, 'custom');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -322,7 +350,7 @@ export function InteractiveHeroEstimator() {
           phone: contactData.phone,
           address: contactData.address,
           serviceType: activeService.name,
-          notes: `Dynamic Ballpark: $${rawEstimate.low.toLocaleString()} – $${rawEstimate.high.toLocaleString()} (${sqft} sq ft, ${isCustomSlider ? 'custom slider' : 'preset'})`,
+          notes: `Dynamic Ballpark: $${rawEstimate.low.toLocaleString()} – $${rawEstimate.high.toLocaleString()} (${sqft} sq ft, ${activePresetIndex === -1 ? 'custom sq ft' : 'preset'})`,
         }),
       });
     } catch {
@@ -539,7 +567,7 @@ export function InteractiveHeroEstimator() {
               </div>
             </div>
 
-            {/* 2. Property Size: Quick Presets + Tactile Slider */}
+            {/* 2. Property Size: Quick Presets + Direct Custom Square Footage Input */}
             <div>
               <div className="flex items-center justify-between mb-2.5">
                 <span
@@ -552,14 +580,14 @@ export function InteractiveHeroEstimator() {
                 </span>
                 <span className={cn('text-xs font-extrabold text-brand-blue flex items-center gap-1')}>
                   <span className="font-mono">{sqft.toLocaleString()}</span> sq ft
-                  {isCustomSlider && <span className="text-[10px] font-normal text-slate-500">(Custom)</span>}
+                  {activePresetIndex === -1 && <span className="text-[10px] font-normal text-slate-500">(Custom)</span>}
                 </span>
               </div>
 
-              {/* Presets + Custom Button Row */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-3">
+              {/* Quick Presets Row */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mb-3">
                 {presets.map((sz, idx) => {
-                  const isSelected = !isCustomSlider && activePresetIndex === idx;
+                  const isSelected = activePresetIndex === idx;
                   return (
                     <button
                       type="button"
@@ -578,74 +606,58 @@ export function InteractiveHeroEstimator() {
                     </button>
                   );
                 })}
-
-                {/* 4th Option: Custom Slider Toggle Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCustomSlider(true);
-                    triggerPulse();
-                  }}
-                  className={cn(
-                    'py-2.5 px-2 rounded-xl text-center cursor-pointer transition-all border text-xs sm:text-sm col-span-3 sm:col-span-1 active:scale-95 duration-150',
-                    isCustomSlider
-                      ? 'bg-brand-blue text-white border-brand-blue font-bold shadow-xs'
-                      : isLight
-                      ? 'bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-brand-blue font-bold shadow-2xs'
-                      : 'bg-white/10 hover:bg-white/15 border-white/15 text-sky-300 font-bold'
-                  )}
-                >
-                  <span className="block leading-tight">
-                    Custom Slider ⚙️
-                  </span>
-                </button>
               </div>
 
-              {/* Tactile Slider Console with Snap Ticks (always accessible & thumb-friendly) */}
-              <div className="bg-slate-50/90 rounded-2xl p-3 sm:p-4 border border-slate-200/80 space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                  <span>Fine-tune roof footprint:</span>
-                  <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-[#0B1E33]">
-                    <span>{sqft.toLocaleString()}</span>
-                    <span className="text-[10px] text-slate-400 font-normal">sq ft</span>
+              {/* Direct Custom Square Footage Input Console */}
+              <div className="bg-slate-50/90 rounded-2xl p-3 sm:p-4 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-brand-blue border border-blue-100 flex items-center justify-center shrink-0 shadow-2xs">
+                    <Icon name="calculator" className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-[#0B1E33] block leading-tight">
+                      Or Enter Exact Square Footage
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      Type your property sq ft or adjust with - / + buttons
+                    </span>
                   </div>
                 </div>
 
-                <div className="relative pt-1 pb-1">
-                  {/* Visual Preset Tick Markers */}
-                  <div className="absolute inset-x-0 top-3 pointer-events-none flex justify-between px-1">
-                    {presets.map((p, idx) => {
-                      const min = activeService.pricing.minSqft || 500;
-                      const max = activeService.pricing.maxSqft || 10000;
-                      const pct = Math.min(Math.max(((p.sqftValue - min) / (max - min)) * 100, 2), 98);
-                      return (
-                        <div
-                          key={idx}
-                          style={{ left: `${pct}%` }}
-                          className="absolute w-1.5 h-1.5 -ml-0.75 bg-slate-400 rounded-full"
-                          title={p.label}
-                        />
-                      );
-                    })}
+                <div className="flex items-center gap-1.5 self-stretch sm:self-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => adjustSqft(-100)}
+                    className="w-8 h-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-[#0B1E33] font-bold text-sm flex items-center justify-center cursor-pointer transition-all shadow-2xs active:scale-95 select-none"
+                    title="Decrease 100 sq ft"
+                  >
+                    -
+                  </button>
+
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={customSqftInput}
+                      onChange={handleCustomSqftChange}
+                      onBlur={handleCustomSqftBlur}
+                      placeholder="e.g. 2,500"
+                      className="w-28 sm:w-32 px-3 py-2 text-right pr-11 font-mono font-extrabold text-sm sm:text-base rounded-xl border border-slate-300 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 bg-white text-[#0B1E33] outline-none shadow-2xs transition-all"
+                      aria-label="Roof square footage input"
+                    />
+                    <span className="absolute right-2.5 text-[11px] font-bold text-slate-400 pointer-events-none select-none">
+                      sq ft
+                    </span>
                   </div>
 
-                  <input
-                    type="range"
-                    min={activeService.pricing.minSqft || 800}
-                    max={activeService.pricing.maxSqft || 8000}
-                    step={50}
-                    value={sqft}
-                    onChange={(e) => handleSliderChange(parseInt(e.target.value, 10))}
-                    className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-blue touch-pan-y"
-                    style={{ minHeight: '44px' }}
-                    aria-label="Roof square footage slider"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                  <span>{(activeService.pricing.minSqft || 800).toLocaleString()} sq ft</span>
-                  <span className="text-slate-500 font-semibold">Snap points at common presets</span>
-                  <span>{(activeService.pricing.maxSqft || 8000).toLocaleString()} sq ft</span>
+                  <button
+                    type="button"
+                    onClick={() => adjustSqft(100)}
+                    className="w-8 h-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-[#0B1E33] font-bold text-sm flex items-center justify-center cursor-pointer transition-all shadow-2xs active:scale-95 select-none"
+                    title="Increase 100 sq ft"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
             </div>

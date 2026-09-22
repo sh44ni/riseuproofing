@@ -36,12 +36,15 @@ import {
   ArrowUpRight,
   Send,
   Globe,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { CreateLeadModal, CreateLeadPayload } from '@/components/pipeline/CreateLeadModal';
 import { CrmPageHero } from '@/components/common/CrmPageHero';
 import { UniversalStatCard } from '@/components/common/UniversalStatCard';
 import { useLeads } from '@/hooks/useLeads';
+import { api } from '@/lib/api';
+import { useDashboardStats } from '@/lib/dashboardStatsStore';
 
 export interface Lead {
   id: string | number;
@@ -67,6 +70,7 @@ export interface Lead {
   assignedRep: string;
   repInitials: string;
   createdAt: string;
+  createdDate?: string;
   speedToCall?: string; // initial response time
   lossReason?: 'competitor_price' | 'ghosted' | 'postponed' | 'diy_handyman' | 'financing_denied' | 'out_of_area';
   lossNotes?: string;
@@ -117,8 +121,38 @@ const LOSS_REASONS: Record<
   },
 };
 
+function getSourceBadges(lead: Lead): {
+  type: 'website' | 'manual';
+  mainLabel: string;
+  detailLabel: string | null;
+} {
+  if (lead.source === 'website') {
+    let detail = lead.leadSourceDetail ? lead.leadSourceDetail.trim() : null;
+    if (detail) {
+      const stripped = detail.replace(/^website\s*[-–:]?\s*/i, '').trim();
+      if (!stripped || stripped.toLowerCase() === 'lead' || stripped.toLowerCase() === 'website') {
+        detail = null;
+      } else {
+        detail = stripped;
+      }
+    }
+    return {
+      type: 'website',
+      mainLabel: 'Website Lead',
+      detailLabel: detail,
+    };
+  }
+
+  return {
+    type: 'manual',
+    mainLabel: lead.sourceLabel || 'Manual Entry',
+    detailLabel: lead.leadSourceDetail && lead.leadSourceDetail !== lead.sourceLabel ? lead.leadSourceDetail : null,
+  };
+}
+
 export function LeadsPage() {
   const { user } = useAuth();
+  const { stats } = useDashboardStats();
   const {
     leads,
     totalCount,
@@ -132,6 +166,10 @@ export function LeadsPage() {
     markAsLost,
     reactivateLead,
     addNote,
+    page,
+    perPage,
+    setPage,
+    sources,
   } = useLeads();
   const [search, setSearch] = useState('');
   const [activeStage, setActiveStage] = useState<string>('all');
@@ -145,6 +183,15 @@ export function LeadsPage() {
   // Modals & Inspection Drawer
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [inspectLead, setInspectLead] = useState<Lead | null>(null);
+
+  const handleClaimLead = async (leadId: string | number) => {
+    try {
+      await api.claimLead(leadId);
+      await refresh();
+    } catch (err) {
+      console.error('Failed to claim lead:', err);
+    }
+  };
 
   // Dropdown open states
   const [openDropdown, setOpenDropdown] = useState<'source' | 'rep' | 'service' | 'loss' | 'sort' | null>(null);
@@ -469,7 +516,7 @@ export function LeadsPage() {
           sharePct={totalLeads > 0 ? Math.round((activeLeadsCount / totalLeads) * 100) : 100}
           shareLabel="Active share"
           stageLabel="Lead Generation"
-          miniSvgPath="M 2 22 Q 18 20, 30 14 T 54 10 T 73 3"
+          sparklineData={stats?.sparklines?.newLeads}
         />
 
         <UniversalStatCard
@@ -485,7 +532,7 @@ export function LeadsPage() {
           sharePct={totalLeads > 0 ? Math.round((activeLeadsCount / totalLeads) * 100) : 100}
           shareLabel="Active share"
           stageLabel="In Pipeline"
-          miniSvgPath="M 2 8 Q 18 12, 34 16 T 56 22 T 73 24"
+          sparklineData={stats?.sparklines?.contacted}
         />
 
         <UniversalStatCard
@@ -501,7 +548,7 @@ export function LeadsPage() {
           sharePct={wonRate || 0}
           shareLabel="Win rate"
           stageLabel="Conversions"
-          miniSvgPath="M 2 24 Q 16 16, 32 18 T 52 11 T 73 4"
+          sparklineData={stats?.sparklines?.jobsWon}
         />
 
         <UniversalStatCard
@@ -517,7 +564,7 @@ export function LeadsPage() {
           sharePct={totalLeads > 0 ? Math.round((inspectionBookedCount / totalLeads) * 100) : 0}
           shareLabel="Booking share"
           stageLabel="Site Survey"
-          miniSvgPath="M 2 20 Q 20 18, 38 12 T 60 7 T 73 3"
+          sparklineData={stats?.sparklines?.estScheduled}
         />
 
         <UniversalStatCard
@@ -533,7 +580,7 @@ export function LeadsPage() {
           sharePct={leadsWithValue.length > 0 ? Math.round((leadsWithValue.length / totalLeads) * 100) : 0}
           shareLabel="Have estimates"
           stageLabel="Pipeline Intake"
-          miniSvgPath="M 2 24 Q 22 20, 36 12 T 58 8 T 73 2"
+          sparklineData={stats?.sparklines?.estSent}
         />
 
         <UniversalStatCard
@@ -550,7 +597,7 @@ export function LeadsPage() {
           sharePct={lostRate || 0}
           shareLabel="Loss percentage"
           stageLabel="Loss Prevention"
-          miniSvgPath="M 2 6 Q 20 10, 38 18 T 60 22 T 73 26"
+          sparklineData={stats?.sparklines?.lostClosed}
         />
       </div>
 
@@ -656,8 +703,7 @@ export function LeadsPage() {
                 <div className="absolute top-full left-0 mt-1 z-50 w-48 rounded-xl bg-white/95 backdrop-blur-2xl border border-white/90 shadow-xl p-1.5 space-y-0.5">
                   {[
                     { id: 'all', label: 'All Sources' },
-                    { id: 'website', label: 'Website' },
-                    { id: 'manual', label: 'Manual Entries' },
+                    ...sources.map((s) => ({ id: s, label: s })),
                   ].map((src) => (
                     <button
                       key={src.id}
@@ -1050,7 +1096,7 @@ export function LeadsPage() {
                             )}`}
                           >
                             <span className="truncate">{lead.service}</span>
-                            {lead.squares && (
+                            {Boolean(lead.squares && lead.squares > 0) && (
                               <span className="opacity-70 font-normal">({lead.squares} sq)</span>
                             )}
                           </span>
@@ -1074,42 +1120,55 @@ export function LeadsPage() {
                           </td>
                         )}
 
-                        {/* 5. Source Attribution (Website shows both Website and Claimed By; Manual shows creator name) */}
+                        {/* 5. Source Attribution */}
                         <td className="px-3 py-3">
-                          {lead.source === 'website' ? (
-                            <div className="flex flex-wrap items-center gap-1">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-bold text-[10px] border border-sky-200/80 shadow-2xs">
-                                <Globe size={10} className="text-sky-600" />
-                                <span>Website Lead</span>
-                              </span>
-                              {lead.leadSourceDetail && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium text-[9.5px]">
-                                  {lead.leadSourceDetail}
+                          {(() => {
+                            const src = getSourceBadges(lead);
+                            return (
+                              <div className="flex flex-wrap items-center gap-1">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-bold text-[10px] border border-sky-200/80 shadow-2xs">
+                                  {src.type === 'website' && <Globe size={10} className="text-sky-600" />}
+                                  <span>{src.mainLabel}</span>
                                 </span>
-                              )}
-                              {(lead.isClaimed || (lead.assignedRep && lead.assignedRep !== 'Unassigned')) && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[9.5px] border border-emerald-200/80">
-                                  Claimed: {lead.assignedRep}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-[10px] border border-slate-200/60">
-                              <span>{lead.sourceLabel}</span>
-                            </span>
-                          )}
+                                {src.detailLabel && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium text-[9.5px]">
+                                    {src.detailLabel}
+                                  </span>
+                                )}
+                                {(lead.isClaimed || (lead.assignedRep && lead.assignedRep !== 'Unassigned')) && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[9.5px] border border-emerald-200/80">
+                                    Claimed: {lead.assignedRep}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* 6. Estimator */}
                         <td className="px-3 py-3">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded-full bg-slate-200 font-bold text-slate-700 text-[9px] flex items-center justify-center">
-                              {lead.repInitials}
-                            </span>
-                            <span className="text-slate-800 font-medium text-[11px] truncate">
-                              {lead.assignedRep}
-                            </span>
-                          </div>
+                          {lead.assignedRep && lead.assignedRep !== 'Unassigned' ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-5 h-5 rounded-full bg-slate-200 font-bold text-slate-700 text-[9px] flex items-center justify-center shrink-0">
+                                {lead.repInitials}
+                              </span>
+                              <span className="text-slate-800 font-medium text-[11px] truncate">
+                                {lead.assignedRep}
+                              </span>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClaimLead(lead.id);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9.5px] shadow-2xs transition-colors cursor-pointer"
+                            >
+                              <UserCheck size={11} />
+                              <span>Claim</span>
+                            </button>
+                          )}
                         </td>
 
                         {/* 7. Value */}
@@ -1134,18 +1193,18 @@ export function LeadsPage() {
                                 : 'bg-rose-100 text-rose-800 border border-rose-200'
                             }`}
                           >
-                            {lead.status === 'lost' ? 'Lost / Dead' : lead.status.replace('_', ' ')}
+                            {lead.status === 'lost' ? 'Lost / Dead' : lead.status.replace(/_/g, ' ')}
                           </span>
                         </td>
 
                         {/* 9. Received / SLA */}
                         <td className="px-3 py-3">
                           <div className="text-[11px] font-semibold text-slate-800 leading-tight">
-                            {lead.createdAt}
+                            {lead.createdDate || lead.createdAt}
                           </div>
                           <div className="text-[9.5px] text-slate-400 font-medium flex items-center gap-0.5">
                             <Clock size={8.5} />
-                            <span>{lead.speedToCall || 'Inbound'}</span>
+                            <span>{lead.speedToCall ? `Resp: ${lead.speedToCall}` : lead.createdAt}</span>
                           </div>
                         </td>
 
@@ -1265,22 +1324,39 @@ export function LeadsPage() {
                       <span>{LOSS_REASONS[lead.lossReason]?.label}</span>
                     </span>
                   ) : lead.source === 'website' ? (
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-bold text-[10px] border border-sky-200/80 shadow-2xs">
-                        <Globe size={10} className="text-sky-600" />
-                        <span>Website Lead</span>
-                      </span>
-                      {lead.leadSourceDetail && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium text-[9.5px]">
-                          {lead.leadSourceDetail}
-                        </span>
-                      )}
-                      {(lead.isClaimed || (lead.assignedRep && lead.assignedRep !== 'Unassigned')) && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[9.5px] border border-emerald-200/80">
-                          Claimed: {lead.assignedRep}
-                        </span>
-                      )}
-                    </div>
+                    (() => {
+                      const src = getSourceBadges(lead);
+                      return (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-bold text-[10px] border border-sky-200/80 shadow-2xs">
+                            <Globe size={10} className="text-sky-600" />
+                            <span>Website Lead</span>
+                          </span>
+                          {src.detailLabel && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium text-[9.5px]">
+                              {src.detailLabel}
+                            </span>
+                          )}
+                          {(lead.isClaimed || (lead.assignedRep && lead.assignedRep !== 'Unassigned')) ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[9.5px] border border-emerald-200/80">
+                              Claimed: {lead.assignedRep}
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClaimLead(lead.id);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9.5px] shadow-2xs transition-colors cursor-pointer"
+                            >
+                              <UserCheck size={10} />
+                              <span>Claim Lead</span>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()
                   ) : (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-200/60">
                       {lead.sourceLabel}
@@ -1344,6 +1420,36 @@ export function LeadsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+      
+      {/* ========================================================
+          4. PAGINATION CONTROLS
+          ======================================================== */}
+      {totalCount > perPage && (
+        <div className="flex items-center justify-between mt-4 p-4 light-glass-card rounded-2xl border border-white/85 shadow-sm backdrop-blur-2xl">
+          <div className="text-xs text-slate-500 font-semibold">
+            Showing {(page - 1) * perPage + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} Leads
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p: number) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+              Page {page}
+            </span>
+            <button
+              onClick={() => setPage((p: number) => p + 1)}
+              disabled={page * perPage >= totalCount}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
@@ -1610,17 +1716,22 @@ function LeadInspectModal({
             </span>
             <div className="flex items-center gap-2">
               {lead.source === 'website' ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 font-bold text-[10.5px] border border-sky-200/80 shadow-2xs">
-                    <Globe size={11} className="text-sky-600" />
-                    <span>Website Lead</span>
-                  </span>
-                  {lead.leadSourceDetail && (
-                    <span className="text-slate-600 font-semibold bg-slate-200/70 px-2 py-0.5 rounded-md text-[10px]">
-                      {lead.leadSourceDetail}
-                    </span>
-                  )}
-                </div>
+                (() => {
+                  const src = getSourceBadges(lead);
+                  return (
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 font-bold text-[10.5px] border border-sky-200/80 shadow-2xs">
+                        <Globe size={11} className="text-sky-600" />
+                        <span>Website Lead</span>
+                      </span>
+                      {src.detailLabel && (
+                        <span className="text-slate-600 font-semibold bg-slate-200/70 px-2 py-0.5 rounded-md text-[10px]">
+                          {src.detailLabel}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()
               ) : (
                 <span className="text-slate-700 font-bold bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
                   {lead.sourceLabel}

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional, Dict, Any, List
+from datetime import datetime, timezone
 import math
 
 from app.core.database import get_db
@@ -365,6 +366,35 @@ async def get_client_360(
     """), {"id": client_id})
     tasks = [dict(r._mapping) for r in tasks_res.fetchall()]
 
+    # Extract inspection & drone photos from inspections findings or attached data
+    inspection_photos = []
+    for ins in inspections:
+        findings = ins.get("findings")
+        if isinstance(findings, list):
+            for item in findings:
+                if isinstance(item, dict) and item.get("photo_url"):
+                    inspection_photos.append({
+                        "id": f"insp-{ins.get('id')}-{len(inspection_photos)}",
+                        "title": item.get("title") or item.get("category") or "Inspection Photo",
+                        "url": item.get("photo_url"),
+                        "severity": item.get("status") or "Inspected",
+                        "createdAt": str(ins.get("inspection_date") or ins.get("created_at") or "")
+                    })
+        if ins.get("photo_url"):
+            inspection_photos.append({
+                "id": f"insp-{ins.get('id')}",
+                "title": f"Roof Health Score: {ins.get('roof_health_score', 85)}%",
+                "url": ins.get("photo_url"),
+                "severity": "Inspected",
+                "createdAt": str(ins.get("inspection_date") or ins.get("created_at") or "")
+            })
+
+    # Fetch client documents
+    docs_res = await db.execute(text("""
+        SELECT * FROM client_documents WHERE client_id = :id ORDER BY created_at DESC
+    """), {"id": client_id})
+    documents = [dict(r._mapping) for r in docs_res.fetchall()]
+
     total_billed = sum(float(inv.get("amount") or 0) for inv in invoices)
     total_paid = sum(float(inv.get("amount") or 0) for inv in invoices if inv.get("status") == "paid")
     balance_due = max(0.0, total_billed - total_paid)
@@ -378,6 +408,8 @@ async def get_client_360(
         "client": client,
         "leads": leads,
         "inspections": inspections,
+        "inspection_photos": inspection_photos,
+        "documents": documents,
         "estimates": estimates,
         "jobs": jobs,
         "invoices": invoices,
@@ -515,3 +547,161 @@ async def add_client_activity(
     await db.commit()
 
     return {"ok": True, "activity": dict(row._mapping) if row else None}
+
+@router.get("/clients/{client_id}/tasks")
+async def get_client_tasks(
+    client_id: int,
+    user: Dict[str, Any] = Depends(require_permission("clients:view")),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = text("""
+        SELECT t.*, u.name as assigned_to_name
+        FROM tasks t
+        LEFT JOIN users u ON t.assigned_to_user_id = u.id
+        WHERE t.client_id = :id
+           OR (t.entity_type = 'client' AND t.entity_id = :id)
+           OR (t.entity_type = 'lead' AND t.entity_id IN (SELECT id FROM leads WHERE client_id = :id))
+        ORDER BY t.completed_at NULLS FIRST, t.due_at ASC
+    """)
+    res = await db.execute(stmt, {"id": client_id})
+    tasks = [dict(r._mapping) for r in res.fetchall()]
+    return {"ok": True, "tasks": tasks}
+
+@router.post("/clients/{client_id}/tasks")
+async def create_client_task(
+    client_id: int,
+    payload: Dict[str, Any],
+    user: Dict[str, Any] = Depends(require_permission("clients:edit")),
+    db: AsyncSession = Depends(get_db)
+):
+    title = payload.get("title")
+    if not title:
+        raise HTTPException(status_code=400, detail="Task title is required")
+
+    due_at_raw = payload.get("dueAt") or payload.get("dueDate")
+    if due_at_raw:
+        if isinstance(due_at_raw, datetime):
+            due_at = due_at_raw
+        else:
+            try:
+                due_at = datetime.fromisoformat(str(due_at_raw).replace("Z", "+00:00"))
+            except Exception:
+                due_at = datetime.now(timezone.utc)
+    else:
+        due_at = datetime.now(timezone.utc)
+
+    priority = payload.get("priority", "normal")
+    desc = payload.get("description", "")
+    assigned_to_uid = int(payload["assignedToUserId"]) if payload.get("assignedToUserId") else user["id"]
+    assigned_name = payload.get("assignedTo") or user.get("name") or "Staff"
+
+    stmt = text("""
+        INSERT INTO tasks (
+            client_id, entity_type, entity_id, title, description,
+            assigned_to, assigned_to_user_id, created_by_user_id,
+            event_type, due_at, priority, created_at
+        ) VALUES (
+            :cid, 'client', :cid, :title, :desc,
+            :assigned_name, :assigned_uid, :uid,
+            'task', :due_at, :priority, NOW()
+        ) RETURNING *
+    """)
+    res = await db.execute(stmt, {
+        "cid": client_id,
+        "title": title,
+        "desc": desc,
+        "assigned_name": assigned_name,
+        "assigned_uid": assigned_to_uid,
+        "uid": user["id"],
+        "due_at": due_at,
+        "priority": priority,
+    })
+    row = res.first()
+    await db.commit()
+    return {"ok": True, "task": dict(row._mapping) if row else None}
+
+@router.put("/clients/{client_id}/tasks/{task_id}")
+async def toggle_client_task(
+    client_id: int,
+    task_id: int,
+    user: Dict[str, Any] = Depends(require_permission("clients:edit")),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = text("""
+        UPDATE tasks
+        SET completed_at = CASE WHEN completed_at IS NULL THEN NOW() ELSE NULL END
+        WHERE id = :task_id AND (client_id = :cid OR entity_id = :cid)
+        RETURNING *
+    """)
+    res = await db.execute(stmt, {"task_id": task_id, "cid": client_id})
+    row = res.first()
+    if not row:
+        res = await db.execute(text("""
+            UPDATE tasks
+            SET completed_at = CASE WHEN completed_at IS NULL THEN NOW() ELSE NULL END
+            WHERE id = :task_id
+            RETURNING *
+        """), {"task_id": task_id})
+        row = res.first()
+    await db.commit()
+    return {"ok": True, "task": dict(row._mapping) if row else None}
+
+@router.get("/clients/{client_id}/documents")
+async def get_client_documents(
+    client_id: int,
+    user: Dict[str, Any] = Depends(require_permission("clients:view")),
+    db: AsyncSession = Depends(get_db)
+):
+    res = await db.execute(text("""
+        SELECT * FROM client_documents WHERE client_id = :id ORDER BY created_at DESC
+    """), {"id": client_id})
+    docs = [dict(r._mapping) for r in res.fetchall()]
+    return {"ok": True, "documents": docs}
+
+@router.post("/clients/{client_id}/documents")
+async def add_client_document(
+    client_id: int,
+    payload: Dict[str, Any],
+    user: Dict[str, Any] = Depends(require_permission("clients:edit")),
+    db: AsyncSession = Depends(get_db)
+):
+    name = payload.get("name") or "Document"
+    file_url = payload.get("fileUrl") or payload.get("url")
+    if not file_url:
+        raise HTTPException(status_code=400, detail="File URL is required")
+
+    file_type = payload.get("fileType", "document")
+    raw_size = payload.get("fileSize") or payload.get("file_size") or ""
+    file_size = str(raw_size)
+
+    stmt = text("""
+        INSERT INTO client_documents (client_id, name, file_url, file_type, file_size, uploaded_by, created_at)
+        VALUES (:cid, :name, :url, :ftype, :fsize, :upby, NOW())
+        RETURNING *
+    """)
+    res = await db.execute(stmt, {
+        "cid": client_id,
+        "name": name,
+        "url": file_url,
+        "ftype": file_type,
+        "fsize": file_size,
+        "upby": user.get("name") or "Staff"
+    })
+    row = res.first()
+    await db.commit()
+    return {"ok": True, "document": dict(row._mapping) if row else None}
+
+@router.delete("/clients/{client_id}/documents/{document_id}")
+async def delete_client_document(
+    client_id: int,
+    document_id: int,
+    user: Dict[str, Any] = Depends(require_permission("clients:delete")),
+    db: AsyncSession = Depends(get_db)
+):
+    await db.execute(text("DELETE FROM client_documents WHERE id = :did AND client_id = :cid"), {
+        "did": document_id,
+        "cid": client_id
+    })
+    await db.commit()
+    return {"ok": True, "message": "Document deleted"}
+

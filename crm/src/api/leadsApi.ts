@@ -69,6 +69,7 @@ export interface Lead {
   assignedRep: string;
   repInitials: string;
   createdAt: string;
+  createdDate?: string;
   speedToCall?: string; // initial response time
   lossReason?: 'competitor_price' | 'ghosted' | 'postponed' | 'diy_handyman' | 'financing_denied' | 'out_of_area';
   lossNotes?: string;
@@ -164,6 +165,17 @@ function formatRelativeDate(dateStr: string | null | undefined): string {
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays}d ago`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return 'Recently';
+  }
+}
+
+function formatCalendarDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return 'Recently';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Recently';
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   } catch {
     return 'Recently';
@@ -281,6 +293,7 @@ export function backendLeadToLead(raw: BackendLead): Lead {
     assignedRep: repName,
     repInitials: getInitials(repName),
     createdAt: formatRelativeDate(raw.created_at),
+    createdDate: formatCalendarDate(raw.created_at),
     speedToCall,
     lossReason: (raw.lost_reason as any) || undefined,
     lossNotes: raw.lost_reason ? (raw.notes || 'Marked as lost during follow-up') : undefined,
@@ -446,4 +459,9 @@ export const leadsApi = {
       authorRole: authorInfo?.authorRole,
     });
   },
+
+  async fetchLeadSources(): Promise<string[]> {
+    const res = await api.getLeadSources();
+    return res.sources || [];
+  }
 };

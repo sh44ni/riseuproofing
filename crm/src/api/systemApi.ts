@@ -155,3 +155,24 @@ export async function fetchSystemKpis(): Promise<SystemKpiData> {
     return DEFAULT_FALLBACK_KPIS;
   }
 }
+
+export async function getSettings(): Promise<Record<string, any>> {
+  try {
+    return await api.request<Record<string, any>>('/admin/settings');
+  } catch (error) {
+    console.warn('[systemApi] Failed to fetch settings', error);
+    return {};
+  }
+}
+
+export async function updateSettings(key: string, value: any): Promise<void> {
+  try {
+    await api.request('/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ key, value }),
+    });
+  } catch (error) {
+    console.error(`[systemApi] Failed to update settings for key ${key}`, error);
+    throw error;
+  }
+}

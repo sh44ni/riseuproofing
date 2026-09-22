@@ -6,7 +6,6 @@ export type DateRangeFilter =
 
 export type ReportTab =
   | 'revenue'
-  | 'lead_sources'
   | 'sales_reps';
 
 export interface RevenueDataPoint {
@@ -60,4 +59,42 @@ export interface ExecutiveInsight {
   impact: string;
   recommendation: string;
   category: string;
+}
+
+export interface SpeedToLeadBucket {
+  window: string;
+  rate: number; // close rate percentage
+  leadsCount?: number;
+  wonCount?: number;
+  percentage?: number; // share of total leads
+  color: string;
+  note?: string;
+}
+
+export interface SpeedToLeadDistributionResponse {
+  avgSpeedMinutes: number;
+  totalContacted: number;
+  slaCompliancePct: number;
+  distribution: SpeedToLeadBucket[];
+}
+
+export function dateRangeToDates(range?: string): { from?: string; to?: string } {
+  const now = new Date();
+  const year = now.getFullYear();
+  switch (range) {
+    case 'last_30_days': {
+      const from = new Date(now);
+      from.setDate(from.getDate() - 30);
+      return { from: from.toISOString().slice(0, 10), to: now.toISOString().slice(0, 10) };
+    }
+    case 'this_quarter': {
+      const q = Math.floor(now.getMonth() / 3);
+      return { from: `${year}-${String(q * 3 + 1).padStart(2, '0')}-01`, to: now.toISOString().slice(0, 10) };
+    }
+    case 'last_year':
+      return { from: `${year - 1}-01-01`, to: `${year - 1}-12-31` };
+    case 'ytd':
+    default:
+      return { from: `${year}-01-01`, to: now.toISOString().slice(0, 10) };
+  }
 }

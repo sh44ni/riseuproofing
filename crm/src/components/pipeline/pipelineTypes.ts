@@ -19,6 +19,7 @@ export interface DealCard {
   sourceType?: string;
   assignedToUserId?: number | null;
   assignedToName?: string | null;
+  createdByUserId?: number | null;
   createdByName?: string | null;
 }
 
@@ -106,7 +107,7 @@ export function enrichDeals(columns: ColumnData[]): EnrichedDeal[] {
     col.cards.forEach((card) => {
       const meta = DEAL_METADATA[card.id] || {
         phone: '(760) 555-0100',
-        email: `${card.name.toLowerCase().replace(/[^a-z]/g, '')}@gmail.com`,
+        email: `${String(card.name || 'homeowner').toLowerCase().replace(/[^a-z]/g, '')}@gmail.com`,
         value: 15000,
         scheduledDay: 10,
         timeSlot: '10:00 AM',

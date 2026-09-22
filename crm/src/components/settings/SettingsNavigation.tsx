@@ -1,10 +1,12 @@
 import React from 'react';
 import {
+  User,
   Users,
   Building2,
   Calculator,
   Sliders,
   Bell,
+  ShieldCheck,
 } from 'lucide-react';
 import { SettingsTab } from '@/types/settingsTypes';
 import { useCompany } from '@/context/CompanyContext';
@@ -33,6 +35,13 @@ export function SettingsNavigation({
 
   const TABS: TabItem[] = [
     {
+      id: 'profile',
+      label: 'My Profile & Security',
+      icon: User,
+      badge: 'Active',
+      color: 'from-sky-500 to-indigo-600',
+    },
+    {
       id: 'users',
       label: 'Users & Permissions',
       icon: Users,
@@ -48,24 +57,16 @@ export function SettingsNavigation({
     },
     {
       id: 'pricing',
-      label: 'Roofing Pricing Formulas',
+      label: 'Estimator Pricing & Formulas',
       icon: Calculator,
-      badge: '38% Margin',
+      badge: 'Live Formula',
       color: 'from-amber-500 to-orange-600',
     },
     {
-      id: 'pipeline',
-      label: 'Pipeline & Speed-to-Lead',
-      icon: Sliders,
-      badge: 'Not Developed',
-      disabled: true,
-    },
-    {
-      id: 'notifications',
-      label: 'Field Rollout & Alerts',
-      icon: Bell,
-      badge: 'Not Developed',
-      disabled: true,
+      id: 'security' as SettingsTab,
+      label: 'Security & Backups',
+      icon: ShieldCheck,
+      badge: 'Audit Active',
     },
   ];
 

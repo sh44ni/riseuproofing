@@ -26,8 +26,11 @@ export interface CrmTask {
   isToday?: boolean;
   isUpcoming?: boolean;
   assignedTo: string; // e.g. 'Unassigned' | 'Carlos Morales' | 'Dave Miller'
+  assignedToUserId?: number;
   assignedInitials?: string;
   completedAt?: string;
+  entityType?: string;
+  entityId?: number;
 }
 
 export interface PersonalStickyNote {

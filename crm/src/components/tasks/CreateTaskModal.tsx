@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   Plus,
@@ -8,13 +8,53 @@ import {
   FileText,
   AlertTriangle,
   Sparkles,
+  Search,
+  Loader2,
+  DollarSign,
+  Tag,
 } from 'lucide-react';
 import { CrmTask, TaskCategory, TaskPriority } from '@/types/taskTypes';
+import { api } from '@/lib/api';
+
+interface UserItem {
+  id: number;
+  name: string;
+  email?: string;
+  role?: string;
+  avatar_url?: string;
+}
+
+interface LeadItem {
+  id: number;
+  full_name?: string;
+  name?: string;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  service_type?: string | null;
+  estimated_value?: number | null;
+  pipeline_stage?: string | null;
+}
 
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddTask: (task: CrmTask) => void;
+}
+
+function formatRole(role?: string): string {
+  if (!role) return 'Team Member';
+  const map: Record<string, string> = {
+    owner: 'Owner & Executive',
+    project_manager: 'Project Manager',
+    field_foreman: 'Field Foreman',
+    senior_estimator: 'Senior Estimator',
+    sales_rep: 'Sales Representative',
+    office_admin: 'Logistics Coordinator',
+    field_inspector: 'Field Inspector',
+    admin: 'Administrator',
+  };
+  return map[role.toLowerCase()] || role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function CreateTaskModal({
@@ -27,29 +67,133 @@ export function CreateTaskModal({
   const [estimateAmount, setEstimateAmount] = useState<string>('');
   const [category, setCategory] = useState<TaskCategory>('rise_up');
   const [priority, setPriority] = useState<TaskPriority>('normal');
-  const [dueDateStr, setDueDateStr] = useState('Sep 20, 2:00 PM');
+  const [dueDateTime, setDueDateTime] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(14, 0, 0, 0);
+    return d.toISOString().slice(0, 16);
+  });
   const [assignedTo, setAssignedTo] = useState('Unassigned');
+  const [assignedToUserId, setAssignedToUserId] = useState<number | undefined>(undefined);
   const [description, setDescription] = useState('');
+  const [selectedLeadId, setSelectedLeadId] = useState<number | undefined>(undefined);
+
+  // Dynamic API state
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [leads, setLeads] = useState<LeadItem[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(false);
+  const [leadSearch, setLeadSearch] = useState('');
+  const [showAllLeads, setShowAllLeads] = useState(false);
+
+  // Fetch live team members and pipeline leads on modal open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    setIsLoadingUsers(true);
+    setIsLoadingLeads(true);
+
+    api.getUsers()
+      .then((res: any) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.users) ? res.users : Array.isArray(res) ? res : [];
+        setUsers(list);
+      })
+      .catch((err) => {
+        console.warn('Failed to load team members for task assignment:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingUsers(false);
+      });
+
+    api.getLeads()
+      .then((res: any) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res?.leads) ? res.leads : Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        setLeads(list);
+      })
+      .catch((err) => {
+        console.warn('Failed to load pipeline leads for task presets:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingLeads(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
+
+  // Filtered leads for quick selection
+  const filteredLeads = useMemo(() => {
+    if (!leadSearch.trim()) return leads;
+    const q = leadSearch.toLowerCase();
+    return leads.filter(
+      (l) =>
+        (l.full_name && l.full_name.toLowerCase().includes(q)) ||
+        (l.name && l.name.toLowerCase().includes(q)) ||
+        (l.address && l.address.toLowerCase().includes(q)) ||
+        (l.service_type && l.service_type.toLowerCase().includes(q))
+    );
+  }, [leads, leadSearch]);
 
   if (!isOpen) return null;
 
-  const LEAD_PRESETS = [
-    { name: 'David Martinez', task: 'Follow-up on $24,850 Duration Shingles Estimate', cat: 'estimate_followup' as TaskCategory, amount: 24850 },
-    { name: 'Priya Sanchez', task: 'Review 1-Yr Warranty Audit Sign-off', cat: 'rise_up' as TaskCategory, amount: 0 },
-    { name: 'Kenneth Brooks', task: 'Submit Carlsbad City Sheathing Inspection Permit', cat: 'permits_city' as TaskCategory, amount: 0 },
-    { name: 'Arthur Pendelton', task: 'Deliver Drone 4K Roof Audit Inspection Report', cat: 'estimate_followup' as TaskCategory, amount: 38200 },
-  ];
+  const handleSelectLead = (lead: LeadItem) => {
+    const name = lead.full_name || lead.name || 'Lead';
+    setClientName(name);
+    setSelectedLeadId(lead.id);
 
-  const handleSelectPreset = (p: typeof LEAD_PRESETS[0]) => {
-    setClientName(p.name);
-    setTitle(p.task);
-    setCategory(p.cat);
-    if (p.amount > 0) setEstimateAmount(String(p.amount));
+    // Auto-populate contextual task title if empty
+    if (!title.trim() || title.startsWith('Follow-up:')) {
+      const svc = lead.service_type ? ` (${lead.service_type})` : '';
+      setTitle(`Follow-up: ${name}${svc}`);
+    }
+
+    if (lead.estimated_value && lead.estimated_value > 0) {
+      setEstimateAmount(String(lead.estimated_value));
+      setCategory('estimate_followup');
+    }
+  };
+
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === 'Unassigned' || !val) {
+      setAssignedTo('Unassigned');
+      setAssignedToUserId(undefined);
+    } else {
+      const uid = Number(val);
+      const matched = users.find((u) => u.id === uid);
+      if (matched) {
+        setAssignedTo(matched.name);
+        setAssignedToUserId(matched.id);
+      } else {
+        setAssignedTo(val);
+        setAssignedToUserId(undefined);
+      }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
+
+    const dueDateObj = dueDateTime ? new Date(dueDateTime) : new Date();
+    const dueDateIso = dueDateObj.toISOString();
+    const dueDateFormatted =
+      dueDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+      ` at ${dueDateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+
+    const initials =
+      assignedTo && assignedTo !== 'Unassigned'
+        ? assignedTo
+            .split(' ')
+            .map((p) => p[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
+        : undefined;
 
     const newTask: CrmTask = {
       id: `tsk-${Date.now()}`,
@@ -59,12 +203,15 @@ export function CreateTaskModal({
       category,
       priority,
       status: 'active',
-      dueDate: new Date().toISOString(),
-      dueDateFormatted: dueDateStr || 'Tomorrow, 5:00 PM',
+      dueDate: dueDateIso,
+      dueDateFormatted,
       isUpcoming: true,
       assignedTo: assignedTo || 'Unassigned',
-      assignedInitials: assignedTo !== 'Unassigned' ? assignedTo.slice(0, 2).toUpperCase() : undefined,
+      assignedToUserId,
+      assignedInitials: initials,
       description: description.trim() || undefined,
+      entityType: selectedLeadId ? 'lead' : undefined,
+      entityId: selectedLeadId,
     };
 
     onAddTask(newTask);
@@ -101,23 +248,76 @@ export function CreateTaskModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 text-xs">
-          {/* Quick 1-Click Preset */}
-          <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1.5">
-            <label className="font-bold text-amber-900 block">
-              Quick Lead / Estimate Preset
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {LEAD_PRESETS.map((p) => (
+          {/* Dynamic Lead Presets & Search */}
+          <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-amber-900 flex items-center gap-1.5">
+                <Sparkles size={12} className="text-amber-600" />
+                <span>Link Live Lead / Customer</span>
+              </label>
+              {leads.length > 4 && (
                 <button
-                  key={p.name}
                   type="button"
-                  onClick={() => handleSelectPreset(p)}
-                  className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-[11px] font-bold text-slate-800 hover:border-amber-500 transition-all shadow-2xs"
+                  onClick={() => setShowAllLeads(!showAllLeads)}
+                  className="text-[10.5px] font-bold text-amber-700 hover:text-amber-900 underline cursor-pointer"
                 >
-                  {p.name}
+                  {showAllLeads ? 'Show Less' : `View All (${leads.length})`}
                 </button>
-              ))}
+              )}
             </div>
+
+            {isLoadingLeads ? (
+              <div className="flex items-center gap-2 py-2 text-amber-700 text-xs font-semibold">
+                <Loader2 size={13} className="animate-spin" />
+                <span>Fetching active pipeline leads...</span>
+              </div>
+            ) : leads.length > 0 ? (
+              <div className="space-y-2">
+                {/* Search / Filter input if many leads */}
+                {(leads.length > 4 || showAllLeads) && (
+                  <div className="relative">
+                    <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={leadSearch}
+                      onChange={(e) => setLeadSearch(e.target.value)}
+                      placeholder="Search active leads..."
+                      className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-white border border-amber-300/80 text-[11px] font-medium text-slate-900 focus:outline-none focus:border-amber-500 placeholder-slate-400"
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+                  {(showAllLeads || leadSearch ? filteredLeads : filteredLeads.slice(0, 4)).map((lead) => {
+                    const leadDisplayName = lead.full_name || lead.name || 'Unnamed Lead';
+                    const isSelected = selectedLeadId === lead.id;
+                    return (
+                      <button
+                        key={lead.id}
+                        type="button"
+                        onClick={() => handleSelectLead(lead)}
+                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-all shadow-2xs text-left cursor-pointer flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-amber-500 text-slate-950 border-amber-600 font-black shadow-xs'
+                            : 'bg-white border-amber-300 text-slate-800 hover:border-amber-500'
+                        }`}
+                      >
+                        <span>{leadDisplayName}</span>
+                        {lead.estimated_value && lead.estimated_value > 0 ? (
+                          <span className={`text-[9.5px] px-1 rounded ${isSelected ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-800'}`}>
+                            ${lead.estimated_value.toLocaleString()}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] text-amber-800/80 italic">
+                No active leads found. You can enter homeowner name manually below.
+              </p>
+            )}
           </div>
 
           {/* Title */}
@@ -128,7 +328,7 @@ export function CreateTaskModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Priya Sanchez or Follow-up on Proposal"
+              placeholder="e.g. Schedule Drone Inspection or Follow-up on Proposal"
               className="w-full p-2.5 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
             />
           </div>
@@ -137,24 +337,33 @@ export function CreateTaskModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="font-bold text-slate-700 block">Client / Homeowner</label>
-              <input
-                type="text"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="David Martinez"
-                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
-              />
+              <div className="relative">
+                <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => {
+                    setClientName(e.target.value);
+                    if (selectedLeadId) setSelectedLeadId(undefined);
+                  }}
+                  placeholder="Homeowner or Job Name"
+                  className="w-full pl-8 pr-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">
               <label className="font-bold text-slate-700 block">Linked Estimate $ (Optional)</label>
-              <input
-                type="number"
-                value={estimateAmount}
-                onChange={(e) => setEstimateAmount(e.target.value)}
-                placeholder="24850"
-                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
-              />
+              <div className="relative">
+                <DollarSign size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="number"
+                  value={estimateAmount}
+                  onChange={(e) => setEstimateAmount(e.target.value)}
+                  placeholder="24850"
+                  className="w-full pl-8 pr-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+                />
+              </div>
             </div>
           </div>
 
@@ -165,14 +374,14 @@ export function CreateTaskModal({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as TaskCategory)}
-                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400 cursor-pointer"
               >
-                <option value="rise_up">Rise Up</option>
+                <option value="rise_up">Rise Up Operations</option>
                 <option value="estimate_followup">Estimate Follow-up</option>
                 <option value="permits_city">City Permits</option>
                 <option value="content_creation">Content Creation</option>
                 <option value="marketing">Marketing</option>
-                <option value="general">Operations</option>
+                <option value="general">Operations General</option>
               </select>
             </div>
 
@@ -181,42 +390,45 @@ export function CreateTaskModal({
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400 cursor-pointer"
               >
-                <option value="urgent">Urgent</option>
-                <option value="high">High</option>
-                <option value="normal">Normal</option>
-                <option value="low">Low</option>
+                <option value="urgent">🔴 Urgent</option>
+                <option value="high">🟡 High</option>
+                <option value="normal">🔵 Normal</option>
+                <option value="low">⚪ Low</option>
               </select>
             </div>
           </div>
 
-          {/* Due Date & Assignee */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Due Date & Dynamic Assignee */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="font-bold text-slate-700 block">Due Date &amp; Time</label>
-              <input
-                type="text"
-                value={dueDateStr}
-                onChange={(e) => setDueDateStr(e.target.value)}
-                placeholder="Sep 19, 9:00 PM"
-                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
-              />
+              <div className="relative">
+                <Calendar size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="datetime-local"
+                  value={dueDateTime}
+                  onChange={(e) => setDueDateTime(e.target.value)}
+                  className="w-full pl-8 pr-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">
               <label className="font-bold text-slate-700 block">Assignee</label>
               <select
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+                value={assignedToUserId ? String(assignedToUserId) : assignedTo}
+                onChange={handleAssigneeChange}
+                disabled={isLoadingUsers}
+                className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400 cursor-pointer disabled:opacity-60"
               >
                 <option value="Unassigned">⚠️ Unassigned</option>
-                <option value="Marco Silva">Marco Silva (Field Foreman)</option>
-                <option value="Carlos Ramirez">Carlos Ramirez (Project Manager)</option>
-                <option value="Jessica Hayes">Jessica Hayes (Sales Rep)</option>
-                <option value="Sarah Jenkins">Sarah Jenkins (Field Inspector)</option>
-                <option value="Sam Martinez">Sam Martinez (Owner)</option>
+                {users.map((u) => (
+                  <option key={u.id} value={String(u.id)}>
+                    {u.name} ({formatRole(u.role)})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -228,8 +440,8 @@ export function CreateTaskModal({
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Sample text entry for exploratory testing..."
-              className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400"
+              placeholder="Add operational notes, customer phone notes, or permit details..."
+              className="w-full p-2 rounded-xl border border-slate-300 text-slate-900 font-semibold focus:outline-none focus:border-amber-400 resize-none"
             />
           </div>
 
@@ -244,7 +456,8 @@ export function CreateTaskModal({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 font-black shadow-md shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              disabled={!title.trim()}
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 font-black shadow-md shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
             >
               Create Task
             </button>

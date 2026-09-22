@@ -63,6 +63,10 @@ import {
 } from '@/components/pipeline/MoveLeadModal';
 import { LogFollowUpModal } from '@/components/pipeline/LogFollowUpModal';
 import {
+  EstimateSentGatedModal,
+  GatedLeadCard,
+} from '@/components/pipeline/EstimateSentGatedModal';
+import {
   fetchPipelineDeals,
   updatePipelineDealStage,
   setDealOutcome,
@@ -71,9 +75,11 @@ import {
   PipelineSummary,
 } from '@/api/pipelineApi';
 import { useDragAutoScroll } from '@/hooks/useDragAutoScroll';
+import { useDashboardStats } from '@/lib/dashboardStatsStore';
 
 export function PipelinePage() {
   const { user } = useAuth();
+  const { stats } = useDashboardStats();
 
   // Live real data state (100% database driven - zero mock data)
   const [deals, setDeals] = useState<PipelineDealItem[]>([]);
@@ -94,6 +100,7 @@ export function PipelinePage() {
   const [activeDealModal, setActiveDealModal] = useState<PipelineDealItem | null>(null);
   const [showCreateLeadModal, setShowCreateLeadModal] = useState(false);
   const [followUpModalDeal, setFollowUpModalDeal] = useState<PipelineDealItem | null>(null);
+  const [gatedEstimateDeal, setGatedEstimateDeal] = useState<GatedLeadCard | null>(null);
   const [isSavingFollowUp, setIsSavingFollowUp] = useState<boolean>(false);
 
   // Scroll tracking state for 8-step mode
@@ -121,6 +128,8 @@ export function PipelinePage() {
   // ──────────────────────────────────────────────────────────────────────────
   // DATA FETCHING & SYNCHRONIZATION
   // ──────────────────────────────────────────────────────────────────────────
+  const [analytics, setAnalytics] = useState<any>(null);
+
   const loadPipelineData = useCallback(async (isSilent = false) => {
     if (isSilent) {
       setIsRefreshing(true);
@@ -130,10 +139,16 @@ export function PipelinePage() {
     setLoadError(null);
 
     try {
-      const res = await fetchPipelineDeals();
+      const [res, analyticsData] = await Promise.all([
+        fetchPipelineDeals(),
+        import('@/api/pipelineApi').then(m => m.fetchPipelineAnalytics()).catch(() => null)
+      ]);
       setDeals(res.deals);
       if (res.summary) {
         setSummary(res.summary);
+      }
+      if (analyticsData) {
+        setAnalytics(analyticsData);
       }
     } catch (err: any) {
       console.error('Failed to load real pipeline deals:', err);
@@ -318,6 +333,24 @@ export function PipelinePage() {
       pillText: 'text-emerald-700',
     };
 
+    // Gated stage check: Estimate Sent is automated and cannot be manually dropped into
+    if (targetStageId === 'estimate_sent') {
+      setGatedEstimateDeal({
+        id: deal.id,
+        name: deal.name,
+        location: `${deal.address}, ${deal.city}`,
+        address: deal.address,
+        city: deal.city,
+        service: deal.service,
+        serviceColor: deal.serviceColor,
+        phone: deal.phone,
+        email: deal.email,
+        value: deal.value,
+        currentStageName: fromDef.shortTitle,
+      });
+      return;
+    }
+
     setDropIntent({
       card: {
         id: deal.id,
@@ -386,6 +419,25 @@ export function PipelinePage() {
   // MANUAL ADVANCE & OUTCOME ACTIONS
   // ──────────────────────────────────────────────────────────────────────────
   const handleAdvanceDeal = async (dealId: string, nextStage: PipelineStageId) => {
+    if (nextStage === 'estimate_sent') {
+      const deal = deals.find((d) => d.id === dealId);
+      if (deal) {
+        setGatedEstimateDeal({
+          id: deal.id,
+          name: deal.name,
+          location: `${deal.address}, ${deal.city}`,
+          address: deal.address,
+          city: deal.city,
+          service: deal.service,
+          serviceColor: deal.serviceColor,
+          phone: deal.phone,
+          email: deal.email,
+          value: deal.value,
+        });
+      }
+      return;
+    }
+
     const stageIndex = PIPELINE_STAGES.findIndex((s) => s.id === nextStage);
     const nextStageDef = stageIndex >= 0 ? PIPELINE_STAGES[stageIndex] : null;
 
@@ -546,8 +598,14 @@ export function PipelinePage() {
     deals.reduce((sum, d) => {
       if (d.stageId === 'closed_won') return sum + d.value;
       if (d.stageId === 'closed_lost') return sum;
-      const stageIdx = PIPELINE_STAGES.findIndex((s) => s.id === d.stageId);
-      const prob = stageIdx >= 0 ? (stageIdx + 1) / 12 : 0.2;
+      
+      let prob = 0.2;
+      if (analytics?.probabilities && analytics.probabilities[d.stageId] !== undefined) {
+        prob = analytics.probabilities[d.stageId];
+      } else {
+        const stageIdx = PIPELINE_STAGES.findIndex((s) => s.id === d.stageId);
+        prob = stageIdx >= 0 ? (stageIdx + 1) / 12 : 0.2;
+      }
       return sum + d.value * prob;
     }, 0)
   );
@@ -693,8 +751,8 @@ export function PipelinePage() {
           )}
         </div>
 
-        {/* Claim Lead CTA for unassigned website leads in Cold Lead step */}
-        {deal.stageId === 'cold_lead' && deal.leadSource === 'website' && (!deal.assignedToUserId || deal.estimator.name === 'Unassigned') && (
+        {/* Claim Lead CTA for unassigned leads in Cold Lead / New Leads step */}
+        {deal.stageId === 'cold_lead' && (!deal.assignedToUserId || !deal.estimator.name || deal.estimator.name === 'Unassigned') && (
           <div onClick={(e) => e.stopPropagation()} className="pt-1">
             <button
               type="button"
@@ -747,9 +805,9 @@ export function PipelinePage() {
               </div>
             )}
             <span className="text-[9.5px] font-semibold text-slate-500">
-              {deal.leadSource === 'website' && deal.estimator.name !== 'Unassigned'
+              {deal.estimator.name !== 'Unassigned'
                 ? `Claimed: ${deal.estimator.name.split(' ')[0]}`
-                : deal.estimator.name.split(' ')[0]}
+                : 'Unassigned'}
             </span>
           </div>
 
@@ -856,10 +914,7 @@ export function PipelinePage() {
           sharePct={deals.length > 0 ? Math.round((deals.filter((d) => d.stageId !== 'closed_lost').length / deals.length) * 100) : 0}
           shareLabel="Active share"
           stageLabel="Active stages"
-          svgLine="M 6 52 C 44 46 76 32 110 28 S 174 18 228 8"
-          svgArea="M 6 52 C 44 46 76 32 110 28 S 174 18 228 8 L 228 64 L 6 64 Z"
-          dotCx={228}
-          dotCy={8}
+          sparklineData={stats?.sparklines?.estSent || stats?.sparklines?.newLeads}
         />
 
         <UniversalStatCard
@@ -876,10 +931,7 @@ export function PipelinePage() {
           sharePct={totalPipelineVal > 0 ? Math.round((weightedForecastVal / totalPipelineVal) * 100) : 0}
           shareLabel="Closing probability"
           stageLabel="Weighted pipeline"
-          svgLine="M 6 58 C 48 52 84 34 118 30 S 178 22 228 8"
-          svgArea="M 6 58 C 48 52 84 34 118 30 S 178 22 228 8 L 228 64 L 6 64 Z"
-          dotCx={228}
-          dotCy={8}
+          sparklineData={stats?.sparklines?.jobsWon}
         />
 
         <UniversalStatCard
@@ -896,10 +948,7 @@ export function PipelinePage() {
           sharePct={summary?.slaHealthPct ?? 0}
           shareLabel="Compliance rate"
           stageLabel="Stage response"
-          svgLine="M 6 46 C 50 54 88 38 124 30 S 180 18 228 10"
-          svgArea="M 6 46 C 50 54 88 38 124 30 S 180 18 228 10 L 228 64 L 6 64 Z"
-          dotCx={228}
-          dotCy={10}
+          sparklineData={stats?.sparklines?.contacted}
         />
 
         <UniversalStatCard
@@ -916,10 +965,7 @@ export function PipelinePage() {
           sharePct={deals.length > 0 ? Math.round(((summary?.unassignedCount ?? deals.filter((d) => !d.estimator.name || d.estimator.name === 'Unassigned').length) / deals.length) * 100) : 0}
           shareLabel="Unassigned ratio"
           stageLabel="Queue health"
-          svgLine="M 6 54 C 44 46 86 38 120 28 S 174 14 228 8"
-          svgArea="M 6 54 C 44 46 86 38 120 28 S 174 14 228 8 L 228 64 L 6 64 Z"
-          dotCx={228}
-          dotCy={8}
+          sparklineData={stats?.sparklines?.newLeads}
         />
 
         <UniversalStatCard
@@ -936,10 +982,7 @@ export function PipelinePage() {
           sharePct={deals.length > 0 ? Math.round(((summary?.wonCount ?? closedWonDeals.length) / deals.length) * 100) : 0}
           shareLabel="Win rate"
           stageLabel="Closed revenue"
-          svgLine="M 6 50 C 42 42 82 32 116 26 S 176 12 228 6"
-          svgArea="M 6 50 C 42 42 82 32 116 26 S 176 12 228 6 L 228 64 L 6 64 Z"
-          dotCx={228}
-          dotCy={6}
+          sparklineData={stats?.sparklines?.jobsWon}
         />
 
         <UniversalStatCard
@@ -956,10 +999,7 @@ export function PipelinePage() {
           sharePct={deals.length > 0 ? Math.round(((summary?.activeInstallations ?? 0) / deals.length) * 100) : 0}
           shareLabel="Field completion"
           stageLabel="Production pipeline"
-          svgLine="M 6 48 C 40 44 80 34 114 26 S 172 16 228 8"
-          svgArea="M 6 48 C 40 44 80 34 114 26 S 172 16 228 8 L 228 64 L 6 64 Z"
-          dotCx={228}
-          dotCy={8}
+          sparklineData={stats?.sparklines?.jobsWon}
         />
       </div>
 
@@ -1584,6 +1624,13 @@ export function PipelinePage() {
         isSaving={isSavingFollowUp}
         onClose={() => setFollowUpModalDeal(null)}
         onSubmitFollowUp={handleLogFollowUpSubmit}
+      />
+
+      {/* ESTIMATE SENT GATED MODAL (Automated stage workflow notice) */}
+      <EstimateSentGatedModal
+        deal={gatedEstimateDeal}
+        isOpen={Boolean(gatedEstimateDeal)}
+        onClose={() => setGatedEstimateDeal(null)}
       />
     </div>
   );

@@ -15,24 +15,21 @@ import { CoastalWeatherWidget } from '@/components/common/CoastalWeatherWidget';
 import { QuoteBannerWidget } from '@/components/common/QuoteBannerWidget';
 import { SidebarScheduleWidget } from '@/components/common/SidebarScheduleWidget';
 import { SidebarTasksWidget } from '@/components/common/SidebarTasksWidget';
+import { ProfileSettingsModal } from '@/components/profile/ProfileSettingsModal';
+import { api, API_ORIGIN } from '@/lib/api';
 
 interface Performer {
   rank: number;
+  userId?: number;
   name: string;
+  role?: string;
   initials: string;
   jobs: number;
   revenue: string;
+  revenueRaw?: number;
+  avatarUrl?: string | null;
   avatarBg?: string;
 }
-
-const PERFORMERS: Performer[] = [
-  { rank: 1, name: 'Marc Sarellano', initials: 'MS', jobs: 8, revenue: '$94k', avatarBg: 'bg-gradient-to-tr from-[#1878B8] to-[#55C4F5]' },
-  { rank: 2, name: 'Daniel', initials: 'DA', jobs: 5, revenue: '$62k', avatarBg: 'bg-slate-200 text-slate-700' },
-  { rank: 3, name: 'Silvester', initials: 'SI', jobs: 4, revenue: '$48k', avatarBg: 'bg-amber-100 text-amber-800' },
-  { rank: 4, name: 'Chris', initials: 'CH', jobs: 3, revenue: '$36k', avatarBg: 'bg-slate-200 text-slate-700' },
-  { rank: 5, name: 'Maria', initials: 'MR', jobs: 3, revenue: '$31k', avatarBg: 'bg-slate-200 text-slate-700' },
-  { rank: 6, name: 'Tony', initials: 'TB', jobs: 2, revenue: '$24k', avatarBg: 'bg-slate-200 text-slate-700' },
-];
 
 export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
   const navigate = useNavigate();
@@ -40,54 +37,104 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
   const { licenseNumber, licenseType } = useCompany();
   const [showAllPerformers, setShowAllPerformers] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [performers, setPerformers] = useState<Performer[]>([]);
+  const [totalCompletedJobs, setTotalCompletedJobs] = useState<number>(0);
+  const [isLoadingPerformers, setIsLoadingPerformers] = useState<boolean>(true);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  const loadPerformers = async () => {
+    try {
+      const res = await api.getTopPerformers();
+      if (res && res.ok) {
+        setPerformers(res.performers || []);
+        setTotalCompletedJobs(res.totalCompletedJobs || 0);
+      }
+    } catch (err) {
+      console.error('Failed to load top performers:', err);
+    } finally {
+      setIsLoadingPerformers(false);
+    }
+  };
+
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+    loadPerformers();
+    const handleUpdate = () => {
+      loadPerformers();
+    };
+    window.addEventListener('crm:top-performers-updated', handleUpdate);
+    window.addEventListener('crm:pipeline-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('crm:top-performers-updated', handleUpdate);
+      window.removeEventListener('crm:pipeline-updated', handleUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
-    }
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
         setIsUserMenuOpen(false);
       }
-    }
-    if (isUserMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isUserMenuOpen]);
-
-  const displayName = user?.name || 'Marc Sarellano';
-  const displayEmail = user?.email || 'owner@riseuprac.com';
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  }, []);
 
   const getRoleLabel = (role?: string) => {
-    switch (role) {
+    switch (role?.toLowerCase()) {
       case 'owner':
+      case 'admin':
         return 'Owner / Qualifier';
+      case 'sales_rep':
+      case 'sales':
+        return 'Sales Representative';
+      case 'estimator':
+        return 'Lead Estimator';
       case 'project_manager':
         return 'Project Manager';
-      case 'sales_rep':
-        return 'Sales Rep / Closer';
-      case 'foreman':
-        return 'Crew Foreman';
+      case 'door_knocker':
+        return 'Field Canvasser';
+      case 'subcontractor':
+        return 'Crew Lead';
       default:
-        return 'Owner / Estimator';
+        return 'Team Member';
     }
   };
 
+  const displayName = user?.name || 'Developer Admin';
+  const displayEmail = user?.email || 'developer@riseuprac.com';
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0].toUpperCase())
+    .join('') || 'DA';
+
+  const avatarSrc = user?.avatar_url
+    ? user.avatar_url.startsWith('http')
+      ? user.avatar_url
+      : `${API_ORIGIN}${user.avatar_url}`
+    : null;
+
   const currentRoleLabel = getRoleLabel(user?.role);
+  const activePerformers = performers.filter((p) => p.jobs > 0);
+  const hasCompletedJobs = totalCompletedJobs > 0 && activePerformers.length > 0;
+
+  const firstPlace = activePerformers[0] || null;
+  const secondPlace = activePerformers[1] || null;
+  const thirdPlace = activePerformers[2] || null;
 
   return (
     <aside className="w-76 h-screen flex flex-col light-glass-canvas border-l border-slate-200/80 shrink-0 select-none overflow-y-auto no-scrollbar px-3.5 py-3 space-y-2.5 sticky top-0 z-20 text-slate-800 relative">
@@ -116,8 +163,12 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="relative shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] flex items-center justify-center font-black text-white text-xs shadow-xs">
-                {initials}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] flex items-center justify-center font-black text-white text-xs shadow-xs overflow-hidden border border-white">
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{initials}</span>
+                )}
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-emerald-500" />
             </div>
@@ -141,17 +192,26 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
         {/* Floating Liquid Glass Dropdown Menu */}
         {isUserMenuOpen && (
           <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_20px_50px_rgba(15,23,42,0.18)] p-2.5 space-y-2 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
-            {/* Header: User Identity & Licensing */}
+            {/* Header: Clean User Identity Card */}
             <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60 flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] flex items-center justify-center font-black text-white text-xs shadow-xs shrink-0">
-                {initials}
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] flex items-center justify-center font-black text-white text-xs shadow-xs shrink-0 overflow-hidden border border-white">
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{initials}</span>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-black text-slate-900 truncate leading-tight">{displayName}</div>
                 <div className="text-[10px] text-slate-500 font-medium truncate leading-tight mt-0.5">{displayEmail}</div>
-                <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#1878B8]/10 text-[#1878B8] border border-[#1878B8]/20 text-[9px] font-bold tracking-tight">
-                  <ShieldCheck size={10} className="shrink-0" />
-                  <span>{licenseNumber || 'CSLB #1115874'} • {licenseType || 'Class C-39'}</span>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[9px] font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Active
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium truncate">
+                    {currentRoleLabel}
+                  </span>
                 </div>
               </div>
             </div>
@@ -163,7 +223,7 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
                 type="button"
                 onClick={() => {
                   setIsUserMenuOpen(false);
-                  navigate('/settings');
+                  setIsProfileModalOpen(true);
                 }}
                 className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/90 transition-all text-left cursor-pointer group"
               >
@@ -218,6 +278,12 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
         )}
       </div>
 
+      {/* Render Profile Settings Studio Modal */}
+      <ProfileSettingsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+
       {/* 2. Coastal Weather Widget (Customizable, Glowing Standalone Icons, High Visibility) */}
       <CoastalWeatherWidget />
 
@@ -243,47 +309,106 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
           </div>
         </div>
 
-        {!showAllPerformers ? (
-          /* Podium View (Top 3) */
+        {isLoadingPerformers ? (
+          <div className="py-6 flex flex-col items-center justify-center space-y-2">
+            <div className="w-5 h-5 rounded-full border-2 border-[#1878B8] border-t-transparent animate-spin" />
+            <span className="text-[10px] text-slate-400 font-medium">Loading rankings...</span>
+          </div>
+        ) : !hasCompletedJobs ? (
+          /* Clean Authentic Zero State */
+          <div className="py-5 px-2 flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50/80 border border-amber-200/60 flex items-center justify-center text-amber-500 shadow-2xs mb-2">
+              <Trophy size={18} className="stroke-[2.2]" />
+            </div>
+            <h4 className="text-[11px] font-bold text-slate-800 leading-tight">No completed jobs yet</h4>
+            <p className="text-[9.5px] text-slate-400 font-medium mt-1 leading-relaxed max-w-[190px]">
+              Jobs completed in the Active Jobs column will rank staff members here in real-time.
+            </p>
+          </div>
+        ) : !showAllPerformers ? (
+          /* Real Podium View (Top 3) */
           <div className="pt-2 pb-0.5">
             <div className="flex items-end justify-center gap-2 px-1">
-              {/* 2nd Place - Daniel */}
+              {/* 2nd Place */}
               <div className="flex-1 flex flex-col items-center">
-                <div className="relative mb-1">
-                  <div className="w-8 h-8 rounded-full bg-white/90 border-2 border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-700 shadow-2xs backdrop-blur-xs">
-                    DA
+                {secondPlace ? (
+                  <>
+                    <div className="relative mb-1">
+                      <div className="w-8 h-8 rounded-full bg-white/90 border-2 border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-700 shadow-2xs backdrop-blur-xs overflow-hidden">
+                        {secondPlace.avatarUrl ? (
+                          <img
+                            src={
+                              secondPlace.avatarUrl.startsWith('http')
+                                ? secondPlace.avatarUrl
+                                : `${API_ORIGIN}${secondPlace.avatarUrl}`
+                            }
+                            alt={secondPlace.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          secondPlace.initials
+                        )}
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-400 text-white text-[8px] font-black flex items-center justify-center border border-white">
+                        2
+                      </span>
+                    </div>
+                    <span className="font-bold text-[#1F1F1F] text-[10px] truncate max-w-full text-center">
+                      {secondPlace.name}
+                    </span>
+                    <span className="text-[9px] font-semibold text-slate-500">
+                      {secondPlace.jobs} job{secondPlace.jobs === 1 ? '' : 's'}
+                    </span>
+                  </>
+                ) : (
+                  <div className="h-14 flex flex-col items-center justify-center opacity-40">
+                    <div className="w-7 h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center text-[9px] text-slate-400">
+                      —
+                    </div>
+                    <span className="text-[9px] text-slate-400 mt-1">Open</span>
                   </div>
-                  <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-400 text-white text-[8px] font-black flex items-center justify-center border border-white">
-                    2
-                  </span>
-                </div>
-                <span className="font-bold text-[#1F1F1F] text-[10px] truncate max-w-full text-center">
-                  Daniel
-                </span>
-                <span className="text-[9px] font-semibold text-slate-500">5 jobs</span>
+                )}
                 {/* Pedestal */}
                 <div className="w-full h-10 mt-1 rounded-t-lg bg-gradient-to-b from-slate-100/90 to-slate-200/80 border-t-2 border-x border-slate-300/80 flex items-center justify-center shadow-2xs backdrop-blur-xs">
                   <span className="text-xs font-black text-slate-500">2nd</span>
                 </div>
               </div>
 
-              {/* 1st Place - Marc Sarellano (Center / Tallest) */}
+              {/* 1st Place (Center / Tallest) */}
               <div className="flex-1 flex flex-col items-center -mt-2 z-10">
-                <Crown size={13} className="text-amber-500 fill-amber-400 mb-0.5 animate-bounce" />
-                <div className="relative mb-1">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] p-[2px] shadow-xs">
-                    <div className="w-full h-full rounded-full bg-[#1878B8] flex items-center justify-center text-[10.5px] font-bold text-white">
-                      MS
+                {firstPlace ? (
+                  <>
+                    <Crown size={13} className="text-amber-500 fill-amber-400 mb-0.5 animate-bounce" />
+                    <div className="relative mb-1">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] p-[2px] shadow-xs overflow-hidden">
+                        <div className="w-full h-full rounded-full bg-[#1878B8] flex items-center justify-center text-[10.5px] font-bold text-white overflow-hidden">
+                          {firstPlace.avatarUrl ? (
+                            <img
+                              src={
+                                firstPlace.avatarUrl.startsWith('http')
+                                  ? firstPlace.avatarUrl
+                                  : `${API_ORIGIN}${firstPlace.avatarUrl}`
+                              }
+                              alt={firstPlace.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            firstPlace.initials
+                          )}
+                        </div>
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8.5px] font-black flex items-center justify-center border-2 border-white shadow-xs">
+                        1
+                      </span>
                     </div>
-                  </div>
-                  <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8.5px] font-black flex items-center justify-center border-2 border-white shadow-xs">
-                    1
-                  </span>
-                </div>
-                <span className="font-black text-[#1F1F1F] text-[10.5px] truncate max-w-full text-center">
-                  Marc S.
-                </span>
-                <span className="text-[9px] font-bold text-amber-600">8 jobs</span>
+                    <span className="font-black text-[#1F1F1F] text-[10.5px] truncate max-w-full text-center">
+                      {firstPlace.name}
+                    </span>
+                    <span className="text-[9px] font-bold text-amber-600">
+                      {firstPlace.jobs} job{firstPlace.jobs === 1 ? '' : 's'}
+                    </span>
+                  </>
+                ) : null}
                 {/* Pedestal */}
                 <div className="w-full h-14 mt-1 rounded-t-lg bg-gradient-to-b from-amber-100/90 via-amber-50/80 to-amber-100/50 border-t-2 border-x border-amber-300/90 flex flex-col items-center justify-center shadow-xs backdrop-blur-xs">
                   <span className="text-[13px] font-black text-amber-700 leading-none">1st</span>
@@ -291,20 +416,45 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
                 </div>
               </div>
 
-              {/* 3rd Place - Silvester */}
+              {/* 3rd Place */}
               <div className="flex-1 flex flex-col items-center">
-                <div className="relative mb-1">
-                  <div className="w-8 h-8 rounded-full bg-amber-50/90 border-2 border-amber-200/80 flex items-center justify-center text-[10px] font-bold text-amber-800 shadow-2xs backdrop-blur-xs">
-                    SI
+                {thirdPlace ? (
+                  <>
+                    <div className="relative mb-1">
+                      <div className="w-8 h-8 rounded-full bg-amber-50/90 border-2 border-amber-200/80 flex items-center justify-center text-[10px] font-bold text-amber-800 shadow-2xs backdrop-blur-xs overflow-hidden">
+                        {thirdPlace.avatarUrl ? (
+                          <img
+                            src={
+                              thirdPlace.avatarUrl.startsWith('http')
+                                ? thirdPlace.avatarUrl
+                                : `${API_ORIGIN}${thirdPlace.avatarUrl}`
+                            }
+                            alt={thirdPlace.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          thirdPlace.initials
+                        )}
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-600/80 text-white text-[8px] font-black flex items-center justify-center border border-white">
+                        3
+                      </span>
+                    </div>
+                    <span className="font-bold text-[#1F1F1F] text-[10px] truncate max-w-full text-center">
+                      {thirdPlace.name}
+                    </span>
+                    <span className="text-[9px] font-semibold text-slate-500">
+                      {thirdPlace.jobs} job{thirdPlace.jobs === 1 ? '' : 's'}
+                    </span>
+                  </>
+                ) : (
+                  <div className="h-14 flex flex-col items-center justify-center opacity-40">
+                    <div className="w-7 h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center text-[9px] text-slate-400">
+                      —
+                    </div>
+                    <span className="text-[9px] text-slate-400 mt-1">Open</span>
                   </div>
-                  <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-600/80 text-white text-[8px] font-black flex items-center justify-center border border-white">
-                    3
-                  </span>
-                </div>
-                <span className="font-bold text-[#1F1F1F] text-[10px] truncate max-w-full text-center">
-                  Silvester
-                </span>
-                <span className="text-[9px] font-semibold text-slate-500">4 jobs</span>
+                )}
                 {/* Pedestal */}
                 <div className="w-full h-8 mt-1 rounded-t-lg bg-gradient-to-b from-amber-50/80 to-amber-100/40 border-t-2 border-x border-amber-200/70 flex items-center justify-center shadow-2xs backdrop-blur-xs">
                   <span className="text-xs font-black text-amber-700/80">3rd</span>
@@ -314,13 +464,18 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
           </div>
         ) : (
           /* Full Ranked List (Expanded View) */
-          <div className="space-y-1 text-xs pt-1">
-            {PERFORMERS.map((perf) => {
-              const isFirst = perf.rank === 1;
-              const isTopThree = perf.rank <= 3;
+          <div className="space-y-1 text-xs pt-1 max-h-56 overflow-y-auto no-scrollbar">
+            {activePerformers.map((perf, idx) => {
+              const isFirst = idx === 0;
+              const isTopThree = idx < 3;
+              const pAvatarSrc = perf.avatarUrl
+                ? perf.avatarUrl.startsWith('http')
+                  ? perf.avatarUrl
+                  : `${API_ORIGIN}${perf.avatarUrl}`
+                : null;
               return (
                 <div
-                  key={perf.rank}
+                  key={perf.userId || perf.name || idx}
                   className={`flex items-center justify-between py-1 px-2 rounded-lg transition-colors ${
                     isFirst
                       ? 'bg-amber-50/90 border border-amber-200/90 shadow-2xs backdrop-blur-xs'
@@ -337,14 +492,18 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
                           : 'text-slate-400'
                       }`}
                     >
-                      {perf.rank}
+                      {idx + 1}
                     </span>
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 overflow-hidden ${
                         perf.avatarBg || 'bg-slate-200 text-slate-700'
                       } ${isFirst ? 'text-white shadow-xs' : ''}`}
                     >
-                      {perf.initials}
+                      {pAvatarSrc ? (
+                        <img src={pAvatarSrc} alt={perf.name} className="w-full h-full object-cover" />
+                      ) : (
+                        perf.initials
+                      )}
                     </div>
                     <span
                       className={`text-[10.5px] truncate ${
@@ -363,7 +522,7 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
                         isFirst ? 'text-amber-700' : 'text-slate-600'
                       }`}
                     >
-                      {perf.jobs} jobs
+                      {perf.jobs} job{perf.jobs === 1 ? '' : 's'}
                     </span>
                   </div>
                 </div>
@@ -373,18 +532,21 @@ export function CrmRightPanel({ onQuickAdd }: { onQuickAdd?: () => void }) {
         )}
 
         {/* Toggle Button */}
-        <button
-          onClick={() => setShowAllPerformers((prev) => !prev)}
-          className="w-full py-1.5 px-3 rounded-xl liquid-glass-btn text-[10px] font-bold text-slate-600 hover:text-[#0284c7] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-2xs"
-        >
-          <span>{showAllPerformers ? 'Podium View' : `Full Leaderboard (${PERFORMERS.length})`}</span>
-          <ChevronDown
-            size={12}
-            className={`text-slate-400 group-hover:text-[#0284c7] transition-transform duration-200 ${
-              showAllPerformers ? 'rotate-180' : ''
-            }`}
-          />
-        </button>
+        {hasCompletedJobs && (
+          <button
+            type="button"
+            onClick={() => setShowAllPerformers((prev) => !prev)}
+            className="w-full py-1.5 px-3 rounded-xl liquid-glass-btn text-[10px] font-bold text-slate-600 hover:text-[#0284c7] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-2xs"
+          >
+            <span>{showAllPerformers ? 'Podium View' : `Full Leaderboard (${activePerformers.length})`}</span>
+            <ChevronDown
+              size={12}
+              className={`text-slate-400 group-hover:text-[#0284c7] transition-transform duration-200 ${
+                showAllPerformers ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+        )}
       </div>
     </aside>
   );

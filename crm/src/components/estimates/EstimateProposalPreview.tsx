@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { MultiOptionProposalData, TemplateKey } from '@/types/estimateTypes';
 import { api, API_ORIGIN } from '@/lib/api';
+import { BrandLogo } from '@/components/common/BrandLogo';
 
 interface EstimateProposalPreviewProps {
   proposalData: MultiOptionProposalData;
@@ -134,19 +135,7 @@ export function EstimateProposalPreview({
       <div className="flex items-center justify-between gap-3 mb-2.5">
         {/* Logo */}
         <div className="w-[195px] shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full bg-sky-500/15 border border-sky-500/40 flex items-center justify-center font-black text-xs text-sky-700 shadow-inner">
-              RU
-            </div>
-            <div>
-              <div className="font-black text-sm tracking-tight text-[#091b36] uppercase leading-none">
-                Rise Up Roofing
-              </div>
-              <div className="text-[8px] font-extrabold tracking-[0.2em] text-slate-500 uppercase mt-0.5">
-                &amp; Construction
-              </div>
-            </div>
-          </div>
+          <BrandLogo size="custom" className="h-9 w-auto" themeMode="light" showTagline={true} />
         </div>
 
         {/* Oceanside Company Info */}

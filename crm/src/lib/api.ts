@@ -1,7 +1,20 @@
 // Rise Up CRM - Centralized FastAPI Client
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-export const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '') || 'http://localhost:8000';
+export function getBackendBaseUrl(): string {
+  if (import.meta.env.VITE_BACKEND_URL) return import.meta.env.VITE_BACKEND_URL.replace(/\/$/, '');
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '');
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('riseuprac.com') || host.includes('vercel.app')) {
+      return 'https://backend.riseuprac.com';
+    }
+  }
+  return 'http://localhost:8000';
+}
+
+export const API_ORIGIN = getBackendBaseUrl();
+export const API_BASE = `${API_ORIGIN}/api`;
 
 class ApiClient {
   private token: string | null = null;
@@ -49,12 +62,18 @@ class ApiClient {
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    if (options.body instanceof FormData) {
+    let body = options.body;
+    if (body && typeof body === 'object' && !(body instanceof FormData) && !(body instanceof Blob)) {
+      body = JSON.stringify(body);
+    }
+
+    if (body instanceof FormData) {
       delete headers['Content-Type'];
     }
 
     const res = await fetch(url, {
       ...options,
+      body,
       headers,
       credentials: 'include',
     });
@@ -70,7 +89,18 @@ class ApiClient {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      const errorMsg = data.detail || data.error || `Request failed with status ${res.status}`;
+      let errorMsg = `Request failed with status ${res.status}`;
+      if (typeof data.detail === 'string') {
+        errorMsg = data.detail;
+      } else if (Array.isArray(data.detail)) {
+        errorMsg = data.detail.map((d: any) => (typeof d === 'string' ? d : d.msg || JSON.stringify(d))).join(', ');
+      } else if (data.detail && typeof data.detail === 'object') {
+        errorMsg = data.detail.message || JSON.stringify(data.detail);
+      } else if (data.error) {
+        errorMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+      } else if (data.message) {
+        errorMsg = typeof data.message === 'string' ? data.message : JSON.stringify(data.message);
+      }
       throw new Error(errorMsg);
     }
 
@@ -101,6 +131,40 @@ class ApiClient {
 
   async getMe() {
     return await this.request('/admin/auth/me');
+  }
+
+  // ── Profile & Account Management ──
+  async getProfile(): Promise<{ ok: boolean; user: any }> {
+    return await this.request('/admin/profile');
+  }
+
+  async updateProfile(data: { name?: string; phone?: string; avatar_url?: string }): Promise<{ ok: boolean; message?: string; user: any }> {
+    return await this.request('/admin/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(data: { current_password?: string; currentPassword?: string; new_password?: string; newPassword?: string }): Promise<{ ok: boolean; message: string }> {
+    return await this.request('/admin/profile/password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async uploadAvatar(file: File): Promise<{ ok: boolean; avatar_url: string; message?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await this.request('/admin/profile/avatar', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async removeAvatar(): Promise<{ ok: boolean; avatar_url: null; message?: string }> {
+    return await this.request('/admin/profile/avatar', {
+      method: 'DELETE',
+    });
   }
 
   // ── Dashboard & Vitals ──
@@ -150,6 +214,12 @@ class ApiClient {
     });
   }
 
+  async claimLead(id: number | string) {
+    return this.request(`/admin/pipeline/${id}/claim`, {
+      method: 'POST',
+    });
+  }
+
   async getLeadActivities(id: number | string) {
     return this.request(`/admin/leads/${id}/activities`);
   }
@@ -168,6 +238,10 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(activity),
     });
+  }
+
+  async getLeadSources() {
+    return this.request('/admin/leads/sources');
   }
 
   // ── Clients 360 ──
@@ -204,6 +278,45 @@ class ApiClient {
     return this.request(`/admin/clients/${id}/activities`, {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  }
+
+  // ── Client Tasks ──
+  async getClientTasks(clientId: number | string) {
+    return this.request(`/admin/clients/${clientId}/tasks`);
+  }
+
+  async createClientTask(clientId: number | string, payload: any) {
+    return this.request(`/admin/clients/${clientId}/tasks`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateClientTask(clientId: number | string, taskId: number | string, payload: any) {
+    return this.request(`/admin/clients/${clientId}/tasks/${taskId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // ── Client Documents ──
+  async getClientDocuments(clientId: number | string) {
+    return this.request(`/admin/clients/${clientId}/documents`);
+  }
+
+  async uploadClientDocument(clientId: number | string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.request(`/admin/clients/${clientId}/documents`, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async deleteClientDocument(clientId: number | string, docId: number | string) {
+    return this.request(`/admin/clients/${clientId}/documents/${docId}`, {
+      method: 'DELETE',
     });
   }
 
@@ -258,10 +371,35 @@ class ApiClient {
     pdfUrl?: string;
     subject?: string;
     message?: string;
-  }): Promise<{ ok: boolean; message: string; emailId: string; pdfUrl: string; sentAt: string; recipient: string }> {
+  }): Promise<{ ok: boolean; mock?: boolean; message: string; emailId: string; pdfUrl: string; sentAt: string; recipient: string }> {
     return this.request('/admin/estimates/send-email', {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  }
+
+  // ── Estimate Templates ──
+  async getEstimateTemplates() {
+    return this.request('/admin/estimates/templates');
+  }
+
+  async createEstimateTemplate(payload: any) {
+    return this.request('/admin/estimates/templates', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateEstimateTemplate(id: number | string, payload: any) {
+    return this.request(`/admin/estimates/templates/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteEstimateTemplate(id: number | string) {
+    return this.request(`/admin/estimates/templates/${id}`, {
+      method: 'DELETE',
     });
   }
 
@@ -327,6 +465,13 @@ class ApiClient {
   async deletePersonalTask(id: string) {
     return this.request(`/admin/users/me/tasks/${encodeURIComponent(id)}`, {
       method: 'DELETE',
+    });
+  }
+
+  async reorderPersonalTasks(items: Array<{ id: string; sort_order: number }>) {
+    return this.request('/admin/users/me/tasks/reorder', {
+      method: 'PUT',
+      body: JSON.stringify({ items }),
     });
   }
 
@@ -425,6 +570,48 @@ class ApiClient {
     });
   }
 
+  // ── Settings & System ──
+  async getSettings() {
+    return this.request('/admin/settings');
+  }
+
+  async updateSettings(key: string, value: any) {
+    return this.request('/admin/settings', {
+      method: 'POST',
+      body: JSON.stringify({ key, value }),
+    });
+  }
+
+  async getAuditLogs(params?: Record<string, any>) {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return this.request(`/admin/audit/logs${qs}`);
+  }
+
+  async getEstimatorConfig() {
+    return this.request('/admin/estimator');
+  }
+
+  async updateEstimatorConfig(payload: any) {
+    return this.request('/admin/estimator', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async exportData(type?: string) {
+    const qs = type ? `?type=${type}` : '';
+    return this.request(`/admin/export${qs}`);
+  }
+
+  // ── Pipeline Analytics & Config ──
+  async getPipelineAnalytics() {
+    return this.request('/admin/pipeline/analytics');
+  }
+
+  async getPipelineStagesConfig() {
+    return this.request('/admin/pipeline/stages/config');
+  }
+
   // ── Public Invitations ──
   async getPublicInvitation(token: string) {
     return this.request(`/public/invitations/${token}`);
@@ -436,6 +623,68 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // ── Reports ──
+  async getRevenueReport(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/revenue?${params.toString()}`);
+  }
+
+  async getLeadConversionReport(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/lead-conversion?${params.toString()}`);
+  }
+
+  async getSalesRepReport(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/sales-reps?${params.toString()}`);
+  }
+
+  async getPipelineVelocityReport(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/pipeline-velocity?${params.toString()}`);
+  }
+
+  async getLeadSourcesReport(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/lead-sources?${params.toString()}`);
+  }
+
+  async getReportKpis(from?: string, to?: string): Promise<any> {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    return this.request(`/admin/reports/kpis?${params.toString()}`);
+  }
+
+  async getSpeedToLeadDistribution(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/speed-to-lead-distribution?${params.toString()}`);
+  }
+
+  async getExecutiveInsights(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    return this.request(`/admin/reports/insights?${params.toString()}`);
+  }
+
+  async getTopPerformers(): Promise<{ ok: boolean; totalCompletedJobs: number; performers: any[] }> {
+    return this.request('/admin/reports/top-performers');
+  }
 }
 
 export const api = new ApiClient();
+export default api;

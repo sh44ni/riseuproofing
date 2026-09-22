@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { CrmSidebar } from './CrmSidebar';
@@ -10,6 +10,15 @@ export function CrmLayout() {
   const { user, isLoading } = useAuth();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const location = useLocation();
+  const centerViewportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (centerViewportRef.current) {
+      centerViewportRef.current.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   const isDashboard = location.pathname === '/';
   const isLightGlass =
     location.pathname === '/' ||
@@ -24,9 +33,7 @@ export function CrmLayout() {
     location.pathname.startsWith('/jobs') ||
     location.pathname.startsWith('/inspections') ||
     location.pathname.startsWith('/finances') ||
-    location.pathname.startsWith('/reviews') ||
     location.pathname.startsWith('/warranties') ||
-    location.pathname.startsWith('/templates') ||
     location.pathname.startsWith('/marketing');
 
   if (isLoading) {
@@ -50,7 +57,10 @@ export function CrmLayout() {
       <CrmSidebar />
 
       {/* Column 2: Center Viewport */}
-      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden no-scrollbar relative ${isLightGlass ? 'light-glass-canvas text-slate-800' : 'bg-[#070B12] text-slate-100'}`}>
+      <div
+        ref={centerViewportRef}
+        className={`flex-1 flex flex-col min-w-0 h-screen ${isDashboard ? 'overflow-hidden' : 'overflow-y-auto'} overflow-x-hidden no-scrollbar relative ${isLightGlass ? 'light-glass-canvas text-slate-800' : 'bg-[#070B12] text-slate-100'}`}
+      >
         {isLightGlass && (
           <>
             {/* Architectural Micro-Dot Lattice Pattern for physical glass depth */}
@@ -67,7 +77,7 @@ export function CrmLayout() {
           </>
         )}
         {!isLightGlass && <CrmTopBar />}
-        <main className={`flex-1 min-w-0 relative z-10 ${isLightGlass ? 'px-4 py-2.5' : 'p-6'}`}>
+        <main className={`flex-1 min-w-0 min-h-0 relative z-10 ${isDashboard ? 'flex flex-col px-4 py-2' : isLightGlass ? 'px-4 py-2.5' : 'p-6'}`}>
           <Outlet />
         </main>
       </div>

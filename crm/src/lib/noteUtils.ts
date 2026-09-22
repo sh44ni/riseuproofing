@@ -51,8 +51,8 @@ export function formatTimestamp12h(input?: Date | string | number | null): strin
 /**
  * Extracts 2-letter uppercase initials from an author name
  */
-export function getAuthorInitials(name?: string): string {
-  if (!name || !name.trim()) return 'RU';
+export function getAuthorInitials(name?: string | null): string {
+  if (!name || typeof name !== 'string' || !name.trim()) return 'RU';
   // Strip out parenthesis like "(Owner)"
   const cleanName = name.replace(/\([^)]*\)/g, '').trim();
   const parts = cleanName.split(/\s+/).filter(Boolean);
@@ -160,12 +160,16 @@ export function serializeProfileNote(
  * Parses raw stored notes text into a list of structured profile notes.
  * Robust against legacy bullet points, raw unformatted text, and serialized headers.
  */
-export function parseProfileNotes(rawNotes: string | undefined | null): ParsedProfileNote[] {
-  if (!rawNotes || !rawNotes.trim()) {
+export function parseProfileNotes(rawNotes: any): ParsedProfileNote[] {
+  if (!rawNotes) {
+    return [];
+  }
+  const strVal = typeof rawNotes === 'string' ? rawNotes : typeof rawNotes === 'object' ? JSON.stringify(rawNotes) : String(rawNotes);
+  if (!strVal.trim()) {
     return [];
   }
 
-  const trimmed = rawNotes.trim();
+  const trimmed = strVal.trim();
 
   // Pattern matches headers like:
   // [Sep 18, 2026 • 10:25 AM — Marc Sarellano (Owner)]

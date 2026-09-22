@@ -1,4 +1,5 @@
 export type SettingsTab =
+  | 'profile'
   | 'users'
   | 'company'
   | 'pricing'
@@ -110,6 +111,35 @@ export interface PricingConfig {
     encinitas: number;
     vista: number;
   };
+  services?: EstimatorServiceItem[];
+  pricingRules?: EstimatorPricingRuleItem[];
+}
+
+export interface EstimatorPricingRuleItem {
+  id?: number;
+  service_id: number;
+  slug: string;
+  name: string;
+  price_per_sqft_low: number;
+  price_per_sqft_high: number;
+  base_fee_low: number;
+  base_fee_high: number;
+  min_sqft: number;
+  max_sqft: number;
+  apr_available: boolean;
+  financing_apr: number;
+  financing_term_months: number;
+}
+
+export interface EstimatorServiceItem {
+  id: number;
+  slug: string;
+  name: string;
+  short_label: string;
+  icon_key: string;
+  badge_label?: string;
+  sort_order: number;
+  is_active: boolean;
 }
 
 export interface PipelineAutomation {

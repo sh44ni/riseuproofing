@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Plus, RotateCcw, CheckCircle2, FileText } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Plus, RotateCcw, CheckCircle2, FileText, CheckSquare, Sparkles, AlertCircle } from 'lucide-react';
 import { CrmPageHero } from '@/components/common/CrmPageHero';
 import { TasksKpiCards } from '@/components/tasks/TasksKpiCards';
 import { TasksFilterBar } from '@/components/tasks/TasksFilterBar';
@@ -8,13 +9,36 @@ import { PersonalStickyBoard } from '@/components/tasks/PersonalStickyBoard';
 import { CreateTaskModal } from '@/components/tasks/CreateTaskModal';
 import { CrmTaskDetailModal } from '@/components/tasks/CrmTaskDetailModal';
 import { CrmTask, TaskCategory } from '@/types/taskTypes';
-import { INITIAL_TASKS } from '@/data/taskData';
 import { usePersonalTasks } from '@/lib/personalTasksStore';
 import { api } from '@/lib/api';
 
 export function TasksPage() {
-  const [tasks, setTasks] = useState<CrmTask[]>(INITIAL_TASKS);
-  const [activeTab, setActiveTab] = useState<'operations' | 'personal_notes'>('operations');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'operations' | 'personal_notes'>(
+    tabFromUrl === 'personal_notes' || tabFromUrl === 'personal' ? 'personal_notes' : 'operations'
+  );
+
+  useEffect(() => {
+    if (tabFromUrl === 'personal_notes' || tabFromUrl === 'personal') {
+      setActiveTab('personal_notes');
+    } else if (tabFromUrl === 'operations') {
+      setActiveTab('operations');
+    }
+  }, [tabFromUrl]);
+
+  const handleTabChange = useCallback((newTab: 'operations' | 'personal_notes') => {
+    setActiveTab(newTab);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', newTab);
+      return next;
+    });
+  }, [setSearchParams]);
+
+  // Tasks start empty and are populated solely from real backend records
+  const [tasks, setTasks] = useState<CrmTask[]>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(true);
   const [selectedCategory, setSelectedCategory] = useState<'all' | TaskCategory>('all');
   const [search, setSearch] = useState<string>('');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -79,6 +103,18 @@ export function TasksPage() {
   const opCompletedCount = useMemo(() => tasks.filter((t) => t.status === 'completed').length, [tasks]);
   const activeTasksCount = useMemo(() => tasks.filter((t) => t.status === 'active').length, [tasks]);
 
+  // Dynamic SLA On-Time Follow-up calculation based on actual completed vs overdue tasks
+  const slaPercentage = useMemo(() => {
+    const totalOps = opOverdueCount + opDueTodayCount + opUpcomingCount + opCompletedCount;
+    if (totalOps === 0) return 100;
+    const evaluated = opCompletedCount + opOverdueCount;
+    if (evaluated === 0) {
+      // If no overdue and no completed yet, SLA is 100% on schedule
+      return opOverdueCount === 0 ? 100 : Math.max(0, Math.round(((totalOps - opOverdueCount) / totalOps) * 100));
+    }
+    return Math.max(0, Math.round((opCompletedCount / evaluated) * 100));
+  }, [opOverdueCount, opDueTodayCount, opUpcomingCount, opCompletedCount]);
+
   // Personal KPI counts
   const persOverdueCount = useMemo(
     () => personalTasks.filter((t) => !t.completed && t.priority === 'urgent').length,
@@ -113,35 +149,59 @@ export function TasksPage() {
   const loadTasksFromBackend = useCallback(async () => {
     try {
       const json = await api.getTasks();
-      if (Array.isArray(json?.tasks) && json.tasks.length > 0) {
-        const now = new Date();
-        const mapped: CrmTask[] = json.tasks.map((t: any) => {
-          const due = t.due_at ? new Date(t.due_at) : new Date();
-          const isOverdue = due < now && !t.completed_at;
-          const isToday = due.toDateString() === now.toDateString();
-          return {
-            id: String(t.id),
-            title: t.title,
-            clientName: t.lead_name || t.assigned_to || undefined,
-            description: t.description || undefined,
-            category: (t.event_type || 'general') as TaskCategory,
-            priority: (t.priority || 'normal') as any,
-            status: t.completed_at ? 'completed' : 'active',
-            dueDate: t.due_at || new Date().toISOString(),
-            dueDateFormatted:
-              due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
-              ` at ${due.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`,
-            isOverdue,
-            isToday,
-            isUpcoming: !isOverdue && !isToday,
-            assignedTo: t.assigned_user_name || t.assigned_to || 'Unassigned',
-            completedAt: t.completed_at || undefined,
-          };
-        });
-        setTasks(mapped);
-      }
+      const taskList = Array.isArray(json?.tasks)
+        ? json.tasks
+        : Array.isArray(json?.data)
+        ? json.data
+        : Array.isArray(json)
+        ? json
+        : [];
+
+      const now = new Date();
+      const mapped: CrmTask[] = taskList.map((t: any) => {
+        const due = t.due_at ? new Date(t.due_at) : new Date();
+        const isOverdue = due < now && !t.completed_at;
+        const isToday = due.toDateString() === now.toDateString();
+        const assignee = t.assigned_user_name || t.assigned_to || 'Unassigned';
+        const initials =
+          assignee !== 'Unassigned'
+            ? assignee
+                .split(' ')
+                .map((p: string) => p[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()
+            : undefined;
+
+        return {
+          id: String(t.id),
+          title: t.title,
+          clientName: t.lead_name || t.job_customer_name || t.customer_name || (t.assigned_to !== assignee ? t.assigned_to : undefined),
+          description: t.description || undefined,
+          category: (t.event_type || t.category || 'general') as TaskCategory,
+          priority: (t.priority || 'normal') as any,
+          status: t.completed_at ? 'completed' : 'active',
+          dueDate: t.due_at || new Date().toISOString(),
+          dueDateFormatted:
+            due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+            ` at ${due.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`,
+          isOverdue,
+          isToday,
+          isUpcoming: !isOverdue && !isToday,
+          assignedTo: assignee,
+          assignedToUserId: t.assigned_to_user_id ? Number(t.assigned_to_user_id) : undefined,
+          assignedInitials: initials,
+          completedAt: t.completed_at || undefined,
+          entityType: t.entity_type || undefined,
+          entityId: t.entity_id ? Number(t.entity_id) : undefined,
+        };
+      });
+      setTasks(mapped);
     } catch (err) {
-      console.warn('Retaining cached tasks due to offline/fallback status:', err);
+      console.warn('Failed to load tasks from backend:', err);
+      setTasks([]);
+    } finally {
+      setIsLoadingTasks(false);
     }
   }, []);
 
@@ -187,13 +247,18 @@ export function TasksPage() {
         title: newTask.title,
         description: newTask.description,
         assignedTo: newTask.assignedTo,
+        assignedToUserId: newTask.assignedToUserId,
         dueAt: newTask.dueDate,
         priority: newTask.priority,
         eventType: newTask.category,
+        category: newTask.category,
+        entityType: newTask.entityType,
+        entityId: newTask.entityId,
       });
-      const createdId = res?.task?.id ? String(res.task.id) : newTask.id;
+      const createdId = res?.task?.id ? String(res.task.id) : res?.data?.id ? String(res.data.id) : newTask.id;
       setTasks((prev) => [{ ...newTask, id: createdId }, ...prev]);
-    } catch {
+    } catch (err) {
+      console.error('Failed to create task on backend:', err);
       setTasks((prev) => [newTask, ...prev]);
     }
   };
@@ -210,7 +275,9 @@ export function TasksPage() {
         priority: updated.priority,
         category: updated.category,
         dueDate: updated.dueDate,
+        dueAt: updated.dueDate,
         assignedTo: updated.assignedTo,
+        assignedToUserId: updated.assignedToUserId,
       });
     } catch (err) {
       console.error('Failed to update task on backend:', err);
@@ -229,7 +296,7 @@ export function TasksPage() {
 
   return (
     <div className="space-y-4 max-w-[1600px] mx-auto select-none pb-20 relative">
-      {/* 1. Unified 220px Hero Banner with Top Search & Actions */}
+      {/* 1. Unified 220px Hero Banner with Dynamic SLA Badge & Top Search */}
       <CrmPageHero
         pageId="tasks"
         defaultEyebrow="Action Items & Workflow SLA • Oceanside HQ"
@@ -267,7 +334,7 @@ export function TasksPage() {
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-[11px] font-semibold text-slate-700">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50/90 border border-emerald-200/90 text-[10px] font-bold text-emerald-800 shadow-2xs shrink-0">
               <CheckCircle2 size={11} className="text-emerald-600" />
-              <span>SLA: 100% On-Time Follow-up</span>
+              <span>SLA: {slaPercentage}% On-Time Follow-up</span>
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50/90 border border-sky-200/90 text-[10px] font-bold text-sky-800 shadow-2xs shrink-0">
               <FileText size={11} className="text-sky-600" />
@@ -288,7 +355,7 @@ export function TasksPage() {
       {/* 3. Mode Switcher Tabs & Category Filter Pills */}
       <TasksFilterBar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
         activeTasksCount={activeTasksCount}
@@ -298,11 +365,57 @@ export function TasksPage() {
 
       {/* 4. Main Body: Sectioned Team Operations List OR Dashboard Sticky Notes Board */}
       {activeTab === 'operations' ? (
-        <TasksSectionList
-          tasks={filteredTasks}
-          onToggleTask={handleToggleTask}
-          onSelectTask={(task) => setSelectedTask(task)}
-        />
+        tasks.length === 0 && !isLoadingTasks ? (
+          /* Polished Empty State for 0 Operational Tasks */
+          <div className="bg-white/80 light-glass-panel rounded-3xl border border-white/90 shadow-2xs p-12 text-center flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shadow-xs">
+              <CheckSquare size={32} className="stroke-[2.5]" />
+            </div>
+            <div className="max-w-md space-y-1">
+              <h3 className="text-base font-black text-slate-900">No operational tasks yet</h3>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                No operational tasks yet. Create a task above to track jobs and follow-ups.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1878B8] via-sky-500 to-[#55C4F5] text-white text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              <Plus size={16} className="stroke-[3]" />
+              <span>Create Task</span>
+            </button>
+          </div>
+        ) : filteredTasks.length === 0 && tasks.length > 0 ? (
+          /* Empty Search / Filter State */
+          <div className="bg-white/80 light-glass-panel rounded-3xl border border-white/90 shadow-2xs p-10 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
+              <AlertCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-slate-800">No matching tasks found</h4>
+              <p className="text-xs text-slate-500">
+                No tasks match your current filter or search query.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('all');
+                setSearch('');
+              }}
+              className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+            >
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <TasksSectionList
+            tasks={filteredTasks}
+            onToggleTask={handleToggleTask}
+            onSelectTask={(task) => setSelectedTask(task)}
+          />
+        )
       ) : (
         <PersonalStickyBoard
           tasks={personalTasks}
@@ -316,7 +429,7 @@ export function TasksPage() {
         />
       )}
 
-      {/* 5. Floating Action Button (FAB) from User Mockup Bottom-Right */}
+      {/* 5. Floating Action Button (FAB) Bottom-Right */}
       <button
         type="button"
         onClick={() => setShowCreateModal(true)}

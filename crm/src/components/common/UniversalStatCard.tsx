@@ -90,6 +90,76 @@ const DEFAULT_SPARKLINES: Record<string, { mini: string; line: string; area: str
   },
 };
 
+export function dataToMiniPath(data: number[] | undefined, width = 73, height = 28, pad = 2): string {
+  const zeroY = height - pad - 2;
+  if (!data || data.length < 2) return `M ${pad} ${zeroY} L ${width - pad} ${zeroY}`;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  if (max === 0 && min === 0) {
+    return `M ${pad} ${zeroY} L ${width - pad} ${zeroY}`;
+  }
+  if (max === min) {
+    const midY = Math.round(height / 2);
+    return `M ${pad} ${midY} L ${width - pad} ${midY}`;
+  }
+  const range = max - min;
+  const pts = data.map((v, i) => ({
+    x: pad + (i / (data.length - 1)) * (width - pad * 2),
+    y: pad + (1 - (v - min) / range) * (height - pad * 2 - 2),
+  }));
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const cpx = (prev.x + curr.x) / 2;
+    d += ` C ${cpx.toFixed(1)} ${prev.y.toFixed(1)}, ${cpx.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+export function dataToPopoverPaths(data: number[] | undefined, width = 234, height = 64, padX = 6, padY = 6): {
+  line: string; area: string; dotCx: number; dotCy: number;
+} {
+  const zeroY = height - padY - 2;
+  const flatZeroFallback = {
+    line: `M ${padX} ${zeroY} L ${width - padX} ${zeroY}`,
+    area: `M ${padX} ${zeroY} L ${width - padX} ${zeroY} L ${width - padX} ${height} L ${padX} ${height} Z`,
+    dotCx: width - padX,
+    dotCy: zeroY,
+  };
+
+  if (!data || data.length < 2) return flatZeroFallback;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  if (max === 0 && min === 0) return flatZeroFallback;
+
+  if (max === min) {
+    const midY = Math.round(height / 2);
+    return {
+      line: `M ${padX} ${midY} L ${width - padX} ${midY}`,
+      area: `M ${padX} ${midY} L ${width - padX} ${midY} L ${width - padX} ${height} L ${padX} ${height} Z`,
+      dotCx: width - padX,
+      dotCy: midY,
+    };
+  }
+
+  const range = max - min;
+  const pts = data.map((v, i) => ({
+    x: padX + (i / (data.length - 1)) * (width - padX * 2),
+    y: padY + (1 - (v - min) / range) * (height - padY * 2 - 4),
+  }));
+  let line = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const cpx = (prev.x + curr.x) / 2;
+    line += ` C ${cpx.toFixed(1)} ${prev.y.toFixed(1)}, ${cpx.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+  }
+  const last = pts[pts.length - 1];
+  const area = `${line} L ${(width - padX).toFixed(1)} ${height} L ${padX} ${height} Z`;
+  return { line, area, dotCx: Math.round(last.x), dotCy: Math.round(last.y) };
+}
+
 // ─── Popover Props & Component ─────────────────────────────────────────────
 interface UniversalPopoverProps {
   label: string;
@@ -128,7 +198,7 @@ export function StatCardPopover({
   svgLine,
   svgArea,
   dotCx = 228,
-  dotCy = 8,
+  dotCy = 56,
   autoRefreshText = 'Auto-refreshes every 60s',
   anchorRef,
   onPopoverEnter,
@@ -152,7 +222,7 @@ export function StatCardPopover({
     ? deltaLabel
     : delta != null
     ? `${deltaPos ? '+' : ''}${delta.toFixed(1)}% MoM`
-    : 'No prior data';
+    : 'Live Telemetry';
 
   // Compute prior value if numeric and delta present
   let computedPrior: string | number = '—';
@@ -163,8 +233,8 @@ export function StatCardPopover({
   }
 
   const gradId = `univ-stat-grad-${label.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
-  const resolvedLine = svgLine || DEFAULT_SPARKLINES.upward.line;
-  const resolvedArea = svgArea || DEFAULT_SPARKLINES.upward.area;
+  const resolvedLine = svgLine || 'M 6 56 L 228 56';
+  const resolvedArea = svgArea || 'M 6 56 L 228 56 L 228 64 L 6 64 Z';
   const badgeColor = stageBadgeColor || color;
 
   return createPortal(
@@ -307,6 +377,7 @@ export interface UniversalStatCardProps {
   dotCx?: number;
   dotCy?: number;
   miniSvgPath?: string;
+  sparklineData?: number[];
   isLoading?: boolean;
   className?: string;
   onClick?: () => void;
@@ -334,6 +405,7 @@ export function UniversalStatCard({
   dotCx = 228,
   dotCy = 8,
   miniSvgPath,
+  sparklineData,
   isLoading = false,
   className = '',
   onClick,
@@ -341,11 +413,19 @@ export function UniversalStatCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const hover = useHoverDelay(500, 140);
 
+  const dynamicMini = sparklineData && sparklineData.length >= 2 ? dataToMiniPath(sparklineData) : '';
   const resolvedMiniPath =
+    dynamicMini ||
     miniSvgPath ||
     (delta != null && delta < 0
       ? DEFAULT_SPARKLINES.downward.mini
       : DEFAULT_SPARKLINES.upward.mini);
+
+  const dynamicPopover = sparklineData && sparklineData.length >= 2 ? dataToPopoverPaths(sparklineData) : null;
+  const resolvedSvgLine = svgLine || dynamicPopover?.line;
+  const resolvedSvgArea = svgArea || dynamicPopover?.area;
+  const resolvedDotCx = dotCx !== 228 ? dotCx : (dynamicPopover?.dotCx ?? 228);
+  const resolvedDotCy = dotCy !== 8 ? dotCy : (dynamicPopover?.dotCy ?? 8);
 
   const gradId = `mini-grad-${label.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
 
@@ -426,10 +506,10 @@ export function UniversalStatCard({
           thisPeriodText={thisPeriodText}
           priorValueText={priorValueText}
           color={color}
-          svgLine={svgLine}
-          svgArea={svgArea}
-          dotCx={dotCx}
-          dotCy={dotCy}
+          svgLine={resolvedSvgLine}
+          svgArea={resolvedSvgArea}
+          dotCx={resolvedDotCx}
+          dotCy={resolvedDotCy}
           anchorRef={cardRef}
           onPopoverEnter={hover.onPopoverEnter}
           onLeave={hover.onLeave}

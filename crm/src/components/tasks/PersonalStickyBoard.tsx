@@ -18,6 +18,8 @@ import {
   WorkCategory,
   PRIORITY_OPTIONS,
   WORK_CATEGORIES,
+  PRIORITY_WEIGHTS,
+  STICKY_THEMES,
 } from '@/lib/personalTasksStore';
 import { CreatePersonalTaskModal } from '@/components/common/CreatePersonalTaskModal';
 import { PersonalTaskDetailModal } from '@/components/common/PersonalTaskDetailModal';
@@ -32,27 +34,6 @@ interface PersonalStickyBoardProps {
   completedCount: number;
   progressPercent: number;
 }
-
-const CATEGORY_STYLES: Record<WorkCategory, { bg: string; border: string; header: string; accent: string }> = {
-  'Rise Up': {
-    bg: 'bg-sky-50/95',
-    border: 'border-sky-200/90',
-    header: 'text-sky-950',
-    accent: '#0284c7',
-  },
-  'Content Creation': {
-    bg: 'bg-purple-50/95',
-    border: 'border-purple-200/90',
-    header: 'text-purple-950',
-    accent: '#7c3aed',
-  },
-  'Marketing': {
-    bg: 'bg-emerald-50/95',
-    border: 'border-emerald-200/90',
-    header: 'text-emerald-950',
-    accent: '#059669',
-  },
-};
 
 export function PersonalStickyBoard({
   tasks,
@@ -92,7 +73,7 @@ export function PersonalStickyBoard({
     }
   };
 
-  // Filtered & Sorted Tasks (Pinned first, then active, then completed)
+  // Filtered & Sorted Tasks (Incomplete first, Pinned first, Priority urgent > high > normal > low)
   const filteredTasks = useMemo(() => {
     return tasks
       .filter((t) => {
@@ -107,15 +88,26 @@ export function PersonalStickyBoard({
         return true;
       })
       .sort((a, b) => {
+        // 1. Incomplete first, completed last
+        if (a.completed !== b.completed) {
+          return a.completed ? 1 : -1;
+        }
+        // 2. Pinned items first
         const isAPinned = a.isPinned || (a.sortOrder !== undefined && a.sortOrder < 0);
         const isBPinned = b.isPinned || (b.sortOrder !== undefined && b.sortOrder < 0);
-        if (isAPinned && !isBPinned) return -1;
-        if (!isAPinned && isBPinned) return 1;
-
-        if (a.completed && !b.completed) return 1;
-        if (!a.completed && b.completed) return -1;
-
-        return 0;
+        if (isAPinned !== isBPinned) {
+          return isAPinned ? -1 : 1;
+        }
+        // 3. Priority order (urgent: 1, high: 2, normal: 3, low: 4)
+        const weightA = PRIORITY_WEIGHTS[a.priority] || 3;
+        const weightB = PRIORITY_WEIGHTS[b.priority] || 3;
+        if (weightA !== weightB) {
+          return weightA - weightB;
+        }
+        // 4. Date created descending
+        const timeA = new Date(a.createdAt || 0).getTime();
+        const timeB = new Date(b.createdAt || 0).getTime();
+        return timeB - timeA;
       });
   }, [tasks, selectedCategory, searchQuery]);
 
@@ -236,18 +228,25 @@ export function PersonalStickyBoard({
               PRIORITY_OPTIONS.find((p) => p.id === task.priority) || PRIORITY_OPTIONS[2];
             const currentCategory =
               WORK_CATEGORIES.find((c) => c.id === task.workCategory) || WORK_CATEGORIES[0];
-            const cStyle = CATEGORY_STYLES[task.workCategory] || CATEGORY_STYLES['Rise Up'];
+            const theme = STICKY_THEMES[task.workCategory] || STICKY_THEMES['Rise Up'];
             const isPinned = task.isPinned || (task.sortOrder !== undefined && task.sortOrder < 0);
 
             return (
               <div
                 key={task.id}
-                className={`p-4 rounded-3xl border transition-all flex flex-col justify-between space-y-3 relative group ${
+                className={`p-4 pl-5 rounded-3xl border transition-all flex flex-col justify-between space-y-3 relative group ${
                   task.completed
                     ? 'bg-slate-50/80 border-slate-200/70 opacity-70 hover:opacity-100 shadow-2xs'
-                    : `${cStyle.bg} ${cStyle.border} shadow-2xs hover:shadow-md hover:scale-[1.01]`
+                    : `${theme.bg} ${theme.border} shadow-2xs hover:shadow-md hover:scale-[1.01]`
                 }`}
               >
+                {/* Left colored sticky-note accent stripe */}
+                <div
+                  className={`absolute left-0 top-4 bottom-4 w-1.5 rounded-r-full transition-colors ${
+                    task.completed ? 'bg-slate-300' : theme.stripe
+                  }`}
+                />
+
                 <div className="space-y-2.5">
                   {/* Card Header: Checkbox + Title + Badges + Actions */}
                   <div className="flex items-start justify-between gap-2">
@@ -276,7 +275,7 @@ export function PersonalStickyBoard({
                           className={`font-black text-xs leading-snug cursor-pointer transition-colors ${
                             task.completed
                               ? 'line-through text-slate-400'
-                              : `${cStyle.header} hover:text-[#0284c7]`
+                              : `${theme.title} hover:text-[#0284c7]`
                           }`}
                           title="Click to view full details"
                         >

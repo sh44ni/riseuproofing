@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, UploadFile, File, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional, Dict, Any, List
@@ -14,6 +14,7 @@ from app.services.sync import find_or_create_client, recalculate_client_stats
 from app.services.pdf_generator import generate_estimate_proposal_pdf, save_estimate_pdf_file
 from app.services.email_service import send_estimate_proposal_email
 import orjson
+import json
 
 router = APIRouter()
 
@@ -243,34 +244,97 @@ async def create_estimate(
     })
     new_estimate = dict(res.first()._mapping)
 
-    if lead_id:
+    is_sent = payload.get("status") == "sent" or "Sent via" in (notes or "")
+    if is_sent:
         await db.execute(
-            text("""
-                INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
-                VALUES ('lead', :lid, 'note', :title, :desc, 'Staff', :cid)
-            """),
-            {
-                "lid": lead_id,
-                "title": f"Estimate Created: {estimate_number}",
-                "desc": f"Total: ${calc['total_price']:,.2f} ({calc['squares']} sq, {calc['material']['name']})",
-                "cid": final_client_id,
-            }
+            text("UPDATE estimates SET status = 'sent', sent_at = NOW() WHERE id = :id"),
+            {"id": new_estimate["id"]}
         )
-        await db.execute(
-            text("UPDATE leads SET status = 'quoted' WHERE id = :id AND status IN ('new', 'contacted', 'inspected')"),
-            {"id": lead_id}
+        new_estimate["status"] = "sent"
+
+    target_lead_id = lead_id
+    if not target_lead_id and final_client_id:
+        find_l = await db.execute(
+            text("SELECT id FROM leads WHERE client_id = :cid ORDER BY created_at DESC LIMIT 1"),
+            {"cid": final_client_id}
         )
+        l_r = find_l.first()
+        if l_r:
+            target_lead_id = int(l_r[0])
+    if not target_lead_id and (customer_email or customer_phone):
+        find_l = await db.execute(
+            text("SELECT id FROM leads WHERE email = :em OR (phone IS NOT NULL AND phone = :ph) ORDER BY created_at DESC LIMIT 1"),
+            {"em": customer_email, "ph": customer_phone}
+        )
+        l_r = find_l.first()
+        if l_r:
+            target_lead_id = int(l_r[0])
+
+    if target_lead_id:
+        if is_sent:
+            await db.execute(
+                text("""
+                    UPDATE leads 
+                    SET pipeline_stage = 'estimate_sent',
+                        status = 'estimate_sent',
+                        proposal_sent_at = NOW(),
+                        stage_entered_at = NOW(),
+                        follow_up_at = NOW() + INTERVAL '48 hours',
+                        estimated_value = GREATEST(COALESCE(estimated_value, 0), :total),
+                        updated_at = NOW()
+                    WHERE id = :lid
+                """),
+                {"lid": target_lead_id, "total": final_total}
+            )
+            await db.execute(
+                text("""
+                    INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
+                    VALUES ('lead', :lid, 'proposal_sent', :title, :desc, :pby, :cid)
+                """),
+                {
+                    "lid": target_lead_id,
+                    "title": f"Estimate Sent: {estimate_number}",
+                    "desc": f"Official proposal ({calc['squares']} sq, ${final_total:,.2f}) sent to customer. Auto-moved to Estimate Sent (48h review).",
+                    "pby": user.get("name") or "Staff",
+                    "cid": final_client_id
+                }
+            )
+        else:
+            await db.execute(
+                text("""
+                    UPDATE leads 
+                    SET status = CASE WHEN status IN ('new', 'contacted', 'inspected') THEN 'quoted' ELSE status END,
+                        estimated_value = GREATEST(COALESCE(estimated_value, 0), :total),
+                        updated_at = NOW()
+                    WHERE id = :lid
+                """),
+                {"lid": target_lead_id, "total": final_total}
+            )
+            await db.execute(
+                text("""
+                    INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
+                    VALUES ('lead', :lid, 'note', :title, :desc, :pby, :cid)
+                """),
+                {
+                    "lid": target_lead_id,
+                    "title": f"Estimate Created: {estimate_number}",
+                    "desc": f"Total: ${calc['total_price']:,.2f} ({calc['squares']} sq, {calc['material']['name']})",
+                    "pby": user.get("name") or "Staff",
+                    "cid": final_client_id,
+                }
+            )
 
     if final_client_id:
         await db.execute(
             text("""
                 INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
-                VALUES ('client', :cid, 'quote_sent', :title, :desc, 'Staff', :cid)
+                VALUES ('client', :cid, 'quote_sent', :title, :desc, :pby, :cid)
             """),
             {
                 "cid": final_client_id,
                 "title": f"Estimate Created: {estimate_number}",
                 "desc": f"Total: ${calc['total_price']:,.2f} ({calc['squares']} sq, {calc['material']['name']})",
+                "pby": user.get("name") or "Staff",
             }
         )
         await recalculate_client_stats(db, final_client_id)
@@ -340,35 +404,44 @@ async def update_estimate(
 
     est = dict(row._mapping)
 
-    # If estimate was sent, advance lead to Stage 4 (Closing)
-    if payload.get("status") == "sent" and est.get("lead_id"):
-        lead_id = est["lead_id"]
-        total_val = float(est.get("total") or 0)
-        await db.execute(
-            text("""
-                UPDATE leads
-                SET 
-                    pipeline_stage = 'stage_4_closing',
-                    stage_entered_at = CASE WHEN pipeline_stage != 'stage_4_closing' THEN NOW() ELSE stage_entered_at END,
-                    proposal_sent_at = NOW(),
-                    status = 'proposal',
-                    estimated_value = GREATEST(COALESCE(estimated_value, 0), :total),
-                    updated_at = NOW()
-                WHERE id = :lid
-            """),
-            {"total": total_val, "lid": lead_id}
-        )
-        await db.execute(
-            text("""
-                INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
-                VALUES ('lead', :lid, 'proposal_sent', 'Proposal Sent to Homeowner', :desc, :pby)
-            """),
-            {
-                "lid": lead_id,
-                "desc": f"{user.get('name')} sent official estimate {est.get('estimate_number')} (${total_val:,.2f}) to customer. Card advanced to Stage 4 (Closing).",
-                "pby": user.get("name") or "Staff"
-            }
-        )
+    # If estimate was sent, advance lead to estimate_sent (48h review window)
+    if payload.get("status") == "sent":
+        target_lead_id = est.get("lead_id")
+        if not target_lead_id and est.get("client_id"):
+            find_l = await db.execute(text("SELECT id FROM leads WHERE client_id = :cid ORDER BY created_at DESC LIMIT 1"), {"cid": int(est["client_id"])})
+            l_r = find_l.first()
+            if l_r:
+                target_lead_id = int(l_r[0])
+
+        if target_lead_id:
+            total_val = float(est.get("total") or 0)
+            await db.execute(
+                text("""
+                    UPDATE leads
+                    SET 
+                        pipeline_stage = 'estimate_sent',
+                        stage_entered_at = NOW(),
+                        proposal_sent_at = NOW(),
+                        status = 'estimate_sent',
+                        follow_up_at = NOW() + INTERVAL '48 hours',
+                        estimated_value = GREATEST(COALESCE(estimated_value, 0), :total),
+                        updated_at = NOW()
+                    WHERE id = :lid
+                """),
+                {"total": total_val, "lid": target_lead_id}
+            )
+            await db.execute(
+                text("""
+                    INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
+                    VALUES ('lead', :lid, 'proposal_sent', 'Proposal Sent to Homeowner', :desc, :pby, :cid)
+                """),
+                {
+                    "lid": target_lead_id,
+                    "desc": f"{user.get('name') or 'Staff'} marked official estimate {est.get('estimate_number')} (${total_val:,.2f}) as sent. Lead auto-moved to Estimate Sent (48h review window).",
+                    "pby": user.get("name") or "Staff",
+                    "cid": est.get("client_id")
+                }
+            )
 
     await db.commit()
     return {"ok": True, "estimate": est}
@@ -730,23 +803,20 @@ async def upload_estimate_client_photo(
     """
     Upload a client's property/roof photo for use on the estimate proposal cover and overview.
     """
-    allowed = ["image/jpeg", "image/png", "image/webp", "image/avif"]
-    if file.content_type not in allowed:
+    ext = file.filename.split(".")[-1].lower() if file.filename and "." in file.filename else "jpg"
+    valid_exts = {"jpg", "jpeg", "png", "webp", "avif", "heic", "heif"}
+    allowed_types = {"image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif"}
+    
+    if (file.content_type and file.content_type.lower() not in allowed_types) and (ext not in valid_exts):
         raise HTTPException(
             status_code=400,
             detail="Unsupported image format. Please upload JPG, PNG, WebP, or AVIF."
         )
 
-    ext = file.filename.split(".")[-1] if file.filename and "." in file.filename else "jpg"
     unique_name = f"client_roof_{uuid.uuid4().hex[:10]}.{ext}"
 
-    upload_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        "static",
-        "uploads",
-        "estimates",
-        "client_photos"
-    )
+    from app.services.pdf_generator import STATIC_DIR
+    upload_dir = os.path.join(STATIC_DIR, "uploads", "estimates", "client_photos")
     os.makedirs(upload_dir, exist_ok=True)
 
     file_path = os.path.join(upload_dir, unique_name)
@@ -796,14 +866,140 @@ async def send_estimate_email(
             raise HTTPException(status_code=500, detail=f"PDF generation error: {str(e)}")
     elif pdf_url:
         clean_path = pdf_url.lstrip("/")
-        backend_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
         full_path = os.path.join(backend_root, clean_path)
         if os.path.exists(full_path):
             with open(full_path, "rb") as f:
                 pdf_bytes = f.read()
+        else:
+            from app.services.pdf_generator import STATIC_DIR
+            alt_path = os.path.join(STATIC_DIR, clean_path.replace("static/", "", 1) if clean_path.startswith("static/") else clean_path)
+            if os.path.exists(alt_path):
+                with open(alt_path, "rb") as f:
+                    pdf_bytes = f.read()
 
     if not pdf_bytes:
         raise HTTPException(status_code=400, detail="Could not compile or locate estimate PDF.")
+
+    # Helper to sync estimate & lead state on dispatch
+    async def _mark_sent_and_advance_lead():
+        # 1. Update estimates record
+        if estimate_id:
+            try:
+                await db.execute(
+                    text("""
+                        UPDATE estimates
+                        SET status = 'sent', sent_at = NOW(), pdf_url = COALESCE(:pdf_url, pdf_url), updated_at = NOW()
+                        WHERE id = :id
+                    """),
+                    {"id": int(estimate_id), "pdf_url": pdf_url}
+                )
+            except Exception:
+                pass
+
+        # 2. Find target lead
+        t_lead_id = payload.get("leadId")
+        t_client_id = payload.get("clientId")
+        est_amount = 0.0
+        if estimate_id:
+            est_row = (await db.execute(text("SELECT lead_id, client_id, total FROM estimates WHERE id = :id"), {"id": int(estimate_id)})).mappings().first()
+            if est_row:
+                if not t_lead_id:
+                    t_lead_id = est_row.get("lead_id")
+                if not t_client_id:
+                    t_client_id = est_row.get("client_id")
+                if est_row.get("total") is not None:
+                    est_amount = float(est_row["total"] or 0)
+        elif proposal_data:
+            est_amount = float(proposal_data.get("grandTotal") or proposal_data.get("total") or 0.0)
+
+        if not t_lead_id and t_client_id:
+            find_l = await db.execute(text("SELECT id FROM leads WHERE client_id = :cid ORDER BY created_at DESC LIMIT 1"), {"cid": int(t_client_id)})
+            l_r = find_l.first()
+            if l_r:
+                t_lead_id = int(l_r[0])
+
+        if not t_lead_id and (customer_email or payload.get("customerPhone")):
+            find_l = await db.execute(
+                text("SELECT id, client_id FROM leads WHERE email = :em OR (phone IS NOT NULL AND phone = :ph) ORDER BY created_at DESC LIMIT 1"),
+                {"em": customer_email, "ph": payload.get("customerPhone")}
+            )
+            l_r = find_l.first()
+            if l_r:
+                t_lead_id = int(l_r[0])
+                if not t_client_id and l_r[1]:
+                    t_client_id = int(l_r[1])
+
+        author_name = user.get("name") if isinstance(user, dict) else (getattr(user, "name", None) or "Staff")
+        author_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+        meta_dict = {
+            "customer_name": customer_name,
+            "amount": est_amount,
+            "estimate_number": estimate_number
+        }
+
+        # 3. Advance lead to estimate_sent stage
+        if t_lead_id:
+            try:
+                await db.execute(
+                    text("""
+                        UPDATE leads 
+                        SET pipeline_stage = 'estimate_sent',
+                            status = 'estimate_sent',
+                            proposal_sent_at = NOW(),
+                            stage_entered_at = NOW(),
+                            follow_up_at = NOW() + INTERVAL '48 hours',
+                            updated_at = NOW()
+                        WHERE id = :lid
+                    """),
+                    {"lid": t_lead_id}
+                )
+                await db.execute(
+                    text("""
+                        INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, user_id, user_name, metadata, client_id, created_at)
+                        VALUES ('lead', :lid, 'estimate_sent', :title, :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), :cid, NOW())
+                    """),
+                    {
+                        "lid": t_lead_id,
+                        "title": f"Estimate Sent: {estimate_number}",
+                        "desc": f"Official proposal sent to {customer_email}. Auto-moved to Estimate Sent (48h review window).",
+                        "pby": author_name,
+                        "uid": author_id,
+                        "uname": author_name,
+                        "meta": json.dumps(meta_dict),
+                        "cid": t_client_id
+                    }
+                )
+            except Exception as ex:
+                print(f"[send_estimate_email] Lead sync error: {ex}")
+
+        # 4. Log client activity
+        if t_client_id:
+            try:
+                await db.execute(
+                    text("""
+                        INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, user_id, user_name, metadata, client_id, created_at)
+                        VALUES ('client', :cid, 'email', :title, :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), :cid, NOW())
+                    """),
+                    {
+                        "cid": int(t_client_id),
+                        "title": f"Proposal Email Sent: {estimate_number}",
+                        "desc": f"Official 2-page proposal dispatched to {customer_email}.",
+                        "pby": author_name,
+                        "uid": author_id,
+                        "uname": author_name,
+                        "meta": json.dumps(meta_dict)
+                    }
+                )
+            except Exception:
+                pass
+
+        await db.commit()
+        try:
+            from app.core.redis import cache_delete
+            await cache_delete("crm:dashboard:stats")
+        except Exception:
+            pass
 
     # 2. Transmit via Resend Email Service
     email_res = await send_estimate_proposal_email(
@@ -817,42 +1013,23 @@ async def send_estimate_email(
     )
 
     if not email_res.get("success"):
+        if email_res.get("missing_key"):
+            await _mark_sent_and_advance_lead()
+            return {
+                "ok": True,
+                "mock": True,
+                "message": f"Proposal PDF compiled successfully! Note: Add RESEND_API_KEY in Settings/env to enable live email delivery.",
+                "emailId": f"sim_{secrets.token_hex(4)}",
+                "pdfUrl": pdf_url,
+                "sentAt": datetime.now(timezone.utc).isoformat(),
+                "recipient": customer_email,
+            }
         raise HTTPException(
             status_code=502,
             detail=f"Resend email dispatch error: {email_res.get('error')}"
         )
 
-    # 3. Update database record status if estimate_id provided
-    if estimate_id:
-        try:
-            await db.execute(
-                text("""
-                    UPDATE estimates
-                    SET status = 'sent', sent_at = NOW(), pdf_url = COALESCE(:pdf_url, pdf_url), updated_at = NOW()
-                    WHERE id = :id
-                """),
-                {"id": int(estimate_id), "pdf_url": pdf_url}
-            )
-        except Exception:
-            pass
-
-    # 4. Log activity in activities table
-    client_id = payload.get("clientId")
-    if client_id:
-        try:
-            await db.execute(
-                text("""
-                    INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, client_id)
-                    VALUES ('client', :cid, 'email', :title, :desc, 'Staff', :cid)
-                """),
-                {
-                    "cid": int(client_id),
-                    "title": f"Proposal Email Sent: {estimate_number}",
-                    "desc": f"Official 2-page proposal emailed to {customer_email} via Resend. Email ID: {email_res.get('data', {}).get('id')}",
-                }
-            )
-        except Exception:
-            pass
+    await _mark_sent_and_advance_lead()
 
     return {
         "ok": True,
@@ -863,3 +1040,359 @@ async def send_estimate_email(
         "recipient": customer_email,
     }
 
+
+from app.services.estimate_template_registry import get_all_templates
+from app.services.estimate_caps import validate_estimate_data
+
+@router.get("/estimates/templates")
+async def get_estimate_templates(user: Dict[str, Any] = Depends(require_permission("estimates:view"))):
+    return {"ok": True, "templates": get_all_templates()}
+
+@router.post("/estimates/two-options")
+async def create_two_options_estimate(
+    request: Request,
+    user: Dict[str, Any] = Depends(require_permission("estimates:create")),
+    db: AsyncSession = Depends(get_db)
+):
+    payload = await request.json()
+    year = datetime.now(timezone.utc).year
+    count_res = await db.execute(text("SELECT COUNT(*) FROM estimates"))
+    seq = str(int(count_res.scalar() or 0) + 1).zfill(4)
+    estimate_number = f"EST-{year}-{seq}"
+
+    access_token = secrets.token_hex(16)
+    proposal_data = payload if isinstance(payload, dict) else {}
+    
+    # Extract client info from proposal data or use defaults
+    client = proposal_data.get("client", {})
+    customer_name = client.get("name") or "Draft"
+    customer_phone = client.get("phone") or ""
+    customer_email = client.get("email") or ""
+    customer_address = client.get("property") or ""
+    lead_id = client.get("leadId")
+
+    valid_until = (datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=30)).date()
+
+    insert_stmt = text("""
+        INSERT INTO estimates (
+            lead_id, estimate_number, status, template_key,
+            customer_name, customer_phone, customer_email, customer_address,
+            service_type,
+            roof_squares, roof_pitch, stories, tearoff_layers, material_type,
+            material_cost, labor_cost, addons, subtotal, margin_pct, total,
+            valid_until,
+            proposal_data, access_token, created_by
+        ) VALUES (
+            :lead_id, :est_num, 'draft', 'two_options_estimate',
+            :c_name, :c_phone, :c_email, :c_addr,
+            'Roofing',
+            0, '4:12', 1, 0, 'N/A',
+            0, 0, CAST('[]' AS jsonb), 0, 0, 0,
+            :valid_until,
+            CAST(:proposal_data AS jsonb), :token, :creator
+        ) RETURNING *
+    """)
+
+    res = await db.execute(insert_stmt, {
+        "lead_id": int(lead_id) if lead_id else None,
+        "est_num": estimate_number,
+        "c_name": customer_name,
+        "c_phone": customer_phone,
+        "c_email": customer_email,
+        "c_addr": customer_address,
+        "valid_until": valid_until,
+        "proposal_data": orjson.dumps(proposal_data).decode("utf-8"),
+        "token": access_token,
+        "creator": user.get("id"),
+    })
+    new_estimate = dict(res.first()._mapping)
+
+    await db.execute(
+        text("""
+            INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by)
+            VALUES ('estimate', :eid, 'note', :title, :desc, :pby)
+        """),
+        {
+            "eid": new_estimate["id"],
+            "title": f"Estimate Created: {estimate_number}",
+            "desc": "Created new Two Options Estimate.",
+            "pby": user.get("name") or "Staff",
+        }
+    )
+
+    await db.commit()
+    return {"ok": True, "estimate": new_estimate}
+
+@router.patch("/estimates/{estimate_id}/two-options")
+async def autosave_two_options_estimate(
+    estimate_id: int,
+    request: Request,
+    user: Dict[str, Any] = Depends(require_permission("estimates:create")),
+    db: AsyncSession = Depends(get_db)
+):
+    payload = await request.json()
+    errors = validate_estimate_data(payload)
+    
+    updates = ["proposal_data = CAST(:proposal_data AS jsonb)", "updated_at = NOW()"]
+    
+    stmt = text(f"UPDATE estimates SET {', '.join(updates)} WHERE id = :id RETURNING *")
+    res = await db.execute(stmt, {
+        "id": estimate_id,
+        "proposal_data": orjson.dumps(payload).decode("utf-8")
+    })
+    
+    row = res.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+        
+    await db.commit()
+    return {"ok": True, "errors": errors}
+
+@router.get("/estimates/{estimate_id}/render-html")
+async def render_html_preview(
+    estimate_id: int,
+    page: Optional[int] = Query(None),
+    user: Dict[str, Any] = Depends(require_permission("estimates:view")),
+    db: AsyncSession = Depends(get_db)
+):
+    res = await db.execute(text("SELECT * FROM estimates WHERE id = :id"), {"id": estimate_id})
+    row = res.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    est = dict(row._mapping)
+    
+    from app.services.pdf_generator import render_two_options_html
+    rows_res = await db.execute(text("SELECT key, value FROM app_settings WHERE key = 'company_profile'"))
+    sett_row = rows_res.first()
+    company = orjson.loads(sett_row.value) if sett_row else {}
+    
+    html = await render_two_options_html(
+        proposal_data=est.get("proposal_data", {}),
+        settings={"company_profile": company},
+        for_preview=True,
+        preview_page=page
+    )
+    return Response(content=html, media_type='text/html')
+
+@router.post("/estimates/{estimate_id}/render-pdf")
+async def generate_two_options_pdf(
+    estimate_id: int,
+    user: Dict[str, Any] = Depends(require_permission("estimates:create")),
+    db: AsyncSession = Depends(get_db)
+):
+    res = await db.execute(text("SELECT * FROM estimates WHERE id = :id"), {"id": estimate_id})
+    row = res.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    est = dict(row._mapping)
+    
+    from app.services.pdf_generator import render_two_options_html, _generate_pdf_worker, save_estimate_pdf_file
+    import asyncio
+    
+    rows_res = await db.execute(text("SELECT key, value FROM app_settings WHERE key = 'company_profile'"))
+    sett_row = rows_res.first()
+    company = {}
+    if sett_row and sett_row.value:
+        company = orjson.loads(sett_row.value) if isinstance(sett_row.value, (str, bytes)) else sett_row.value
+    
+    html_content = await render_two_options_html(
+        proposal_data=est.get("proposal_data", {}),
+        settings={"company_profile": company},
+        for_preview=False
+    )
+    pdf_bytes = await asyncio.to_thread(_generate_pdf_worker, html_content)
+    
+    est_num = est.get("estimate_number") or f"EST_{estimate_id}"
+    saved_url = save_estimate_pdf_file(est_num, pdf_bytes)
+    
+    await db.execute(
+        text("UPDATE estimates SET pdf_url = :pdf_url, updated_at = NOW() WHERE id = :id"),
+        {"id": estimate_id, "pdf_url": saved_url}
+    )
+    await db.commit()
+    
+    return {"ok": True, "pdfUrl": saved_url, "url": saved_url, "sizeBytes": len(pdf_bytes)}
+
+@router.post("/estimates/{estimate_id}/send-estimate")
+async def send_two_options_estimate(
+    estimate_id: int,
+    payload: Optional[Dict[str, Any]] = None,
+    user: Dict[str, Any] = Depends(require_permission("estimates:create")),
+    db: AsyncSession = Depends(get_db)
+):
+    if payload is None:
+        payload = {}
+
+    res = await db.execute(text("SELECT * FROM estimates WHERE id = :id"), {"id": estimate_id})
+    row = res.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    est = dict(row._mapping)
+    
+    prop_data = est.get("proposal_data") or {}
+    if isinstance(prop_data, str):
+        try:
+            prop_data = orjson.loads(prop_data)
+        except Exception:
+            prop_data = {}
+
+    pdf_url = est.get("pdf_url")
+    pdf_bytes = None
+    
+    if pdf_url:
+        # Try to load PDF bytes from disk
+        clean_path = pdf_url.lstrip("/")
+        backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+        full_path = os.path.join(backend_root, clean_path)
+        if os.path.exists(full_path):
+            with open(full_path, "rb") as f:
+                pdf_bytes = f.read()
+        else:
+            from app.services.pdf_generator import STATIC_DIR
+            alt_path = os.path.join(STATIC_DIR, clean_path.replace("static/", "", 1) if clean_path.startswith("static/") else clean_path)
+            if os.path.exists(alt_path):
+                with open(alt_path, "rb") as f:
+                    pdf_bytes = f.read()
+
+    if not pdf_bytes:
+        from app.services.pdf_generator import render_two_options_html, _generate_pdf_worker, save_estimate_pdf_file
+        import asyncio
+        rows_res = await db.execute(text("SELECT key, value FROM app_settings WHERE key = 'company_profile'"))
+        sett_row = rows_res.first()
+        company = {}
+        if sett_row and sett_row.value:
+            company = orjson.loads(sett_row.value) if isinstance(sett_row.value, (str, bytes)) else sett_row.value
+        
+        html_content = await render_two_options_html(
+            proposal_data=prop_data,
+            settings={"company_profile": company},
+            for_preview=False
+        )
+        pdf_bytes = await asyncio.to_thread(_generate_pdf_worker, html_content)
+        est_num = est.get("estimate_number") or f"EST_{estimate_id}"
+        pdf_url = save_estimate_pdf_file(est_num, pdf_bytes)
+        
+        await db.execute(
+            text("UPDATE estimates SET pdf_url = :pdf_url WHERE id = :id"),
+            {"id": estimate_id, "pdf_url": pdf_url}
+        )
+
+    # Send via Resend / email service
+    from app.services.email_service import send_estimate_proposal_email
+    customer_email = (
+        payload.get("customerEmail") 
+        or est.get("customer_email") 
+        or (prop_data.get("client", {}).get("email") if isinstance(prop_data, dict) else None)
+    )
+    if not customer_email:
+        customer_email = "client@example.com"
+        
+    est_num = est.get("estimate_number") or f"EST-{estimate_id}"
+    customer_name = (
+        payload.get("customerName") 
+        or est.get("customer_name") 
+        or (prop_data.get("client", {}).get("name") if isinstance(prop_data, dict) else None)
+        or "Valued Homeowner"
+    )
+    
+    clean_email = str(customer_email).strip().lower()
+    is_test_email = any(
+        clean_email.endswith(d) 
+        for d in ("@example.com", "@example.org", "@example.net", "@test.com", "@demo.com", "@dummy.com")
+    ) or clean_email in ("client@example.com", "test@example.com", "jane.doe@example.com", "john.doe@example.com")
+
+    is_simulated = False
+    if is_test_email:
+        is_simulated = True
+    else:
+        email_res = await send_estimate_proposal_email(
+            to_email=customer_email,
+            customer_name=customer_name,
+            estimate_number=est_num,
+            pdf_bytes=pdf_bytes,
+            pdf_filename=f"RiseUp_Roofing_Proposal_{est_num}.pdf",
+            subject=f"Your Proposal from Rise Up Roofing: {est_num}",
+            custom_message="Please find your official proposal attached.",
+        )
+        
+        if not email_res.get("success"):
+            if email_res.get("missing_key"):
+                is_simulated = True
+            else:
+                err = email_res.get("error")
+                err_msg = err.get("message") if isinstance(err, dict) else str(err)
+                if "example.com" in err_msg or "testing email address" in err_msg.lower():
+                    is_simulated = True
+                else:
+                    raise HTTPException(status_code=502, detail=f"Email dispatch error: {err_msg}")
+
+    # Mark as sent and log
+    # Add snapshot data to proposal_data for immutability
+    if isinstance(prop_data, dict):
+        prop_data["data_snapshot"] = True
+
+    await db.execute(
+        text("""
+            UPDATE estimates
+            SET status = 'sent', sent_at = NOW(), updated_at = NOW(), proposal_data = CAST(:pd AS jsonb)
+            WHERE id = :id
+        """),
+        {"id": estimate_id, "pd": orjson.dumps(prop_data).decode("utf-8")}
+    )
+    
+    t_lead_id = est.get("lead_id") or payload.get("leadId") or (prop_data.get("client", {}).get("leadId") if isinstance(prop_data, dict) else None)
+    if t_lead_id:
+        try:
+            lid_int = int(t_lead_id)
+            await db.execute(
+                text("""
+                    UPDATE leads 
+                    SET pipeline_stage = 'estimate_sent',
+                        status = 'estimate_sent',
+                        proposal_sent_at = NOW(),
+                        stage_entered_at = NOW(),
+                        follow_up_at = NOW() + INTERVAL '48 hours',
+                        updated_at = NOW()
+                    WHERE id = :lid
+                """),
+                {"lid": lid_int}
+            )
+            
+            author_name = user.get("name") if isinstance(user, dict) else (getattr(user, "name", None) or "Staff")
+            author_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+            meta_dict = {
+                "estimate_number": est_num,
+                "customer_email": customer_email,
+                "simulated": is_simulated
+            }
+            await db.execute(
+                text("""
+                    INSERT INTO activities (entity_type, entity_id, activity_type, title, description, performed_by, user_id, user_name, metadata, created_at)
+                    VALUES ('lead', :lid, 'estimate_sent', :title, :desc, :pby, :uid, :uname, CAST(:meta AS jsonb), NOW())
+                """),
+                {
+                    "lid": lid_int,
+                    "title": f"Estimate Sent: {est_num}",
+                    "desc": f"Official proposal {'dispatched' if not is_simulated else 'simulated'} to {customer_email}.",
+                    "pby": author_name,
+                    "uid": author_id,
+                    "uname": author_name,
+                    "meta": orjson.dumps(meta_dict).decode("utf-8")
+                }
+            )
+        except Exception as ex:
+            print(f"[send_two_options_estimate] Lead sync error: {ex}")
+        
+    await db.commit()
+    
+    msg = (
+        f"Proposal marked as sent! (Simulated delivery for test address '{customer_email}'. Use a real homeowner email for live delivery.)"
+        if is_simulated else
+        f"Proposal successfully delivered to {customer_email}"
+    )
+    return {
+        "ok": True,
+        "simulated": is_simulated,
+        "message": msg,
+        "pdfUrl": pdf_url,
+    }

@@ -1,148 +1,151 @@
-import React, { useState } from 'react';
-import { Users, MapPin, Calendar, Clock, CheckCircle2, User } from 'lucide-react';
-import { DevelopmentInProgressBanner } from '@/components/common/DevelopmentInProgressBanner';
+import React, { useState, useRef } from 'react';
+import {
+  Hammer,
+  Sparkles,
+} from 'lucide-react';
 import { CrmPageHero } from '@/components/common/CrmPageHero';
-import { UniversalStatCard } from '@/components/common/UniversalStatCard';
+import { useJobs } from '@/hooks/useJobs';
+import { JobRecord } from '@/types/jobTypes';
+import { JobCard } from '@/components/jobs/JobCard';
+import { JobInspectorModal } from '@/components/jobs/JobInspectorModal';
 
 export function JobsPage() {
   const [search, setSearch] = useState('');
-  const JOBS = [
-    { id: 'RUP-481', client: 'Carlos Morales (Homeowner: Lisa Chen)', address: '4520 Highland Dr, Carlsbad', assignedLead: 'Marco Silva (Field Foreman)', stage: 'In Progress', progress: 65, startDate: 'Mar 13, 2026', estComplete: 'Mar 15, 2026', scope: 'Tile Tear-Off & Synthetic Underlayment' },
-    { id: 'RUP-480', client: 'David Henderson', address: '2214 Sunset Blvd, Oceanside', assignedLead: 'Carlos Ramirez (Project Manager)', stage: 'Scheduled', progress: 10, startDate: 'Mar 16, 2026', estComplete: 'Mar 18, 2026', scope: 'Owens Corning TruDefinition Duration Cool Roof' },
-    { id: 'RUP-479', client: 'Miriam Chang', address: '118 Vista Way, Oceanside', assignedLead: 'Sarah Jenkins (Field Inspector)', stage: 'Materials Delivered', progress: 25, startDate: 'Mar 14, 2026', estComplete: 'Mar 16, 2026', scope: 'Spanish S-Tile Restoration' },
-  ];
+  const [selectedJob, setSelectedJob] = useState<JobRecord | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    jobs,
+    loading,
+    activities,
+    activitiesLoading,
+    setSelectedJobId,
+    addMilestone,
+    toggleMilestone,
+    deleteMilestone,
+    updateJobDetails,
+    markJobComplete,
+    logActivity,
+  } = useJobs('all', search);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Show active jobs (not completed/cancelled) by default
+  const activeJobs = jobs.filter((j) => j.status !== 'complete' && j.status !== 'cancelled');
+  const completedJobs = jobs.filter((j) => j.status === 'complete');
+
+  const handleOpenInspector = (job: JobRecord) => {
+    setSelectedJob(job);
+    setSelectedJobId(job.id);
+  };
+
+  const handleCloseInspector = () => {
+    setSelectedJob(null);
+    setSelectedJobId(null);
+  };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto select-none pb-16">
+    <div className="space-y-3.5 max-w-[1600px] mx-auto select-none pb-14">
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed top-6 right-6 z-50 px-4 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-semibold shadow-2xl border border-white/20 flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
+          <Sparkles size={14} className="text-[#2F9FE3]" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* HERO */}
       <CrmPageHero
         pageId="jobs"
-        defaultEyebrow="Field Operations & Production"
-        defaultTitle="Production Jobs & Work Orders"
-        defaultSubtitle="Active job sites, team assignments, material deliveries, and tear-off timeline progress"
+        defaultEyebrow="FIELD OPERATIONS & PRODUCTION"
+        defaultTitle="Active Jobs"
+        defaultSubtitle="Track active job sites, custom milestones, and field activity logs."
+        showSearch={true}
+        searchPlaceholder="Search by client, address, or job number..."
         searchValue={search}
         onSearchChange={setSearch}
         onSearchClear={() => setSearch('')}
-        searchPlaceholder="Search jobs, team leads, addresses, scopes..."
-        bottomRightBadges={
-          <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>3 Active Jobsites</span>
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 shadow-2xs">
-              <span>All Materials Delivered</span>
-            </span>
-          </div>
-        }
+        searchRef={searchInputRef}
       />
 
-      <DevelopmentInProgressBanner
-        moduleName="Production Jobs & Field Work Orders"
-        expectedVersion="v3.2 Operations Sprint"
-        description="This field jobs module is currently undergoing active engineering. Live jobsite dispatching, team task tracking, and dumpster staging feeds are scheduled for rollout shortly."
-      />
+      {/* ACTIVE JOBS */}
+      {activeJobs.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {activeJobs.map((job) => (
+            <JobCard key={job.id} job={job} onClick={() => handleOpenInspector(job)} />
+          ))}
+        </div>
+      ) : (
+        <div className="py-20 text-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/30 space-y-2">
+          <Hammer size={32} className="mx-auto text-slate-300" />
+          <h5 className="font-bold text-sm text-slate-600">
+            {loading ? 'Loading jobs...' : 'No active jobs'}
+          </h5>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            {loading
+              ? 'Fetching your work orders...'
+              : 'Jobs appear here automatically when leads move to Active Jobs in your pipeline.'}
+          </p>
+        </div>
+      )}
 
-      {/* Operations KPI Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <UniversalStatCard
-          label="Active Jobsites"
-          value="3 Sites"
-          delta={15}
-          deltaLabel="+1 This Wk"
-          icon={Users}
-          iconGradient="from-emerald-600 to-teal-400"
-          color="#10b981"
-          hoverBorderColor="hover:border-emerald-400"
-          blurColor="bg-emerald-400/15 group-hover:bg-emerald-400/25"
-          footnoteLeft="2 Carlsbad • 1 Oceanside"
-          footnoteRight="100% On Schedule"
-          sharePct={100}
-          shareLabel="Site capacity"
-          stageLabel="Production"
-          miniSvgPath="M 2 24 Q 18 18, 36 14 T 54 8 T 73 2"
-        />
-
-        <UniversalStatCard
-          label="On-Time Completion"
-          value="96.4%"
-          delta={4.2}
-          deltaLabel="+4.2% MoM"
-          icon={Clock}
-          iconGradient="from-[#1878B8] to-[#55C4F5]"
-          color="#0284c7"
-          hoverBorderColor="hover:border-sky-400"
-          blurColor="bg-sky-400/15 group-hover:bg-sky-400/25"
-          footnoteLeft="Avg teardown 1.4 days"
-          footnoteRight="Weather Clear"
-          sharePct={96}
-          shareLabel="SLA target"
-          stageLabel="Milestone Tracking"
-          miniSvgPath="M 2 20 Q 20 18, 38 12 T 58 6 T 73 3"
-        />
-
-        <UniversalStatCard
-          label="Team Assignments"
-          value="3 Deployed"
-          delta={8}
-          deltaLabel="Full Attendance"
-          icon={CheckCircle2}
-          iconGradient="from-purple-600 to-indigo-400"
-          color="#8b5cf6"
-          hoverBorderColor="hover:border-purple-400"
-          blurColor="bg-purple-400/15 group-hover:bg-purple-400/25"
-          footnoteLeft="Foremen & PMs active"
-          footnoteRight="OSHA Compliant"
-          sharePct={100}
-          shareLabel="Team allocation"
-          stageLabel="Field Operations"
-          miniSvgPath="M 2 18 Q 18 12, 36 14 T 73 8"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {JOBS.map((job) => (
-          <div key={job.id} className="bg-[#0B1E33] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 hover:border-slate-700 transition-all">
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1878B8]/20 text-[#2F9FE3]">
-                  {job.id}
-                </span>
-                <h3 className="font-bold text-sm text-white mt-1.5">{job.client}</h3>
-                <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                  <MapPin size={12} className="text-[#2F9FE3]" />
-                  <span>{job.address}</span>
-                </div>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold text-[10px]">
-                {job.stage}
-              </span>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs">
-              <div className="text-slate-300 font-medium">{job.scope}</div>
-              <div className="flex justify-between text-slate-400 text-[11px] pt-1">
-                <span>Assigned Lead:</span>
-                <span className="text-white font-medium">{job.assignedLead}</span>
-              </div>
-              <div className="flex justify-between text-slate-400 text-[11px]">
-                <span>Timeline:</span>
-                <span className="text-slate-300">{job.startDate} ➔ {job.estComplete}</span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="pt-2">
-                <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                  <span>Job Progress</span>
-                  <span className="text-white font-bold">{job.progress}%</span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#1878B8] to-[#2F9FE3] rounded-full" style={{ width: `${job.progress}%` }} />
-                </div>
-              </div>
-            </div>
+      {/* COMPLETED JOBS (if any) */}
+      {completedJobs.length > 0 && (
+        <>
+          <div className="flex items-center gap-2 pt-4">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2">Completed ({completedJobs.length})</span>
+            <div className="h-px flex-1 bg-slate-200" />
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 opacity-70">
+            {completedJobs.map((job) => (
+              <JobCard key={job.id} job={job} onClick={() => handleOpenInspector(job)} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* JOB INSPECTOR */}
+      <JobInspectorModal
+        isOpen={Boolean(selectedJob)}
+        job={selectedJob}
+        activities={activities}
+        activitiesLoading={activitiesLoading}
+        onClose={handleCloseInspector}
+        onAddMilestone={async (jobId, milestone) => {
+          const updated = await addMilestone(jobId, milestone);
+          showToast('Milestone added!');
+          return updated;
+        }}
+        onToggleMilestone={async (jobId, milestoneId, author) => {
+          const updated = await toggleMilestone(jobId, milestoneId, author);
+          showToast('Milestone updated!');
+          return updated;
+        }}
+        onDeleteMilestone={async (jobId, milestoneId) => {
+          const updated = await deleteMilestone(jobId, milestoneId);
+          showToast('Milestone removed.');
+          return updated;
+        }}
+        onUpdateJob={async (jobId, payload) => {
+          const updated = await updateJobDetails(jobId, payload);
+          showToast('Job updated!');
+          return updated;
+        }}
+        onCompleteJob={async (jobId, notes, author) => {
+          const completed = await markJobComplete(jobId, notes, author);
+          showToast(`Job ${completed.job_number} completed!`);
+          return completed;
+        }}
+        onLogActivity={async (jobId, note, author) => {
+          await logActivity(jobId, note, author);
+          showToast('Note saved!');
+        }}
+      />
     </div>
   );
 }

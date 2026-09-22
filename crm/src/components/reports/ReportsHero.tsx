@@ -50,19 +50,31 @@ export function ReportsHero({
   );
 
   const handleExportPdf = () => {
-    alert('Generating High-Resolution Executive PDF Analytics Briefing for Rise Up Roofing Executive Board...');
+    window.print();
   };
 
-  const handleExportCsv = () => {
-    const csvContent =
-      'data:text/csv;charset=utf-8,Category,Metric,Value,Period\nRevenue,Booked YTD,$1626500,2026\nWin Rate,Average,68.4%,Q3\nGross Margin,Blended,39.4%,Q3\nSpeed to Lead,Average,4.2 min,Q3\n';
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `rise_up_analytics_export_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleExportCsv = async () => {
+    try {
+      let from, to;
+      if (dateRange === 'ytd') { from = '2026-01-01'; to = '2026-12-31'; }
+      else if (dateRange === 'last_30_days') { const d = new Date(); d.setDate(d.getDate() - 30); from = d.toISOString().split('T')[0]; }
+      else if (dateRange === 'this_quarter') { from = '2026-07-01'; to = '2026-09-30'; }
+      else if (dateRange === 'last_year') { from = '2025-01-01'; to = '2025-12-31'; }
+      
+      const { api } = await import('@/lib/api');
+      const data = await api.getRevenueReport(from, to);
+      const csvContent = `data:text/csv;charset=utf-8,Category,Metric,Value,Period\nRevenue,Booked,$${data.ytdTotal || 0},${dateRange}\nAvg Ticket,Calculated,$${data.avgTicket || 0},${dateRange}\n`;
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `rise_up_analytics_export_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to export CSV');
+    }
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   DollarSign,
@@ -7,12 +7,45 @@ import {
   BarChart,
   ArrowUpRight,
 } from 'lucide-react';
-import { MONTHLY_REVENUE_DATA, MATERIAL_REVENUE_SPLITS } from '@/data/reportData';
+import api from '@/lib/api';
+import { dateRangeToDates } from '@/types/reportTypes';
 
-export function RevenueVelocityTab() {
+export function RevenueVelocityTab({ dateRange }: { dateRange?: string }) {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const maxRevenue = Math.max(...MONTHLY_REVENUE_DATA.map((d) => d.revenue));
+  useEffect(() => {
+    const { from, to } = dateRangeToDates(dateRange);
+    setLoading(true);
+    api.getRevenueReport(from, to).then(res => {
+      setData(res);
+      setLoading(false);
+    }).catch(err => {
+      console.error('Failed to load revenue velocity report:', err);
+      setLoading(false);
+    });
+  }, [dateRange]);
+
+  if (loading) return <div className="p-8 text-center text-slate-500 font-medium">Loading revenue velocity...</div>;
+  if (!data) return null;
+
+  const monthlyData = data.monthly || [];
+  const maxRevenue = Math.max(0, ...monthlyData.map((d: any) => d.revenue || 0));
+  const materialSplits = data.materialSplits || [];
+
+  const totalSquares = Number(data.totalSquares ?? materialSplits.reduce((acc: number, m: any) => acc + (Number(m.squaresCount) || 0), 0));
+  const totalRevenue = Number(data.ytdTotal ?? materialSplits.reduce((acc: number, m: any) => acc + (Number(m.revenue) || 0), 0));
+  const avgRevPerSq = Number(data.avgRevPerSq ?? (totalSquares > 0 ? Math.round(totalRevenue / totalSquares) : 0));
+  const avgTicketSize = Number(data.avgTicket ?? 0);
+  const bookedJobsCount = Number(data.bookedJobsCount ?? monthlyData.reduce((acc: number, d: any) => acc + (Number(d.bookedJobs) || 0), 0));
+  const financingAdoptionPct = Number(data.financingAdoptionPct ?? 0);
+  const avgMonthlyPayment = Number(data.avgMonthlyPayment ?? 0);
+
+  const totalQuota = monthlyData.reduce((acc: number, d: any) => acc + (Number(d.target) || 0), 0);
+  const totalBookedFromMonths = monthlyData.reduce((acc: number, d: any) => acc + (Number(d.revenue) || 0), 0);
+  const actualRevForQuota = data.ytdTotal || totalBookedFromMonths;
+  const quotaAttainment = totalQuota > 0 ? Math.round((actualRevForQuota / totalQuota) * 100) : (actualRevForQuota > 0 ? 100 : 0);
 
   return (
     <div className="space-y-4 select-none">
@@ -24,8 +57,14 @@ export function RevenueVelocityTab() {
               <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                 Monthly Booked Revenue vs Target (2026)
               </h3>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black uppercase">
-                112% to Plan
+              <span className={`px-2 py-0.5 rounded-full border text-[10px] font-black uppercase ${
+                quotaAttainment >= 100
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : quotaAttainment >= 80
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-slate-100 text-slate-700 border-slate-200'
+              }`}>
+                {totalQuota > 0 ? `${quotaAttainment}% to Plan` : (actualRevForQuota > 0 ? 'Pacing Active' : '0% Quota Set')}
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -47,53 +86,59 @@ export function RevenueVelocityTab() {
 
         {/* SVG / Bar Chart Representation */}
         <div className="pt-4 pb-2">
-          <div className="grid grid-cols-9 gap-2 sm:gap-3 items-end h-56 px-2">
-            {MONTHLY_REVENUE_DATA.map((d, idx) => {
-              const actualHeightPct = Math.round((d.revenue / maxRevenue) * 100);
-              const targetHeightPct = Math.round((d.target / maxRevenue) * 100);
-              const isHovered = hoveredMonth === idx;
+          {monthlyData.length === 0 ? (
+            <div className="h-56 flex items-center justify-center text-xs text-slate-400 font-medium">
+              No revenue data recorded for this period.
+            </div>
+          ) : (
+            <div className="flex items-end justify-between gap-2 sm:gap-3 h-56 px-2">
+              {monthlyData.map((d: any, idx: number) => {
+                const actualHeightPct = maxRevenue > 0 ? Math.round((d.revenue / maxRevenue) * 100) : 0;
+                const targetHeightPct = maxRevenue > 0 ? Math.round((d.target / maxRevenue) * 100) : 0;
+                const isHovered = hoveredMonth === idx;
 
-              return (
-                <div
-                  key={d.month}
-                  onMouseEnter={() => setHoveredMonth(idx)}
-                  onMouseLeave={() => setHoveredMonth(null)}
-                  className="flex flex-col items-center h-full justify-end group cursor-pointer relative"
-                >
-                  {/* Floating Tooltip */}
-                  {isHovered && (
-                    <div className="absolute -top-16 z-30 p-2 rounded-xl bg-slate-900 text-white text-[10px] shadow-xl border border-slate-700 pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150">
-                      <div className="font-black">{d.month}</div>
-                      <div className="text-emerald-400 font-bold">Revenue: ${d.revenue.toLocaleString()}</div>
-                      <div className="text-slate-400">Quota: ${d.target.toLocaleString()} • {d.bookedJobs} jobs</div>
+                return (
+                  <div
+                    key={d.month || idx}
+                    onMouseEnter={() => setHoveredMonth(idx)}
+                    onMouseLeave={() => setHoveredMonth(null)}
+                    className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                  >
+                    {/* Floating Tooltip */}
+                    {isHovered && (
+                      <div className="absolute -top-16 z-30 p-2 rounded-xl bg-slate-900 text-white text-[10px] shadow-xl border border-slate-700 pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150">
+                        <div className="font-black">{d.month}</div>
+                        <div className="text-emerald-400 font-bold">Revenue: ${Number(d.revenue || 0).toLocaleString()}</div>
+                        <div className="text-slate-400">Quota: ${Number(d.target || 0).toLocaleString()} • {d.bookedJobs || 0} jobs</div>
+                      </div>
+                    )}
+
+                    {/* Dual Bars: Actual (Front) & Target (Behind) */}
+                    <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-full relative">
+                      {/* Target Bar */}
+                      <div
+                        style={{ height: `${Math.max(4, targetHeightPct)}%` }}
+                        className="w-1/2 rounded-t-lg bg-slate-200/80 transition-all group-hover:bg-slate-300"
+                      />
+                      {/* Actual Bar */}
+                      <div
+                        style={{ height: `${Math.max(4, actualHeightPct)}%` }}
+                        className="w-1/2 rounded-t-lg bg-gradient-to-t from-[#1878B8] via-[#0284c7] to-[#38bdf8] transition-all group-hover:brightness-110 shadow-xs"
+                      />
                     </div>
-                  )}
 
-                  {/* Dual Bars: Actual (Front) & Target (Behind) */}
-                  <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-full relative">
-                    {/* Target Bar */}
-                    <div
-                      style={{ height: `${targetHeightPct}%` }}
-                      className="w-1/2 rounded-t-lg bg-slate-200/80 transition-all group-hover:bg-slate-300"
-                    />
-                    {/* Actual Bar */}
-                    <div
-                      style={{ height: `${actualHeightPct}%` }}
-                      className="w-1/2 rounded-t-lg bg-gradient-to-t from-[#1878B8] via-[#0284c7] to-[#38bdf8] transition-all group-hover:brightness-110 shadow-xs"
-                    />
+                    {/* Month Label */}
+                    <div className="text-[11px] font-black text-slate-600 mt-2 font-mono">
+                      {d.shortMonth || d.month}
+                    </div>
+                    <div className="text-[9px] font-bold text-slate-400">
+                      ${Math.round((d.revenue || 0) / 1000)}k
+                    </div>
                   </div>
-
-                  {/* Month Label */}
-                  <div className="text-[11px] font-black text-slate-600 mt-2 font-mono">
-                    {d.shortMonth}
-                  </div>
-                  <div className="text-[9px] font-bold text-slate-400">
-                    ${Math.round(d.revenue / 1000)}k
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -110,27 +155,27 @@ export function RevenueVelocityTab() {
                 Breakdown of YTD contract value across shingle, tile, metal, and commercial TPO
               </p>
             </div>
-            <span className="text-xs font-black text-slate-800">
-              2,910 SQ Total
+            <span className="text-xs font-black text-slate-800 font-mono">
+              {totalSquares > 0 ? `${totalSquares.toLocaleString()} SQ Total` : '0 SQ Total'}
             </span>
           </div>
 
           <div className="space-y-3 pt-1">
-            {MATERIAL_REVENUE_SPLITS.map((mat) => (
-              <div key={mat.category} className="space-y-1.5">
+            {materialSplits.map((mat: any) => (
+              <div key={mat.category || mat.name} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 font-bold text-slate-800">
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: mat.color }}
+                      style={{ backgroundColor: mat.color || '#0284c7' }}
                     />
                     <span>{mat.name}</span>
                   </div>
                   <div className="flex items-center gap-3 font-mono">
-                    <span className="text-slate-500 font-medium">{mat.squaresCount} SQ</span>
-                    <strong className="text-slate-900 font-black">${mat.revenue.toLocaleString()}</strong>
+                    <span className="text-slate-500 font-medium">{mat.squaresCount?.toLocaleString() || 0} SQ</span>
+                    <strong className="text-slate-900 font-black">${Math.round(mat.revenue || 0).toLocaleString()}</strong>
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-700">
-                      {mat.percentage}%
+                      {mat.percentage || 0}%
                     </span>
                   </div>
                 </div>
@@ -140,8 +185,8 @@ export function RevenueVelocityTab() {
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
-                      width: `${mat.percentage}%`,
-                      backgroundColor: mat.color,
+                      width: `${Math.min(100, Math.max(0, mat.percentage || 0))}%`,
+                      backgroundColor: mat.color || '#0284c7',
                     }}
                   />
                 </div>
@@ -164,11 +209,11 @@ export function RevenueVelocityTab() {
                     Average Blended Rev / SQ
                   </div>
                   <div className="text-xl font-black text-slate-900 mt-0.5">
-                    $540 <span className="text-xs font-semibold text-slate-500">/ Square</span>
+                    ${Math.round(avgRevPerSq).toLocaleString()} <span className="text-xs font-semibold text-slate-500">/ Square</span>
                   </div>
                 </div>
-                <div className="text-right text-[10px] font-bold text-emerald-700">
-                  +$35/SQ vs 2025
+                <div className="text-right text-[10px] font-bold text-sky-700 font-mono">
+                  {totalSquares > 0 ? `Based on ${totalSquares.toLocaleString()} SQ` : '0 SQ Booked'}
                 </div>
               </div>
 
@@ -178,11 +223,11 @@ export function RevenueVelocityTab() {
                     Average Ticket Size
                   </div>
                   <div className="text-xl font-black text-slate-900 mt-0.5">
-                    $24,850
+                    ${Math.round(avgTicketSize).toLocaleString()}
                   </div>
                 </div>
-                <div className="text-right text-[10px] font-bold text-emerald-700">
-                  +8.4% Expansion
+                <div className="text-right text-[10px] font-bold text-amber-700 font-mono">
+                  {bookedJobsCount > 0 ? `Across ${bookedJobsCount} Jobs` : '0 Booked Jobs'}
                 </div>
               </div>
 
@@ -192,11 +237,11 @@ export function RevenueVelocityTab() {
                     Financing Adoption Rate
                   </div>
                   <div className="text-xl font-black text-slate-900 mt-0.5">
-                    38.2% <span className="text-xs font-semibold text-slate-500">(120-Mo Plans)</span>
+                    {financingAdoptionPct}% {avgMonthlyPayment > 0 && <span className="text-xs font-semibold text-slate-500">(${Math.round(avgMonthlyPayment)}/mo)</span>}
                   </div>
                 </div>
-                <div className="text-right text-[10px] font-bold text-emerald-700">
-                  Avg $164/mo
+                <div className="text-right text-[10px] font-bold text-emerald-700 font-mono">
+                  {financingAdoptionPct > 0 ? `Avg $${Math.round(avgMonthlyPayment)}/mo` : '0% Financed'}
                 </div>
               </div>
             </div>
@@ -204,10 +249,12 @@ export function RevenueVelocityTab() {
 
           <div className="pt-2 border-t border-slate-200/60 text-[11px] text-slate-500 flex items-center justify-between font-medium">
             <span>Gross Margins Tracked via Accu-Estimate™</span>
-            <span className="text-emerald-700 font-bold">Audited Weekly</span>
+            <span className="text-emerald-700 font-bold">Live Synced</span>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default RevenueVelocityTab;

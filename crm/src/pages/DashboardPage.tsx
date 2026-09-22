@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Phone,
@@ -18,7 +19,6 @@ import {
   Mail,
   CheckCircle2,
   MapPin,
-  Globe,
   Bell,
   ArrowUpRight,
   Clock,
@@ -27,10 +27,15 @@ import {
   Check,
   Sliders,
   UserCheck,
+  Lock,
+  Hammer,
+  ChevronRight,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { PipelineListView } from '../components/pipeline/PipelineListView';
 import { PipelineCalendarView } from '../components/pipeline/PipelineCalendarView';
 import { useDashboardStats } from '../lib/dashboardStatsStore';
+import { type RecentActivityItem } from '../api/dashboardApi';
 import { usePipelineKanban } from '../lib/pipelineStore';
 
 import { PipelineDealModal } from '../components/pipeline/PipelineDealModal';
@@ -40,8 +45,8 @@ import { EnrichedDeal, enrichDeals, PipelineDealItem, PipelineStageId } from '..
 import { updatePipelineDealStage, logDealFollowUp, claimLead } from '../api/pipelineApi';
 import { LogFollowUpModal } from '../components/pipeline/LogFollowUpModal';
 import { api } from '@/lib/api';
-import { CompleteJobModal } from '../components/pipeline/CompleteJobModal';
-import { completeClientJob } from '../lib/client360Store';
+import { EstimateSentGatedModal, GatedLeadCard } from '../components/pipeline/EstimateSentGatedModal';
+import { useClients360 } from '../lib/client360Store';
 import { CrmPageHero } from '@/components/common/CrmPageHero';
 import { useCompany } from '@/context/CompanyContext';
 
@@ -63,6 +68,7 @@ interface DealCard {
   sourceType?: string;
   assignedToUserId?: number | null;
   assignedToName?: string | null;
+  createdByUserId?: number | null;
   createdByName?: string | null;
 }
 
@@ -78,122 +84,6 @@ interface ColumnData {
   iconType: 'users' | 'phone' | 'calendar' | 'file-text' | 'clock' | 'bell' | 'shield' | 'trophy' | 'briefcase';
   cards: DealCard[];
 }
-
-const INITIAL_COLUMNS: ColumnData[] = [
-  {
-    id: 'new_leads',
-    title: 'New Leads',
-    count: 48,
-    iconType: 'users',
-    bgColor: 'rgba(241, 245, 249, 0.55)',
-    borderColor: 'rgba(203, 213, 225, 0.70)',
-    accentColor: '#475569',
-    pillClass: 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-xs border border-slate-600/60',
-    badgeClass: 'bg-black/30 text-white font-black',
-    cards: [
-      { id: 'nl-1', name: 'Pacific Auto Group', location: 'Oceanside, CA', service: 'Commercial', serviceColor: 'sky', time: '2h ago', value: 42500 },
-      { id: 'nl-2', name: 'Alicia Brooks', location: 'Oceanside, CA', service: 'Tile Roofing', serviceColor: 'amber', time: '5h ago', value: 18900 },
-      { id: 'nl-3', name: 'James Wilson', location: 'Encinitas, CA', service: 'Shingle Roof', serviceColor: 'blue', time: '1d ago', value: 14200 },
-      { id: 'nl-4', name: 'Robert King', location: 'Carlsbad, CA', service: 'Maintenance', serviceColor: 'emerald', time: '1d ago', value: 6800 },
-    ],
-  },
-  {
-    id: 'contacted',
-    title: 'Leads Contacted',
-    count: 36,
-    iconType: 'phone',
-    bgColor: 'rgba(224, 242, 254, 0.50)',
-    borderColor: 'rgba(125, 211, 252, 0.70)',
-    accentColor: '#0284c7',
-    pillClass: 'bg-gradient-to-r from-[#0284c7] via-[#0ea5e9] to-[#38bdf8] text-white shadow-xs border border-sky-400/50',
-    badgeClass: 'bg-black/20 text-white font-black',
-    cards: [
-      { id: 'lc-1', name: 'Mike Thompson', location: 'Vista, CA', service: 'Shingle Roof', serviceColor: 'blue', time: 'Today', value: 16400 },
-      { id: 'lc-2', name: 'Leah Johnson', location: 'Oceanside, CA', service: 'Roof Inspection', serviceColor: 'sky', time: 'Today', value: 12500 },
-      { id: 'lc-3', name: 'Trang Nguyen', location: 'Oceanside, CA', service: 'Tile Reroof', serviceColor: 'coral', time: '1d ago', value: 21000 },
-      { id: 'lc-4', name: 'Sherry Davis', location: 'Oceanside, CA', service: 'Tile Reroof', serviceColor: 'coral', time: '1d ago', value: 19800 },
-    ],
-  },
-  {
-    id: 'est_scheduled',
-    title: 'Estimate Scheduled',
-    count: 22,
-    iconType: 'calendar',
-    bgColor: 'rgba(243, 232, 255, 0.50)',
-    borderColor: 'rgba(216, 180, 254, 0.70)',
-    accentColor: '#7c3aed',
-    pillClass: 'bg-gradient-to-r from-[#7c3aed] via-[#8b5cf6] to-[#a855f7] text-white shadow-xs border border-purple-400/50',
-    badgeClass: 'bg-black/20 text-white font-black',
-    cards: [
-      { id: 'es-1', name: 'Ryan Miller', location: 'Poway, CA', service: 'Tile Roof', serviceColor: 'amber', time: 'Today', value: 26870 },
-      { id: 'es-2', name: 'Keith Martin', location: 'Oceanside, CA', service: 'Roof Repair', serviceColor: 'coral', time: '1d ago', value: 9400 },
-      { id: 'es-3', name: 'Nichole Adams', location: 'Vista, CA', service: 'Roof + Interior', serviceColor: 'amber', time: '2d ago', value: 34200 },
-      { id: 'es-4', name: 'Capistrano Dr', location: 'Oceanside, CA', service: 'Shingle Roof', serviceColor: 'blue', time: '3d ago', value: 22100 },
-    ],
-  },
-  {
-    id: 'est_sent',
-    title: 'Estimate Sent',
-    count: 18,
-    iconType: 'file-text',
-    bgColor: 'rgba(254, 249, 195, 0.50)',
-    borderColor: 'rgba(253, 224, 71, 0.70)',
-    accentColor: '#d97706',
-    pillClass: 'bg-gradient-to-r from-[#f59e0b] via-[#eab308] to-[#facc15] text-slate-950 shadow-xs border border-amber-400/70 font-black',
-    badgeClass: 'bg-black/15 text-slate-950 font-black',
-    cards: [
-      { id: 'st-1', name: 'Madhu Patel', location: 'Rancho Santa Fe, CA', service: 'Full Reroof + GC', serviceColor: 'sky', time: 'Today', value: 58000, hoursUntilAutoMove: 38 },
-      { id: 'st-2', name: 'John Williams', location: 'Escondido, CA', service: 'Metal Roof', serviceColor: 'blue', time: '1d ago', value: 31500, hoursUntilAutoMove: 14 },
-      { id: 'st-3', name: 'Homeowner HOA', location: 'Oceanside, CA', service: 'Multi-Trade', serviceColor: 'purple', time: '2d ago', value: 74000, hoursUntilAutoMove: 2 },
-    ],
-  },
-  {
-    id: 'follow_up',
-    title: 'Follow-Up',
-    count: 25,
-    iconType: 'clock',
-    bgColor: 'rgba(243, 232, 255, 0.72)',
-    borderColor: 'rgba(168, 85, 247, 0.55)',
-    accentColor: '#9333ea',
-    pillClass: 'bg-gradient-to-r from-[#7c3aed] via-[#9333ea] to-[#a855f7] text-white shadow-xs border border-purple-400/50 font-black',
-    badgeClass: 'bg-black/20 text-white font-black',
-    cards: [
-      { id: 'f1-1', name: 'Martinez Family', location: 'Vista, CA', service: 'Shingle Reroof', serviceColor: 'blue', time: 'Today', value: 18400, followupDaysRemaining: 6, isFollowupOverdue: false },
-      { id: 'f1-2', name: 'Wilson Property', location: 'Oceanside, CA', service: 'Repairs + PV', serviceColor: 'sky', time: '1d ago', value: 24800, followupDaysRemaining: 4, isFollowupOverdue: false },
-      { id: 'f1-3', name: 'Teacher Discount', location: 'Oceanside, CA', service: 'Roof + Drywall', serviceColor: 'emerald', time: '2d ago', value: 15200, followupDaysRemaining: 0, isFollowupOverdue: true },
-    ],
-  },
-  {
-    id: 'contract_signed',
-    title: 'Contract Signed',
-    count: 8,
-    iconType: 'shield',
-    bgColor: 'rgba(220, 252, 231, 0.50)',
-    borderColor: 'rgba(134, 239, 172, 0.70)',
-    accentColor: '#059669',
-    pillClass: 'bg-gradient-to-r from-[#059669] via-[#10b981] to-[#34d399] text-white shadow-xs border border-emerald-400/50',
-    badgeClass: 'bg-black/20 text-white font-black',
-    cards: [
-      { id: 'cs-1', name: 'Beach Bathroom', location: 'Oceanside, CA', service: 'Remodel', serviceColor: 'emerald', time: 'Today', value: 28900 },
-      { id: 'cs-2', name: '3-Story House', location: 'Encinitas, CA', service: 'Shingle Roof', serviceColor: 'sky', time: '1d ago', value: 46500 },
-    ],
-  },
-  {
-    id: 'active_jobs',
-    title: 'Active Jobs',
-    count: 12,
-    iconType: 'briefcase',
-    bgColor: 'rgba(207, 250, 254, 0.50)',
-    borderColor: 'rgba(34, 211, 238, 0.70)',
-    accentColor: '#0891b2',
-    pillClass: 'bg-gradient-to-r from-[#0891b2] via-[#06b6d4] to-[#22d3ee] text-white shadow-xs border border-cyan-400/50',
-    badgeClass: 'bg-black/20 text-white font-black',
-    cards: [
-      { id: 'aj-1', name: 'Nichole Adams', location: 'Vista, CA', service: 'Roof Replacement', serviceColor: 'amber', time: 'Today', value: 24500 },
-      { id: 'aj-2', name: 'Hillyer St Project', location: 'Oceanside, CA', service: 'Commercial Flat', serviceColor: 'sky', time: '1d ago', value: 38900 },
-    ],
-  },
-];
 
 const SOURCE_OPTIONS = [
   'All Sources',
@@ -227,6 +117,190 @@ function formatCurrency(val: number | undefined): string {
   if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
   if (val >= 1_000) return `$${Math.round(val / 1000)}K`;
   return `$${Math.round(val)}`;
+}
+
+// Helper: format relative time
+function formatRelativeTime(isoString?: string | null): string {
+  if (!isoString) return 'just now';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return 'just now';
+    const now = Date.now();
+    const diffMs = now - d.getTime();
+    if (diffMs < 0) return 'just now';
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks}w ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  } catch {
+    return 'just now';
+  }
+}
+
+function ActivityItemCard({ activity }: { activity: RecentActivityItem }) {
+  const type = activity.activity_type;
+  const userName = (activity.user_name || activity.performed_by || 'Staff').split(' ')[0];
+  const targetName = activity.target_name || activity.metadata?.lead_name || activity.metadata?.customer_name || 'Client';
+  const amount = activity.amount ?? activity.metadata?.amount ?? activity.metadata?.contract_value;
+  const formattedAmount = amount && Number(amount) > 0 ? `$${Number(amount).toLocaleString()}` : null;
+  const timeStr = formatRelativeTime(activity.created_at);
+
+  if (type === 'lead_created' || type === 'lead_added') {
+    return (
+      <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs min-w-0">
+        <div className="w-5 h-5 rounded-md bg-sky-100/90 text-[#1878B8] flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
+          <Users size={11} />
+        </div>
+        <div className="truncate text-[10px]">
+          <span className="text-slate-600">{userName} added lead <strong className="text-[#1F1F1F]">{targetName}</strong></span>
+          <span className="text-slate-400 ml-1.5 font-medium shrink-0">{timeStr}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'lead_claimed') {
+    return (
+      <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs min-w-0">
+        <div className="w-5 h-5 rounded-md bg-indigo-100/90 text-indigo-600 flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
+          <UserCheck size={11} />
+        </div>
+        <div className="truncate text-[10px]">
+          <span className="text-slate-600">{userName} claimed lead <strong className="text-[#1F1F1F]">{targetName}</strong></span>
+          <span className="text-slate-400 ml-1.5 font-medium shrink-0">{timeStr}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'estimate_sent' || type === 'proposal_sent') {
+    return (
+      <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs min-w-0">
+        <div className="w-5 h-5 rounded-md bg-blue-100/90 text-[#0284C7] flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
+          <Mail size={11} />
+        </div>
+        <div className="truncate text-[10px]">
+          <span className="text-slate-600">Sent to <strong className="text-[#1F1F1F]">{targetName}</strong>{formattedAmount ? ` ${formattedAmount}` : ''}</span>
+          <span className="text-slate-400 ml-1.5 font-medium shrink-0">{timeStr}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'contract_signed') {
+    return (
+      <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs min-w-0">
+        <div className="w-5 h-5 rounded-md bg-emerald-100/90 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
+          <FileText size={11} />
+        </div>
+        <div className="truncate text-[10px]">
+          <span className="text-slate-600">Contract signed <strong className="text-[#1F1F1F]">{targetName}</strong></span>
+          <span className="text-slate-400 ml-1.5 font-medium shrink-0">{timeStr}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'job_completed' || type === 'completed') {
+    return (
+      <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs min-w-0">
+        <div className="w-5 h-5 rounded-md bg-teal-100/90 text-teal-700 flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
+          <CheckCircle2 size={11} />
+        </div>
+        <div className="truncate text-[10px]">
+          <span className="text-slate-600">Job completed <strong className="text-[#1F1F1F]">{targetName}</strong></span>
+          <span className="text-slate-400 ml-1.5 font-medium shrink-0">{timeStr}</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Generic fallback for notes, calls, touchpoints
+  return (
+    <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs min-w-0">
+      <div className="w-5 h-5 rounded-md bg-slate-100/90 text-slate-600 flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
+        <Clock size={11} />
+      </div>
+      <div className="truncate text-[10px]">
+        <span className="text-slate-600">{userName} updated <strong className="text-[#1F1F1F]">{targetName}</strong></span>
+        <span className="text-slate-400 ml-1.5 font-medium shrink-0">{timeStr}</span>
+      </div>
+    </div>
+  );
+}
+
+// Generate smooth SVG path from data points for sparkline
+function dataToMiniPath(data: number[] | undefined, width = 73, height = 28, pad = 2): string {
+  const zeroY = height - pad - 2;
+  if (!data || data.length < 2) return `M ${pad} ${zeroY} L ${width - pad} ${zeroY}`;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  if (max === 0 && min === 0) {
+    return `M ${pad} ${zeroY} L ${width - pad} ${zeroY}`;
+  }
+  if (max === min) {
+    const midY = Math.round(height / 2);
+    return `M ${pad} ${midY} L ${width - pad} ${midY}`;
+  }
+  const range = max - min;
+  const pts = data.map((v, i) => ({
+    x: pad + (i / (data.length - 1)) * (width - pad * 2),
+    y: pad + (1 - (v - min) / range) * (height - pad * 2 - 2),
+  }));
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const cpx = (prev.x + curr.x) / 2;
+    d += ` C ${cpx.toFixed(1)} ${prev.y.toFixed(1)}, ${cpx.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function dataToPopoverPaths(data: number[] | undefined, width = 234, height = 64, padX = 6, padY = 6): {
+  line: string; area: string; dotCx: number; dotCy: number;
+} {
+  const zeroY = height - padY - 2;
+  const flatZero = {
+    line: `M ${padX} ${zeroY} L ${width - padX} ${zeroY}`,
+    area: `M ${padX} ${zeroY} L ${width - padX} ${zeroY} L ${width - padX} ${height} L ${padX} ${height} Z`,
+    dotCx: width - padX,
+    dotCy: zeroY,
+  };
+  if (!data || data.length < 2) return flatZero;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  if (max === 0 && min === 0) return flatZero;
+  if (max === min) {
+    const midY = Math.round(height / 2);
+    return {
+      line: `M ${padX} ${midY} L ${width - padX} ${midY}`,
+      area: `M ${padX} ${midY} L ${width - padX} ${midY} L ${width - padX} ${height} L ${padX} ${height} Z`,
+      dotCx: width - padX,
+      dotCy: midY,
+    };
+  }
+  const range = max - min;
+  const pts = data.map((v, i) => ({
+    x: padX + (i / (data.length - 1)) * (width - padX * 2),
+    y: padY + (1 - (v - min) / range) * (height - padY * 2 - 4),
+  }));
+  let line = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const cpx = (prev.x + curr.x) / 2;
+    line += ` C ${cpx.toFixed(1)} ${prev.y.toFixed(1)}, ${cpx.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+  }
+  const last = pts[pts.length - 1];
+  const area = `${line} L ${(width - padX).toFixed(1)} ${height} L ${padX} ${height} Z`;
+  return { line, area, dotCx: Math.round(last.x), dotCy: Math.round(last.y) };
 }
 
 // Helper: trend delta pill (green positive, red negative, hidden if null)
@@ -469,9 +543,8 @@ function KpiCardSkeleton({ delay = 0 }: { delay?: number }) {
 function KanbanColumnSkeleton({ cardCount = 2 }: { cardCount?: number }) {
   return (
     <div
-      className="liquid-column-channel rounded-2xl p-1.5 flex flex-col min-w-[130px]"
+      className="liquid-column-channel rounded-2xl p-1.5 flex flex-col min-w-[130px] h-full"
       style={{
-        height: '420px',
         backgroundColor: 'rgba(241,245,249,0.55)',
         boxShadow: '0 0 0 1.5px rgba(203,213,225,0.4), inset 0 1.5px 1px 0 rgba(255,255,255,0.75), 0 4px 16px -2px rgba(15,23,42,0.04)',
       }}
@@ -502,8 +575,10 @@ function KanbanColumnSkeleton({ cardCount = 2 }: { cardCount?: number }) {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const { company, licenseNumber, city, companyName } = useCompany();
-  const { columns, isLoading: pipelineLoading, refresh: refreshPipeline } = usePipelineKanban();
+  const { columns, summary, isLoading: pipelineLoading, refresh: refreshPipeline, moveCardOptimistically } = usePipelineKanban();
   const { stats, isLoading: statsLoading, refresh: refreshStats } = useDashboardStats();
   const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'calendar'>('kanban');
   const [pipelineSearch, setPipelineSearch] = useState('');
@@ -518,6 +593,51 @@ export function DashboardPage() {
   const [selectedService, setSelectedService] = useState('All Services');
   const filterDropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Reactive KPI Stats: Harmonized with live Kanban columns for instant feedback ──
+  const activeStats = useMemo(() => {
+    if (columns && columns.length > 0) {
+      const newLeads = columns.find((c) => c.id === 'new_leads')?.cards.length ?? 0;
+      const contacted = columns.find((c) => c.id === 'contacted')?.cards.length ?? 0;
+      const estScheduled = columns.find((c) => c.id === 'est_scheduled')?.cards.length ?? 0;
+      const estSent = (columns.find((c) => c.id === 'est_sent')?.cards.length ?? 0) +
+                      (columns.find((c) => c.id === 'follow_up')?.cards.length ?? 0);
+      const contractSignedCount = columns.find((c) => c.id === 'contract_signed')?.cards.length ?? 0;
+      const activeJobsCount = columns.find((c) => c.id === 'active_jobs')?.cards.length ?? 0;
+      const wonFromSummary = summary?.wonCount ?? 0;
+      const jobsWon = Math.max(contractSignedCount + activeJobsCount, wonFromSummary, stats?.jobsWon ?? 0);
+      const lostClosed = summary?.lostCount ?? stats?.lostClosed ?? 0;
+      const totalLeads = Math.max(
+        columns.reduce((sum, col) => sum + col.cards.length, 0) + lostClosed,
+        summary?.totalLeads ?? 0,
+        stats?.totalLeads ?? 0
+      );
+
+      return {
+        newLeads,
+        newLeadsDelta: stats?.newLeadsDelta ?? null,
+        contacted,
+        contactedDelta: stats?.contactedDelta ?? null,
+        estScheduled,
+        estScheduledDelta: stats?.estScheduledDelta ?? null,
+        estSent,
+        estSentDelta: stats?.estSentDelta ?? null,
+        jobsWon,
+        jobsWonDelta: stats?.jobsWonDelta ?? null,
+        lostClosed,
+        lostClosedDelta: stats?.lostClosedDelta ?? null,
+        totalLeads,
+        ytdRevenue: stats?.ytdRevenue ?? 0,
+        activeCrewCount: stats?.activeCrewCount ?? 0,
+        totalPipelineValue: summary?.totalPipelineValue ?? stats?.totalPipelineValue ?? 0,
+        sparklines: stats?.sparklines ?? null,
+        recentActivities: stats?.recentActivities ?? [],
+      };
+    }
+    return stats;
+  }, [columns, summary, stats]);
+
+  const isStatsLoadingInitial = (statsLoading && !stats) && (pipelineLoading && columns.length === 0);
 
   // ── KPI card hover popovers (6 cards × ref + 600ms hover hook) ───────────
   const card1Ref = useRef<HTMLDivElement>(null);
@@ -534,7 +654,7 @@ export function DashboardPage() {
   const hover6 = useHoverDelay();
   // Real pipeline-share % for progress bars
   const cardPct = (val: number | undefined) =>
-    `${Math.min(100, Math.round(((val ?? 0) / Math.max(stats?.totalLeads ?? 1, 1)) * 100))}%`;
+    `${Math.min(100, Math.round(((val ?? 0) / Math.max(activeStats?.totalLeads ?? 1, 1)) * 100))}%`;
   // ──────────────────────────────────────────────────────────────────────────
 
   const dragCardRef = useRef<{ cardId: string; fromColId: string } | null>(null);
@@ -550,6 +670,7 @@ export function DashboardPage() {
   const [followUpModalCard, setFollowUpModalCard] = useState<DealCard | null>(null);
   const [isLoggingFollowUp, setIsLoggingFollowUp] = useState(false);
   const [completeModalCard, setCompleteModalCard] = useState<DealCard | null>(null);
+  const [gatedEstimateCard, setGatedEstimateCard] = useState<GatedLeadCard | null>(null);
   const [isCompletingJob, setIsCompletingJob] = useState(false);
 
   const handleDragStart = (cardId: string, fromColId: string) => {
@@ -583,6 +704,25 @@ export function DashboardPage() {
     const fromCol = columns.find((c) => c.id === drag.fromColId);
     const card = fromCol?.cards.find((c) => c.id === drag.cardId);
     if (!fromCol || !card) return;
+
+    // Gated stage check: Estimate Sent is automated and cannot be manually dropped into
+    if (toCol.id === 'est_sent' || toCol.id === 'estimate_sent') {
+      setGatedEstimateCard({
+        id: card.id,
+        name: card.name,
+        location: card.location,
+        address: card.address || card.location,
+        city: card.city,
+        service: card.service,
+        serviceColor: card.serviceColor,
+        phone: card.phone,
+        email: card.email,
+        value: card.value,
+        currentStageName: fromCol.title,
+      });
+      return;
+    }
+
     setDropIntent({ card, fromCol, toCol });
   };
 
@@ -600,18 +740,23 @@ export function DashboardPage() {
 
   const handleConfirmMove = async (notes: string, authorInfo?: { plainNote?: string; authorName?: string; authorRole?: string }) => {
     if (!dropIntent) return;
+    const { card, fromCol, toCol } = dropIntent;
+    // 1. Instantly move card in UI state for 0ms visual latency
+    moveCardOptimistically(card.id, fromCol.id, toCol.id);
+    setDropIntent(null);
     setIsMoving(true);
-    const { card, toCol } = dropIntent;
+
     const mapping = STAGE_MAP[toCol.id] || { granularStage: 'cold_lead', pipelineStage: 'stage_1_lead_gen' };
     try {
       await updatePipelineDealStage(card.id, mapping.granularStage, notes.trim() || undefined, authorInfo);
     } catch (err) {
       console.error('Failed to update stage:', err);
+      // Revert/refresh on failure
+      refreshPipeline(true);
     } finally {
       setIsMoving(false);
-      setDropIntent(null);
-      refreshPipeline();
-      refreshStats();
+      refreshPipeline(true);
+      refreshStats(true);
     }
   };
 
@@ -638,22 +783,17 @@ export function DashboardPage() {
     if (!completeModalCard) return;
     setIsCompletingJob(true);
     try {
-      await updatePipelineDealStage(completeModalCard.id, 'job_completed', notes.trim() || undefined);
-      completeClientJob(completeModalCard.name, notes, {
-        value: completeModalCard.value,
-        address: completeModalCard.location,
-        service: completeModalCard.service,
-      }, authorInfo);
+      await updatePipelineDealStage(completeModalCard.id, 'job_completed', notes.trim() || undefined, {
+        authorName: authorInfo?.name,
+        authorRole: authorInfo?.role,
+        plainNote: notes.trim() || undefined,
+      });
       setCompleteModalCard(null);
       refreshPipeline();
       refreshStats();
+      window.dispatchEvent(new CustomEvent('crm:top-performers-updated'));
     } catch (err) {
       console.error('Failed to complete job:', err);
-      completeClientJob(completeModalCard.name, notes, {
-        value: completeModalCard.value,
-        address: completeModalCard.location,
-        service: completeModalCard.service,
-      }, authorInfo);
       setCompleteModalCard(null);
       refreshPipeline();
       refreshStats();
@@ -775,11 +915,12 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="space-y-2.5 max-w-[1600px] mx-auto select-none pb-16">
+    <div className="h-full flex flex-col justify-between min-h-0 w-full max-w-[1600px] mx-auto select-none gap-2">
       {/* ========================================================
-          1. UNIFIED 220PX HERO BANNER WITH TOP SEARCH & BADGES
+          1. UNIFIED HERO BANNER WITH TOP SEARCH & BADGES (Compact Mode)
           ======================================================== */}
       <CrmPageHero
+        compact={true}
         pageId="dashboard"
         defaultEyebrow="Discipline Builds Freedom • North County San Diego"
         defaultTitle="EXECUTIVE COMMAND DASHBOARD"
@@ -798,30 +939,27 @@ export function DashboardPage() {
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50/90 border border-sky-200/90 text-[10px] font-bold text-sky-800 shadow-2xs shrink-0">
               <TrendingUp size={11} className="text-sky-600" />
-              {statsLoading ? <StatSkeleton /> : <span>YTD: {formatCurrency(stats?.ytdRevenue)}</span>}
+              {isStatsLoadingInitial ? <StatSkeleton /> : <span>YTD: {formatCurrency(activeStats?.ytdRevenue)}</span>}
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50/90 border border-amber-200/90 text-[10px] font-bold text-amber-800 shadow-2xs shrink-0">
               <ShieldCheck size={11} className="text-amber-600" />
-              {statsLoading ? <StatSkeleton /> : <span>{stats?.activeCrewCount ?? 0} Roofers Active</span>}
+              {isStatsLoadingInitial ? <StatSkeleton /> : <span>{activeStats?.activeCrewCount ?? 0} Roofers Active</span>}
             </span>
           </div>
         }
       />
 
       {/* ========================================================
-          2. KPI METRIC CARDS ROW (6 Glossy Liquid Glass Cards)
-          ======================================================== */}
-      {/* ========================================================
           2. KPI METRIC CARDS ROW (6 Executive Glass Cards with Sparklines)
           ======================================================== */}
-      {statsLoading ? (
-        <div className="grid grid-cols-6 gap-2.5">
+      {isStatsLoadingInitial ? (
+        <div className="grid grid-cols-6 gap-2 shrink-0">
           {Array.from({ length: 6 }).map((_, i) => (
             <KpiCardSkeleton key={i} delay={i * 80} />
           ))}
         </div>
       ) : (
-      <div className="grid grid-cols-6 gap-2.5">
+      <div className="grid grid-cols-6 gap-2 shrink-0">
         {/* Card 1: New Leads */}
         <div
           ref={card1Ref}
@@ -835,50 +973,59 @@ export function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#1878B8] to-[#55C4F5] flex items-center justify-center text-white shadow-xs shadow-sky-500/25 shrink-0 group-hover:scale-105 transition-transform">
               <Users size={13} className="stroke-[2.5]" />
             </div>
-            <TrendPill delta={stats?.newLeadsDelta} />
+            <TrendPill delta={activeStats?.newLeadsDelta} />
           </div>
 
           <div className="flex items-end justify-between mt-1.5 relative z-10">
             <div>
               <div className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-none">
-                {statsLoading ? <StatSkeleton /> : (stats?.newLeads ?? 0)}
+                {activeStats?.newLeads ?? 0}
               </div>
               <div className="text-[10.5px] font-bold text-slate-700 mt-0.5 leading-tight">
                 New Leads
               </div>
             </div>
             <div className="shrink-0 mb-0.5 opacity-90 group-hover:opacity-100 transition-opacity">
-              <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
-                <defs>
-                  <linearGradient id="grad-leads" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0284c7" stopOpacity="0.32" />
-                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 2 22 Q 18 20, 30 14 T 54 10 T 73 3 L 73 28 L 2 28 Z" fill="url(#grad-leads)" />
-                <path d="M 2 22 Q 18 20, 30 14 T 54 10 T 73 3" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="73" cy="3" r="2.5" fill="#0284c7" className="animate-pulse" />
-              </svg>
+              {(() => {
+                const miniPath = dataToMiniPath(stats?.sparklines?.newLeads);
+                const cy = parseFloat(miniPath.split(' ').pop()!) || 24;
+                return (
+                  <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
+                    <defs>
+                      <linearGradient id="grad-leads" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0284c7" stopOpacity="0.32" />
+                        <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={`${miniPath} L 73 28 L 2 28 Z`} fill="url(#grad-leads)" />
+                    <path d={miniPath} stroke="#0284c7" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="73" cy={cy} r="2.5" fill="#0284c7" className="animate-pulse" />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
 
           <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 relative z-10 flex items-center justify-between text-[8.5px]">
             <span className="text-slate-400 font-medium">vs last month</span>
             <div className="w-12 bg-slate-200/40 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-[#1878B8] to-[#55C4F5] h-full rounded-full" style={{ width: cardPct(stats?.newLeads) }} />
+              <div className="bg-gradient-to-r from-[#1878B8] to-[#55C4F5] h-full rounded-full" style={{ width: cardPct(activeStats?.newLeads) }} />
             </div>
           </div>
 
-          {hover1.active && (
-            <StatCardPopover
-              label="New Leads" value={stats?.newLeads ?? 0} delta={stats?.newLeadsDelta ?? null}
-              totalLeads={stats?.totalLeads ?? 0} stageLabel="Unworked leads" color="#0284c7"
-              svgLine="M 6 52 C 44 46 76 32 110 28 S 174 18 228 8"
-              svgArea="M 6 52 C 44 46 76 32 110 28 S 174 18 228 8 L 228 64 L 6 64 Z"
-              dotCx={228} dotCy={8} anchorRef={card1Ref}
-              onPopoverEnter={hover1.onPopoverEnter} onLeave={hover1.onLeave}
-            />
-          )}
+          {hover1.active && (() => {
+            const pp = dataToPopoverPaths(stats?.sparklines?.newLeads);
+            return (
+              <StatCardPopover
+                label="New Leads" value={activeStats?.newLeads ?? 0} delta={activeStats?.newLeadsDelta ?? null}
+                totalLeads={activeStats?.totalLeads ?? 0} stageLabel="Unworked leads" color="#0284c7"
+                svgLine={pp.line}
+                svgArea={pp.area}
+                dotCx={pp.dotCx} dotCy={pp.dotCy} anchorRef={card1Ref}
+                onPopoverEnter={hover1.onPopoverEnter} onLeave={hover1.onLeave}
+              />
+            );
+          })()}
         </div>
 
         {/* Card 2: Connected */}
@@ -893,45 +1040,54 @@ export function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#0284C7] to-[#38BDF8] flex items-center justify-center text-white shadow-xs shadow-cyan-500/25 shrink-0 group-hover:scale-105 transition-transform">
               <Phone size={13} className="stroke-[2.5]" />
             </div>
-            <TrendPill delta={stats?.contactedDelta} />
+            <TrendPill delta={activeStats?.contactedDelta} />
           </div>
           <div className="flex items-end justify-between mt-1.5 relative z-10">
             <div>
               <div className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-none">
-                {statsLoading ? <StatSkeleton /> : (stats?.contacted ?? 0)}
+                {activeStats?.contacted ?? 0}
               </div>
               <div className="text-[10.5px] font-bold text-slate-700 mt-0.5 leading-tight">Connected</div>
             </div>
             <div className="shrink-0 mb-0.5 opacity-90 group-hover:opacity-100 transition-opacity">
-              <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
-                <defs>
-                  <linearGradient id="grad-conn" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.32" />
-                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 2 24 Q 16 16, 32 18 T 52 11 T 73 4 L 73 28 L 2 28 Z" fill="url(#grad-conn)" />
-                <path d="M 2 24 Q 16 16, 32 18 T 52 11 T 73 4" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="73" cy="4" r="2.5" fill="#06b6d4" className="animate-pulse" />
-              </svg>
+              {(() => {
+                const miniPath = dataToMiniPath(stats?.sparklines?.contacted);
+                const cy = parseFloat(miniPath.split(' ').pop()!) || 24;
+                return (
+                  <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
+                    <defs>
+                      <linearGradient id="grad-conn" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.32" />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={`${miniPath} L 73 28 L 2 28 Z`} fill="url(#grad-conn)" />
+                    <path d={miniPath} stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="73" cy={cy} r="2.5" fill="#06b6d4" className="animate-pulse" />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
           <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 relative z-10 flex items-center justify-between text-[8.5px]">
             <span className="text-emerald-600 font-semibold">High pick-up</span>
             <div className="w-12 bg-slate-200/40 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-cyan-600 to-cyan-400 h-full rounded-full" style={{ width: cardPct(stats?.contacted) }} />
+              <div className="bg-gradient-to-r from-cyan-600 to-cyan-400 h-full rounded-full" style={{ width: cardPct(activeStats?.contacted) }} />
             </div>
           </div>
-          {hover2.active && (
-            <StatCardPopover
-              label="Connected" value={stats?.contacted ?? 0} delta={stats?.contactedDelta ?? null}
-              totalLeads={stats?.totalLeads ?? 0} stageLabel="Initial outreach" color="#06b6d4"
-              svgLine="M 6 56 C 36 38 70 42 108 40 S 170 24 228 10"
-              svgArea="M 6 56 C 36 38 70 42 108 40 S 170 24 228 10 L 228 64 L 6 64 Z"
-              dotCx={228} dotCy={10} anchorRef={card2Ref}
-              onPopoverEnter={hover2.onPopoverEnter} onLeave={hover2.onLeave}
-            />
-          )}
+          {hover2.active && (() => {
+            const pp = dataToPopoverPaths(stats?.sparklines?.contacted);
+            return (
+              <StatCardPopover
+                label="Connected" value={activeStats?.contacted ?? 0} delta={activeStats?.contactedDelta ?? null}
+                totalLeads={activeStats?.totalLeads ?? 0} stageLabel="Initial outreach" color="#06b6d4"
+                svgLine={pp.line}
+                svgArea={pp.area}
+                dotCx={pp.dotCx} dotCy={pp.dotCy} anchorRef={card2Ref}
+                onPopoverEnter={hover2.onPopoverEnter} onLeave={hover2.onLeave}
+              />
+            );
+          })()}
         </div>
 
         {/* Card 3: Est. Scheduled */}
@@ -946,45 +1102,54 @@ export function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-purple-400 flex items-center justify-center text-white shadow-xs shadow-purple-500/25 shrink-0 group-hover:scale-105 transition-transform">
               <Calendar size={13} className="stroke-[2.5]" />
             </div>
-            <TrendPill delta={stats?.estScheduledDelta} />
+            <TrendPill delta={activeStats?.estScheduledDelta} />
           </div>
           <div className="flex items-end justify-between mt-1.5 relative z-10">
             <div>
               <div className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-none">
-                {statsLoading ? <StatSkeleton /> : (stats?.estScheduled ?? 0)}
+                {activeStats?.estScheduled ?? 0}
               </div>
               <div className="text-[10.5px] font-bold text-slate-700 mt-0.5 leading-tight">Est. Scheduled</div>
             </div>
             <div className="shrink-0 mb-0.5 opacity-90 group-hover:opacity-100 transition-opacity">
-              <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
-                <defs>
-                  <linearGradient id="grad-sched" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#9333ea" stopOpacity="0.32" />
-                    <stop offset="100%" stopColor="#9333ea" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 2 25 Q 18 22, 34 13 T 54 12 T 73 3 L 73 28 L 2 28 Z" fill="url(#grad-sched)" />
-                <path d="M 2 25 Q 18 22, 34 13 T 54 12 T 73 3" stroke="#9333ea" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="73" cy="3" r="2.5" fill="#9333ea" className="animate-pulse" />
-              </svg>
+              {(() => {
+                const miniPath = dataToMiniPath(stats?.sparklines?.estScheduled);
+                const cy = parseFloat(miniPath.split(' ').pop()!) || 24;
+                return (
+                  <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
+                    <defs>
+                      <linearGradient id="grad-sched" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#9333ea" stopOpacity="0.32" />
+                        <stop offset="100%" stopColor="#9333ea" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={`${miniPath} L 73 28 L 2 28 Z`} fill="url(#grad-sched)" />
+                    <path d={miniPath} stroke="#9333ea" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="73" cy={cy} r="2.5" fill="#9333ea" className="animate-pulse" />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
           <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 relative z-10 flex items-center justify-between text-[8.5px]">
             <span className="text-slate-400 font-medium">On-site walks</span>
             <div className="w-12 bg-slate-200/40 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full" style={{ width: cardPct(stats?.estScheduled) }} />
+              <div className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full" style={{ width: cardPct(activeStats?.estScheduled) }} />
             </div>
           </div>
-          {hover3.active && (
-            <StatCardPopover
-              label="Est. Scheduled" value={stats?.estScheduled ?? 0} delta={stats?.estScheduledDelta ?? null}
-              totalLeads={stats?.totalLeads ?? 0} stageLabel="On-site estimates" color="#9333ea"
-              svgLine="M 6 58 C 48 52 84 34 118 30 S 178 22 228 8"
-              svgArea="M 6 58 C 48 52 84 34 118 30 S 178 22 228 8 L 228 64 L 6 64 Z"
-              dotCx={228} dotCy={8} anchorRef={card3Ref}
-              onPopoverEnter={hover3.onPopoverEnter} onLeave={hover3.onLeave}
-            />
-          )}
+          {hover3.active && (() => {
+            const pp = dataToPopoverPaths(stats?.sparklines?.estScheduled);
+            return (
+              <StatCardPopover
+                label="Est. Scheduled" value={activeStats?.estScheduled ?? 0} delta={activeStats?.estScheduledDelta ?? null}
+                totalLeads={activeStats?.totalLeads ?? 0} stageLabel="On-site estimates" color="#9333ea"
+                svgLine={pp.line}
+                svgArea={pp.area}
+                dotCx={pp.dotCx} dotCy={pp.dotCy} anchorRef={card3Ref}
+                onPopoverEnter={hover3.onPopoverEnter} onLeave={hover3.onLeave}
+              />
+            );
+          })()}
         </div>
 
         {/* Card 4: Est. Sent */}
@@ -999,45 +1164,54 @@ export function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-400 flex items-center justify-center text-white shadow-xs shadow-amber-500/25 shrink-0 group-hover:scale-105 transition-transform">
               <FileText size={13} className="stroke-[2.5]" />
             </div>
-            <TrendPill delta={stats?.estSentDelta} />
+            <TrendPill delta={activeStats?.estSentDelta} />
           </div>
           <div className="flex items-end justify-between mt-1.5 relative z-10">
             <div>
               <div className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-none">
-                {statsLoading ? <StatSkeleton /> : (stats?.estSent ?? 0)}
+                {activeStats?.estSent ?? 0}
               </div>
               <div className="text-[10.5px] font-bold text-slate-700 mt-0.5 leading-tight">Est. Sent</div>
             </div>
             <div className="shrink-0 mb-0.5 opacity-90 group-hover:opacity-100 transition-opacity">
-              <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
-                <defs>
-                  <linearGradient id="grad-sent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
-                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 2 21 Q 20 23, 36 15 T 56 9 T 73 4 L 73 28 L 2 28 Z" fill="url(#grad-sent)" />
-                <path d="M 2 21 Q 20 23, 36 15 T 56 9 T 73 4" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="73" cy="4" r="2.5" fill="#f59e0b" className="animate-pulse" />
-              </svg>
+              {(() => {
+                const miniPath = dataToMiniPath(stats?.sparklines?.estSent);
+                const cy = parseFloat(miniPath.split(' ').pop()!) || 24;
+                return (
+                  <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
+                    <defs>
+                      <linearGradient id="grad-sent" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
+                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={`${miniPath} L 73 28 L 2 28 Z`} fill="url(#grad-sent)" />
+                    <path d={miniPath} stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="73" cy={cy} r="2.5" fill="#f59e0b" className="animate-pulse" />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
           <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 relative z-10 flex items-center justify-between text-[8.5px]">
             <span className="text-slate-400 font-medium">Proposals live</span>
             <div className="w-12 bg-slate-200/40 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-500 to-amber-400 h-full rounded-full" style={{ width: cardPct(stats?.estSent) }} />
+              <div className="bg-gradient-to-r from-amber-500 to-amber-400 h-full rounded-full" style={{ width: cardPct(activeStats?.estSent) }} />
             </div>
           </div>
-          {hover4.active && (
-            <StatCardPopover
-              label="Est. Sent" value={stats?.estSent ?? 0} delta={stats?.estSentDelta ?? null}
-              totalLeads={stats?.totalLeads ?? 0} stageLabel="Proposals pending" color="#f59e0b"
-              svgLine="M 6 46 C 50 54 88 38 124 30 S 180 18 228 10"
-              svgArea="M 6 46 C 50 54 88 38 124 30 S 180 18 228 10 L 228 64 L 6 64 Z"
-              dotCx={228} dotCy={10} anchorRef={card4Ref}
-              onPopoverEnter={hover4.onPopoverEnter} onLeave={hover4.onLeave}
-            />
-          )}
+          {hover4.active && (() => {
+            const pp = dataToPopoverPaths(stats?.sparklines?.estSent);
+            return (
+              <StatCardPopover
+                label="Est. Sent" value={activeStats?.estSent ?? 0} delta={activeStats?.estSentDelta ?? null}
+                totalLeads={activeStats?.totalLeads ?? 0} stageLabel="Proposals pending" color="#f59e0b"
+                svgLine={pp.line}
+                svgArea={pp.area}
+                dotCx={pp.dotCx} dotCy={pp.dotCy} anchorRef={card4Ref}
+                onPopoverEnter={hover4.onPopoverEnter} onLeave={hover4.onLeave}
+              />
+            );
+          })()}
         </div>
 
         {/* Card 5: Jobs Won */}
@@ -1052,45 +1226,54 @@ export function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center text-white shadow-xs shadow-emerald-500/25 shrink-0 group-hover:scale-105 transition-transform">
               <Trophy size={13} className="stroke-[2.5]" />
             </div>
-            <TrendPill delta={stats?.jobsWonDelta} />
+            <TrendPill delta={activeStats?.jobsWonDelta} />
           </div>
           <div className="flex items-end justify-between mt-1.5 relative z-10">
             <div>
               <div className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-none">
-                {statsLoading ? <StatSkeleton /> : (stats?.jobsWon ?? 0)}
+                {activeStats?.jobsWon ?? 0}
               </div>
               <div className="text-[10.5px] font-bold text-slate-700 mt-0.5 leading-tight">Jobs Won</div>
             </div>
             <div className="shrink-0 mb-0.5 opacity-90 group-hover:opacity-100 transition-opacity">
-              <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
-                <defs>
-                  <linearGradient id="grad-won" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 2 24 Q 22 21, 38 18 T 54 8 T 73 2 L 73 28 L 2 28 Z" fill="url(#grad-won)" />
-                <path d="M 2 24 Q 22 21, 38 18 T 54 8 T 73 2" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="73" cy="2" r="2.8" fill="#10b981" className="animate-pulse" />
-              </svg>
+              {(() => {
+                const miniPath = dataToMiniPath(stats?.sparklines?.jobsWon);
+                const cy = parseFloat(miniPath.split(' ').pop()!) || 24;
+                return (
+                  <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
+                    <defs>
+                      <linearGradient id="grad-won" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={`${miniPath} L 73 28 L 2 28 Z`} fill="url(#grad-won)" />
+                    <path d={miniPath} stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="73" cy={cy} r="2.8" fill="#10b981" className="animate-pulse" />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
           <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 relative z-10 flex items-center justify-between text-[8.5px]">
             <span className="text-emerald-600 font-semibold">Closed &amp; signed</span>
             <div className="w-12 bg-slate-200/40 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full" style={{ width: cardPct(stats?.jobsWon) }} />
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full" style={{ width: cardPct(activeStats?.jobsWon) }} />
             </div>
           </div>
-          {hover5.active && (
-            <StatCardPopover
-              label="Jobs Won" value={stats?.jobsWon ?? 0} delta={stats?.jobsWonDelta ?? null}
-              totalLeads={stats?.totalLeads ?? 0} stageLabel="Contracts signed" color="#10b981"
-              svgLine="M 6 56 C 56 50 96 44 130 38 S 178 14 228 4"
-              svgArea="M 6 56 C 56 50 96 44 130 38 S 178 14 228 4 L 228 64 L 6 64 Z"
-              dotCx={228} dotCy={4} anchorRef={card5Ref}
-              onPopoverEnter={hover5.onPopoverEnter} onLeave={hover5.onLeave}
-            />
-          )}
+          {hover5.active && (() => {
+            const pp = dataToPopoverPaths(stats?.sparklines?.jobsWon);
+            return (
+              <StatCardPopover
+                label="Jobs Won" value={activeStats?.jobsWon ?? 0} delta={activeStats?.jobsWonDelta ?? null}
+                totalLeads={activeStats?.totalLeads ?? 0} stageLabel="Contracts signed" color="#10b981"
+                svgLine={pp.line}
+                svgArea={pp.area}
+                dotCx={pp.dotCx} dotCy={pp.dotCy} anchorRef={card5Ref}
+                onPopoverEnter={hover5.onPopoverEnter} onLeave={hover5.onLeave}
+              />
+            );
+          })()}
         </div>
 
         {/* Card 6: Lost / Closed */}
@@ -1105,45 +1288,54 @@ export function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-rose-500 to-rose-400 flex items-center justify-center text-white shadow-xs shadow-rose-500/25 shrink-0 group-hover:scale-105 transition-transform">
               <AlertCircle size={13} className="stroke-[2.5]" />
             </div>
-            <TrendPill delta={stats?.lostClosedDelta} />
+            <TrendPill delta={activeStats?.lostClosedDelta} />
           </div>
           <div className="flex items-end justify-between mt-1.5 relative z-10">
             <div>
               <div className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-none">
-                {statsLoading ? <StatSkeleton /> : (stats?.lostClosed ?? 0)}
+                {activeStats?.lostClosed ?? 0}
               </div>
               <div className="text-[10.5px] font-bold text-slate-700 mt-0.5 leading-tight">Lost / Closed</div>
             </div>
             <div className="shrink-0 mb-0.5 opacity-90 group-hover:opacity-100 transition-opacity">
-              <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
-                <defs>
-                  <linearGradient id="grad-lost" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 2 6 Q 20 8, 36 14 T 56 18 T 73 23 L 73 28 L 2 28 Z" fill="url(#grad-lost)" />
-                <path d="M 2 6 Q 20 8, 36 14 T 56 18 T 73 23" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="73" cy="23" r="2.5" fill="#f43f5e" />
-              </svg>
+              {(() => {
+                const miniPath = dataToMiniPath(stats?.sparklines?.lostClosed);
+                const cy = parseFloat(miniPath.split(' ').pop()!) || 24;
+                return (
+                  <svg className="w-16 h-7" viewBox="0 0 75 28" fill="none">
+                    <defs>
+                      <linearGradient id="grad-lost" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={`${miniPath} L 73 28 L 2 28 Z`} fill="url(#grad-lost)" />
+                    <path d={miniPath} stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="73" cy={cy} r="2.5" fill="#f43f5e" className="animate-pulse" />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
           <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 relative z-10 flex items-center justify-between text-[8.5px]">
             <span className="text-slate-400 font-medium">Pricing / Delays</span>
             <div className="w-12 bg-slate-200/40 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-rose-500 to-rose-400 h-full rounded-full" style={{ width: cardPct(stats?.lostClosed) }} />
+              <div className="bg-gradient-to-r from-rose-500 to-rose-400 h-full rounded-full" style={{ width: cardPct(activeStats?.lostClosed) }} />
             </div>
           </div>
-          {hover6.active && (
-            <StatCardPopover
-              label="Lost / Closed" value={stats?.lostClosed ?? 0} delta={stats?.lostClosedDelta ?? null}
-              totalLeads={stats?.totalLeads ?? 0} stageLabel="Churned leads" color="#f43f5e"
-              svgLine="M 6 14 C 60 18 100 28 136 36 S 184 46 228 54"
-              svgArea="M 6 14 C 60 18 100 28 136 36 S 184 46 228 54 L 228 64 L 6 64 Z"
-              dotCx={228} dotCy={54} anchorRef={card6Ref}
-              onPopoverEnter={hover6.onPopoverEnter} onLeave={hover6.onLeave}
-            />
-          )}
+          {hover6.active && (() => {
+            const pp = dataToPopoverPaths(stats?.sparklines?.lostClosed);
+            return (
+              <StatCardPopover
+                label="Lost / Closed" value={activeStats?.lostClosed ?? 0} delta={activeStats?.lostClosedDelta ?? null}
+                totalLeads={activeStats?.totalLeads ?? 0} stageLabel="Churned leads" color="#f43f5e"
+                svgLine={pp.line}
+                svgArea={pp.area}
+                dotCx={pp.dotCx} dotCy={pp.dotCy} anchorRef={card6Ref}
+                onPopoverEnter={hover6.onPopoverEnter} onLeave={hover6.onLeave}
+              />
+            );
+          })()}
         </div>
       </div>
       )}
@@ -1151,9 +1343,9 @@ export function DashboardPage() {
       {/* ========================================================
           3. SALES PIPELINE SECTION (Kanban Board & Controls)
           ======================================================== */}
-      <div className="rounded-2xl light-glass-panel glossy-sheen border border-white/85 shadow-md p-3.5 space-y-3 relative">
+      <div className="rounded-2xl light-glass-panel glossy-sheen border border-white/85 shadow-md p-2.5 lg:p-3 relative flex-1 min-h-0 flex flex-col">
         {/* Pipeline Control Toolbar */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-3 flex-wrap shrink-0 mb-2">
           {/* Title & View Switcher */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -1374,7 +1566,7 @@ export function DashboardPage() {
 
         {/* View Mode Switching: Kanban, List, or Calendar */}
         {viewMode === 'kanban' && pipelineLoading ? (
-          <div className="grid grid-cols-7 gap-2.5 items-start pb-1 w-full">
+          <div className="grid grid-cols-7 gap-2 items-stretch pb-0.5 w-full flex-1 min-h-0">
             {Array.from({ length: 7 }).map((_, i) => (
               <KanbanColumnSkeleton key={i} cardCount={i < 3 ? 3 : 2} />
             ))}
@@ -1382,7 +1574,7 @@ export function DashboardPage() {
         ) : viewMode === 'kanban' && (
           <div
             ref={kanbanContainerRef}
-            className="grid grid-cols-7 gap-2.5 items-start overflow-hidden pb-1 w-full"
+            className="grid grid-cols-7 gap-2 items-stretch overflow-hidden pb-0.5 w-full flex-1 min-h-0"
           >
             {filteredColumns.map((col) => {
               const rawFilteredCards = pipelineSearch
@@ -1408,9 +1600,8 @@ export function DashboardPage() {
               return (
                 <div
                   key={col.id}
-                  className="liquid-column-channel rounded-2xl p-1.5 flex flex-col min-w-0 transition-all duration-200"
+                  className="liquid-column-channel rounded-2xl p-1.5 flex flex-col min-w-0 transition-all duration-200 h-full"
                   style={{
-                    height: '420px',
                     backgroundColor: col.bgColor,
                     boxShadow: dragOverColId === col.id
                       ? `0 0 0 2.5px ${col.accentColor}, inset 0 1.5px 1px 0 rgba(255,255,255,0.75), 0 4px 24px -2px ${col.accentColor}33`
@@ -1449,11 +1640,28 @@ export function DashboardPage() {
                         onDragEnd={handleDragEnd}
                         onClick={() => {
                           const allEnriched = enrichDeals(columns);
-                          const found = allEnriched.find((d) => d.id === card.id);
-                          if (found) {
-                            setSelectedDeal(found);
-                            setIsDealModalOpen(true);
-                          }
+                          const found = allEnriched.find((d) => String(d.id) === String(card.id));
+                          setSelectedDeal(
+                            found || {
+                              ...card,
+                              stageId: col.id,
+                              stageTitle: col.title,
+                              stageAccent: col.accentColor,
+                              stageBgColor: col.bgColor,
+                              stageBorderColor: col.borderColor,
+                              stagePillClass: col.pillClass,
+                              stageBadgeClass: col.badgeClass,
+                              iconType: col.iconType,
+                              phone: card.phone || '(760) 555-0100',
+                              email: card.email || `${String(card.name || 'homeowner').toLowerCase().replace(/[^a-z]/g, '')}@gmail.com`,
+                              value: card.value || 15000,
+                              scheduledDay: 10,
+                              timeSlot: '10:00 AM',
+                              dateFormatted: 'Today',
+                              notes: card.notes,
+                            }
+                          );
+                          setIsDealModalOpen(true);
                         }}
                         style={{
                           borderColor: card.isFollowupOverdue ? '#ef4444' : col.borderColor,
@@ -1522,26 +1730,25 @@ export function DashboardPage() {
 
                         {/* Source Badges */}
                         <div className="flex items-center gap-1 flex-wrap pt-0.5">
-                          {card.leadSource === 'website' ? (
-                            <>
-                              <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 border border-sky-200 shrink-0">
-                                Website
-                              </span>
-                              {card.assignedToName && (
-                                <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0 truncate max-w-[120px]">
-                                  Claimed: {card.assignedToName.split(' ')[0]}
-                                </span>
-                              )}
-                            </>
+                          {card.leadSource === 'website' || card.leadSourceDetail?.toLowerCase().includes('website') ? (
+                            <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 border border-sky-200 shrink-0">
+                              {card.leadSourceDetail || 'Website'}
+                            </span>
                           ) : (
                             <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200 shrink-0 truncate max-w-[120px]" title={card.createdByName || card.leadSourceDetail || 'Manual'}>
                               {card.createdByName || card.leadSourceDetail || 'Manual'}
                             </span>
                           )}
+
+                          {card.assignedToName && card.assignedToName !== 'Unassigned' && (
+                            <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0 truncate max-w-[120px]">
+                              Claimed: {card.assignedToName.split(' ')[0]}
+                            </span>
+                          )}
                         </div>
 
-                        {/* Claim Lead CTA for unassigned website leads in New Leads column */}
-                        {col.id === 'new_leads' && card.leadSource === 'website' && !card.assignedToUserId && (
+                        {/* Claim Lead CTA for unassigned leads in New Leads column */}
+                        {col.id === 'new_leads' && (!card.assignedToUserId || !card.assignedToName || card.assignedToName === 'Unassigned') && (
                           <div onClick={(e) => e.stopPropagation()} className="pt-1">
                             <button
                               type="button"
@@ -1608,19 +1815,17 @@ export function DashboardPage() {
                           </div>
                         )}
 
-                        {/* Complete Job Action for contract_signed & active_jobs */}
-                        {(col.id === 'contract_signed' || col.id === 'active_jobs') && (
-                          <div className="pt-1">
+                        {/* Active Jobs Link to Production Work Orders */}
+                        {col.id === 'active_jobs' && (
+                          <div className="pt-1" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCompleteModalCard(card);
-                              }}
-                              className="w-full px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-[9px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-xs border border-emerald-400/40 hover:scale-[1.01] active:scale-[0.99]"
+                              onClick={() => navigate('/jobs')}
+                              className="w-full px-2 py-1 rounded-lg bg-gradient-to-r from-[#1878B8] to-[#55C4F5] hover:brightness-110 text-white font-extrabold text-[9px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-xs border border-sky-400/40 hover:scale-[1.01] active:scale-[0.99]"
                             >
-                              <CheckCircle2 size={10} className="stroke-[2.5]" />
-                              <span>Complete Job</span>
+                              <Hammer size={9.5} />
+                              <span>Track in Jobs</span>
+                              <ChevronRight size={10} />
                             </button>
                           </div>
                         )}
@@ -1635,35 +1840,39 @@ export function DashboardPage() {
 
         {/* List View Mode */}
         {viewMode === 'list' && (
-          <PipelineListView
-            columns={filteredColumns}
-            pipelineSearch={pipelineSearch}
-            onSelectDeal={(deal) => {
-              setSelectedDeal(deal);
-              setIsDealModalOpen(true);
-            }}
-            getServiceBadgeClass={getServiceBadgeClass}
-          />
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+            <PipelineListView
+              columns={filteredColumns}
+              pipelineSearch={pipelineSearch}
+              onSelectDeal={(deal) => {
+                setSelectedDeal(deal);
+                setIsDealModalOpen(true);
+              }}
+              getServiceBadgeClass={getServiceBadgeClass}
+            />
+          </div>
         )}
 
         {/* Calendar View Mode */}
         {viewMode === 'calendar' && (
-          <PipelineCalendarView
-            columns={filteredColumns}
-            pipelineSearch={pipelineSearch}
-            onSelectDeal={(deal) => {
-              setSelectedDeal(deal);
-              setIsDealModalOpen(true);
-            }}
-            getServiceBadgeClass={getServiceBadgeClass}
-          />
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+            <PipelineCalendarView
+              columns={filteredColumns}
+              pipelineSearch={pipelineSearch}
+              onSelectDeal={(deal) => {
+                setSelectedDeal(deal);
+                setIsDealModalOpen(true);
+              }}
+              getServiceBadgeClass={getServiceBadgeClass}
+            />
+          </div>
         )}
       </div>
 
       {/* ========================================================
           4. RECENT ACTIVITY BAR
           ======================================================== */}
-      <div className="rounded-xl light-glass-panel glossy-sheen border border-white/85 shadow-xs px-3 py-2 flex items-center justify-between gap-3">
+      <div className="rounded-xl light-glass-panel glossy-sheen border border-white/85 shadow-xs px-3 py-1.5 flex items-center justify-between gap-3 shrink-0">
         {/* Title */}
         <div className="flex items-center gap-1.5 shrink-0 pr-3 border-r border-slate-200/70">
           <Clock size={13} className="text-[#1878B8]" />
@@ -1672,49 +1881,24 @@ export function DashboardPage() {
 
         {/* Activity Items Horizontal Row */}
         <div className="flex-1 grid grid-cols-4 gap-2">
-          {/* Event 1 */}
-          <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs">
-            <div className="w-5 h-5 rounded-md bg-sky-100/90 text-[#1878B8] flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
-              <Users size={11} />
+          {(activeStats?.recentActivities && activeStats.recentActivities.length > 0) ? (
+            <>
+              {activeStats.recentActivities.slice(0, 4).map((act, idx) => (
+                <ActivityItemCard key={act.id || idx} activity={act} />
+              ))}
+              {Array.from({ length: Math.max(0, 4 - activeStats.recentActivities.length) }).map((_, idx) => (
+                <div key={`empty-${idx}`} className="hidden md:flex items-center gap-2 p-1.5 rounded-lg border border-dashed border-slate-200/60 text-[10px] text-slate-400 justify-center">
+                  <Clock size={10} className="text-slate-300" />
+                  <span>Awaiting activity...</span>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="col-span-4 flex items-center justify-center py-0.5 text-[11px] text-slate-400 font-medium">
+              <Clock size={11} className="mr-1.5 text-[#1878B8]" />
+              <span>No team activities logged yet. Real-time actions will appear here.</span>
             </div>
-            <div className="truncate text-[10px]">
-              <span className="text-slate-600">Marc added lead <strong className="text-[#1F1F1F]">Pacific Auto</strong></span>
-              <span className="text-slate-400 ml-1.5 font-medium">2h ago</span>
-            </div>
-          </div>
-
-          {/* Event 2 */}
-          <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs">
-            <div className="w-5 h-5 rounded-md bg-blue-100/90 text-[#0284C7] flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
-              <Mail size={11} />
-            </div>
-            <div className="truncate text-[10px]">
-              <span className="text-slate-600">Sent to <strong className="text-[#1F1F1F]">Ryan Miller</strong> $26,870</span>
-              <span className="text-slate-400 ml-1.5 font-medium">5h ago</span>
-            </div>
-          </div>
-
-          {/* Event 3 */}
-          <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs">
-            <div className="w-5 h-5 rounded-md bg-emerald-100/90 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
-              <FileText size={11} />
-            </div>
-            <div className="truncate text-[10px]">
-              <span className="text-slate-600">Contract signed <strong className="text-[#1F1F1F]">Martinez</strong></span>
-              <span className="text-slate-400 ml-1.5 font-medium">1d ago</span>
-            </div>
-          </div>
-
-          {/* Event 4 */}
-          <div className="flex items-center gap-2 p-1.5 rounded-lg liquid-glass-tile text-xs">
-            <div className="w-5 h-5 rounded-md bg-teal-100/90 text-teal-700 flex items-center justify-center shrink-0 shadow-2xs backdrop-blur-xs">
-              <CheckCircle2 size={11} />
-            </div>
-            <div className="truncate text-[10px]">
-              <span className="text-slate-600">Job completed <strong className="text-[#1F1F1F]">Oceanside</strong></span>
-              <span className="text-slate-400 ml-1.5 font-medium">1d ago</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* View All Link */}
@@ -1726,40 +1910,6 @@ export function DashboardPage() {
           <ArrowUpRight size={11} />
         </a>
       </div>
-
-      {/* ========================================================
-          5. COASTAL STATUS / LEGAL FOOTER BAR
-          ======================================================== */}
-      <footer className="rounded-lg px-4 py-1.5 light-glass-panel glossy-sheen border border-white/85 shadow-2xs flex items-center justify-between text-xs text-slate-500 font-medium">
-        {/* Left Coordinates & Web */}
-        <div className="flex items-center gap-3 text-[10px]">
-          <div className="flex items-center gap-1 text-slate-700">
-            <MapPin size={11} className="text-[#1878B8]" />
-            <span>Oceanside, CA</span>
-          </div>
-          <span className="text-slate-300">|</span>
-          <div className="flex items-center gap-1 text-slate-700">
-            <Globe size={11} className="text-[#1878B8]" />
-            <a href="https://riseuprac.com" target="_blank" rel="noreferrer" className="hover:text-[#1878B8] transition-colors">
-              riseuprac.com
-            </a>
-          </div>
-        </div>
-
-        {/* Center Slogan */}
-        <div className="text-[9.5px] tracking-[0.24em] font-extrabold uppercase text-slate-600">
-          Roofing Today For A Stronger Tomorrow.
-        </div>
-
-        {/* Right Licensing Details */}
-        <div className="flex items-center gap-1.5 text-[9.5px] font-bold text-slate-600 font-mono">
-          <span className="text-slate-700">{licenseNumber || 'CSLB #1115874'}</span>
-          <span className="text-slate-300">|</span>
-          <span className="px-1 py-0.2 rounded bg-white/70 border border-white/80 text-slate-700 shadow-2xs">B</span>
-          <span className="px-1 py-0.2 rounded bg-white/70 border border-white/80 text-slate-700 shadow-2xs">C39</span>
-          <span className="px-1 py-0.2 rounded bg-white/70 border border-white/80 text-slate-700 shadow-2xs">C46</span>
-        </div>
-      </footer>
 
       {/* Interactive Deal Inspection & Field Notes Modal */}
       <PipelineDealModal
@@ -1826,23 +1976,11 @@ export function DashboardPage() {
         onSubmitFollowUp={handleLogFollowUpSubmit}
       />
 
-      {/* Job Completion Confirmation & Client 360 Closeout Modal */}
-      <CompleteJobModal
-        isOpen={Boolean(completeModalCard)}
-        deal={
-          completeModalCard
-            ? {
-                id: completeModalCard.id,
-                name: completeModalCard.name,
-                service: completeModalCard.service,
-                value: completeModalCard.value ?? 15000,
-                address: completeModalCard.location,
-              }
-            : null
-        }
-        isSubmitting={isCompletingJob}
-        onClose={() => setCompleteModalCard(null)}
-        onConfirm={handleConfirmCompleteJob}
+      {/* Estimate Sent Gated Modal */}
+      <EstimateSentGatedModal
+        deal={gatedEstimateCard}
+        isOpen={Boolean(gatedEstimateCard)}
+        onClose={() => setGatedEstimateCard(null)}
       />
     </div>
   );
