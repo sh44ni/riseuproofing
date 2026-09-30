@@ -14,7 +14,7 @@ asyncpg==0.30.0
 alembic==1.14.1
 
 # Redis & Async Background Worker
-redis[hiredis]==5.2.1
+redis[hiredis]==8.1.0
 arq==0.26.1
 
 # S3 / MinIO Object Storage
